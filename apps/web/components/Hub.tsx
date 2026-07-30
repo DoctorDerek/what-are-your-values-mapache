@@ -55,17 +55,21 @@ function ValueActionRail({
   browseAllValuesButtonRef,
   onBrowseAllValues,
   onAddCustomValue,
+  onOpenAchievements,
+  onManageData,
   onStartBattle,
 }: {
   browseAllValuesButtonRef?: Ref<HTMLButtonElement>
   onBrowseAllValues: (focusTargetId: string) => void
   onAddCustomValue: (focusTargetId: string) => void
+  onOpenAchievements: (focusTargetId: string) => void
+  onManageData: (focusTargetId: string) => void
   onStartBattle: () => void
 }) {
   return (
     <nav
       aria-label="Value actions"
-      className="mt-6 flex w-full flex-col gap-4 sm:flex-row"
+      className="mt-6 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5"
     >
       <button
         type="button"
@@ -91,22 +95,44 @@ function ValueActionRail({
       >
         Add Custom Value
       </button>
+      <button
+        id="hub-achievements-button"
+        type="button"
+        onClick={(event) => onOpenAchievements(event.currentTarget.id)}
+        className="bg-mapache-vivid-primary-yellow text-mapache-vivid-dark min-h-16 flex-1 cursor-pointer border-4 border-black px-5 py-5 text-2xl font-black uppercase shadow-[8px_8px_0px_0px_#000000] transition-transform hover:-translate-y-1 hover:shadow-[10px_10px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black active:translate-x-[8px] active:translate-y-[8px] active:shadow-none"
+      >
+        Achievements
+      </button>
+      <button
+        id="hub-manage-data-button"
+        type="button"
+        onClick={(event) => onManageData(event.currentTarget.id)}
+        className="bg-mapache-vivid-secondary-green text-mapache-vivid-dark min-h-16 flex-1 cursor-pointer border-4 border-black px-5 py-5 text-2xl font-black uppercase shadow-[8px_8px_0px_0px_#000000] transition-transform hover:-translate-y-1 hover:shadow-[10px_10px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-x-[8px] active:translate-y-[8px] active:shadow-none"
+      >
+        Manage Data
+      </button>
     </nav>
   )
 }
 
 export default function Hub({
+  notice,
   rankedValues,
   browseAllValuesButtonRef,
   onBrowseAllValues,
   onAddCustomValue,
+  onOpenAchievements,
+  onManageData,
   onOpenValue,
   onStartBattle,
 }: {
+  notice?: string | null
   rankedValues: readonly RankedValue[]
   browseAllValuesButtonRef?: Ref<HTMLButtonElement>
   onBrowseAllValues: (focusTargetId: string) => void
   onAddCustomValue: (focusTargetId: string) => void
+  onOpenAchievements: (focusTargetId: string) => void
+  onManageData: (focusTargetId: string) => void
   onOpenValue: (valueId: ValueId, focusTargetId: string) => void
   onStartBattle: () => void
 }) {
@@ -124,6 +150,15 @@ export default function Hub({
       <h1 className="text-mapache-vivid-primary-cyan mt-8 mb-8 text-center text-5xl font-black uppercase drop-shadow-[6px_6px_0px_#000000] lg:text-7xl">
         Your Values
       </h1>
+
+      {notice ? (
+        <p
+          role="status"
+          className="bg-mapache-vivid-secondary-green text-mapache-vivid-dark mb-6 w-full max-w-7xl border-4 border-black p-4 text-xl font-black shadow-[6px_6px_0px_0px_#000000]"
+        >
+          {notice}
+        </p>
+      ) : null}
 
       <section
         aria-labelledby="your-values-heading"
@@ -168,6 +203,8 @@ export default function Hub({
               browseAllValuesButtonRef={browseAllValuesButtonRef}
               onBrowseAllValues={onBrowseAllValues}
               onAddCustomValue={onAddCustomValue}
+              onOpenAchievements={onOpenAchievements}
+              onManageData={onManageData}
               onStartBattle={onStartBattle}
             />
             <div className="bg-mapache-vivid-primary-cyan border-y-8 border-black px-4 py-3 text-center text-2xl font-black text-black uppercase">
@@ -195,6 +232,8 @@ export default function Hub({
               browseAllValuesButtonRef={browseAllValuesButtonRef}
               onBrowseAllValues={onBrowseAllValues}
               onAddCustomValue={onAddCustomValue}
+              onOpenAchievements={onOpenAchievements}
+              onManageData={onManageData}
               onStartBattle={onStartBattle}
             />
             <ol className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pr-2">

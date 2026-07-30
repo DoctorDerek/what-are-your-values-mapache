@@ -1,13 +1,25 @@
 import { createCustomValueId } from "@game/data/src/Value"
 import { describe, expect, it } from "vitest"
 import { createActor, waitFor } from "xstate"
+import { getPendingAchievementUnlocks } from "./AchievementState"
+import {
+  BATTLE_PROFILE_MANIFEST_KEY,
+  BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY,
+  BATTLE_PROFILE_SNAPSHOT_A_KEY,
+} from "./BattleProfileStore"
 import {
   DurableStoreConflictError,
   type DurableStoreAdapter,
 } from "./DurableStoreAdapter"
 import { createInMemoryDurableStore } from "./InMemoryDurableStore"
 import { projectScheduledPair } from "./PairScheduler"
+import { createInitialPlayerData } from "./PlayerData"
 import { rootMachine } from "./RootMachine"
+import {
+  createWayvmExport,
+  decodeWayvmExport,
+  serializeWayvmExport,
+} from "./WayvmExport"
 
 const TEST_TIMESTAMP = "2026-07-21T00:00:00.000Z"
 
@@ -20,6 +32,7 @@ function createRootActor({
     input: {
       durableStore,
       appVersion: "0.1.0",
+      sourceBuild: "test-build",
       now: () => TEST_TIMESTAMP,
     },
   })
@@ -49,6 +62,67 @@ async function bootRootActor({
   }
 
   return root
+}
+
+async function bootCorruptRootActor({
+  initialEntries,
+}: {
+  readonly initialEntries: readonly (readonly [string, string])[]
+}) {
+  const root = createRootActor({
+    durableStore: createInMemoryDurableStore(initialEntries),
+  })
+  root.actor.start()
+  root.actor.send({
+    type: "APP.HYDRATED",
+    schedulerSeed: "unrecoverable-root-seed",
+  })
+  await waitFor(root.actor, (snapshot) =>
+    snapshot.matches({ PersistenceFailure: "Reviewing" }),
+  )
+
+  return root
+}
+
+async function createSerializedRecoveryBackup({
+  schedulerSeed,
+  sourceBuild,
+}: {
+  readonly schedulerSeed: string
+  readonly sourceBuild: string
+}) {
+  return serializeWayvmExport(
+    await createWayvmExport({
+      exportedAt: TEST_TIMESTAMP,
+      sourceAppVersion: "0.1.0",
+      sourceBuild,
+      playerData: createInitialPlayerData({
+        schedulerSeed,
+        createdAt: TEST_TIMESTAMP,
+      }),
+    }),
+  )
+}
+
+function createToggleableWriteFailureStore() {
+  const memoryStore = createInMemoryDurableStore()
+  let writeIssue: string | null = null
+
+  return {
+    durableStore: Object.freeze({
+      readAll: memoryStore.readAll,
+      compareAndSwapVerified: async (transaction) => {
+        if (writeIssue) {
+          throw new Error(writeIssue)
+        }
+
+        return memoryStore.compareAndSwapVerified(transaction)
+      },
+    }) satisfies DurableStoreAdapter,
+    setWriteIssue: (issue: string | null) => {
+      writeIssue = issue
+    },
+  }
 }
 
 async function waitForReadyCrucible(
@@ -82,11 +156,11 @@ describe("Root Machine", () => {
 
     let snapshot = actor.getSnapshot()
     expect(snapshot.matches("Splash")).toBe(true)
-    expect(snapshot.context.battleProfile?.activeDeck.valueIds).toHaveLength(
-      100,
-    )
-    expect(snapshot.context.battleProfile?.history).toEqual([])
-    expect(snapshot.context.battleProfile?.redo).toEqual([])
+    expect(
+      snapshot.context.playerData?.profile?.activeDeck.valueIds,
+    ).toHaveLength(100)
+    expect(snapshot.context.playerData?.profile?.history).toEqual([])
+    expect(snapshot.context.playerData?.profile?.redo).toEqual([])
     await expect(durableStore.readAll()).resolves.toEqual(new Map())
 
     actor.send({
@@ -94,9 +168,9 @@ describe("Root Machine", () => {
     })
     snapshot = await waitFor(actor, (candidate) => candidate.matches("Hub"))
 
-    expect(snapshot.context.battleProfileStoreState?.head.profile).toBe(
-      snapshot.context.battleProfile,
-    )
+    expect(
+      snapshot.context.battleProfileStoreState?.head.playerData.profile,
+    ).toBe(snapshot.context.playerData?.profile)
     expect((await durableStore.readAll()).size).toBe(2)
   })
 
@@ -115,16 +189,374 @@ describe("Root Machine", () => {
       schedulerSeed: "all-values-profile-seed",
     })
 
-    const battleProfile = actor.getSnapshot().context.battleProfile
+    const battleProfile = actor.getSnapshot().context.playerData?.profile
     actor.send({ type: "ALL_VALUES.OPEN_REQUESTED" })
 
     expect(actor.getSnapshot().matches("AllValues")).toBe(true)
-    expect(actor.getSnapshot().context.battleProfile).toBe(battleProfile)
+    expect(actor.getSnapshot().context.playerData?.profile).toBe(battleProfile)
 
     actor.send({ type: "ALL_VALUES.CLOSE_REQUESTED" })
 
     expect(actor.getSnapshot().matches("Hub")).toBe(true)
-    expect(actor.getSnapshot().context.battleProfile).toBe(battleProfile)
+    expect(actor.getSnapshot().context.playerData?.profile).toBe(battleProfile)
+  })
+
+  it("opens and closes Achievements without replacing Player Data", async () => {
+    const { actor } = await bootRootActor({
+      schedulerSeed: "achievements-route-seed",
+    })
+    const playerData = actor.getSnapshot().context.playerData
+
+    actor.send({ type: "ACHIEVEMENTS.OPEN_REQUESTED" })
+
+    expect(actor.getSnapshot().matches("Achievements")).toBe(true)
+    expect(actor.getSnapshot().context.playerData).toBe(playerData)
+
+    actor.send({ type: "ACHIEVEMENTS.CLOSE_REQUESTED" })
+
+    expect(actor.getSnapshot().matches("Hub")).toBe(true)
+    expect(actor.getSnapshot().context.playerData).toBe(playerData)
+  })
+
+  it("durably records one pending achievement presentation and returns to the unchanged Crucible pair", async () => {
+    const { actor } = await bootRootActor({
+      schedulerSeed: "achievement-presentation-root",
+    })
+    actor.send({ type: "BATTLE.START_REQUESTED" })
+    const priorProfile = actor.getSnapshot().context.playerData?.profile
+    if (!priorProfile) {
+      throw new Error("Achievement presentation profile is unavailable")
+    }
+    const [winnerId] = projectScheduledPair(
+      priorProfile.activeDeck,
+      priorProfile.scheduler,
+    ).pair
+    actor.send({
+      type: "BATTLE.WINNER_SELECTED",
+      winnerId,
+      expectedScheduler: priorProfile.scheduler,
+    })
+    const unlockedSnapshot = await waitForReadyCrucible(actor)
+    const unlockedPlayerData = unlockedSnapshot.context.playerData
+    const unlockedStoreState = unlockedSnapshot.context.battleProfileStoreState
+    if (!unlockedPlayerData || !unlockedStoreState) {
+      throw new Error("Unlocked achievement state is unavailable")
+    }
+    const [pendingUnlock] = getPendingAchievementUnlocks(
+      unlockedPlayerData.achievements,
+    )
+    if (!pendingUnlock) {
+      throw new Error("First Battle achievement did not unlock")
+    }
+    const presentedPair = projectScheduledPair(
+      unlockedPlayerData.profile.activeDeck,
+      unlockedPlayerData.profile.scheduler,
+    ).pair
+
+    actor.send({
+      type: "ACHIEVEMENT.PRESENTED",
+      achievementId: pendingUnlock.id,
+    })
+    const presentedSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ Crucible: "Ready" }) &&
+        candidate.context.playerData?.achievements.presentedAchievementIds.includes(
+          pendingUnlock.id,
+        ) === true,
+    )
+
+    expect(presentedSnapshot.context.playerData?.profile).toEqual(
+      unlockedPlayerData.profile,
+    )
+    expect(
+      projectScheduledPair(
+        unlockedPlayerData.profile.activeDeck,
+        unlockedPlayerData.profile.scheduler,
+      ).pair,
+    ).toEqual(presentedPair)
+    expect(
+      presentedSnapshot.context.battleProfileStoreState?.head.generation,
+    ).toBe(unlockedStoreState.head.generation + 1)
+    expect(
+      presentedSnapshot.context.pendingAchievementPresentationId,
+    ).toBeNull()
+  })
+
+  it("returns durable achievement presentation to the open Achievements screen", async () => {
+    const { actor } = await bootRootActor({
+      schedulerSeed: "achievement-screen-presentation-root",
+    })
+    actor.send({ type: "BATTLE.START_REQUESTED" })
+    const priorProfile = actor.getSnapshot().context.playerData?.profile
+    if (!priorProfile) {
+      throw new Error("Achievement screen fixture is unavailable")
+    }
+    const [winnerId] = projectScheduledPair(
+      priorProfile.activeDeck,
+      priorProfile.scheduler,
+    ).pair
+    actor.send({
+      type: "BATTLE.WINNER_SELECTED",
+      winnerId,
+      expectedScheduler: priorProfile.scheduler,
+    })
+    await waitForReadyCrucible(actor)
+    actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    actor.send({ type: "ACHIEVEMENTS.OPEN_REQUESTED" })
+    const achievementScreenPlayerData = actor.getSnapshot().context.playerData
+    if (!achievementScreenPlayerData) {
+      throw new Error("Achievement screen Player Data is unavailable")
+    }
+    const pendingUnlock = getPendingAchievementUnlocks(
+      achievementScreenPlayerData.achievements,
+    )[0]
+    if (!pendingUnlock) {
+      throw new Error("Achievement screen pending unlock is unavailable")
+    }
+
+    actor.send({
+      type: "ACHIEVEMENT.PRESENTED",
+      achievementId: pendingUnlock.id,
+    })
+    const presentedSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches("Achievements") &&
+        candidate.context.playerData?.achievements.presentedAchievementIds.includes(
+          pendingUnlock.id,
+        ) === true,
+    )
+
+    expect(
+      presentedSnapshot.context.achievementPresentationReturnTarget,
+    ).toBeNull()
+  })
+
+  it("serializes a pending achievement presentation behind an in-flight battle write", async () => {
+    const memoryStore = createInMemoryDurableStore()
+    let pauseNextWrite = false
+    let releasePendingWrite: (() => void) | null = null
+    let reportPendingWriteStarted: (() => void) | null = null
+    const pendingWriteStarted = new Promise<void>((resolve) => {
+      reportPendingWriteStarted = resolve
+    })
+    const durableStore = Object.freeze({
+      readAll: memoryStore.readAll,
+      compareAndSwapVerified: async (transaction) => {
+        if (pauseNextWrite) {
+          pauseNextWrite = false
+          reportPendingWriteStarted?.()
+          await new Promise<void>((resolve) => {
+            releasePendingWrite = resolve
+          })
+        }
+
+        return memoryStore.compareAndSwapVerified(transaction)
+      },
+    }) satisfies DurableStoreAdapter
+    const { actor } = await bootRootActor({
+      durableStore,
+      schedulerSeed: "queued-achievement-presentation-root",
+    })
+    actor.send({ type: "BATTLE.START_REQUESTED" })
+    const firstProfile = actor.getSnapshot().context.playerData?.profile
+    if (!firstProfile) {
+      throw new Error("Queued presentation profile is unavailable")
+    }
+    const [firstWinnerId] = projectScheduledPair(
+      firstProfile.activeDeck,
+      firstProfile.scheduler,
+    ).pair
+    actor.send({
+      type: "BATTLE.WINNER_SELECTED",
+      winnerId: firstWinnerId,
+      expectedScheduler: firstProfile.scheduler,
+    })
+    const firstCommittedSnapshot = await waitForReadyCrucible(actor)
+    const firstCommittedPlayerData = firstCommittedSnapshot.context.playerData
+    if (!firstCommittedPlayerData) {
+      throw new Error("Queued presentation Player Data is unavailable")
+    }
+    const firstPendingUnlock = getPendingAchievementUnlocks(
+      firstCommittedPlayerData.achievements,
+    )[0]
+    const secondProfile = firstCommittedPlayerData.profile
+    if (!firstPendingUnlock || !secondProfile) {
+      throw new Error("Queued presentation fixture did not unlock")
+    }
+    const [secondWinnerId] = projectScheduledPair(
+      secondProfile.activeDeck,
+      secondProfile.scheduler,
+    ).pair
+
+    pauseNextWrite = true
+    actor.send({
+      type: "BATTLE.WINNER_SELECTED",
+      winnerId: secondWinnerId,
+      expectedScheduler: secondProfile.scheduler,
+    })
+    await pendingWriteStarted
+    actor.send({
+      type: "ACHIEVEMENT.PRESENTED",
+      achievementId: firstPendingUnlock.id,
+    })
+    releasePendingWrite?.()
+
+    const serializedSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ Crucible: "Ready" }) &&
+        candidate.context.playerData?.profile.history.length === 2 &&
+        candidate.context.playerData.achievements.presentedAchievementIds.includes(
+          firstPendingUnlock.id,
+        ),
+    )
+
+    expect(serializedSnapshot.context.persistenceIssue).toBeNull()
+    expect(serializedSnapshot.context.pendingBattleProfileCommit).toBeNull()
+    expect(
+      serializedSnapshot.context.pendingAchievementPresentationId,
+    ).toBeNull()
+  })
+
+  it("retries a rejected achievement presentation write without losing its pending unlock or Crucible return", async () => {
+    const failureStore = createToggleableWriteFailureStore()
+    const { actor } = await bootRootActor({
+      durableStore: failureStore.durableStore,
+      schedulerSeed: "achievement-presentation-retry-root",
+    })
+    actor.send({ type: "BATTLE.START_REQUESTED" })
+    const priorProfile = actor.getSnapshot().context.playerData?.profile
+    if (!priorProfile) {
+      throw new Error("Achievement retry profile is unavailable")
+    }
+    const [winnerId] = projectScheduledPair(
+      priorProfile.activeDeck,
+      priorProfile.scheduler,
+    ).pair
+    actor.send({
+      type: "BATTLE.WINNER_SELECTED",
+      winnerId,
+      expectedScheduler: priorProfile.scheduler,
+    })
+    const unlockedSnapshot = await waitForReadyCrucible(actor)
+    const unlockedPlayerData = unlockedSnapshot.context.playerData
+    if (!unlockedPlayerData) {
+      throw new Error("Achievement retry Player Data is unavailable")
+    }
+    const [pendingUnlock] = getPendingAchievementUnlocks(
+      unlockedPlayerData.achievements,
+    )
+    if (!pendingUnlock) {
+      throw new Error("Achievement retry unlock is unavailable")
+    }
+
+    failureStore.setWriteIssue("Achievement presentation write failed")
+    actor.send({
+      type: "ACHIEVEMENT.PRESENTED",
+      achievementId: pendingUnlock.id,
+    })
+    const failedSnapshot = await waitFor(actor, (candidate) =>
+      candidate.matches({ PersistenceFailure: "Reviewing" }),
+    )
+
+    expect(failedSnapshot.context.persistenceFailureOrigin).toBe(
+      "achievement-presentation",
+    )
+    expect(failedSnapshot.context.pendingAchievementPresentationId).toBe(
+      pendingUnlock.id,
+    )
+    expect(failedSnapshot.context.achievementPresentationReturnTarget).toBe(
+      "crucible",
+    )
+    const failedPlayerData = failedSnapshot.context.playerData
+    if (!failedPlayerData) {
+      throw new Error("Failed achievement presentation lost Player Data")
+    }
+    expect(
+      getPendingAchievementUnlocks(failedPlayerData.achievements).map(
+        ({ id }) => id,
+      ),
+    ).toContain(pendingUnlock.id)
+
+    failureStore.setWriteIssue(null)
+    actor.send({ type: "STORAGE_RECOVERY.RETRY_REQUESTED" })
+    const retriedSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ Crucible: "Ready" }) &&
+        candidate.context.playerData?.achievements.presentedAchievementIds.includes(
+          pendingUnlock.id,
+        ) === true,
+    )
+
+    expect(retriedSnapshot.context.persistenceIssue).toBeNull()
+    expect(retriedSnapshot.context.pendingAchievementPresentationId).toBeNull()
+  })
+
+  it("returns from a rejected achievement presentation write without falsely marking it presented", async () => {
+    const failureStore = createToggleableWriteFailureStore()
+    const { actor } = await bootRootActor({
+      durableStore: failureStore.durableStore,
+      schedulerSeed: "achievement-presentation-return-root",
+    })
+    actor.send({ type: "BATTLE.START_REQUESTED" })
+    const priorProfile = actor.getSnapshot().context.playerData?.profile
+    if (!priorProfile) {
+      throw new Error("Achievement return profile is unavailable")
+    }
+    const [winnerId] = projectScheduledPair(
+      priorProfile.activeDeck,
+      priorProfile.scheduler,
+    ).pair
+    actor.send({
+      type: "BATTLE.WINNER_SELECTED",
+      winnerId,
+      expectedScheduler: priorProfile.scheduler,
+    })
+    const unlockedSnapshot = await waitForReadyCrucible(actor)
+    const unlockedPlayerData = unlockedSnapshot.context.playerData
+    if (!unlockedPlayerData) {
+      throw new Error("Achievement return Player Data is unavailable")
+    }
+    const [pendingUnlock] = getPendingAchievementUnlocks(
+      unlockedPlayerData.achievements,
+    )
+    if (!pendingUnlock) {
+      throw new Error("Achievement return unlock is unavailable")
+    }
+    actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    actor.send({ type: "ACHIEVEMENTS.OPEN_REQUESTED" })
+
+    failureStore.setWriteIssue("Achievement screen presentation failed")
+    actor.send({
+      type: "ACHIEVEMENT.PRESENTED",
+      achievementId: pendingUnlock.id,
+    })
+    await waitFor(actor, (candidate) =>
+      candidate.matches({ PersistenceFailure: "Reviewing" }),
+    )
+    actor.send({ type: "STORAGE_RECOVERY.RETURN_REQUESTED" })
+
+    expect(actor.getSnapshot().matches("Achievements")).toBe(true)
+    const returnedPlayerData = actor.getSnapshot().context.playerData
+    if (!returnedPlayerData) {
+      throw new Error("Achievement presentation return lost Player Data")
+    }
+    expect(
+      returnedPlayerData.achievements.presentedAchievementIds.includes(
+        pendingUnlock.id,
+      ),
+    ).toBe(false)
+    expect(
+      actor.getSnapshot().context.pendingAchievementPresentationId,
+    ).toBeNull()
+    expect(
+      getPendingAchievementUnlocks(returnedPlayerData.achievements).map(
+        ({ id }) => id,
+      ),
+    ).toContain(pendingUnlock.id)
   })
 
   it("adds a custom value through the All Values durable update flow", async () => {
@@ -144,7 +576,7 @@ describe("Root Machine", () => {
         return false
       }
 
-      const profile = candidate.context.battleProfile
+      const profile = candidate.context.playerData?.profile
       if (!profile) {
         return false
       }
@@ -152,7 +584,7 @@ describe("Root Machine", () => {
       const customValue = profile.activeDeck.customValues[0]
       return customValue?.name === "Ingenuity"
     })
-    const afterAddProfile = afterAddSnapshot.context.battleProfile
+    const afterAddProfile = afterAddSnapshot.context.playerData?.profile
     if (!afterAddProfile) {
       throw new Error("Battle profile did not survive custom value add")
     }
@@ -185,7 +617,7 @@ describe("Root Machine", () => {
         return false
       }
 
-      const profile = candidate.context.battleProfile
+      const profile = candidate.context.playerData?.profile
       if (!profile) {
         return false
       }
@@ -199,7 +631,8 @@ describe("Root Machine", () => {
     })
 
     const addedValue =
-      afterTrimmedAddSnapshot.context.battleProfile?.activeDeck.customValues[0]
+      afterTrimmedAddSnapshot.context.playerData?.profile?.activeDeck
+        .customValues[0]
     if (!addedValue) {
       throw new Error("Custom value add did not trim inputs")
     }
@@ -253,7 +686,7 @@ describe("Root Machine", () => {
       definition: "The disciplined practice of creating new solutions.",
     })
     const addedSnapshot = await waitFor(blankEditRoot.actor, (candidate) => {
-      const profile = candidate.context.battleProfile
+      const profile = candidate.context.playerData?.profile
       return (
         candidate.matches({ AllValues: "Browsing" }) &&
         !!profile &&
@@ -261,7 +694,7 @@ describe("Root Machine", () => {
       )
     })
     const customValueId =
-      addedSnapshot.context.battleProfile?.activeDeck.customValues[0]?.id
+      addedSnapshot.context.playerData?.profile?.activeDeck.customValues[0]?.id
     if (!customValueId) {
       throw new Error("Custom value add did not create an id")
     }
@@ -291,7 +724,7 @@ describe("Root Machine", () => {
     const blankDefinitionAddedSnapshot = await waitFor(
       blankDefinitionUpdateRoot.actor,
       (candidate) => {
-        const profile = candidate.context.battleProfile
+        const profile = candidate.context.playerData?.profile
         return (
           candidate.matches({ AllValues: "Browsing" }) &&
           !!profile &&
@@ -300,7 +733,7 @@ describe("Root Machine", () => {
       },
     )
     const blankDefinitionValueId =
-      blankDefinitionAddedSnapshot.context.battleProfile?.activeDeck
+      blankDefinitionAddedSnapshot.context.playerData?.profile?.activeDeck
         .customValues[0]?.id
     if (!blankDefinitionValueId) {
       throw new Error("Custom value add did not create an id")
@@ -363,7 +796,7 @@ describe("Root Machine", () => {
     })
 
     const afterAddSnapshot = await waitFor(actor, (candidate) => {
-      const profile = candidate.context.battleProfile
+      const profile = candidate.context.playerData?.profile
       return (
         candidate.matches({ AllValues: "Browsing" }) &&
         !!profile &&
@@ -374,7 +807,8 @@ describe("Root Machine", () => {
     })
 
     const customValueId =
-      afterAddSnapshot.context.battleProfile?.activeDeck.customValues[0]?.id
+      afterAddSnapshot.context.playerData?.profile?.activeDeck.customValues[0]
+        ?.id
     if (!customValueId) {
       throw new Error("Custom value add did not create an id")
     }
@@ -385,7 +819,7 @@ describe("Root Machine", () => {
       definition: "A sense of purpose in what matters.",
     })
     const afterSecondAddSnapshot = await waitFor(actor, (candidate) => {
-      const profile = candidate.context.battleProfile
+      const profile = candidate.context.playerData?.profile
       return (
         candidate.matches({ AllValues: "Browsing" }) &&
         !!profile &&
@@ -393,7 +827,8 @@ describe("Root Machine", () => {
       )
     })
     const secondCustomValue =
-      afterSecondAddSnapshot.context.battleProfile?.activeDeck.customValues[1]
+      afterSecondAddSnapshot.context.playerData?.profile?.activeDeck
+        .customValues[1]
     if (!secondCustomValue) {
       throw new Error("Second custom value add did not create a value")
     }
@@ -406,7 +841,7 @@ describe("Root Machine", () => {
     })
 
     const afterUpdateSnapshot = await waitFor(actor, (candidate) => {
-      const profile = candidate.context.battleProfile
+      const profile = candidate.context.playerData?.profile
       if (!candidate.matches({ AllValues: "Browsing" }) || !profile) {
         return false
       }
@@ -416,7 +851,7 @@ describe("Root Machine", () => {
       )
     })
 
-    const afterUpdateProfile = afterUpdateSnapshot.context.battleProfile
+    const afterUpdateProfile = afterUpdateSnapshot.context.playerData?.profile
     if (!afterUpdateProfile) {
       throw new Error("Battle profile did not survive custom value edit")
     }
@@ -450,7 +885,7 @@ describe("Root Machine", () => {
     })
 
     const afterAddSnapshot = await waitFor(actor, (candidate) => {
-      const profile = candidate.context.battleProfile
+      const profile = candidate.context.playerData?.profile
       return (
         candidate.matches({ AllValues: "Browsing" }) &&
         !!profile &&
@@ -461,7 +896,8 @@ describe("Root Machine", () => {
     })
 
     const customValueId =
-      afterAddSnapshot.context.battleProfile?.activeDeck.customValues?.[0]?.id
+      afterAddSnapshot.context.playerData?.profile?.activeDeck.customValues?.[0]
+        ?.id
     if (!customValueId) {
       throw new Error("Custom value add did not create an id")
     }
@@ -474,7 +910,7 @@ describe("Root Machine", () => {
     })
 
     const afterUpdateSnapshot = await waitFor(actor, (candidate) => {
-      const profile = candidate.context.battleProfile
+      const profile = candidate.context.playerData?.profile
       if (!candidate.matches({ AllValues: "Browsing" }) || !profile) {
         return false
       }
@@ -488,7 +924,7 @@ describe("Root Machine", () => {
     })
 
     const updatedValue =
-      afterUpdateSnapshot.context.battleProfile?.activeDeck.customValues.find(
+      afterUpdateSnapshot.context.playerData?.profile?.activeDeck.customValues.find(
         (value) => value.id === customValueId,
       )
     if (!updatedValue) {
@@ -514,7 +950,7 @@ describe("Root Machine", () => {
     })
 
     const afterAddSnapshot = await waitFor(actor, (candidate) => {
-      const profile = candidate.context.battleProfile
+      const profile = candidate.context.playerData?.profile
       return (
         candidate.matches({ AllValues: "Browsing" }) &&
         !!profile &&
@@ -522,7 +958,8 @@ describe("Root Machine", () => {
       )
     })
     const customValueId =
-      afterAddSnapshot.context.battleProfile?.activeDeck.customValues[0]?.id
+      afterAddSnapshot.context.playerData?.profile?.activeDeck.customValues[0]
+        ?.id
     if (!customValueId) {
       throw new Error("Custom value add did not create an id")
     }
@@ -533,14 +970,14 @@ describe("Root Machine", () => {
     })
 
     const afterDeleteSnapshot = await waitFor(actor, (candidate) => {
-      const profile = candidate.context.battleProfile
+      const profile = candidate.context.playerData?.profile
       return (
         candidate.matches({ AllValues: "Browsing" }) &&
         !!profile &&
         profile.activeDeck.customValues.length === 0
       )
     })
-    const afterDeleteProfile = afterDeleteSnapshot.context.battleProfile
+    const afterDeleteProfile = afterDeleteSnapshot.context.playerData?.profile
     if (!afterDeleteProfile) {
       throw new Error("Battle profile did not survive Custom Value delete")
     }
@@ -557,7 +994,7 @@ describe("Root Machine", () => {
     actor.send({ type: "BATTLE.START_REQUESTED" })
 
     const awaitingSnapshot = actor.getSnapshot()
-    const awaitingBattleProfile = awaitingSnapshot.context.battleProfile
+    const awaitingBattleProfile = awaitingSnapshot.context.playerData?.profile
     if (!awaitingBattleProfile) {
       throw new Error("Battle profile did not initialize")
     }
@@ -574,7 +1011,7 @@ describe("Root Machine", () => {
     actor.send(selectionEvent)
 
     const committedSnapshot = await waitForReadyCrucible(actor)
-    const committedBattleProfile = committedSnapshot.context.battleProfile
+    const committedBattleProfile = committedSnapshot.context.playerData?.profile
     if (!committedBattleProfile) {
       throw new Error("Battle profile disappeared after selection")
     }
@@ -595,7 +1032,7 @@ describe("Root Machine", () => {
     expect((await durableStore.readAll()).size).toBe(3)
 
     actor.send(selectionEvent)
-    expect(actor.getSnapshot().context.battleProfile).toBe(
+    expect(actor.getSnapshot().context.playerData?.profile).toBe(
       committedBattleProfile,
     )
 
@@ -625,7 +1062,7 @@ describe("Root Machine", () => {
       durableStore,
     })
     actor.send({ type: "BATTLE.START_REQUESTED" })
-    const initialProfile = actor.getSnapshot().context.battleProfile
+    const initialProfile = actor.getSnapshot().context.playerData?.profile
     if (!initialProfile) {
       throw new Error("Battle profile did not initialize")
     }
@@ -641,11 +1078,13 @@ describe("Root Machine", () => {
     })
 
     expect(actor.getSnapshot().matches({ Crucible: "Persisting" })).toBe(true)
-    expect(actor.getSnapshot().context.battleProfile).toBe(initialProfile)
+    expect(actor.getSnapshot().context.playerData?.profile).toBe(initialProfile)
 
     releaseCommit()
     const committedSnapshot = await waitForReadyCrucible(actor)
-    expect(committedSnapshot.context.battleProfile?.scheduler.cursor).toBe(1)
+    expect(
+      committedSnapshot.context.playerData?.profile?.scheduler.cursor,
+    ).toBe(1)
   })
 
   it("applies guarded Undo, Redo, and replacement branches to the durable profile", async () => {
@@ -654,7 +1093,7 @@ describe("Root Machine", () => {
     })
     actor.send({ type: "BATTLE.START_REQUESTED" })
 
-    const initialProfile = actor.getSnapshot().context.battleProfile
+    const initialProfile = actor.getSnapshot().context.playerData?.profile
     if (!initialProfile) {
       throw new Error("Battle profile did not initialize")
     }
@@ -670,14 +1109,14 @@ describe("Root Machine", () => {
     })
 
     const committedProfile = (await waitForReadyCrucible(actor)).context
-      .battleProfile
+      .playerData?.profile
     if (!committedProfile) {
       throw new Error("Battle profile disappeared after selection")
     }
 
     actor.send({ type: "BATTLE.UNDO_REQUESTED" })
-    const undoneProfile = (await waitForReadyCrucible(actor)).context
-      .battleProfile
+    const undoneProfile = (await waitForReadyCrucible(actor)).context.playerData
+      ?.profile
     if (!undoneProfile) {
       throw new Error("Battle profile disappeared after Undo")
     }
@@ -688,11 +1127,11 @@ describe("Root Machine", () => {
     expect(undoneProfile.redo).toEqual([committedProfile.history[0]])
 
     actor.send({ type: "BATTLE.UNDO_REQUESTED" })
-    expect(actor.getSnapshot().context.battleProfile).toBe(undoneProfile)
+    expect(actor.getSnapshot().context.playerData?.profile).toBe(undoneProfile)
 
     actor.send({ type: "BATTLE.REDO_REQUESTED" })
-    const redoneProfile = (await waitForReadyCrucible(actor)).context
-      .battleProfile
+    const redoneProfile = (await waitForReadyCrucible(actor)).context.playerData
+      ?.profile
     if (!redoneProfile) {
       throw new Error("Battle profile disappeared after Redo")
     }
@@ -703,8 +1142,8 @@ describe("Root Machine", () => {
     expect(redoneProfile.redo).toEqual([])
 
     actor.send({ type: "BATTLE.UNDO_REQUESTED" })
-    const branchProfile = (await waitForReadyCrucible(actor)).context
-      .battleProfile
+    const branchProfile = (await waitForReadyCrucible(actor)).context.playerData
+      ?.profile
     if (!branchProfile) {
       throw new Error("Battle profile disappeared before branching")
     }
@@ -715,7 +1154,7 @@ describe("Root Machine", () => {
     })
 
     const replacedProfile = (await waitForReadyCrucible(actor)).context
-      .battleProfile
+      .playerData?.profile
     expect(replacedProfile?.history).toHaveLength(1)
     expect(replacedProfile?.history[0]?.winnerId).toBe(secondValueId)
     expect(replacedProfile?.redo).toEqual([])
@@ -724,12 +1163,18 @@ describe("Root Machine", () => {
     ).toBe(5)
   })
 
-  it("surfaces durable hydration failure without inventing a replacement profile", async () => {
+  it("retries durable hydration failure without exporting invented Player Data or offering an unsafe return", async () => {
+    let shouldFail = true
+    const memoryStore = createInMemoryDurableStore()
     const durableStore = Object.freeze({
       readAll: async () => {
-        throw new Error("IndexedDB unavailable")
+        if (shouldFail) {
+          throw new Error("IndexedDB unavailable")
+        }
+
+        return memoryStore.readAll()
       },
-      compareAndSwapVerified: async () => undefined,
+      compareAndSwapVerified: memoryStore.compareAndSwapVerified,
     }) satisfies DurableStoreAdapter
     const { actor } = createRootActor({ durableStore })
     actor.start()
@@ -742,14 +1187,34 @@ describe("Root Machine", () => {
       candidate.matches("PersistenceFailure"),
     )
     expect(snapshot.context.persistenceIssue).toBe("IndexedDB unavailable")
+    expect(snapshot.context.persistenceFailureOrigin).toBe("loading")
     expect(snapshot.context.battleProfileStoreState).toBeNull()
+
+    actor.send({ type: "STORAGE_RECOVERY.EXPORT_REQUESTED" })
+    actor.send({ type: "STORAGE_RECOVERY.RETURN_REQUESTED" })
+    expect(
+      actor.getSnapshot().matches({ PersistenceFailure: "Reviewing" }),
+    ).toBe(true)
+    expect(actor.getSnapshot().context.preparedDownload).toBeNull()
+
+    shouldFail = false
+    actor.send({ type: "STORAGE_RECOVERY.RETRY_REQUESTED" })
+    await waitFor(actor, (candidate) => candidate.matches("Splash"))
+
+    expect(actor.getSnapshot().context.persistenceFailureOrigin).toBeNull()
   })
 
-  it("surfaces durable first-run initialization failure without persisting a profile", async () => {
+  it("exports current first-run data and returns safely after durable initialization failure", async () => {
+    let shouldFail = true
+    const memoryStore = createInMemoryDurableStore()
     const durableStore = Object.freeze({
-      readAll: async () => new Map<string, string>(),
-      compareAndSwapVerified: async () => {
-        throw new Error("Profile initialization failed")
+      readAll: memoryStore.readAll,
+      compareAndSwapVerified: async (transaction) => {
+        if (shouldFail) {
+          throw new Error("Profile initialization failed")
+        }
+
+        return memoryStore.compareAndSwapVerified(transaction)
       },
     }) satisfies DurableStoreAdapter
     const { actor } = createRootActor({ durableStore })
@@ -768,7 +1233,33 @@ describe("Root Machine", () => {
     expect(snapshot.context.persistenceIssue).toBe(
       "Profile initialization failed",
     )
+    expect(snapshot.context.persistenceFailureOrigin).toBe("initialization")
     expect(snapshot.context.battleProfileStoreState).toBeNull()
+
+    actor.send({ type: "STORAGE_RECOVERY.EXPORT_REQUESTED" })
+    const exportedSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ PersistenceFailure: "Reviewing" }) &&
+        candidate.context.preparedDownload !== null,
+    )
+    await expect(
+      decodeWayvmExport(
+        exportedSnapshot.context.preparedDownload?.serialized ?? "",
+      ),
+    ).resolves.toMatchObject({
+      playerData: {
+        profile: { scheduler: { seed: "failed-initialization-seed" } },
+      },
+    })
+    actor.send({ type: "RECOVERY.EXPORT_CONSUMED" })
+    actor.send({ type: "STORAGE_RECOVERY.RETURN_REQUESTED" })
+    expect(actor.getSnapshot().matches("Splash")).toBe(true)
+
+    shouldFail = false
+    actor.send({ type: "INTRODUCTION.COMPLETED" })
+    await waitFor(actor, (candidate) => candidate.matches("Hub"))
+    expect((await durableStore.readAll()).size).toBe(2)
   })
 
   it("surfaces a durable battle commit failure without mutating the prior profile", async () => {
@@ -790,7 +1281,7 @@ describe("Root Machine", () => {
     })
 
     actor.send({ type: "BATTLE.START_REQUESTED" })
-    const priorProfile = actor.getSnapshot().context.battleProfile
+    const priorProfile = actor.getSnapshot().context.playerData?.profile
     if (!priorProfile) {
       throw new Error("Battle profile did not initialize")
     }
@@ -810,11 +1301,93 @@ describe("Root Machine", () => {
       candidate.matches("PersistenceFailure"),
     )
     expect(snapshot.context.persistenceIssue).toBe("Battle commit failed")
-    expect(snapshot.context.battleProfile).toBe(priorProfile)
+    expect(snapshot.context.persistenceFailureOrigin).toBe("crucible")
+    expect(snapshot.context.playerData?.profile).toBe(priorProfile)
     expect(snapshot.context.pendingBattleProfileCommit).toBeNull()
+
+    actor.send({ type: "STORAGE_RECOVERY.EXPORT_REQUESTED" })
+    const exportedSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ PersistenceFailure: "Reviewing" }) &&
+        candidate.context.preparedDownload !== null,
+    )
+    await expect(
+      decodeWayvmExport(
+        exportedSnapshot.context.preparedDownload?.serialized ?? "",
+      ),
+    ).resolves.toMatchObject({
+      playerData: { profile: { scheduler: priorProfile.scheduler } },
+    })
+    actor.send({ type: "RECOVERY.EXPORT_CONSUMED" })
+    actor.send({ type: "STORAGE_RECOVERY.RETURN_REQUESTED" })
+
+    expect(actor.getSnapshot().matches("Hub")).toBe(true)
+    expect(actor.getSnapshot().context.playerData?.profile).toBe(priorProfile)
   })
 
-  it("surfaces a durable Custom Value commit failure without saving the draft", async () => {
+  it("returns a failed battle write to the unchanged pair so the player can retry the choice", async () => {
+    const memoryStore = createInMemoryDurableStore()
+    let shouldFail = false
+    const durableStore = Object.freeze({
+      readAll: memoryStore.readAll,
+      compareAndSwapVerified: async (transaction) => {
+        if (shouldFail) {
+          throw new Error("Battle retry fixture failed")
+        }
+
+        return memoryStore.compareAndSwapVerified(transaction)
+      },
+    }) satisfies DurableStoreAdapter
+    const { actor } = await bootRootActor({
+      durableStore,
+      schedulerSeed: "root-battle-retry-seed",
+    })
+
+    actor.send({ type: "BATTLE.START_REQUESTED" })
+    const priorProfile = actor.getSnapshot().context.playerData?.profile
+    if (!priorProfile) {
+      throw new Error("Battle retry profile did not initialize")
+    }
+    const [winnerId] = projectScheduledPair(
+      priorProfile.activeDeck,
+      priorProfile.scheduler,
+    ).pair
+
+    shouldFail = true
+    actor.send({
+      type: "BATTLE.WINNER_SELECTED",
+      winnerId,
+      expectedScheduler: priorProfile.scheduler,
+    })
+    await waitFor(actor, (candidate) =>
+      candidate.matches({ PersistenceFailure: "Reviewing" }),
+    )
+
+    shouldFail = false
+    actor.send({ type: "STORAGE_RECOVERY.RETRY_REQUESTED" })
+    const retrySnapshot = await waitForReadyCrucible(actor)
+
+    expect(retrySnapshot.context.playerData?.profile).toBe(priorProfile)
+    expect(
+      projectScheduledPair(priorProfile.activeDeck, priorProfile.scheduler)
+        .pair,
+    ).toContain(winnerId)
+
+    actor.send({
+      type: "BATTLE.WINNER_SELECTED",
+      winnerId,
+      expectedScheduler: priorProfile.scheduler,
+    })
+    const committedSnapshot = await waitForReadyCrucible(actor)
+
+    expect(
+      committedSnapshot.context.playerData?.profile.progressById.get(winnerId)
+        ?.totalXp,
+    ).toBe(1)
+  })
+
+  it("returns a failed Custom Value write to browsing without replacing the durable profile", async () => {
     const memoryStore = createInMemoryDurableStore()
     let shouldFail = false
     const durableStore = Object.freeze({
@@ -840,12 +1413,33 @@ describe("Root Machine", () => {
       definition: "The disciplined practice of creating new solutions.",
     })
 
-    const snapshot = await waitFor(actor, (candidate) =>
-      candidate.matches("PersistenceFailure"),
+    const snapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ AllValues: "Browsing" }) &&
+        candidate.context.persistenceIssue === "Custom Value commit failed",
     )
     expect(snapshot.context.persistenceIssue).toBe("Custom Value commit failed")
-    expect(snapshot.context.battleProfile?.activeDeck.customValues).toEqual([])
+    expect(
+      snapshot.context.playerData?.profile?.activeDeck.customValues,
+    ).toEqual([])
     expect(snapshot.context.pendingBattleProfileCommit).toBeNull()
+
+    shouldFail = false
+    actor.send({
+      type: "ALL_VALUES.ADD_REQUESTED",
+      name: "Ingenuity",
+      definition: "The disciplined practice of creating new solutions.",
+    })
+
+    const retriedSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ AllValues: "Browsing" }) &&
+        candidate.context.playerData?.profile?.activeDeck.customValues
+          .length === 1,
+    )
+    expect(retriedSnapshot.context.persistenceIssue).toBeNull()
   })
 
   it("retries initialization after a durable conflict and hydrates the persisted profile", async () => {
@@ -879,9 +1473,9 @@ describe("Root Machine", () => {
     expect(actor.getSnapshot().matches("Hub")).toBe(true)
     expect(readCount).toBe(2)
     expect(compareAndSwapCount).toBe(1)
-    expect(actor.getSnapshot().context.battleProfile?.scheduler.seed).toBe(
-      "persisted-profile-seed",
-    )
+    expect(
+      actor.getSnapshot().context.playerData?.profile?.scheduler.seed,
+    ).toBe("persisted-profile-seed")
   })
 
   it("ignores a winner that is not in the currently projected pair", async () => {
@@ -889,7 +1483,7 @@ describe("Root Machine", () => {
       schedulerSeed: "root-invalid-selection-seed",
     })
     actor.send({ type: "BATTLE.START_REQUESTED" })
-    const profile = actor.getSnapshot().context.battleProfile
+    const profile = actor.getSnapshot().context.playerData?.profile
     if (!profile) {
       throw new Error("Battle profile did not initialize")
     }
@@ -912,6 +1506,709 @@ describe("Root Machine", () => {
     })
 
     expect(actor.getSnapshot().matches({ Crucible: "Ready" })).toBe(true)
-    expect(actor.getSnapshot().context.battleProfile).toBe(profile)
+    expect(actor.getSnapshot().context.playerData?.profile).toBe(profile)
+  })
+
+  it("prepares and consumes a canonical export carrying the deployed build identity", async () => {
+    const { actor } = await bootRootActor({
+      schedulerSeed: "root-export-seed",
+    })
+
+    actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
+    actor.send({ type: "DATA_MANAGEMENT.EXPORT_REQUESTED" })
+    const snapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ DataManagement: "Browsing" }) &&
+        candidate.context.preparedDownload !== null,
+    )
+    const preparedDownload = snapshot.context.preparedDownload
+    if (!preparedDownload) {
+      throw new Error("Export download was not prepared")
+    }
+
+    await expect(
+      decodeWayvmExport(preparedDownload.serialized),
+    ).resolves.toMatchObject({
+      exportedAt: TEST_TIMESTAMP,
+      sourceAppVersion: "0.1.0",
+      sourceBuild: "test-build",
+    })
+    expect(preparedDownload.filename).toContain("2026-07-21")
+    expect(snapshot.context.portabilityNotice).toBe(
+      "Your private backup is ready.",
+    )
+
+    actor.send({ type: "DATA_MANAGEMENT.EXPORT_CONSUMED" })
+
+    expect(actor.getSnapshot().context.preparedDownload).toBeNull()
+  })
+
+  it("rejects invalid import bytes without replacing or abandoning the current Player Data", async () => {
+    const { actor } = await bootRootActor({
+      schedulerSeed: "root-invalid-import-seed",
+    })
+    const currentPlayerData = actor.getSnapshot().context.playerData
+
+    actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
+    actor.send({
+      type: "DATA_MANAGEMENT.IMPORT_PREPARE_REQUESTED",
+      serialized: "{}",
+    })
+    const snapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ DataManagement: "Browsing" }) &&
+        candidate.context.portabilityIssue !== null,
+    )
+
+    expect(snapshot.context.playerData).toBe(currentPlayerData)
+    expect(snapshot.context.pendingImport).toBeNull()
+    expect(snapshot.context.portabilityIssue).toBe(
+      "Persisted JSON must use tuple arrays rather than objects",
+    )
+  })
+
+  it("previews and cancels a valid import before replacing complete Player Data with a retained backup", async () => {
+    const source = await bootRootActor({
+      schedulerSeed: "root-import-source-seed",
+    })
+    source.actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
+    source.actor.send({ type: "DATA_MANAGEMENT.EXPORT_REQUESTED" })
+    const sourceSnapshot = await waitFor(
+      source.actor,
+      (candidate) =>
+        candidate.matches({ DataManagement: "Browsing" }) &&
+        candidate.context.preparedDownload !== null,
+    )
+    const importBytes = sourceSnapshot.context.preparedDownload?.serialized
+    if (!importBytes) {
+      throw new Error("Import fixture was not exported")
+    }
+
+    const target = await bootRootActor({
+      schedulerSeed: "root-import-target-seed",
+    })
+    const targetPlayerData = target.actor.getSnapshot().context.playerData
+    target.actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
+    target.actor.send({
+      type: "DATA_MANAGEMENT.IMPORT_PREPARE_REQUESTED",
+      serialized: importBytes,
+    })
+    let reviewSnapshot = await waitFor(target.actor, (candidate) =>
+      candidate.matches({ DataManagement: "ReviewingImport" }),
+    )
+
+    expect(reviewSnapshot.context.playerData).toBe(targetPlayerData)
+    expect(reviewSnapshot.context.pendingImport?.preview).toMatchObject({
+      sourceBuild: "test-build",
+      activeValueCount: 100,
+      replacesCurrentLocalData: true,
+    })
+
+    target.actor.send({ type: "DATA_MANAGEMENT.IMPORT_CANCEL_REQUESTED" })
+    expect(
+      target.actor.getSnapshot().matches({ DataManagement: "Browsing" }),
+    ).toBe(true)
+    expect(target.actor.getSnapshot().context.playerData).toBe(targetPlayerData)
+    expect(target.actor.getSnapshot().context.pendingImport).toBeNull()
+
+    target.actor.send({
+      type: "DATA_MANAGEMENT.IMPORT_PREPARE_REQUESTED",
+      serialized: importBytes,
+    })
+    reviewSnapshot = await waitFor(target.actor, (candidate) =>
+      candidate.matches({ DataManagement: "ReviewingImport" }),
+    )
+    target.actor.send({ type: "DATA_MANAGEMENT.IMPORT_CONFIRM_REQUESTED" })
+    const importedSnapshot = await waitFor(
+      target.actor,
+      (candidate) =>
+        candidate.matches({ DataManagement: "Browsing" }) &&
+        candidate.context.portabilityNotice ===
+          "Your imported values and progress are now active.",
+    )
+
+    expect(importedSnapshot.context.playerData?.profile.scheduler.seed).toBe(
+      "root-import-source-seed",
+    )
+    expect(importedSnapshot.context.pendingImport).toBeNull()
+    const preImportBackupBytes = (await target.durableStore.readAll()).get(
+      BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY,
+    )
+    if (!preImportBackupBytes) {
+      throw new Error("Pre-import backup was not retained")
+    }
+    await expect(
+      decodeWayvmExport(preImportBackupBytes),
+    ).resolves.toMatchObject({
+      playerData: {
+        profile: {
+          scheduler: { seed: "root-import-target-seed" },
+        },
+      },
+    })
+    expect(reviewSnapshot.context.playerData).toBe(targetPlayerData)
+  })
+
+  it("preserves the reviewed import and current data after a failed replacement so the player can retry", async () => {
+    const source = await bootRootActor({
+      schedulerSeed: "root-retry-source-seed",
+    })
+    source.actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
+    source.actor.send({ type: "DATA_MANAGEMENT.EXPORT_REQUESTED" })
+    const sourceSnapshot = await waitFor(
+      source.actor,
+      (candidate) => candidate.context.preparedDownload !== null,
+    )
+    const importBytes = sourceSnapshot.context.preparedDownload?.serialized
+    if (!importBytes) {
+      throw new Error("Retry import fixture was not exported")
+    }
+
+    const memoryStore = createInMemoryDurableStore()
+    let shouldFail = false
+    const durableStore = Object.freeze({
+      readAll: memoryStore.readAll,
+      compareAndSwapVerified: async (transaction) => {
+        if (shouldFail) {
+          throw new Error("Import replacement failed")
+        }
+
+        return memoryStore.compareAndSwapVerified(transaction)
+      },
+    }) satisfies DurableStoreAdapter
+    const target = await bootRootActor({
+      durableStore,
+      schedulerSeed: "root-retry-target-seed",
+    })
+    const targetPlayerData = target.actor.getSnapshot().context.playerData
+    target.actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
+    target.actor.send({
+      type: "DATA_MANAGEMENT.IMPORT_PREPARE_REQUESTED",
+      serialized: importBytes,
+    })
+    await waitFor(target.actor, (candidate) =>
+      candidate.matches({ DataManagement: "ReviewingImport" }),
+    )
+
+    shouldFail = true
+    target.actor.send({ type: "DATA_MANAGEMENT.IMPORT_CONFIRM_REQUESTED" })
+    const failedSnapshot = await waitFor(
+      target.actor,
+      (candidate) =>
+        candidate.matches({ DataManagement: "ReviewingImport" }) &&
+        candidate.context.portabilityIssue === "Import replacement failed",
+    )
+
+    expect(failedSnapshot.context.playerData).toBe(targetPlayerData)
+    expect(failedSnapshot.context.pendingImport).not.toBeNull()
+    expect(failedSnapshot.context.preImportBackupBytes).toBeNull()
+
+    shouldFail = false
+    target.actor.send({ type: "DATA_MANAGEMENT.IMPORT_CONFIRM_REQUESTED" })
+    const retriedSnapshot = await waitFor(
+      target.actor,
+      (candidate) =>
+        candidate.matches({ DataManagement: "Browsing" }) &&
+        candidate.context.portabilityNotice ===
+          "Your imported values and progress are now active.",
+    )
+
+    expect(retriedSnapshot.context.portabilityIssue).toBeNull()
+    expect(retriedSnapshot.context.playerData?.profile.scheduler.seed).toBe(
+      "root-retry-source-seed",
+    )
+  })
+
+  it("deletes all Custom Values through one reviewed reset while preserving canonical progress", async () => {
+    const { actor } = await bootRootActor({
+      schedulerSeed: "root-delete-custom-values",
+    })
+    actor.send({ type: "ALL_VALUES.OPEN_REQUESTED" })
+    actor.send({
+      type: "ALL_VALUES.ADD_REQUESTED",
+      name: "Ingenuity",
+      definition: "The practice of making original solutions.",
+    })
+    const withCustomValue = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ AllValues: "Browsing" }) &&
+        candidate.context.playerData?.profile.activeDeck.customValues.length ===
+          1,
+    )
+    actor.send({ type: "ALL_VALUES.CLOSE_REQUESTED" })
+    actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
+    actor.send({
+      type: "DATA_MANAGEMENT.RESET_OPEN_REQUESTED",
+      resetKind: "delete-all-custom-values",
+    })
+
+    expect(
+      actor.getSnapshot().matches({ DataManagement: "ReviewingReset" }),
+    ).toBe(true)
+    actor.send({
+      type: "DATA_MANAGEMENT.RESET_CONFIRM_REQUESTED",
+      deleteAllDataAcknowledged: false,
+    })
+    const resetSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ DataManagement: "Browsing" }) &&
+        candidate.context.portabilityNotice?.startsWith(
+          "All Custom Values were deleted.",
+        ) === true,
+    )
+
+    expect(
+      resetSnapshot.context.playerData?.profile.activeDeck.customValues,
+    ).toEqual([])
+    expect(
+      resetSnapshot.context.playerData?.profile.scheduler.deckRevision,
+    ).toBe(
+      (withCustomValue.context.playerData?.profile.scheduler.deckRevision ??
+        0) + 1,
+    )
+  })
+
+  it("resets levels and experience through a new progress generation while retaining achievements and deck membership", async () => {
+    const { actor } = await bootRootActor({
+      schedulerSeed: "root-reset-progress",
+    })
+    actor.send({ type: "BATTLE.START_REQUESTED" })
+    const playedProfile = actor.getSnapshot().context.playerData?.profile
+    if (!playedProfile) {
+      throw new Error("Progress reset fixture did not initialize")
+    }
+    const [winnerId] = projectScheduledPair(
+      playedProfile.activeDeck,
+      playedProfile.scheduler,
+    ).pair
+    actor.send({
+      type: "BATTLE.WINNER_SELECTED",
+      winnerId,
+      expectedScheduler: playedProfile.scheduler,
+    })
+    await waitFor(actor, (candidate) =>
+      candidate.matches({ Crucible: "Ready" }),
+    )
+    actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    const beforeReset = actor.getSnapshot().context.playerData
+    actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
+    actor.send({
+      type: "DATA_MANAGEMENT.RESET_OPEN_REQUESTED",
+      resetKind: "reset-levels-and-experience",
+    })
+    actor.send({
+      type: "DATA_MANAGEMENT.RESET_CONFIRM_REQUESTED",
+      deleteAllDataAcknowledged: false,
+    })
+    const resetSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ DataManagement: "Browsing" }) &&
+        candidate.context.portabilityNotice?.startsWith(
+          "Levels and experience were reset.",
+        ) === true,
+    )
+    const resetPlayerData = resetSnapshot.context.playerData
+    if (!beforeReset || !resetPlayerData) {
+      throw new Error("Progress reset Player Data is unavailable")
+    }
+
+    expect(resetPlayerData.profile.activeDeck.valueIds).toEqual(
+      beforeReset.profile.activeDeck.valueIds,
+    )
+    expect(resetPlayerData.profile.scheduler.progressGeneration).toBe(
+      beforeReset.profile.scheduler.progressGeneration + 1,
+    )
+    expect(resetPlayerData.profile.history).toEqual([])
+    expect(
+      Array.from(resetPlayerData.profile.progressById.values()).every(
+        ({ totalXp }) => totalXp === 0,
+      ),
+    ).toBe(true)
+    expect(resetPlayerData.achievements.unlocks).toEqual(
+      beforeReset.achievements.unlocks,
+    )
+  })
+
+  it("resets only achievements while preserving the complete profile timeline", async () => {
+    const { actor } = await bootRootActor({
+      schedulerSeed: "root-reset-achievements",
+    })
+    actor.send({ type: "BATTLE.START_REQUESTED" })
+    const profile = actor.getSnapshot().context.playerData?.profile
+    if (!profile) {
+      throw new Error("Achievement reset fixture did not initialize")
+    }
+    const [winnerId] = projectScheduledPair(
+      profile.activeDeck,
+      profile.scheduler,
+    ).pair
+    actor.send({
+      type: "BATTLE.WINNER_SELECTED",
+      winnerId,
+      expectedScheduler: profile.scheduler,
+    })
+    await waitFor(actor, (candidate) =>
+      candidate.matches({ Crucible: "Ready" }),
+    )
+    actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    const beforeReset = actor.getSnapshot().context.playerData
+    actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
+    actor.send({
+      type: "DATA_MANAGEMENT.RESET_OPEN_REQUESTED",
+      resetKind: "reset-achievements",
+    })
+    actor.send({
+      type: "DATA_MANAGEMENT.RESET_CONFIRM_REQUESTED",
+      deleteAllDataAcknowledged: false,
+    })
+    const resetSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ DataManagement: "Browsing" }) &&
+        candidate.context.portabilityNotice?.startsWith(
+          "Achievements and achievement progress were reset.",
+        ) === true,
+    )
+    const resetPlayerData = resetSnapshot.context.playerData
+    if (!beforeReset || !resetPlayerData) {
+      throw new Error("Achievement reset Player Data is unavailable")
+    }
+
+    expect(resetPlayerData.profile).toEqual(beforeReset.profile)
+    expect(resetPlayerData.achievements.unlocks).toEqual([])
+    expect(resetPlayerData.achievements.progress).toMatchObject({
+      achievementProgressGeneration:
+        beforeReset.achievements.progress.achievementProgressGeneration + 1,
+      lifetimeBattleCount: 0,
+      completedCycleCount: 0,
+      countedBattleWindow: beforeReset.profile.history.map(
+        ({ battleId }) => battleId,
+      ),
+    })
+  })
+
+  it("keeps reset review active through export and refuses complete erasure until acknowledged", async () => {
+    const { actor, durableStore } = await bootRootActor({
+      schedulerSeed: "root-delete-all-data",
+    })
+    actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
+    actor.send({
+      type: "DATA_MANAGEMENT.RESET_OPEN_REQUESTED",
+      resetKind: "delete-all-data",
+    })
+    actor.send({ type: "DATA_MANAGEMENT.EXPORT_REQUESTED" })
+    const exportedReview = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ DataManagement: "ReviewingReset" }) &&
+        candidate.context.preparedDownload !== null,
+    )
+
+    expect(exportedReview.context.pendingResetKind).toBe("delete-all-data")
+    actor.send({ type: "DATA_MANAGEMENT.EXPORT_CONSUMED" })
+    actor.send({
+      type: "DATA_MANAGEMENT.RESET_CONFIRM_REQUESTED",
+      deleteAllDataAcknowledged: false,
+    })
+
+    expect(
+      actor.getSnapshot().matches({ DataManagement: "ReviewingReset" }),
+    ).toBe(true)
+    expect((await durableStore.readAll()).size).toBeGreaterThan(0)
+
+    actor.send({
+      type: "DATA_MANAGEMENT.RESET_CONFIRM_REQUESTED",
+      deleteAllDataAcknowledged: true,
+    })
+    const deletedSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches("Splash") &&
+        candidate.context.portabilityNotice ===
+          "All local WAYVM player data was deleted.",
+    )
+
+    await expect(durableStore.readAll()).resolves.toEqual(new Map())
+    expect(deletedSnapshot.context.battleProfileStoreState).toBeNull()
+
+    actor.send({ type: "INTRODUCTION.COMPLETED" })
+    await waitFor(actor, (candidate) => candidate.matches("Hub"))
+    expect((await durableStore.readAll()).size).toBe(2)
+  })
+
+  it("returns a failed scoped reset to review with its intent intact for retry", async () => {
+    const memoryStore = createInMemoryDurableStore()
+    let shouldFail = false
+    const durableStore = Object.freeze({
+      readAll: memoryStore.readAll,
+      compareAndSwapVerified: async (transaction) => {
+        if (shouldFail) {
+          throw new Error("Scoped reset failed")
+        }
+
+        return memoryStore.compareAndSwapVerified(transaction)
+      },
+    }) satisfies DurableStoreAdapter
+    const { actor } = await bootRootActor({
+      durableStore,
+      schedulerSeed: "root-reset-retry",
+    })
+    const currentPlayerData = actor.getSnapshot().context.playerData
+    actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
+    actor.send({
+      type: "DATA_MANAGEMENT.RESET_OPEN_REQUESTED",
+      resetKind: "reset-achievements",
+    })
+    shouldFail = true
+    actor.send({
+      type: "DATA_MANAGEMENT.RESET_CONFIRM_REQUESTED",
+      deleteAllDataAcknowledged: false,
+    })
+    const failedSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ DataManagement: "ReviewingReset" }) &&
+        candidate.context.portabilityIssue === "Scoped reset failed",
+    )
+
+    expect(failedSnapshot.context.playerData).toBe(currentPlayerData)
+    expect(failedSnapshot.context.pendingResetKind).toBe("reset-achievements")
+
+    shouldFail = false
+    actor.send({
+      type: "DATA_MANAGEMENT.RESET_CONFIRM_REQUESTED",
+      deleteAllDataAcknowledged: false,
+    })
+    const retriedSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ DataManagement: "Browsing" }) &&
+        candidate.context.pendingResetKind === null,
+    )
+
+    expect(retriedSnapshot.context.portabilityIssue).toBeNull()
+  })
+
+  it("exports the exact captured corrupt records as diagnostic evidence before recovery", async () => {
+    const corruptEntries = [
+      [BATTLE_PROFILE_MANIFEST_KEY, "corrupt-manifest"],
+      [BATTLE_PROFILE_SNAPSHOT_A_KEY, "corrupt-checkpoint"],
+    ] as const
+    const { actor } = await bootCorruptRootActor({
+      initialEntries: corruptEntries,
+    })
+
+    actor.send({ type: "RECOVERY.EXPORT_REQUESTED" })
+    const exportedSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ PersistenceFailure: "Reviewing" }) &&
+        candidate.context.preparedDownload !== null,
+    )
+    const preparedDownload = exportedSnapshot.context.preparedDownload
+    if (!preparedDownload) {
+      throw new Error("Recovery evidence was not prepared")
+    }
+
+    expect(preparedDownload.filename).toContain("mapache-recovery")
+    expect(JSON.parse(preparedDownload.serialized)).toEqual(
+      expect.arrayContaining([
+        "wayvm-recovery-bundle",
+        expect.arrayContaining([
+          [BATTLE_PROFILE_MANIFEST_KEY, "corrupt-manifest"],
+          [BATTLE_PROFILE_SNAPSHOT_A_KEY, "corrupt-checkpoint"],
+        ]),
+      ]),
+    )
+
+    actor.send({ type: "RECOVERY.EXPORT_CONSUMED" })
+    expect(actor.getSnapshot().context.preparedDownload).toBeNull()
+  })
+
+  it("restores a retained pre-import backup only after validated preview and explicit confirmation", async () => {
+    const serializedBackup = await createSerializedRecoveryBackup({
+      schedulerSeed: "retained-recovery-backup",
+      sourceBuild: "retained-backup-build",
+    })
+    const { actor, durableStore } = await bootCorruptRootActor({
+      initialEntries: [
+        [BATTLE_PROFILE_MANIFEST_KEY, "corrupt-manifest"],
+        [BATTLE_PROFILE_SNAPSHOT_A_KEY, "corrupt-checkpoint"],
+        [BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY, serializedBackup],
+      ],
+    })
+
+    actor.send({ type: "RECOVERY.RESTORE_BACKUP_REQUESTED" })
+    const reviewSnapshot = await waitFor(actor, (candidate) =>
+      candidate.matches({ PersistenceFailure: "ReviewingImport" }),
+    )
+
+    expect(reviewSnapshot.context.pendingImport?.preview).toMatchObject({
+      sourceBuild: "retained-backup-build",
+      activeValueCount: 100,
+      replacesCurrentLocalData: true,
+    })
+    expect(reviewSnapshot.context.pendingRecoveryImportSource).toBe(
+      "last-known-good",
+    )
+
+    actor.send({ type: "RECOVERY.IMPORT_CONFIRM_REQUESTED" })
+    const restoredSnapshot = await waitFor(actor, (candidate) =>
+      candidate.matches("Hub"),
+    )
+
+    expect(restoredSnapshot.context.playerData?.profile.scheduler.seed).toBe(
+      "retained-recovery-backup",
+    )
+    expect(restoredSnapshot.context.recoveryEntries).toBeNull()
+    expect(restoredSnapshot.context.portabilityNotice).toBe(
+      "Last known-good save restored.",
+    )
+    expect(
+      (await durableStore.readAll()).has(BATTLE_PROFILE_MANIFEST_KEY),
+    ).toBe(true)
+    expect(
+      (await durableStore.readAll()).has(BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY),
+    ).toBe(false)
+  })
+
+  it("identifies a player-selected recovery backup until its validated preview is cancelled", async () => {
+    const serializedBackup = await createSerializedRecoveryBackup({
+      schedulerSeed: "selected-recovery-backup",
+      sourceBuild: "selected-backup-build",
+    })
+    const { actor } = await bootCorruptRootActor({
+      initialEntries: [
+        [BATTLE_PROFILE_MANIFEST_KEY, "corrupt-manifest"],
+        [BATTLE_PROFILE_SNAPSHOT_A_KEY, "corrupt-checkpoint"],
+      ],
+    })
+
+    actor.send({
+      type: "RECOVERY.IMPORT_PREPARE_REQUESTED",
+      serialized: serializedBackup,
+    })
+    const reviewSnapshot = await waitFor(actor, (candidate) =>
+      candidate.matches({ PersistenceFailure: "ReviewingImport" }),
+    )
+
+    expect(reviewSnapshot.context.pendingImport?.preview.sourceBuild).toBe(
+      "selected-backup-build",
+    )
+    expect(reviewSnapshot.context.pendingRecoveryImportSource).toBe(
+      "selected-backup",
+    )
+
+    actor.send({ type: "RECOVERY.IMPORT_CANCEL_REQUESTED" })
+
+    expect(
+      actor.getSnapshot().matches({ PersistenceFailure: "Reviewing" }),
+    ).toBe(true)
+    expect(actor.getSnapshot().context.pendingRecoveryImportSource).toBeNull()
+  })
+
+  it("rejects invalid selected recovery bytes without mutating the captured corrupt store", async () => {
+    const initialEntries = [
+      [BATTLE_PROFILE_MANIFEST_KEY, "corrupt-manifest"],
+      [BATTLE_PROFILE_SNAPSHOT_A_KEY, "corrupt-checkpoint"],
+    ] as const
+    const { actor, durableStore } = await bootCorruptRootActor({
+      initialEntries,
+    })
+    const capturedEntries = await durableStore.readAll()
+
+    actor.send({
+      type: "RECOVERY.IMPORT_PREPARE_REQUESTED",
+      serialized: "{}",
+    })
+    const rejectedSnapshot = await waitFor(
+      actor,
+      (candidate) =>
+        candidate.matches({ PersistenceFailure: "Reviewing" }) &&
+        candidate.context.portabilityIssue !== null,
+    )
+
+    expect(rejectedSnapshot.context.pendingImport).toBeNull()
+    expect(rejectedSnapshot.context.pendingRecoveryImportSource).toBeNull()
+    expect(rejectedSnapshot.context.portabilityIssue).toBe(
+      "Persisted JSON must use tuple arrays rather than objects",
+    )
+    await expect(durableStore.readAll()).resolves.toEqual(capturedEntries)
+  })
+
+  it("requires fresh acknowledgment before deleting every captured corrupt record", async () => {
+    const { actor, durableStore } = await bootCorruptRootActor({
+      initialEntries: [
+        [BATTLE_PROFILE_MANIFEST_KEY, "corrupt-manifest"],
+        [BATTLE_PROFILE_SNAPSHOT_A_KEY, "corrupt-checkpoint"],
+      ],
+    })
+
+    actor.send({
+      type: "RECOVERY.DELETE_ALL_REQUESTED",
+      acknowledged: false,
+    })
+    expect(
+      actor.getSnapshot().matches({ PersistenceFailure: "Reviewing" }),
+    ).toBe(true)
+    expect((await durableStore.readAll()).size).toBe(2)
+
+    actor.send({
+      type: "RECOVERY.DELETE_ALL_REQUESTED",
+      acknowledged: true,
+    })
+    const deletedSnapshot = await waitFor(actor, (candidate) =>
+      candidate.matches("Splash"),
+    )
+
+    await expect(durableStore.readAll()).resolves.toEqual(new Map())
+    expect(deletedSnapshot.context.recoveryEntries).toBeNull()
+    expect(deletedSnapshot.context.portabilityNotice).toBe(
+      "All local WAYVM player data was deleted.",
+    )
+  })
+
+  it("keeps destructive recovery events inert when a runtime failure has no captured hydration evidence", async () => {
+    let compareAndSwapCallCount = 0
+    const durableStore = Object.freeze({
+      readAll: async () => {
+        throw new Error("IndexedDB unavailable")
+      },
+      compareAndSwapVerified: async () => {
+        compareAndSwapCallCount += 1
+      },
+    }) satisfies DurableStoreAdapter
+    const { actor } = createRootActor({ durableStore })
+    actor.start()
+    actor.send({
+      type: "APP.HYDRATED",
+      schedulerSeed: "runtime-failure-recovery-guard",
+    })
+    await waitFor(actor, (candidate) =>
+      candidate.matches({ PersistenceFailure: "Reviewing" }),
+    )
+
+    actor.send({ type: "RECOVERY.EXPORT_REQUESTED" })
+    actor.send({
+      type: "RECOVERY.IMPORT_PREPARE_REQUESTED",
+      serialized: "{}",
+    })
+    actor.send({
+      type: "RECOVERY.DELETE_ALL_REQUESTED",
+      acknowledged: true,
+    })
+
+    expect(
+      actor.getSnapshot().matches({ PersistenceFailure: "Reviewing" }),
+    ).toBe(true)
+    expect(actor.getSnapshot().context.recoveryEntries).toBeNull()
+    expect(actor.getSnapshot().context.preparedDownload).toBeNull()
+    expect(actor.getSnapshot().context.pendingImport).toBeNull()
+    expect(compareAndSwapCallCount).toBe(0)
   })
 })

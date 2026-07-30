@@ -124,6 +124,31 @@ describe("All Values Component Integration", () => {
       "Ingenuity",
       "Inventions and original ideas matter.",
     )
+    expect(screen.getByRole("form", { name: "Add Custom Value" })).toBeVisible()
+    expect(screen.getByLabelText("Custom Value Name")).toHaveValue(
+      "   Ingenuity   ",
+    )
+    expect(screen.getByLabelText("Personal Definition")).toHaveValue(
+      "  Inventions and original ideas matter. ",
+    )
+  })
+
+  it("locks navigation and mutation controls while persistence is pending", () => {
+    renderAllValues(undefined, {
+      openCustomValueBuilder: true,
+      isPersistencePending: true,
+    })
+
+    expect(screen.getByRole("button", { name: "Close" })).toBeDisabled()
+    expect(
+      screen.getByRole("button", { name: "Close Custom Value Form" }),
+    ).toBeDisabled()
+    expect(screen.getByLabelText("Custom Value Name")).toBeDisabled()
+    expect(screen.getByLabelText("Personal Definition")).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Saving…" })).toBeDisabled()
+    expect(
+      screen.getByRole("button", { name: /Start with Ingenuity/ }),
+    ).toBeDisabled()
   })
 
   it("keeps an incomplete add draft open without submitting it", () => {
@@ -136,6 +161,68 @@ describe("All Values Component Integration", () => {
 
     expect(onAddCustomValue).not.toHaveBeenCalled()
     expect(screen.getByRole("form", { name: "Add Custom Value" })).toBeVisible()
+  })
+
+  it("explains required fields after interaction and counts grapheme clusters", () => {
+    renderAllValues()
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
+    const nameInput = screen.getByLabelText("Custom Value Name")
+    const definitionInput = screen.getByLabelText("Personal Definition")
+
+    expect(screen.getByText("0 / 60 characters")).toBeVisible()
+    expect(screen.getByText("0 / 280 characters")).toBeVisible()
+    expect(
+      screen.queryByText("Enter a name for this value."),
+    ).not.toBeInTheDocument()
+
+    fireEvent.blur(nameInput)
+    fireEvent.blur(definitionInput)
+
+    expect(screen.getByText("Enter a name for this value.")).toBeVisible()
+    expect(
+      screen.getByText("Enter a short personal definition for this value."),
+    ).toBeVisible()
+    expect(nameInput).toHaveAttribute("aria-invalid", "true")
+    expect(definitionInput).toHaveAttribute("aria-invalid", "true")
+
+    fireEvent.change(nameInput, { target: { value: "👨‍👩‍👧‍👦" } })
+    fireEvent.change(definitionInput, {
+      target: { value: "Caring for family with intention." },
+    })
+
+    expect(screen.getByText("1 / 60 characters")).toBeVisible()
+    expect(screen.getByRole("button", { name: "Save Value" })).toBeEnabled()
+  })
+
+  it("keeps overlong or controlled Custom Value drafts visible and unsaved", () => {
+    const onAddCustomValue = vi.fn()
+
+    renderAllValues(undefined, { onAddCustomValue })
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
+    const nameInput = screen.getByLabelText("Custom Value Name")
+    const definitionInput = screen.getByLabelText("Personal Definition")
+    fireEvent.change(nameInput, { target: { value: "🦝".repeat(61) } })
+    fireEvent.change(definitionInput, {
+      target: { value: "Purpose\u202e" },
+    })
+    fireEvent.blur(nameInput)
+    fireEvent.blur(definitionInput)
+
+    expect(
+      screen.getByText("Use 60 or fewer characters for the value name."),
+    ).toBeVisible()
+    expect(
+      screen.getByText(
+        "Remove invisible or control characters from the personal definition.",
+      ),
+    ).toBeVisible()
+    expect(screen.getByText("61 / 60 characters")).toBeVisible()
+    expect(screen.getByRole("button", { name: "Save Value" })).toBeDisabled()
+    expect(onAddCustomValue).not.toHaveBeenCalled()
+    expect(nameInput).toHaveValue("🦝".repeat(61))
+    expect(definitionInput).toHaveValue("Purpose\u202e")
   })
 
   it("cancels an unsaved custom value draft", () => {
@@ -226,7 +313,9 @@ describe("All Values Component Integration", () => {
     expect(
       screen.getByRole("alertdialog", { name: "Update Ingenuity?" }),
     ).toBeVisible()
-    expect(screen.getByRole("button", { name: "Update Value" })).toBeVisible()
+    expect(screen.getByRole("button", { name: "Update Value" })).toHaveClass(
+      "text-black",
+    )
     expect(onUpdateCustomValue).not.toHaveBeenCalled()
 
     fireEvent.click(screen.getByRole("button", { name: "Update Value" }))
@@ -321,9 +410,11 @@ describe("All Values Component Integration", () => {
     if (!targetListItem) {
       throw new Error("Expected Ingenuity list item in DOM")
     }
-    fireEvent.click(
-      within(targetListItem).getByRole("button", { name: "Delete" }),
-    )
+    const deleteButton = within(targetListItem).getByRole("button", {
+      name: "Delete",
+    })
+    expect(deleteButton).toHaveClass("text-black")
+    fireEvent.click(deleteButton)
     expect(
       screen.getByRole("alertdialog", { name: "Remove Ingenuity?" }),
     ).toBeVisible()
@@ -334,7 +425,11 @@ describe("All Values Component Integration", () => {
     fireEvent.click(
       within(targetListItem).getByRole("button", { name: "Delete" }),
     )
-    fireEvent.click(screen.getByRole("button", { name: "Delete Value" }))
+    const deleteValueButton = screen.getByRole("button", {
+      name: "Delete Value",
+    })
+    expect(deleteValueButton).toHaveClass("text-black")
+    fireEvent.click(deleteValueButton)
 
     expect(onDeleteCustomValue).toHaveBeenCalledWith(
       activeDeck.customValues[0].id,
@@ -366,9 +461,14 @@ describe("All Values Component Integration", () => {
     fireEvent.change(screen.getByLabelText("Custom Value Name"), {
       target: { value: "Curiosity Engine" },
     })
+    fireEvent.blur(screen.getByLabelText("Custom Value Name"))
     expect(
       screen.getByText("This value already exists. Open it instead."),
-    ).toBeInTheDocument()
+    ).toHaveClass("text-black")
+    expect(screen.getByLabelText("Custom Value Name")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    )
     expect(screen.getByRole("button", { name: "Review Update" })).toBeDisabled()
   })
 

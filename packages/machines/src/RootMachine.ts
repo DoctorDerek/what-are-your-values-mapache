@@ -1,16 +1,13 @@
-import type {
-  CustomValueDefinition,
-  CustomValueId,
-  ValueId,
-} from "@game/data/src/Value"
-import { createCustomValueId } from "@game/data/src/Value"
+import type { CustomValueId, ValueId } from "@game/data/src/Value"
+import { getErrorMessage } from "@game/utils/src/Errors"
 import { assign, setup } from "xstate"
-import { createInitialBattleProfile, type BattleProfile } from "./BattleProfile"
+import type { AchievementId } from "./AchievementCatalog"
+import { recordAchievementPresentationActor } from "./AchievementPresentationActors"
+import { getPendingAchievementUnlocks } from "./AchievementState"
 import {
   createBattleChoiceCommit,
   createBattleRedoCommit,
   createBattleUndoCommit,
-  createDeckRevisionCommit,
   type BattleProfileCommit,
 } from "./BattleProfileCommit"
 import {
@@ -18,25 +15,73 @@ import {
   hydrateBattleProfileActor,
   initializeBattleProfileActor,
 } from "./BattleProfilePersistenceActors"
-import type { BattleProfileStoreState } from "./BattleProfileStore"
+import {
+  createRecoveryBundleActor,
+  deleteUnrecoverablePlayerDataActor,
+  replaceUnrecoverablePlayerDataActor,
+} from "./BattleProfileRecoveryActors"
+import {
+  BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY,
+  type BattleProfileStoreState,
+} from "./BattleProfileStore"
 import {
   projectBattlePair,
   type BattleSchedulerRestorePoint,
 } from "./BattleScheduler"
 import {
+  createCustomValueAddCommit,
+  createCustomValueDeleteCommit,
+  createCustomValueUpdateCommit,
+} from "./CustomValueCommands"
+import {
   DurableStoreConflictError,
   type DurableStoreAdapter,
 } from "./DurableStoreAdapter"
+import { createInitialPlayerData, type PlayerData } from "./PlayerData"
+import {
+  createWayvmExportActor,
+  prepareWayvmImportActor,
+  replacePlayerDataActor,
+  type PreparedWayvmDownload,
+} from "./PlayerDataPortabilityActors"
+import type {
+  PlayerDataResetKind,
+  ScopedPlayerDataResetKind,
+} from "./PlayerDataReset"
+import {
+  applyScopedPlayerDataResetActor,
+  deleteAllPlayerDataActor,
+} from "./PlayerDataResetActors"
 import { areSchedulerIdentitiesEqual } from "./SchedulerIdentity"
+import type { PreparedWayvmImport } from "./WayvmImportPreview"
 
 type RootMachineContext = {
   readonly durableStore: DurableStoreAdapter
   readonly appVersion: string
+  readonly sourceBuild: string
   readonly now: () => string
-  battleProfile: BattleProfile | null
+  playerData: PlayerData | null
   battleProfileStoreState: BattleProfileStoreState | null
   pendingBattleProfileCommit: BattleProfileCommit | null
+  pendingAchievementPresentationId: AchievementId | null
+  achievementPresentationReturnTarget:
+    "hub" | "achievements" | "crucible" | null
+  pendingImportBytes: string | null
+  pendingImport: PreparedWayvmImport | null
+  pendingRecoveryImportSource: "last-known-good" | "selected-backup" | null
+  preImportBackupBytes: string | null
+  preparedDownload: PreparedWayvmDownload | null
+  pendingResetKind: PlayerDataResetKind | null
+  recoveryEntries: ReadonlyMap<string, string> | null
+  persistenceFailureOrigin:
+    | "loading"
+    | "initialization"
+    | "crucible"
+    | "achievement-presentation"
+    | null
   persistenceIssue: string | null
+  portabilityIssue: string | null
+  portabilityNotice: string | null
 }
 
 type RootMachineEvent =
@@ -46,6 +91,9 @@ type RootMachineEvent =
     }
   | { type: "INTRODUCTION.COMPLETED" }
   | { type: "BATTLE.START_REQUESTED" }
+  | { type: "ACHIEVEMENTS.OPEN_REQUESTED" }
+  | { type: "ACHIEVEMENTS.CLOSE_REQUESTED" }
+  | { type: "ACHIEVEMENT.PRESENTED"; achievementId: AchievementId }
   | { type: "ALL_VALUES.OPEN_REQUESTED" }
   | { type: "ALL_VALUES.CLOSE_REQUESTED" }
   | {
@@ -68,19 +116,68 @@ type RootMachineEvent =
   | { type: "BATTLE.UNDO_REQUESTED" }
   | { type: "BATTLE.REDO_REQUESTED" }
   | { type: "BATTLE.EXIT_REQUESTED" }
+  | { type: "DATA_MANAGEMENT.OPEN_REQUESTED" }
+  | { type: "DATA_MANAGEMENT.CLOSE_REQUESTED" }
+  | { type: "DATA_MANAGEMENT.EXPORT_REQUESTED" }
+  | { type: "DATA_MANAGEMENT.EXPORT_CONSUMED" }
+  | {
+      type: "DATA_MANAGEMENT.IMPORT_PREPARE_REQUESTED"
+      serialized: string
+    }
+  | {
+      type: "DATA_MANAGEMENT.PLATFORM_FAILURE_REPORTED"
+      issue: string
+    }
+  | { type: "DATA_MANAGEMENT.IMPORT_CANCEL_REQUESTED" }
+  | { type: "DATA_MANAGEMENT.IMPORT_CONFIRM_REQUESTED" }
+  | {
+      type: "DATA_MANAGEMENT.RESET_OPEN_REQUESTED"
+      resetKind: PlayerDataResetKind
+    }
+  | { type: "DATA_MANAGEMENT.RESET_CANCEL_REQUESTED" }
+  | {
+      type: "DATA_MANAGEMENT.RESET_CONFIRM_REQUESTED"
+      deleteAllDataAcknowledged: boolean
+    }
+  | { type: "RECOVERY.EXPORT_REQUESTED" }
+  | { type: "RECOVERY.EXPORT_CONSUMED" }
+  | {
+      type: "RECOVERY.IMPORT_PREPARE_REQUESTED"
+      serialized: string
+    }
+  | { type: "RECOVERY.RESTORE_BACKUP_REQUESTED" }
+  | { type: "RECOVERY.IMPORT_CANCEL_REQUESTED" }
+  | { type: "RECOVERY.IMPORT_CONFIRM_REQUESTED" }
+  | { type: "RECOVERY.DELETE_ALL_REQUESTED"; acknowledged: boolean }
+  | { type: "RECOVERY.PLATFORM_FAILURE_REPORTED"; issue: string }
+  | { type: "STORAGE_RECOVERY.EXPORT_REQUESTED" }
+  | { type: "STORAGE_RECOVERY.RETRY_REQUESTED" }
+  | { type: "STORAGE_RECOVERY.RETURN_REQUESTED" }
 
 type RootMachineInput = {
   readonly durableStore: DurableStoreAdapter
   readonly appVersion: string
+  readonly sourceBuild: string
   readonly now: () => string
 }
 
-function requireBattleProfile(context: RootMachineContext) {
-  if (!context.battleProfile) {
-    throw new Error("Battle profile is not initialized")
+const CLEARED_ACHIEVEMENT_PRESENTATION_CONTEXT = Object.freeze({
+  pendingAchievementPresentationId: null,
+  achievementPresentationReturnTarget: null,
+  persistenceFailureOrigin: null,
+  persistenceIssue: null,
+})
+
+function requirePlayerData(context: RootMachineContext) {
+  if (!context.playerData) {
+    throw new Error("Player data is not initialized")
   }
 
-  return context.battleProfile
+  return context.playerData
+}
+
+function requireBattleProfile(context: RootMachineContext) {
+  return requirePlayerData(context).profile
 }
 
 function requireBattleProfileStoreState(context: RootMachineContext) {
@@ -99,197 +196,99 @@ function requirePendingBattleProfileCommit(context: RootMachineContext) {
   return context.pendingBattleProfileCommit
 }
 
-function createNextCustomValue({
-  existingCustomValues,
-  name,
-  definition,
-  now,
-}: {
-  readonly existingCustomValues: readonly CustomValueDefinition[]
-  readonly name: string
-  readonly definition: string
-  readonly now: () => string
-}) {
-  const trimmedName = name.trim()
-  const trimmedDefinition = definition.trim()
-
-  if (trimmedName.length === 0) {
-    throw new Error("Custom Value name is required")
+function requirePendingAchievementPresentationId(context: RootMachineContext) {
+  if (!context.pendingAchievementPresentationId) {
+    throw new Error("Achievement presentation is not prepared")
   }
 
-  if (trimmedDefinition.length === 0) {
-    throw new Error("Custom Value definition is required")
-  }
-
-  const nextCreationOrdinal =
-    existingCustomValues.reduce(
-      (maxOrdinal, value) =>
-        value.creationOrdinal > maxOrdinal ? value.creationOrdinal : maxOrdinal,
-      0,
-    ) + 1
-
-  return Object.freeze({
-    kind: "custom",
-    id: createCustomValueId(`custom:${crypto.randomUUID()}`),
-    name: trimmedName,
-    definition: trimmedDefinition,
-    creationOrdinal: nextCreationOrdinal,
-    createdAt: now(),
-    updatedAt: now(),
-  }) satisfies CustomValueDefinition
+  return context.pendingAchievementPresentationId
 }
 
-function createRevisedCustomValuesForAdd({
-  profile,
-  name,
-  definition,
-  now,
-}: {
-  readonly profile: BattleProfile
-  readonly name: string
-  readonly definition: string
-  readonly now: () => string
-}) {
-  const customValues = Object.freeze([
-    ...profile.activeDeck.customValues,
-    createNextCustomValue({
-      existingCustomValues: profile.activeDeck.customValues,
-      name,
-      definition,
-      now,
-    }),
-  ])
+function requirePendingImportBytes(context: RootMachineContext) {
+  if (!context.pendingImportBytes) {
+    throw new Error("Import bytes are not prepared")
+  }
 
-  return customValues
+  return context.pendingImportBytes
 }
 
-function createRevisedCustomValuesForUpdate({
-  profile,
-  valueId,
-  name,
-  definition,
-  now,
-}: {
-  readonly profile: BattleProfile
-  readonly valueId: CustomValueId
-  readonly name: string
-  readonly definition: string
-  readonly now: () => string
-}) {
-  const trimmedName = name.trim()
-  const trimmedDefinition = definition.trim()
-
-  if (trimmedName.length === 0) {
-    throw new Error("Custom Value name is required")
+function requirePendingImport(context: RootMachineContext) {
+  if (!context.pendingImport) {
+    throw new Error("Validated import data is not prepared")
   }
 
-  if (trimmedDefinition.length === 0) {
-    throw new Error("Custom Value definition is required")
+  return context.pendingImport
+}
+
+function requirePreImportBackupBytes(context: RootMachineContext) {
+  if (!context.preImportBackupBytes) {
+    throw new Error("Pre-import backup bytes are not prepared")
   }
 
-  return Object.freeze(
-    profile.activeDeck.customValues.map((value) => {
-      if (value.id !== valueId) {
-        return value
-      }
+  return context.preImportBackupBytes
+}
 
-      return Object.freeze({
-        ...value,
-        name: trimmedName,
-        definition: trimmedDefinition,
-        updatedAt: now(),
-      })
-    }),
+function requirePendingResetKind(context: RootMachineContext) {
+  if (!context.pendingResetKind) {
+    throw new Error("Reset kind is not prepared")
+  }
+
+  return context.pendingResetKind
+}
+
+function requirePendingScopedResetKind(
+  context: RootMachineContext,
+): ScopedPlayerDataResetKind {
+  const resetKind = requirePendingResetKind(context)
+  if (resetKind === "delete-all-data") {
+    throw new Error("Complete data erasure is not a scoped reset")
+  }
+
+  return resetKind
+}
+
+function getResetSuccessNotice(resetKind: ScopedPlayerDataResetKind) {
+  if (resetKind === "delete-all-custom-values") {
+    return "All Custom Values were deleted. Canonical value progress, achievements, and settings were kept."
+  }
+  if (resetKind === "reset-levels-and-experience") {
+    return "Levels and experience were reset. Custom Values, achievements, and settings were kept."
+  }
+
+  return "Achievements and achievement progress were reset. Your values, ranking, and settings were kept."
+}
+
+function createFreshPlayerDataAfterDeletion(context: RootMachineContext) {
+  const createdAt = context.now()
+  return createInitialPlayerData({
+    schedulerSeed: `delete-all:${createdAt}`,
+    createdAt,
+  })
+}
+
+function requireRecoveryEntries(context: RootMachineContext) {
+  if (!context.recoveryEntries) {
+    throw new Error("Captured recovery entries are unavailable")
+  }
+
+  return context.recoveryEntries
+}
+
+function requireStoredRecoveryBackup(context: RootMachineContext) {
+  const backup = requireRecoveryEntries(context).get(
+    BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY,
   )
-}
-
-function createRevisedCustomValuesForDelete({
-  profile,
-  valueId,
-}: {
-  readonly profile: BattleProfile
-  readonly valueId: CustomValueId
-}) {
-  const revisedCustomValues = profile.activeDeck.customValues.filter(
-    (value) => value.id !== valueId,
-  )
-
-  if (revisedCustomValues.length === profile.activeDeck.customValues.length) {
-    throw new Error(`Custom Value does not exist: ${valueId}`)
+  if (!backup) {
+    throw new Error("A stored recovery backup is unavailable")
   }
 
-  return Object.freeze(revisedCustomValues)
+  return backup
 }
 
-function createDeckRevisionCommitFromUpdate({
-  context,
-  valueId,
-  name,
-  definition,
-  now,
-}: {
-  readonly context: RootMachineContext
-  readonly valueId: CustomValueId
-  readonly name: string
-  readonly definition: string
-  readonly now: () => string
-}) {
-  const profile = requireBattleProfile(context)
-  const revisedCustomValues = createRevisedCustomValuesForUpdate({
-    profile,
-    valueId,
-    name,
-    definition,
-    now,
-  })
-  if (
-    !revisedCustomValues.some((value) => value.id === valueId) ||
-    profile.activeDeck.customValues.every((value) => value.id !== valueId)
-  ) {
-    throw new Error(`Custom Value does not exist: ${valueId}`)
-  }
-
-  return createDeckRevisionCommit({ profile, revisedCustomValues })
-}
-
-function createDeckRevisionCommitFromAdd({
-  context,
-  name,
-  definition,
-}: {
-  readonly context: RootMachineContext
-  readonly name: string
-  readonly definition: string
-}) {
-  const profile = requireBattleProfile(context)
-  const revisedCustomValues = createRevisedCustomValuesForAdd({
-    profile,
-    name,
-    definition,
-    now: context.now,
-  })
-
-  return createDeckRevisionCommit({ profile, revisedCustomValues })
-}
-
-function createDeckRevisionCommitFromDelete({
-  context,
-  valueId,
-}: {
-  readonly context: RootMachineContext
-  readonly valueId: CustomValueId
-}) {
-  const profile = requireBattleProfile(context)
-  const revisedCustomValues = createRevisedCustomValuesForDelete({
-    profile,
-    valueId,
-  })
-
-  return createDeckRevisionCommit({ profile, revisedCustomValues })
-}
-
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : String(error)
+function getRecoveryReplacementNotice(context: RootMachineContext) {
+  return context.pendingRecoveryImportSource === "last-known-good"
+    ? "Last known-good save restored."
+    : "Your backup replaced the unreadable local data."
 }
 
 export const rootMachine = setup({
@@ -302,16 +301,25 @@ export const rootMachine = setup({
     hydrateBattleProfile: hydrateBattleProfileActor,
     initializeBattleProfile: initializeBattleProfileActor,
     commitBattleProfileEvent: commitBattleProfileEventActor,
+    recordAchievementPresentation: recordAchievementPresentationActor,
+    createWayvmExport: createWayvmExportActor,
+    prepareWayvmImport: prepareWayvmImportActor,
+    replacePlayerData: replacePlayerDataActor,
+    applyScopedPlayerDataReset: applyScopedPlayerDataResetActor,
+    deleteAllPlayerData: deleteAllPlayerDataActor,
+    createRecoveryBundle: createRecoveryBundleActor,
+    replaceUnrecoverablePlayerData: replaceUnrecoverablePlayerDataActor,
+    deleteUnrecoverablePlayerData: deleteUnrecoverablePlayerDataActor,
   },
   guards: {
     isCurrentBattleSelection: ({ context, event }) => {
-      if (event.type !== "BATTLE.WINNER_SELECTED" || !context.battleProfile) {
+      if (event.type !== "BATTLE.WINNER_SELECTED" || !context.playerData) {
         return false
       }
 
       if (
         !areSchedulerIdentitiesEqual(
-          context.battleProfile.scheduler,
+          context.playerData.profile.scheduler,
           event.expectedScheduler,
         )
       ) {
@@ -319,25 +327,88 @@ export const rootMachine = setup({
       }
 
       return projectBattlePair(
-        context.battleProfile.activeDeck,
-        context.battleProfile.scheduler,
+        context.playerData.profile.activeDeck,
+        context.playerData.profile.scheduler,
       ).includes(event.winnerId)
     },
     canUndoBattle: ({ context }) =>
-      (context.battleProfile?.history.length ?? 0) > 0,
+      (context.playerData?.profile.history.length ?? 0) > 0,
     canRedoBattle: ({ context }) =>
-      (context.battleProfile?.redo.length ?? 0) > 0,
+      (context.playerData?.profile.redo.length ?? 0) > 0,
+    canConfirmScopedReset: ({ context, event }) =>
+      event.type === "DATA_MANAGEMENT.RESET_CONFIRM_REQUESTED" &&
+      context.pendingResetKind !== null &&
+      context.pendingResetKind !== "delete-all-data",
+    canConfirmDeleteAllData: ({ context, event }) =>
+      event.type === "DATA_MANAGEMENT.RESET_CONFIRM_REQUESTED" &&
+      context.pendingResetKind === "delete-all-data" &&
+      event.deleteAllDataAcknowledged,
+    hasRecoveryEntries: ({ context }) => context.recoveryEntries !== null,
+    hasStoredRecoveryBackup: ({ context }) =>
+      context.recoveryEntries?.has(BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY) ??
+      false,
+    isAcknowledgedRecoveryDeletion: ({ context, event }) =>
+      context.recoveryEntries !== null &&
+      event.type === "RECOVERY.DELETE_ALL_REQUESTED" &&
+      event.acknowledged,
+    canExportCurrentDataAfterStorageFailure: ({ context }) =>
+      context.playerData !== null &&
+      context.persistenceFailureOrigin !== null &&
+      context.persistenceFailureOrigin !== "loading",
+    isLoadingStorageFailure: ({ context }) =>
+      context.persistenceFailureOrigin === "loading",
+    isInitializationStorageFailure: ({ context }) =>
+      context.persistenceFailureOrigin === "initialization",
+    isCrucibleStorageFailure: ({ context }) =>
+      context.persistenceFailureOrigin === "crucible",
+    isAchievementPresentationStorageFailure: ({ context }) =>
+      context.persistenceFailureOrigin === "achievement-presentation",
+    canRecordAchievementPresentation: ({ context, event }) =>
+      event.type === "ACHIEVEMENT.PRESENTED" &&
+      context.battleProfileStoreState !== null &&
+      context.playerData !== null &&
+      getPendingAchievementUnlocks(context.playerData.achievements).some(
+        ({ id }) => id === event.achievementId,
+      ),
+    hasPendingAchievementPresentation: ({ context }) =>
+      context.pendingAchievementPresentationId !== null,
+    shouldReturnAchievementPresentationToAchievements: ({ context }) =>
+      context.achievementPresentationReturnTarget === "achievements",
+    shouldReturnAchievementPresentationToCrucible: ({ context }) =>
+      context.achievementPresentationReturnTarget === "crucible",
+    shouldReturnFailedAchievementPresentationToAchievements: ({ context }) =>
+      context.persistenceFailureOrigin === "achievement-presentation" &&
+      context.achievementPresentationReturnTarget === "achievements",
+    shouldReturnFailedAchievementPresentationToCrucible: ({ context }) =>
+      context.persistenceFailureOrigin === "achievement-presentation" &&
+      context.achievementPresentationReturnTarget === "crucible",
+    shouldReturnFailedAchievementPresentationToHub: ({ context }) =>
+      context.persistenceFailureOrigin === "achievement-presentation" &&
+      context.achievementPresentationReturnTarget === "hub",
   },
 }).createMachine({
   id: "root",
   initial: "Hydrating",
   context: ({ input }) => ({
-    battleProfile: null,
+    playerData: null,
     battleProfileStoreState: null,
     pendingBattleProfileCommit: null,
+    pendingAchievementPresentationId: null,
+    achievementPresentationReturnTarget: null,
+    pendingImportBytes: null,
+    pendingImport: null,
+    pendingRecoveryImportSource: null,
+    preImportBackupBytes: null,
+    preparedDownload: null,
+    pendingResetKind: null,
+    recoveryEntries: null,
+    persistenceFailureOrigin: null,
     persistenceIssue: null,
+    portabilityIssue: null,
+    portabilityNotice: null,
     durableStore: input.durableStore,
     appVersion: input.appVersion,
+    sourceBuild: input.sourceBuild,
     now: input.now,
   }),
   states: {
@@ -346,8 +417,11 @@ export const rootMachine = setup({
         "APP.HYDRATED": {
           target: "LoadingProfile",
           actions: assign({
-            battleProfile: ({ event }) =>
-              createInitialBattleProfile(event.schedulerSeed),
+            playerData: ({ context, event }) =>
+              createInitialPlayerData({
+                schedulerSeed: event.schedulerSeed,
+                createdAt: context.now(),
+              }),
             persistenceIssue: null,
           }),
         },
@@ -365,12 +439,12 @@ export const rootMachine = setup({
             guard: ({ event }) => event.output.status === "ready",
             target: "Hub",
             actions: assign({
-              battleProfile: ({ event }) => {
+              playerData: ({ event }) => {
                 if (event.output.status !== "ready") {
                   throw new Error("Hydrated Battle Profile is unavailable")
                 }
 
-                return event.output.state.head.profile
+                return event.output.state.head.playerData
               },
               battleProfileStoreState: ({ event }) => {
                 if (event.output.status !== "ready") {
@@ -379,6 +453,8 @@ export const rootMachine = setup({
 
                 return event.output.state
               },
+              recoveryEntries: null,
+              persistenceFailureOrigin: null,
               persistenceIssue: null,
             }),
           },
@@ -390,6 +466,11 @@ export const rootMachine = setup({
                 event.output.status === "recovery-required"
                   ? event.output.issue
                   : "Battle Profile recovery is required",
+              recoveryEntries: ({ event }) =>
+                event.output.status === "recovery-required"
+                  ? event.output.entries
+                  : null,
+              persistenceFailureOrigin: null,
             }),
           },
           {
@@ -401,6 +482,7 @@ export const rootMachine = setup({
         onError: {
           target: "PersistenceFailure",
           actions: assign({
+            persistenceFailureOrigin: "loading",
             persistenceIssue: ({ event }) => getErrorMessage(event.error),
           }),
         },
@@ -416,7 +498,7 @@ export const rootMachine = setup({
         src: "initializeBattleProfile",
         input: ({ context }) => ({
           store: context.durableStore,
-          profile: requireBattleProfile(context),
+          playerData: requirePlayerData(context),
           createdAt: context.now(),
           appVersion: context.appVersion,
         }),
@@ -424,8 +506,9 @@ export const rootMachine = setup({
           target: "Hub",
           actions: [
             assign({
-              battleProfile: ({ event }) => event.output.head.profile,
+              playerData: ({ event }) => event.output.head.playerData,
               battleProfileStoreState: ({ event }) => event.output,
+              persistenceFailureOrigin: null,
               persistenceIssue: null,
             }),
           ],
@@ -439,6 +522,7 @@ export const rootMachine = setup({
           {
             target: "PersistenceFailure",
             actions: assign({
+              persistenceFailureOrigin: "initialization",
               persistenceIssue: ({ event }) => getErrorMessage(event.error),
             }),
           },
@@ -448,7 +532,369 @@ export const rootMachine = setup({
     Hub: {
       on: {
         "BATTLE.START_REQUESTED": { target: "Crucible" },
+        "ACHIEVEMENTS.OPEN_REQUESTED": { target: "Achievements" },
+        "ACHIEVEMENT.PRESENTED": {
+          guard: "canRecordAchievementPresentation",
+          target: "RecordingAchievementPresentation",
+          actions: assign({
+            pendingAchievementPresentationId: ({ event }) =>
+              event.achievementId,
+            achievementPresentationReturnTarget: "hub",
+          }),
+        },
         "ALL_VALUES.OPEN_REQUESTED": { target: "AllValues" },
+        "DATA_MANAGEMENT.OPEN_REQUESTED": { target: "DataManagement" },
+      },
+    },
+    Achievements: {
+      on: {
+        "ACHIEVEMENTS.CLOSE_REQUESTED": { target: "Hub" },
+        "ACHIEVEMENT.PRESENTED": {
+          guard: "canRecordAchievementPresentation",
+          target: "RecordingAchievementPresentation",
+          actions: assign({
+            pendingAchievementPresentationId: ({ event }) =>
+              event.achievementId,
+            achievementPresentationReturnTarget: "achievements",
+          }),
+        },
+      },
+    },
+    DataManagement: {
+      initial: "Browsing",
+      states: {
+        Browsing: {
+          on: {
+            "DATA_MANAGEMENT.CLOSE_REQUESTED": {
+              target: "#root.Hub",
+              actions: assign({
+                pendingImport: null,
+                pendingImportBytes: null,
+                preImportBackupBytes: null,
+                pendingResetKind: null,
+                portabilityIssue: null,
+                portabilityNotice: null,
+              }),
+            },
+            "DATA_MANAGEMENT.EXPORT_REQUESTED": {
+              target: "Exporting",
+              actions: assign({
+                preparedDownload: null,
+                portabilityIssue: null,
+                portabilityNotice: null,
+              }),
+            },
+            "DATA_MANAGEMENT.EXPORT_CONSUMED": {
+              actions: assign({ preparedDownload: null }),
+            },
+            "DATA_MANAGEMENT.IMPORT_PREPARE_REQUESTED": {
+              target: "PreparingImport",
+              actions: assign({
+                pendingImportBytes: ({ event }) => event.serialized,
+                pendingImport: null,
+                preImportBackupBytes: null,
+                portabilityIssue: null,
+                portabilityNotice: null,
+              }),
+            },
+            "DATA_MANAGEMENT.RESET_OPEN_REQUESTED": {
+              target: "ReviewingReset",
+              actions: assign({
+                pendingResetKind: ({ event }) => event.resetKind,
+                portabilityIssue: null,
+                portabilityNotice: null,
+              }),
+            },
+            "DATA_MANAGEMENT.PLATFORM_FAILURE_REPORTED": {
+              actions: assign({
+                preparedDownload: null,
+                portabilityIssue: ({ event }) => event.issue,
+                portabilityNotice: null,
+              }),
+            },
+          },
+        },
+        Exporting: {
+          invoke: {
+            src: "createWayvmExport",
+            input: ({ context }) => ({
+              exportedAt: context.now(),
+              sourceAppVersion: context.appVersion,
+              sourceBuild: context.sourceBuild,
+              playerData: requirePlayerData(context),
+            }),
+            onDone: {
+              target: "Browsing",
+              actions: assign({
+                preparedDownload: ({ event }) => event.output,
+                portabilityIssue: null,
+                portabilityNotice: "Your private backup is ready.",
+              }),
+            },
+            onError: {
+              target: "Browsing",
+              actions: assign({
+                preparedDownload: null,
+                portabilityIssue: ({ event }) => getErrorMessage(event.error),
+                portabilityNotice: null,
+              }),
+            },
+          },
+        },
+        PreparingImport: {
+          invoke: {
+            src: "prepareWayvmImport",
+            input: ({ context }) => ({
+              serialized: requirePendingImportBytes(context),
+            }),
+            onDone: {
+              target: "ReviewingImport",
+              actions: assign({
+                pendingImportBytes: null,
+                pendingImport: ({ event }) => event.output,
+                portabilityIssue: null,
+              }),
+            },
+            onError: {
+              target: "Browsing",
+              actions: assign({
+                pendingImportBytes: null,
+                pendingImport: null,
+                portabilityIssue: ({ event }) => getErrorMessage(event.error),
+              }),
+            },
+          },
+        },
+        ReviewingImport: {
+          on: {
+            "DATA_MANAGEMENT.CLOSE_REQUESTED": {
+              target: "#root.Hub",
+              actions: assign({
+                pendingImport: null,
+                preImportBackupBytes: null,
+                portabilityIssue: null,
+                portabilityNotice: null,
+              }),
+            },
+            "DATA_MANAGEMENT.IMPORT_CANCEL_REQUESTED": {
+              target: "Browsing",
+              actions: assign({
+                pendingImport: null,
+                preImportBackupBytes: null,
+                portabilityIssue: null,
+              }),
+            },
+            "DATA_MANAGEMENT.IMPORT_CONFIRM_REQUESTED": {
+              target: "CreatingPreImportBackup",
+              actions: assign({
+                preImportBackupBytes: null,
+                portabilityIssue: null,
+              }),
+            },
+          },
+        },
+        ReviewingReset: {
+          on: {
+            "DATA_MANAGEMENT.CLOSE_REQUESTED": {
+              target: "#root.Hub",
+              actions: assign({
+                pendingResetKind: null,
+                preparedDownload: null,
+                portabilityIssue: null,
+                portabilityNotice: null,
+              }),
+            },
+            "DATA_MANAGEMENT.RESET_CANCEL_REQUESTED": {
+              target: "Browsing",
+              actions: assign({
+                pendingResetKind: null,
+                preparedDownload: null,
+                portabilityIssue: null,
+                portabilityNotice: null,
+              }),
+            },
+            "DATA_MANAGEMENT.EXPORT_REQUESTED": {
+              target: "ExportingResetBackup",
+              actions: assign({
+                preparedDownload: null,
+                portabilityIssue: null,
+                portabilityNotice: null,
+              }),
+            },
+            "DATA_MANAGEMENT.EXPORT_CONSUMED": {
+              actions: assign({ preparedDownload: null }),
+            },
+            "DATA_MANAGEMENT.PLATFORM_FAILURE_REPORTED": {
+              actions: assign({
+                preparedDownload: null,
+                portabilityIssue: ({ event }) => event.issue,
+                portabilityNotice: null,
+              }),
+            },
+            "DATA_MANAGEMENT.RESET_CONFIRM_REQUESTED": [
+              {
+                guard: "canConfirmDeleteAllData",
+                target: "DeletingAllData",
+                actions: assign({
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+              {
+                guard: "canConfirmScopedReset",
+                target: "ApplyingScopedReset",
+                actions: assign({
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+            ],
+          },
+        },
+        ExportingResetBackup: {
+          invoke: {
+            src: "createWayvmExport",
+            input: ({ context }) => ({
+              exportedAt: context.now(),
+              sourceAppVersion: context.appVersion,
+              sourceBuild: context.sourceBuild,
+              playerData: requirePlayerData(context),
+            }),
+            onDone: {
+              target: "ReviewingReset",
+              actions: assign({
+                preparedDownload: ({ event }) => event.output,
+                portabilityIssue: null,
+                portabilityNotice:
+                  "Your private backup is ready. Review the reset when you are ready.",
+              }),
+            },
+            onError: {
+              target: "ReviewingReset",
+              actions: assign({
+                preparedDownload: null,
+                portabilityIssue: ({ event }) => getErrorMessage(event.error),
+                portabilityNotice: null,
+              }),
+            },
+          },
+        },
+        ApplyingScopedReset: {
+          invoke: {
+            src: "applyScopedPlayerDataReset",
+            input: ({ context }) => ({
+              store: context.durableStore,
+              state: requireBattleProfileStoreState(context),
+              playerData: requirePlayerData(context),
+              resetKind: requirePendingScopedResetKind(context),
+              resetAt: context.now(),
+            }),
+            onDone: {
+              target: "Browsing",
+              actions: assign({
+                playerData: ({ event }) => event.output.head.playerData,
+                battleProfileStoreState: ({ event }) => event.output,
+                portabilityNotice: ({ context }) =>
+                  getResetSuccessNotice(requirePendingScopedResetKind(context)),
+                pendingResetKind: null,
+                preparedDownload: null,
+                portabilityIssue: null,
+              }),
+            },
+            onError: {
+              target: "ReviewingReset",
+              actions: assign({
+                portabilityIssue: ({ event }) => getErrorMessage(event.error),
+              }),
+            },
+          },
+        },
+        DeletingAllData: {
+          invoke: {
+            src: "deleteAllPlayerData",
+            input: ({ context }) => ({
+              store: context.durableStore,
+              state: requireBattleProfileStoreState(context),
+            }),
+            onDone: {
+              target: "#root.Splash",
+              actions: assign({
+                playerData: ({ context }) =>
+                  createFreshPlayerDataAfterDeletion(context),
+                battleProfileStoreState: null,
+                pendingResetKind: null,
+                pendingImport: null,
+                pendingImportBytes: null,
+                preImportBackupBytes: null,
+                preparedDownload: null,
+                persistenceIssue: null,
+                portabilityIssue: null,
+                portabilityNotice: "All local WAYVM player data was deleted.",
+              }),
+            },
+            onError: {
+              target: "ReviewingReset",
+              actions: assign({
+                portabilityIssue: ({ event }) => getErrorMessage(event.error),
+              }),
+            },
+          },
+        },
+        CreatingPreImportBackup: {
+          invoke: {
+            src: "createWayvmExport",
+            input: ({ context }) => ({
+              exportedAt: context.now(),
+              sourceAppVersion: context.appVersion,
+              sourceBuild: context.sourceBuild,
+              playerData: requirePlayerData(context),
+            }),
+            onDone: {
+              target: "ReplacingImport",
+              actions: assign({
+                preImportBackupBytes: ({ event }) => event.output.serialized,
+              }),
+            },
+            onError: {
+              target: "ReviewingImport",
+              actions: assign({
+                preImportBackupBytes: null,
+                portabilityIssue: ({ event }) => getErrorMessage(event.error),
+              }),
+            },
+          },
+        },
+        ReplacingImport: {
+          invoke: {
+            src: "replacePlayerData",
+            input: ({ context }) => ({
+              store: context.durableStore,
+              state: requireBattleProfileStoreState(context),
+              playerData: requirePendingImport(context).wayvmExport.playerData,
+              preImportBackupBytes: requirePreImportBackupBytes(context),
+              replacedAt: context.now(),
+            }),
+            onDone: {
+              target: "Browsing",
+              actions: assign({
+                playerData: ({ event }) => event.output.head.playerData,
+                battleProfileStoreState: ({ event }) => event.output,
+                pendingImport: null,
+                preImportBackupBytes: null,
+                portabilityIssue: null,
+                portabilityNotice:
+                  "Your imported values and progress are now active.",
+              }),
+            },
+            onError: {
+              target: "ReviewingImport",
+              actions: assign({
+                preImportBackupBytes: null,
+                portabilityIssue: ({ event }) => getErrorMessage(event.error),
+              }),
+            },
+          },
+        },
       },
     },
     AllValues: {
@@ -460,15 +906,17 @@ export const rootMachine = setup({
             "ALL_VALUES.ADD_REQUESTED": {
               target: "Persisting",
               actions: assign({
+                persistenceIssue: null,
                 pendingBattleProfileCommit: ({ context, event }) => {
                   if (event.type !== "ALL_VALUES.ADD_REQUESTED") {
                     throw new Error("Invalid add request event type")
                   }
 
-                  return createDeckRevisionCommitFromAdd({
-                    context,
+                  return createCustomValueAddCommit({
+                    profile: requireBattleProfile(context),
                     name: event.name,
                     definition: event.definition,
+                    now: context.now,
                   })
                 },
               }),
@@ -476,13 +924,14 @@ export const rootMachine = setup({
             "ALL_VALUES.UPDATE_REQUESTED": {
               target: "Persisting",
               actions: assign({
+                persistenceIssue: null,
                 pendingBattleProfileCommit: ({ context, event }) => {
                   if (event.type !== "ALL_VALUES.UPDATE_REQUESTED") {
                     throw new Error("Invalid update request event type")
                   }
 
-                  return createDeckRevisionCommitFromUpdate({
-                    context,
+                  return createCustomValueUpdateCommit({
+                    profile: requireBattleProfile(context),
                     valueId: event.valueId,
                     name: event.name,
                     definition: event.definition,
@@ -494,13 +943,14 @@ export const rootMachine = setup({
             "ALL_VALUES.DELETE_REQUESTED": {
               target: "Persisting",
               actions: assign({
+                persistenceIssue: null,
                 pendingBattleProfileCommit: ({ context, event }) => {
                   if (event.type !== "ALL_VALUES.DELETE_REQUESTED") {
                     throw new Error("Invalid delete request event type")
                   }
 
-                  return createDeckRevisionCommitFromDelete({
-                    context,
+                  return createCustomValueDeleteCommit({
+                    profile: requireBattleProfile(context),
                     valueId: event.valueId,
                   })
                 },
@@ -520,13 +970,14 @@ export const rootMachine = setup({
             onDone: {
               target: "Browsing",
               actions: assign({
-                battleProfile: ({ event }) => event.output.head.profile,
+                playerData: ({ event }) => event.output.head.playerData,
                 battleProfileStoreState: ({ event }) => event.output,
                 pendingBattleProfileCommit: null,
+                persistenceIssue: null,
               }),
             },
             onError: {
-              target: "#root.PersistenceFailure",
+              target: "Browsing",
               actions: assign({
                 pendingBattleProfileCommit: null,
                 persistenceIssue: ({ event }) => getErrorMessage(event.error),
@@ -542,6 +993,15 @@ export const rootMachine = setup({
         Ready: {
           on: {
             "BATTLE.EXIT_REQUESTED": { target: "#root.Hub" },
+            "ACHIEVEMENT.PRESENTED": {
+              guard: "canRecordAchievementPresentation",
+              target: "#root.RecordingAchievementPresentation",
+              actions: assign({
+                pendingAchievementPresentationId: ({ event }) =>
+                  event.achievementId,
+                achievementPresentationReturnTarget: "crucible",
+              }),
+            },
             "BATTLE.WINNER_SELECTED": {
               guard: "isCurrentBattleSelection",
               target: "Persisting",
@@ -589,6 +1049,16 @@ export const rootMachine = setup({
           },
         },
         Persisting: {
+          on: {
+            "ACHIEVEMENT.PRESENTED": {
+              guard: "canRecordAchievementPresentation",
+              actions: assign({
+                pendingAchievementPresentationId: ({ event }) =>
+                  event.achievementId,
+                achievementPresentationReturnTarget: "crucible",
+              }),
+            },
+          },
           invoke: {
             src: "commitBattleProfileEvent",
             input: ({ context }) => ({
@@ -597,18 +1067,30 @@ export const rootMachine = setup({
               event: requirePendingBattleProfileCommit(context).event,
               committedAt: context.now(),
             }),
-            onDone: {
-              target: "Ready",
-              actions: assign({
-                battleProfile: ({ event }) => event.output.head.profile,
-                battleProfileStoreState: ({ event }) => event.output,
-                pendingBattleProfileCommit: null,
-              }),
-            },
+            onDone: [
+              {
+                guard: "hasPendingAchievementPresentation",
+                target: "#root.RecordingAchievementPresentation",
+                actions: assign({
+                  playerData: ({ event }) => event.output.head.playerData,
+                  battleProfileStoreState: ({ event }) => event.output,
+                  pendingBattleProfileCommit: null,
+                }),
+              },
+              {
+                target: "Ready",
+                actions: assign({
+                  playerData: ({ event }) => event.output.head.playerData,
+                  battleProfileStoreState: ({ event }) => event.output,
+                  pendingBattleProfileCommit: null,
+                }),
+              },
+            ],
             onError: {
               target: "#root.PersistenceFailure",
               actions: assign({
                 pendingBattleProfileCommit: null,
+                persistenceFailureOrigin: "crucible",
                 persistenceIssue: ({ event }) => getErrorMessage(event.error),
               }),
             },
@@ -616,6 +1098,396 @@ export const rootMachine = setup({
         },
       },
     },
-    PersistenceFailure: {},
+    RecordingAchievementPresentation: {
+      invoke: {
+        src: "recordAchievementPresentation",
+        input: ({ context }) => ({
+          store: context.durableStore,
+          state: requireBattleProfileStoreState(context),
+          achievementId: requirePendingAchievementPresentationId(context),
+          presentedAt: context.now(),
+        }),
+        onDone: [
+          {
+            guard: "shouldReturnAchievementPresentationToAchievements",
+            target: "Achievements",
+            actions: assign({
+              playerData: ({ event }) => event.output.head.playerData,
+              battleProfileStoreState: ({ event }) => event.output,
+              ...CLEARED_ACHIEVEMENT_PRESENTATION_CONTEXT,
+            }),
+          },
+          {
+            guard: "shouldReturnAchievementPresentationToCrucible",
+            target: "Crucible.Ready",
+            actions: assign({
+              playerData: ({ event }) => event.output.head.playerData,
+              battleProfileStoreState: ({ event }) => event.output,
+              ...CLEARED_ACHIEVEMENT_PRESENTATION_CONTEXT,
+            }),
+          },
+          {
+            target: "Hub",
+            actions: assign({
+              playerData: ({ event }) => event.output.head.playerData,
+              battleProfileStoreState: ({ event }) => event.output,
+              ...CLEARED_ACHIEVEMENT_PRESENTATION_CONTEXT,
+            }),
+          },
+        ],
+        onError: {
+          target: "PersistenceFailure",
+          actions: assign({
+            persistenceFailureOrigin: "achievement-presentation",
+            persistenceIssue: ({ event }) => getErrorMessage(event.error),
+          }),
+        },
+      },
+    },
+    PersistenceFailure: {
+      initial: "Reviewing",
+      states: {
+        Reviewing: {
+          on: {
+            "RECOVERY.EXPORT_REQUESTED": {
+              guard: "hasRecoveryEntries",
+              target: "ExportingEvidence",
+              actions: assign({
+                preparedDownload: null,
+                portabilityIssue: null,
+                portabilityNotice: null,
+              }),
+            },
+            "RECOVERY.EXPORT_CONSUMED": {
+              actions: assign({ preparedDownload: null }),
+            },
+            "RECOVERY.IMPORT_PREPARE_REQUESTED": {
+              guard: "hasRecoveryEntries",
+              target: "PreparingImport",
+              actions: assign({
+                pendingImportBytes: ({ event }) => event.serialized,
+                pendingImport: null,
+                pendingRecoveryImportSource: "selected-backup",
+                portabilityIssue: null,
+                portabilityNotice: null,
+              }),
+            },
+            "RECOVERY.RESTORE_BACKUP_REQUESTED": {
+              guard: "hasStoredRecoveryBackup",
+              target: "PreparingStoredBackup",
+              actions: assign({
+                pendingImportBytes: ({ context }) =>
+                  requireStoredRecoveryBackup(context),
+                pendingImport: null,
+                pendingRecoveryImportSource: "last-known-good",
+                portabilityIssue: null,
+                portabilityNotice: null,
+              }),
+            },
+            "RECOVERY.DELETE_ALL_REQUESTED": {
+              guard: "isAcknowledgedRecoveryDeletion",
+              target: "DeletingAllData",
+              actions: assign({
+                portabilityIssue: null,
+                portabilityNotice: null,
+              }),
+            },
+            "RECOVERY.PLATFORM_FAILURE_REPORTED": {
+              actions: assign({
+                preparedDownload: null,
+                portabilityIssue: ({ event }) => event.issue,
+                portabilityNotice: null,
+              }),
+            },
+            "STORAGE_RECOVERY.EXPORT_REQUESTED": {
+              guard: "canExportCurrentDataAfterStorageFailure",
+              target: "ExportingCurrentData",
+              actions: assign({
+                preparedDownload: null,
+                portabilityIssue: null,
+                portabilityNotice: null,
+              }),
+            },
+            "STORAGE_RECOVERY.RETRY_REQUESTED": [
+              {
+                guard: "isLoadingStorageFailure",
+                target: "#root.LoadingProfile",
+                actions: assign({
+                  persistenceFailureOrigin: null,
+                  persistenceIssue: null,
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+              {
+                guard: "isInitializationStorageFailure",
+                target: "#root.InitializingProfile",
+                actions: assign({
+                  persistenceFailureOrigin: null,
+                  persistenceIssue: null,
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+              {
+                guard: "isCrucibleStorageFailure",
+                target: "#root.Crucible.Ready",
+                actions: assign({
+                  persistenceFailureOrigin: null,
+                  persistenceIssue: null,
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+              {
+                guard: "isAchievementPresentationStorageFailure",
+                target: "#root.RecordingAchievementPresentation",
+                actions: assign({
+                  persistenceFailureOrigin: null,
+                  persistenceIssue: null,
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+            ],
+            "STORAGE_RECOVERY.RETURN_REQUESTED": [
+              {
+                guard: "isInitializationStorageFailure",
+                target: "#root.Splash",
+                actions: assign({
+                  persistenceFailureOrigin: null,
+                  persistenceIssue: null,
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+              {
+                guard: "isCrucibleStorageFailure",
+                target: "#root.Hub",
+                actions: assign({
+                  persistenceFailureOrigin: null,
+                  persistenceIssue: null,
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+              {
+                guard:
+                  "shouldReturnFailedAchievementPresentationToAchievements",
+                target: "#root.Achievements",
+                actions: assign({
+                  ...CLEARED_ACHIEVEMENT_PRESENTATION_CONTEXT,
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+              {
+                guard: "shouldReturnFailedAchievementPresentationToCrucible",
+                target: "#root.Crucible.Ready",
+                actions: assign({
+                  ...CLEARED_ACHIEVEMENT_PRESENTATION_CONTEXT,
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+              {
+                guard: "shouldReturnFailedAchievementPresentationToHub",
+                target: "#root.Hub",
+                actions: assign({
+                  ...CLEARED_ACHIEVEMENT_PRESENTATION_CONTEXT,
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+            ],
+          },
+        },
+        ExportingCurrentData: {
+          invoke: {
+            src: "createWayvmExport",
+            input: ({ context }) => ({
+              exportedAt: context.now(),
+              sourceAppVersion: context.appVersion,
+              sourceBuild: context.sourceBuild,
+              playerData: requirePlayerData(context),
+            }),
+            onDone: {
+              target: "Reviewing",
+              actions: assign({
+                preparedDownload: ({ event }) => event.output,
+                portabilityIssue: null,
+                portabilityNotice: "Your current data backup is ready.",
+              }),
+            },
+            onError: {
+              target: "Reviewing",
+              actions: assign({
+                preparedDownload: null,
+                portabilityIssue: ({ event }) => getErrorMessage(event.error),
+              }),
+            },
+          },
+        },
+        ExportingEvidence: {
+          invoke: {
+            src: "createRecoveryBundle",
+            input: ({ context }) => ({
+              entries: requireRecoveryEntries(context),
+              exportedAt: context.now(),
+              issue: context.persistenceIssue ?? "Recovery is required",
+              sourceAppVersion: context.appVersion,
+              sourceBuild: context.sourceBuild,
+            }),
+            onDone: {
+              target: "Reviewing",
+              actions: assign({
+                preparedDownload: ({ event }) => event.output,
+                portabilityIssue: null,
+                portabilityNotice:
+                  "Your unreadable local data is ready as a diagnostic recovery file.",
+              }),
+            },
+            onError: {
+              target: "Reviewing",
+              actions: assign({
+                preparedDownload: null,
+                portabilityIssue: ({ event }) => getErrorMessage(event.error),
+              }),
+            },
+          },
+        },
+        PreparingStoredBackup: {
+          invoke: {
+            src: "prepareWayvmImport",
+            input: ({ context }) => ({
+              serialized: requirePendingImportBytes(context),
+            }),
+            onDone: {
+              target: "ReviewingImport",
+              actions: assign({
+                pendingImportBytes: null,
+                pendingImport: ({ event }) => event.output,
+                portabilityIssue: null,
+              }),
+            },
+            onError: {
+              target: "Reviewing",
+              actions: assign({
+                pendingImportBytes: null,
+                pendingImport: null,
+                pendingRecoveryImportSource: null,
+                portabilityIssue: ({ event }) => getErrorMessage(event.error),
+              }),
+            },
+          },
+        },
+        PreparingImport: {
+          invoke: {
+            src: "prepareWayvmImport",
+            input: ({ context }) => ({
+              serialized: requirePendingImportBytes(context),
+            }),
+            onDone: {
+              target: "ReviewingImport",
+              actions: assign({
+                pendingImportBytes: null,
+                pendingImport: ({ event }) => event.output,
+                portabilityIssue: null,
+              }),
+            },
+            onError: {
+              target: "Reviewing",
+              actions: assign({
+                pendingImportBytes: null,
+                pendingImport: null,
+                pendingRecoveryImportSource: null,
+                portabilityIssue: ({ event }) => getErrorMessage(event.error),
+              }),
+            },
+          },
+        },
+        ReviewingImport: {
+          on: {
+            "RECOVERY.IMPORT_CANCEL_REQUESTED": {
+              target: "Reviewing",
+              actions: assign({
+                pendingImport: null,
+                pendingRecoveryImportSource: null,
+                portabilityIssue: null,
+              }),
+            },
+            "RECOVERY.IMPORT_CONFIRM_REQUESTED": {
+              target: "ReplacingPlayerData",
+              actions: assign({ portabilityIssue: null }),
+            },
+          },
+        },
+        ReplacingPlayerData: {
+          invoke: {
+            src: "replaceUnrecoverablePlayerData",
+            input: ({ context }) => ({
+              store: context.durableStore,
+              entries: requireRecoveryEntries(context),
+              playerData: requirePendingImport(context).wayvmExport.playerData,
+              replacedAt: context.now(),
+              appVersion: context.appVersion,
+            }),
+            onDone: {
+              target: "#root.Hub",
+              actions: assign({
+                playerData: ({ event }) => event.output.head.playerData,
+                battleProfileStoreState: ({ event }) => event.output,
+                pendingImport: null,
+                recoveryEntries: null,
+                persistenceFailureOrigin: null,
+                persistenceIssue: null,
+                portabilityIssue: null,
+                portabilityNotice: ({ context }) =>
+                  getRecoveryReplacementNotice(context),
+                pendingRecoveryImportSource: null,
+              }),
+            },
+            onError: {
+              target: "ReviewingImport",
+              actions: assign({
+                portabilityIssue: ({ event }) => getErrorMessage(event.error),
+              }),
+            },
+          },
+        },
+        DeletingAllData: {
+          invoke: {
+            src: "deleteUnrecoverablePlayerData",
+            input: ({ context }) => ({
+              store: context.durableStore,
+              entries: requireRecoveryEntries(context),
+            }),
+            onDone: {
+              target: "#root.Splash",
+              actions: assign({
+                playerData: ({ context }) =>
+                  createFreshPlayerDataAfterDeletion(context),
+                battleProfileStoreState: null,
+                pendingImport: null,
+                pendingImportBytes: null,
+                pendingRecoveryImportSource: null,
+                preparedDownload: null,
+                recoveryEntries: null,
+                persistenceFailureOrigin: null,
+                persistenceIssue: null,
+                portabilityIssue: null,
+                portabilityNotice: "All local WAYVM player data was deleted.",
+              }),
+            },
+            onError: {
+              target: "Reviewing",
+              actions: assign({
+                portabilityIssue: ({ event }) => getErrorMessage(event.error),
+              }),
+            },
+          },
+        },
+      },
+    },
   },
 })

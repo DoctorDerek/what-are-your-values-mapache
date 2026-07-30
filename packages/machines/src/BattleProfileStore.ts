@@ -1,4 +1,3 @@
-import type { BattleProfile } from "./BattleProfile"
 import {
   createBattleProfileCheckpoint,
   serializeBattleProfileCheckpoint,
@@ -16,7 +15,13 @@ import {
   type BattleProfileCheckpointSlot,
   type BattleProfileManifest,
 } from "./BattleProfileManifest"
-import type { DurableStoreAdapter } from "./DurableStoreAdapter"
+import {
+  DurableStoreConflictError,
+  type DurableStoreAdapter,
+  type DurableStoreExpectation,
+} from "./DurableStoreAdapter"
+import { MAX_PERSISTED_JSON_BYTES } from "./PersistedJson"
+import type { PlayerData } from "./PlayerData"
 
 export const BATTLE_PROFILE_SNAPSHOT_A_KEY = "wayvm.snapshot.a" as const
 export const BATTLE_PROFILE_SNAPSHOT_B_KEY = "wayvm.snapshot.b" as const
@@ -24,12 +29,14 @@ export const BATTLE_PROFILE_MANIFEST_KEY = "wayvm.snapshot.manifest" as const
 export const BATTLE_PROFILE_JOURNAL_KEY_PREFIX = "wayvm.journal." as const
 export const BATTLE_PROFILE_QUARANTINE_KEY =
   "wayvm.recovery.quarantine" as const
+export const BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY =
+  "wayvm.import.pre-replacement-backup" as const
 
 export type BattleProfileStoreState = {
   readonly head: BattleProfilePersistenceHead
   readonly manifest: BattleProfileManifest
   readonly manifestBytes: string
-  readonly profileCreatedAt: string
+  readonly playerDataCreatedAt: string
   readonly appVersion: string
   readonly journalKeys: readonly string[]
 }
@@ -95,12 +102,12 @@ export function getSortedBattleProfileJournalKeys(
 
 export async function initializeBattleProfileStore({
   store,
-  profile,
+  playerData,
   createdAt,
   appVersion,
 }: {
   readonly store: DurableStoreAdapter
-  readonly profile: BattleProfile
+  readonly playerData: PlayerData
   readonly createdAt: string
   readonly appVersion: string
 }) {
@@ -110,7 +117,7 @@ export async function initializeBattleProfileStore({
     createdAt,
     updatedAt: createdAt,
     appVersion,
-    profile,
+    playerData,
   })
   const manifest = createBattleProfileManifest({
     activeSlot: "a",
@@ -139,11 +146,11 @@ export async function initializeBattleProfileStore({
     head: Object.freeze({
       generation: 0,
       revision: 0,
-      profile: checkpoint.profile,
+      playerData: checkpoint.playerData,
     }),
     manifest,
     manifestBytes,
-    profileCreatedAt: createdAt,
+    playerDataCreatedAt: createdAt,
     appVersion,
     journalKeys: [],
   })
@@ -209,10 +216,10 @@ export async function commitBattleProfileStoreEvent({
   const checkpoint = await createBattleProfileCheckpoint({
     generation: commit.head.generation,
     revision: commit.head.revision,
-    createdAt: state.profileCreatedAt,
+    createdAt: state.playerDataCreatedAt,
     updatedAt: committedAt,
     appVersion: state.appVersion,
-    profile: commit.head.profile,
+    playerData: commit.head.playerData,
   })
   const manifest = createBattleProfileManifest({
     activeSlot,
@@ -254,5 +261,242 @@ export async function commitBattleProfileStoreEvent({
     manifest,
     manifestBytes,
     journalKeys: retainedJournalKeys,
+  })
+}
+
+function incrementStoreIdentity(value: number, label: string) {
+  if (
+    !Number.isSafeInteger(value) ||
+    value < 0 ||
+    value === Number.MAX_SAFE_INTEGER
+  ) {
+    throw new Error(`${label} cannot be incremented safely`)
+  }
+
+  return value + 1
+}
+
+async function replaceBattleProfileStorePlayerDataAtomically({
+  store,
+  state,
+  playerData,
+  preImportBackupBytes,
+  replacedAt,
+}: {
+  readonly store: DurableStoreAdapter
+  readonly state: BattleProfileStoreState
+  readonly playerData: PlayerData
+  readonly preImportBackupBytes: string | null
+  readonly replacedAt: string
+}) {
+  if (
+    preImportBackupBytes !== null &&
+    new TextEncoder().encode(preImportBackupBytes).byteLength >
+      MAX_PERSISTED_JSON_BYTES
+  ) {
+    throw new Error("Pre-import backup exceeds the persisted byte limit")
+  }
+
+  const generation = incrementStoreIdentity(
+    state.head.generation,
+    "Store generation",
+  )
+  const revision = incrementStoreIdentity(state.head.revision, "Store revision")
+  const activeSlot = getInactiveCheckpointSlot(state.manifest.activeSlot)
+  const checkpointKey = getSnapshotKey(activeSlot)
+  const entries = await store.readAll()
+  const replacedCheckpointBytes = entries.get(checkpointKey) ?? null
+  const priorPreImportBackupBytes =
+    entries.get(BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY) ?? null
+  const checkpoint = await createBattleProfileCheckpoint({
+    generation,
+    revision,
+    createdAt: replacedAt,
+    updatedAt: replacedAt,
+    appVersion: state.appVersion,
+    playerData,
+  })
+  const manifest = createBattleProfileManifest({
+    activeSlot,
+    checkpointGeneration: generation,
+    checkpointRevision: revision,
+    headGeneration: generation,
+    headRevision: revision,
+  })
+  const manifestBytes = serializeBattleProfileManifest(manifest)
+
+  await store.compareAndSwapVerified({
+    expectedEntries: [
+      [BATTLE_PROFILE_MANIFEST_KEY, state.manifestBytes],
+      [checkpointKey, replacedCheckpointBytes],
+      [BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY, priorPreImportBackupBytes],
+    ],
+    putEntries: [
+      [checkpointKey, serializeBattleProfileCheckpoint(checkpoint)],
+      [BATTLE_PROFILE_MANIFEST_KEY, manifestBytes],
+      ...(preImportBackupBytes === null
+        ? []
+        : [
+            [
+              BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY,
+              preImportBackupBytes,
+            ] as const,
+          ]),
+    ],
+    deleteKeys: state.journalKeys,
+  })
+
+  return createBattleProfileStoreState({
+    head: Object.freeze({
+      generation,
+      revision,
+      playerData: checkpoint.playerData,
+    }),
+    manifest,
+    manifestBytes,
+    playerDataCreatedAt: replacedAt,
+    appVersion: state.appVersion,
+    journalKeys: [],
+  })
+}
+
+export async function replaceBattleProfileStorePlayerData({
+  store,
+  state,
+  playerData,
+  preImportBackupBytes,
+  replacedAt,
+}: {
+  readonly store: DurableStoreAdapter
+  readonly state: BattleProfileStoreState
+  readonly playerData: PlayerData
+  readonly preImportBackupBytes: string
+  readonly replacedAt: string
+}) {
+  return replaceBattleProfileStorePlayerDataAtomically({
+    store,
+    state,
+    playerData,
+    preImportBackupBytes,
+    replacedAt,
+  })
+}
+
+export async function replaceBattleProfileStorePlayerDataForLocalMutation({
+  store,
+  state,
+  playerData,
+  replacedAt,
+}: {
+  readonly store: DurableStoreAdapter
+  readonly state: BattleProfileStoreState
+  readonly playerData: PlayerData
+  readonly replacedAt: string
+}) {
+  return replaceBattleProfileStorePlayerDataAtomically({
+    store,
+    state,
+    playerData,
+    preImportBackupBytes: null,
+    replacedAt,
+  })
+}
+
+export async function deleteAllBattleProfileStoreData({
+  store,
+  state,
+}: {
+  readonly store: DurableStoreAdapter
+  readonly state: BattleProfileStoreState
+}) {
+  const entries = await store.readAll()
+  if (
+    (entries.get(BATTLE_PROFILE_MANIFEST_KEY) ?? null) !== state.manifestBytes
+  ) {
+    throw new DurableStoreConflictError(BATTLE_PROFILE_MANIFEST_KEY)
+  }
+
+  await store.compareAndSwapVerified({
+    expectedEntries: Array.from(entries),
+    putEntries: [],
+    deleteKeys: Array.from(entries.keys()),
+  })
+}
+
+export async function replaceUnrecoverableBattleProfileStorePlayerData({
+  store,
+  entries,
+  playerData,
+  replacedAt,
+  appVersion,
+}: {
+  readonly store: DurableStoreAdapter
+  readonly entries: ReadonlyMap<string, string>
+  readonly playerData: PlayerData
+  readonly replacedAt: string
+  readonly appVersion: string
+}) {
+  const checkpoint = await createBattleProfileCheckpoint({
+    generation: 0,
+    revision: 0,
+    createdAt: replacedAt,
+    updatedAt: replacedAt,
+    appVersion,
+    playerData,
+  })
+  const manifest = createBattleProfileManifest({
+    activeSlot: "a",
+    checkpointGeneration: 0,
+    checkpointRevision: 0,
+    headGeneration: 0,
+    headRevision: 0,
+  })
+  const manifestBytes = serializeBattleProfileManifest(manifest)
+  const putEntries = [
+    [
+      BATTLE_PROFILE_SNAPSHOT_A_KEY,
+      serializeBattleProfileCheckpoint(checkpoint),
+    ],
+    [BATTLE_PROFILE_MANIFEST_KEY, manifestBytes],
+  ] as const
+  const putKeys: ReadonlySet<string> = new Set(putEntries.map(([key]) => key))
+  const expectedEntries: DurableStoreExpectation[] = Array.from(entries)
+  putEntries.forEach(([key]) => {
+    if (!entries.has(key)) {
+      expectedEntries.push([key, null])
+    }
+  })
+
+  await store.compareAndSwapVerified({
+    expectedEntries,
+    putEntries,
+    deleteKeys: Array.from(entries.keys()).filter((key) => !putKeys.has(key)),
+  })
+
+  return createBattleProfileStoreState({
+    head: Object.freeze({
+      generation: 0,
+      revision: 0,
+      playerData: checkpoint.playerData,
+    }),
+    manifest,
+    manifestBytes,
+    playerDataCreatedAt: replacedAt,
+    appVersion,
+    journalKeys: [],
+  })
+}
+
+export async function deleteUnrecoverableBattleProfileStoreData({
+  store,
+  entries,
+}: {
+  readonly store: DurableStoreAdapter
+  readonly entries: ReadonlyMap<string, string>
+}) {
+  await store.compareAndSwapVerified({
+    expectedEntries: Array.from(entries),
+    putEntries: [],
+    deleteKeys: Array.from(entries.keys()),
   })
 }

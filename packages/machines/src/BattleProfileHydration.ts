@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@game/utils/src/Errors"
 import { decodeBattleProfileCheckpoint } from "./BattleProfileCheckpoint"
 import { replayBattleProfileJournalToGeneration } from "./BattleProfileJournalReplay"
 import { decodeBattleProfileManifest } from "./BattleProfileManifest"
@@ -5,6 +6,7 @@ import { recoverBattleProfileStore } from "./BattleProfileRecovery"
 import {
   BATTLE_PROFILE_JOURNAL_KEY_PREFIX,
   BATTLE_PROFILE_MANIFEST_KEY,
+  BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY,
   BATTLE_PROFILE_QUARANTINE_KEY,
   BATTLE_PROFILE_SNAPSHOT_A_KEY,
   BATTLE_PROFILE_SNAPSHOT_B_KEY,
@@ -27,10 +29,6 @@ export type BattleProfileHydrationResult =
       readonly entries: ReadonlyMap<string, string>
     }
 
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : String(error)
-}
-
 function hasBattleProfileRecords(entries: ReadonlyMap<string, string>) {
   return Array.from(entries.keys()).some(
     (key) =>
@@ -38,6 +36,7 @@ function hasBattleProfileRecords(entries: ReadonlyMap<string, string>) {
       key === BATTLE_PROFILE_SNAPSHOT_A_KEY ||
       key === BATTLE_PROFILE_SNAPSHOT_B_KEY ||
       key === BATTLE_PROFILE_QUARANTINE_KEY ||
+      key === BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY ||
       key.startsWith(BATTLE_PROFILE_JOURNAL_KEY_PREFIX),
   )
 }
@@ -99,7 +98,7 @@ export async function hydrateBattleProfileStore({
         head,
         manifest,
         manifestBytes,
-        profileCreatedAt: checkpoint.createdAt,
+        playerDataCreatedAt: checkpoint.createdAt,
         appVersion,
         journalKeys,
       }),
