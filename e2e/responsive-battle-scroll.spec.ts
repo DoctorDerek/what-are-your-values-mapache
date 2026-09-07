@@ -238,7 +238,14 @@ for (const viewport of [
             ),
         )
         .toBe(true)
-      await page.keyboard.press(side === "first" ? "1" : "2")
+      const animalBounds = await stage
+        .locator(`[data-combatant-side="${side}"]`)
+        .boundingBox()
+      if (!animalBounds) throw new Error("The selected animal must be visible")
+      await page.mouse.click(
+        animalBounds.x + animalBounds.width / 2,
+        animalBounds.y + animalBounds.height / 2,
+      )
       await expect(stage).not.toHaveAttribute(
         "data-choreography-identity",
         identity!,

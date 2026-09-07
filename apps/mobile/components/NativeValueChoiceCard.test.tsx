@@ -71,7 +71,6 @@ describe("NativeValueChoiceCard", () => {
     expect(
       screen.getByText("Animal alert", { includeHiddenElements: true }),
     ).toBeOnTheScreen()
-    await fireEvent.press(animalCaption)
     expect(onActivate).not.toHaveBeenCalled()
     await fireEvent(animalCaption, "pointerLeave")
     expect(
@@ -94,6 +93,9 @@ describe("NativeValueChoiceCard", () => {
     await fireEvent.press(choice)
     expect(onActivate).toHaveBeenCalledTimes(1)
     expect(onActivate).toHaveBeenCalledWith(selfAcceptance.id)
+    await fireEvent.press(animalCaption)
+    expect(onActivate).toHaveBeenCalledTimes(2)
+    expect(onActivate).toHaveBeenLastCalledWith(selfAcceptance.id)
   })
   it("preserves complete canonical and maximum-length Custom Value names", async () => {
     const user = userEvent.setup()
@@ -120,8 +122,9 @@ describe("NativeValueChoiceCard", () => {
         isEnabled: true,
         isAnimating: false,
         onActivate,
+        combatant: () => <Text>Animal</Text>,
       } satisfies ComponentProps<typeof NativeValueChoiceCard>
-      const { unmount } = await render(<NativeValueChoiceCard {...props} />)
+      const { unmount, rerender } = await render(<NativeValueChoiceCard {...props} />)
       const displayName = getValueDisplayName(choiceCase.value)
       const name = screen.getByText(displayName)
       const choice = screen.getByRole("button", {
@@ -140,6 +143,15 @@ describe("NativeValueChoiceCard", () => {
       await user.press(choice)
       expect(onActivate).toHaveBeenCalledTimes(1)
       expect(onActivate).toHaveBeenCalledWith(choiceCase.value.id)
+
+      const animal = screen.getByText("Animal", { includeHiddenElements: true })
+      await fireEvent.press(animal)
+      expect(onActivate).toHaveBeenCalledTimes(2)
+      expect(onActivate).toHaveBeenLastCalledWith(choiceCase.value.id)
+      await rerender(<NativeValueChoiceCard {...props} isEnabled={false} />)
+      await fireEvent.press(animal)
+      await fireEvent.press(choice)
+      expect(onActivate).toHaveBeenCalledTimes(2)
 
       await unmount()
     }
