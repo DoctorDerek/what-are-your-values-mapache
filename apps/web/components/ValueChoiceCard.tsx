@@ -159,7 +159,7 @@ export const ValueChoiceCard = forwardRef<
           }}
           onPointerLeave={() => setIsHovered(false)}
           onPointerCancel={() => setIsHovered(false)}
-          className={`absolute top-1/2 flex h-(--battle-arena-height) w-1/2 -translate-y-1/2 flex-col items-center justify-end border-y-4 border-black px-2 pb-2 xl:top-auto xl:bottom-0 xl:h-[calc(var(--battle-combatant-size)+3rem)] xl:translate-y-0 xl:flex-row xl:items-end xl:border-0 xl:px-4 ${isEnabled ? "cursor-pointer" : "cursor-default"} ${isWinner ? "z-30" : "z-20"} ${isFirst ? "bg-mapache-vivid-primary-cyan left-0 xl:justify-end xl:border-r-8" : "bg-mapache-vivid-primary-raspberry right-0 xl:justify-start"}`}
+          className={`@container absolute top-1/2 flex h-(--battle-arena-height) w-1/2 -translate-y-1/2 flex-col items-center justify-end border-y-4 border-black pb-2 xl:top-auto xl:bottom-0 xl:h-[calc(var(--battle-combatant-size)+3rem)] xl:translate-y-0 xl:flex-row xl:items-end xl:justify-center xl:border-0 ${isEnabled ? "cursor-pointer" : "cursor-default"} ${isWinner ? "z-30" : "z-20"} ${isFirst ? "bg-mapache-vivid-primary-cyan left-0" : "bg-mapache-vivid-primary-raspberry right-0"}`}
         >
           <span className="flex w-(--battle-combatant-size) flex-col items-center">
             <span aria-hidden="true" className="block h-6 w-full xl:h-10" />

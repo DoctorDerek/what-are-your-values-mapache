@@ -10,6 +10,22 @@
     var(--battle-result-duration) ease-out 1 both;
   --animate-seething-swarm-placeholder-reaction: seething-swarm-placeholder-reaction
     var(--battle-result-duration) ease-out 1 both;
+  --animate-seething-swarm-approach: seething-swarm-approach
+    var(--battle-approach-duration) ease-out 1 both;
+
+  @keyframes seething-swarm-approach {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(
+        calc(
+          var(--battle-travel-direction) *
+            (100cqw - var(--battle-combatant-size) * 3 / 4)
+        )
+      );
+    }
+  }
 
   @keyframes advance-seething-swarm-strip {
     to {
