@@ -23,7 +23,9 @@ export const test = base.extend<Record<never, never>, PreviewWorkerFixtures>({
       const requestUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL
       const requestToken = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN
       if (!requestUrl || !requestToken)
-        throw new Error("Protected previews require GitHub OIDC request credentials")
+        throw new Error(
+          "Protected previews require GitHub OIDC request credentials",
+        )
       await provide(createPreviewIdentityResolver({ requestUrl, requestToken }))
     },
     { scope: "worker" },
@@ -42,7 +44,9 @@ export const test = base.extend<Record<never, never>, PreviewWorkerFixtures>({
       deployment?.protocol !== "https:" ||
       !deployment.hostname.endsWith(".vercel.app")
     )
-      throw new Error("Protected-preview identity requires an HTTPS Vercel deployment")
+      throw new Error(
+        "Protected-preview identity requires an HTTPS Vercel deployment",
+      )
 
     const identity = await resolvePreviewIdentity(testInfo.timeout)
     if (identity.wasRenewed) {

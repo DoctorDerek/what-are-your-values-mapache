@@ -64,7 +64,9 @@ export function createPreviewIdentityResolver({
 
   return async (requiredValidityMs) => {
     if (!Number.isFinite(requiredValidityMs) || requiredValidityMs <= 0)
-      throw new Error("Protected-preview tests require a finite positive timeout")
+      throw new Error(
+        "Protected-preview tests require a finite positive timeout",
+      )
 
     const requiredRemainingMs =
       requiredValidityMs + IDENTITY_CLOCK_SKEW_ALLOWANCE_MS
@@ -82,7 +84,9 @@ export function createPreviewIdentityResolver({
       throw new Error("Could not request a fresh GitHub OIDC identity")
     }
     if (!response.ok)
-      throw new Error(`GitHub OIDC identity request failed (HTTP ${response.status})`)
+      throw new Error(
+        `GitHub OIDC identity request failed (HTTP ${response.status})`,
+      )
 
     let payload: unknown
     try {
@@ -92,7 +96,9 @@ export function createPreviewIdentityResolver({
     }
     const nextIdentity = readPreviewIdentity(payload)
     if (nextIdentity.expiresAt <= now() + requiredRemainingMs)
-      throw new Error("GitHub OIDC identity expires before this test can finish")
+      throw new Error(
+        "GitHub OIDC identity expires before this test can finish",
+      )
 
     identity = nextIdentity
     return { ...identity, wasRenewed: true }

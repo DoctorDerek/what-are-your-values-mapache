@@ -7,9 +7,9 @@ const initialTime = Date.UTC(2026, 8, 7, 4, 27, 22)
 const tokenLifetimeMs = 300_000
 
 function identityResponse(expiresAt: number) {
-  const claims = Buffer.from(JSON.stringify({ exp: expiresAt / 1000 })).toString(
-    "base64url",
-  )
+  const claims = Buffer.from(
+    JSON.stringify({ exp: expiresAt / 1000 }),
+  ).toString("base64url")
   return Response.json({ value: `e30.${claims}.synthetic-signature` })
 }
 
@@ -81,7 +81,9 @@ describe("protected-preview identity lifecycle", () => {
       .fn<typeof fetch>()
       .mockResolvedValueOnce(identityResponse(initialTime + tokenLifetimeMs))
       .mockRejectedValueOnce(new Error(`request failed: ${requestToken}`))
-      .mockResolvedValueOnce(identityResponse(initialTime + tokenLifetimeMs * 2))
+      .mockResolvedValueOnce(
+        identityResponse(initialTime + tokenLifetimeMs * 2),
+      )
     const resolveIdentity = createPreviewIdentityResolver({
       requestUrl,
       requestToken,
@@ -158,15 +160,20 @@ describe("protected-preview identity lifecycle", () => {
     { value: "e30.e30.signature" },
     { value: "e30.invalid.signature" },
     { value: "e30.e30.signature\n::warning::untrusted-command" },
-  ])("rejects malformed provider data without exposing its content", async (body) => {
-    const resolveIdentity = createPreviewIdentityResolver({
-      requestUrl,
-      requestToken,
-      request: vi.fn<typeof fetch>(async () => Response.json(body)),
-      now: () => initialTime,
-    })
-    await expect(resolveIdentity(30_000)).rejects.toThrow(/^GitHub OIDC returned /)
-  })
+  ])(
+    "rejects malformed provider data without exposing its content",
+    async (body) => {
+      const resolveIdentity = createPreviewIdentityResolver({
+        requestUrl,
+        requestToken,
+        request: vi.fn<typeof fetch>(async () => Response.json(body)),
+        now: () => initialTime,
+      })
+      await expect(resolveIdentity(30_000)).rejects.toThrow(
+        /^GitHub OIDC returned /,
+      )
+    },
+  )
 
   it("rejects a non-JSON identity response with a sanitized message", async () => {
     const resolveIdentity = createPreviewIdentityResolver({
