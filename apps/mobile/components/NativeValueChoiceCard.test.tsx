@@ -124,7 +124,9 @@ describe("NativeValueChoiceCard", () => {
         onActivate,
         combatant: () => <Text>Animal</Text>,
       } satisfies ComponentProps<typeof NativeValueChoiceCard>
-      const { unmount, rerender } = await render(<NativeValueChoiceCard {...props} />)
+      const { unmount, rerender } = await render(
+        <NativeValueChoiceCard {...props} />,
+      )
       const displayName = getValueDisplayName(choiceCase.value)
       const name = screen.getByText(displayName)
       const choice = screen.getByRole("button", {
