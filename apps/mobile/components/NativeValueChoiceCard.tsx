@@ -46,6 +46,7 @@ function NativeValueChoiceCard(
 
   const displayName = getValueDisplayName(value)
   const displayDefinition = getValueDisplayDefinition(value)
+  const handleActivate = () => onActivate(value.id)
 
   return (
     <>
@@ -68,7 +69,7 @@ function NativeValueChoiceCard(
           combatant && (isFirst ? "pb-22 xl:pb-68" : "pt-22 xl:pt-0 xl:pb-68"),
         )}
         disabled={!isEnabled}
-        onPress={() => onActivate(value.id)}
+        onPress={handleActivate}
         onHoverIn={() => setIsHovered(true)}
         onHoverOut={() => setIsHovered(false)}
         onFocus={() => setIsFocused(true)}
@@ -117,9 +118,13 @@ function NativeValueChoiceCard(
         ) : null}
       </Pressable>
       {combatant ? (
-        <View
+        <Pressable
+          accessible={false}
+          focusable={false}
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants"
+          disabled={!isEnabled}
+          onPress={handleActivate}
           onPointerEnter={(event) => {
             if (event.nativeEvent.pointerType !== "touch") setIsHovered(true)
           }}
@@ -164,7 +169,7 @@ function NativeValueChoiceCard(
           >
             {isFirst ? "↑" : "↓"} {displayName}
           </Text>
-        </View>
+        </Pressable>
       ) : null}
     </>
   )

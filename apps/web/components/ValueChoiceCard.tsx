@@ -71,6 +71,7 @@ export const ValueChoiceCard = forwardRef<
     : "text-white drop-shadow-[1px_1px_0px_#000000]"
   const reservedControlHint = isFirst ? "[1 / A]" : "[2 / D]"
   const accessibleDefinitionId = useId()
+  const choiceId = useId()
   const rewardStyle: CSSProperties & { "--reward-progress": string } = {
     "--reward-progress": `${reward?.progressPercentage ?? 0}%`,
   }
@@ -111,6 +112,7 @@ export const ValueChoiceCard = forwardRef<
         >
           <button
             ref={ref}
+            id={choiceId}
             type="button"
             aria-label={getValueChoiceAccessibilityLabel({
               position,
@@ -148,15 +150,16 @@ export const ValueChoiceCard = forwardRef<
         </div>
       </div>
       {combatant ? (
-        <span
+        <label
           data-battle-arena-side={position}
+          htmlFor={choiceId}
           aria-hidden="true"
           onPointerEnter={(event) => {
             if (event.pointerType !== "touch") setIsHovered(true)
           }}
           onPointerLeave={() => setIsHovered(false)}
           onPointerCancel={() => setIsHovered(false)}
-          className={`absolute top-1/2 flex h-(--battle-arena-height) w-1/2 -translate-y-1/2 flex-col items-center justify-end border-y-4 border-black px-2 pb-2 xl:top-auto xl:bottom-0 xl:h-[calc(var(--battle-combatant-size)+3rem)] xl:translate-y-0 xl:flex-row xl:items-end xl:border-0 xl:px-4 ${isWinner ? "z-30" : "z-20"} ${isFirst ? "bg-mapache-vivid-primary-cyan left-0 xl:justify-end xl:border-r-8" : "bg-mapache-vivid-primary-raspberry right-0 xl:justify-start"}`}
+          className={`absolute top-1/2 flex h-(--battle-arena-height) w-1/2 -translate-y-1/2 flex-col items-center justify-end border-y-4 border-black px-2 pb-2 xl:top-auto xl:bottom-0 xl:h-[calc(var(--battle-combatant-size)+3rem)] xl:translate-y-0 xl:flex-row xl:items-end xl:border-0 xl:px-4 ${isEnabled ? "cursor-pointer" : "cursor-default"} ${isWinner ? "z-30" : "z-20"} ${isFirst ? "bg-mapache-vivid-primary-cyan left-0 xl:justify-end xl:border-r-8" : "bg-mapache-vivid-primary-raspberry right-0 xl:justify-start"}`}
         >
           <span className="flex w-(--battle-combatant-size) flex-col items-center">
             <span aria-hidden="true" className="block h-6 w-full xl:h-10" />
@@ -184,7 +187,7 @@ export const ValueChoiceCard = forwardRef<
           >
             {isFirst ? "↑" : "↓"} {displayName}
           </span>
-        </span>
+        </label>
       ) : null}
     </>
   )
