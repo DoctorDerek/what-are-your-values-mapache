@@ -1,4 +1,5 @@
-import { expect, test } from "@playwright/test"
+import { expect } from "@playwright/test"
+import { test } from "./fixtures"
 
 test.describe("static English editorial document", () => {
   test.use({

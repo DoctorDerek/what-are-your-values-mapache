@@ -1,4 +1,5 @@
-import { expect, test, type Locator, type Route } from "@playwright/test"
+import { expect, type Locator, type Route } from "@playwright/test"
+import { test } from "./fixtures"
 import { installVisibleTextBounds } from "./visible-text-bounds"
 
 test.use({ serviceWorkers: "block" })

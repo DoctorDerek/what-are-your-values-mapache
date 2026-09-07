@@ -1,10 +1,8 @@
-import { expect, test } from "@playwright/test"
+import { expect } from "@playwright/test"
 import type { Page } from "@playwright/test"
+import { test } from "./fixtures"
 
 const playwrightTestBaseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL
-const runsAgainstProtectedVercelPreview = Boolean(
-  process.env.PLAYWRIGHT_VERCEL_TRUSTED_OIDC_TOKEN,
-)
 
 async function loadControlledApplication(page: Page) {
   await page.goto("/")
@@ -46,9 +44,10 @@ test("the deployment publishes the generated service worker", async ({
 
 test("protected Vercel Previews leave service-worker registration disabled", async ({
   page,
+  isProtectedVercelPreview,
 }) => {
   test.skip(
-    !runsAgainstProtectedVercelPreview,
+    !isProtectedVercelPreview,
     "This boundary applies only to protected Vercel Preview deployments",
   )
 
@@ -67,9 +66,10 @@ test("protected Vercel Previews leave service-worker registration disabled", asy
 
 test("the production web app installs one isolated application-shell cache", async ({
   page,
+  isProtectedVercelPreview,
 }) => {
   test.skip(
-    runsAgainstProtectedVercelPreview,
+    isProtectedVercelPreview,
     "Protected Preview worker requests cannot inherit GitHub OIDC authentication",
   )
 
@@ -84,9 +84,10 @@ test("the cached production web app reloads while disconnected", async ({
   browserName,
   context,
   page,
+  isProtectedVercelPreview,
 }) => {
   test.skip(
-    runsAgainstProtectedVercelPreview,
+    isProtectedVercelPreview,
     "Protected Preview worker requests cannot inherit GitHub OIDC authentication",
   )
   test.skip(

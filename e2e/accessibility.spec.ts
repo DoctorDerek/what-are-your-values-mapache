@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright"
-import { expect, test, type Page } from "@playwright/test"
+import { expect, type Page } from "@playwright/test"
+import { test } from "./fixtures"
 
 const WCAG_AA_RULE_TAGS = Object.freeze([
   "wcag2a",
