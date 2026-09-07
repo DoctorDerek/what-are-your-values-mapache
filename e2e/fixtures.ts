@@ -50,8 +50,6 @@ export const test = base.extend<Record<never, never>, PreviewWorkerFixtures>({
 
     const identity = await resolvePreviewIdentity(testInfo.timeout)
     if (identity.wasRenewed) {
-      if (process.env.GITHUB_ACTIONS === "true")
-        process.stdout.write(`::add-mask::${identity.token}\n`)
       testInfo.annotations.push({
         type: "preview-identity-renewed",
         description: `Valid until ${new Date(identity.expiresAt).toISOString()}`,
