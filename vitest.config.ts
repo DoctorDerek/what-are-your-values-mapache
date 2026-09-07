@@ -11,7 +11,7 @@ export default defineConfig({
     environment: "happy-dom",
     exclude: [
       ...configDefaults.exclude,
-      "e2e/**",
+      "e2e/**/*.spec.ts",
       "apps/mobile/components/**/*.test.tsx",
     ],
     setupFiles: ["./vitest.setup.ts"],
