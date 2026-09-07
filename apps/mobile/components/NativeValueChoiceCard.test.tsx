@@ -219,9 +219,7 @@ describe("NativeValueChoiceCard", () => {
       await fireEvent.press(choice)
       expect(onActivate).toHaveBeenCalledTimes(2)
 
-      await rerender(
-        <NativeValueChoiceCard {...props} combatant={undefined} />,
-      )
+      await rerender(<NativeValueChoiceCard {...props} combatant={undefined} />)
       expect(
         screen.queryByText("Animal", { includeHiddenElements: true }),
       ).toBeNull()
