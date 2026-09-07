@@ -15,26 +15,26 @@ export const test = base.extend<Record<never, never>, PreviewWorkerFixtures>({
     { scope: "worker", option: true },
   ],
   resolvePreviewIdentity: [
-    async ({ isProtectedVercelPreview }, use) => {
+    async ({ isProtectedVercelPreview }, provide) => {
       if (!isProtectedVercelPreview) {
-        await use(null)
+        await provide(null)
         return
       }
       const requestUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL
       const requestToken = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN
       if (!requestUrl || !requestToken)
         throw new Error("Protected previews require GitHub OIDC request credentials")
-      await use(createPreviewIdentityResolver({ requestUrl, requestToken }))
+      await provide(createPreviewIdentityResolver({ requestUrl, requestToken }))
     },
     { scope: "worker" },
   ],
   extraHTTPHeaders: async (
     { baseURL, extraHTTPHeaders, resolvePreviewIdentity },
-    use,
+    provide,
     testInfo,
   ) => {
     if (!resolvePreviewIdentity) {
-      await use(extraHTTPHeaders)
+      await provide(extraHTTPHeaders)
       return
     }
     const deployment = baseURL ? new URL(baseURL) : null
@@ -53,7 +53,7 @@ export const test = base.extend<Record<never, never>, PreviewWorkerFixtures>({
         description: `Valid until ${new Date(identity.expiresAt).toISOString()}`,
       })
     }
-    await use({
+    await provide({
       ...extraHTTPHeaders,
       "x-vercel-trusted-oidc-idp-token": identity.token,
     })
