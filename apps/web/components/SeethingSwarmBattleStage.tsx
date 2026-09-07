@@ -56,6 +56,7 @@ function getServerIsDocumentHidden() {
 
 function BattlePlayback({
   choreography,
+  compactCombatantSize,
   winnerId,
   isNextBattleReady,
   shouldReduceMotion,
@@ -63,6 +64,7 @@ function BattlePlayback({
   children,
 }: {
   choreography: SeethingSwarmBattleChoreography<StaticImageData>
+  compactCombatantSize: number
   winnerId: ValueId | null
   isNextBattleReady: boolean
   shouldReduceMotion: boolean
@@ -92,7 +94,7 @@ function BattlePlayback({
 
   useEffect(() => reportResult(), [reportResult])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!winnerId || shouldReduceMotion || readySides.size !== 2) return
     const measureTravel = () => {
       const first = firstAnchorRef.current?.getBoundingClientRect()
@@ -119,10 +121,8 @@ function BattlePlayback({
     }
     measureTravel()
     const layoutObserver = new ResizeObserver(measureTravel)
-    const firstCard = firstAnchorRef.current?.closest("[data-value-card]")
-    const secondCard = secondAnchorRef.current?.closest("[data-value-card]")
-    if (firstCard) layoutObserver.observe(firstCard)
-    if (secondCard) layoutObserver.observe(secondCard)
+    const stage = firstAnchorRef.current?.closest("[data-choreography-identity]")
+    if (stage) layoutObserver.observe(stage)
     if (firstAnchorRef.current) layoutObserver.observe(firstAnchorRef.current)
     if (secondAnchorRef.current) layoutObserver.observe(secondAnchorRef.current)
     window.addEventListener("resize", measureTravel)
@@ -130,7 +130,7 @@ function BattlePlayback({
       layoutObserver.disconnect()
       window.removeEventListener("resize", measureTravel)
     }
-  }, [choreography, readySides, shouldReduceMotion, winnerId])
+  }, [choreography, compactCombatantSize, readySides, shouldReduceMotion, winnerId])
 
   const handlePlaybackComplete = (side: SeethingSwarmBattleCombatantSide) => {
     if (cue === "strike") {
@@ -273,7 +273,7 @@ export default function SeethingSwarmBattleStage({
       setCompactCombatantSize(
         Math.min(
           SEETHING_SWARM_BATTLE_TILE_SIZE,
-          stage.getBoundingClientRect().height / 5,
+          stage.getBoundingClientRect().height / 3,
         ),
       )
     }
@@ -327,7 +327,7 @@ export default function SeethingSwarmBattleStage({
   return (
     <div
       ref={stageRef}
-      className="[container-type:size] relative flex min-h-0 min-w-0 flex-1 flex-col [--battle-combatant-scale:var(--battle-compact-combatant-scale)] [--battle-combatant-size:var(--battle-compact-combatant-size)] xl:flex-row xl:[--battle-combatant-scale:2] xl:[--battle-combatant-size:14rem]"
+      className="[container-type:size] relative flex min-h-0 min-w-0 flex-1 flex-col [--battle-arena-height:calc(var(--battle-combatant-size)+4rem)] [--battle-combatant-scale:var(--battle-compact-combatant-scale)] [--battle-combatant-size:var(--battle-compact-combatant-size)] xl:flex-row xl:[--battle-combatant-scale:2] xl:[--battle-combatant-size:14rem]"
       data-battle-stage-mode={choreography.mode}
       data-battle-stage-state={winnerId ? "resolving" : "awaiting-input"}
       data-choreography-identity={choreography.choreographyIdentity}
@@ -336,6 +336,7 @@ export default function SeethingSwarmBattleStage({
       <BattlePlayback
         key={choreography.choreographyIdentity}
         choreography={choreography}
+        compactCombatantSize={compactCombatantSize}
         winnerId={winnerId}
         isNextBattleReady={isNextBattleReady}
         shouldReduceMotion={shouldReduceMotion || isPaused || isDocumentHidden}

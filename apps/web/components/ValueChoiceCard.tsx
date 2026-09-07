@@ -59,8 +59,13 @@ export const ValueChoiceCard = forwardRef<
   const displayName = getValueDisplayName(value)
   const isWinner = isAnimating && winnerId === value.id
   const positionClasses = isFirst
-    ? "bg-mapache-vivid-primary-cyan border-b-8 border-black xl:border-r-8 xl:border-b-0"
+    ? "bg-mapache-vivid-primary-cyan border-black xl:border-r-8"
     : "bg-mapache-vivid-primary-raspberry"
+  const arenaSpaceClasses = combatant
+    ? isFirst
+      ? "pb-[calc(var(--battle-arena-height)/2)] xl:pb-[calc(var(--battle-combatant-size)+3rem)]"
+      : "pt-[calc(var(--battle-arena-height)/2)] xl:pt-0 xl:pb-[calc(var(--battle-combatant-size)+3rem)]"
+    : ""
   const controlHintContrastClasses = isFirst
     ? "text-black drop-shadow-[1px_1px_0px_#ffffff]"
     : "text-white drop-shadow-[1px_1px_0px_#000000]"
@@ -71,6 +76,7 @@ export const ValueChoiceCard = forwardRef<
   }
 
   return (
+    <>
     <div
       data-value-card={value.id}
       onFocus={() => {
@@ -86,7 +92,7 @@ export const ValueChoiceCard = forwardRef<
       }}
       onPointerLeave={() => setIsHovered(false)}
       onPointerCancel={() => setIsHovered(false)}
-      className={`${positionClasses} relative flex min-h-0 min-w-0 flex-1 flex-col items-center focus-within:ring-8 focus-within:ring-white focus-within:ring-inset ${isWinner ? "z-10" : ""} ${focusedId === value.id || isWinner ? "ring-8 ring-white ring-inset" : ""}`}
+      className={`${positionClasses} ${arenaSpaceClasses} relative flex min-h-0 min-w-0 flex-1 flex-col items-center focus-within:ring-8 focus-within:ring-white focus-within:ring-inset ${focusedId === value.id || isWinner ? "ring-8 ring-white ring-inset" : ""}`}
     >
       <div
         role="region"
@@ -140,9 +146,17 @@ export const ValueChoiceCard = forwardRef<
           </div>
         </button>
       </div>
+    </div>
       {combatant ? (
         <span
-          className={`pointer-events-none relative flex w-full shrink-0 items-end px-[calc((100%-var(--battle-combatant-size)*2)/4)] pb-2 xl:px-4 ${isFirst ? "justify-start xl:justify-end" : "order-first justify-end xl:order-none xl:justify-start"}`}
+          data-battle-arena-side={position}
+          aria-hidden="true"
+          onPointerEnter={(event) => {
+            if (event.pointerType !== "touch") setIsHovered(true)
+          }}
+          onPointerLeave={() => setIsHovered(false)}
+          onPointerCancel={() => setIsHovered(false)}
+          className={`absolute top-1/2 flex h-(--battle-arena-height) w-1/2 -translate-y-1/2 flex-col items-center justify-end border-y-4 border-black px-2 pb-2 xl:top-auto xl:bottom-0 xl:h-[calc(var(--battle-combatant-size)+3rem)] xl:translate-y-0 xl:flex-row xl:items-end xl:border-0 xl:px-4 ${isWinner ? "z-30" : "z-20"} ${isFirst ? "bg-mapache-vivid-primary-cyan left-0 xl:justify-end xl:border-r-8" : "bg-mapache-vivid-primary-raspberry right-0 xl:justify-start"}`}
         >
           <span className="flex w-(--battle-combatant-size) flex-col items-center">
             <span aria-hidden="true" className="block h-6 w-full xl:h-10" />
@@ -164,8 +178,14 @@ export const ValueChoiceCard = forwardRef<
               ) : null,
             )}
           </span>
+          <span
+            aria-hidden="true"
+            className="max-w-full truncate border-2 border-black bg-white px-1 text-center text-xs leading-5 font-black text-black xl:hidden"
+          >
+            {isFirst ? "↑" : "↓"} {displayName}
+          </span>
         </span>
       ) : null}
-    </div>
+    </>
   )
 })
