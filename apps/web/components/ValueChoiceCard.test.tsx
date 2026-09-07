@@ -1,4 +1,5 @@
 import { CANONICAL_VALUES } from "@game/data/src/CanonicalValues"
+import { getValueDisplayDefinition, getValueDisplayName } from "@game/data/src/Value"
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { ValueChoiceCard } from "@/components/ValueChoiceCard"
@@ -24,6 +25,16 @@ describe("animal card attention", () => {
     }
     const { rerender } = render(<ValueChoiceCard {...props} />)
     const choice = screen.getByRole("button", { name: /^Choose / })
+    expect(screen.getAllByRole("button")).toHaveLength(1)
+    expect(choice).toHaveAccessibleDescription(`“${getValueDisplayDefinition(value)}”`)
+    const animalCaption = screen.getByText(`↑ ${getValueDisplayName(value)}`)
+    expect(animalCaption).toHaveAttribute("aria-hidden", "true")
+    expect(screen.getByText("Animal resting")).toBeVisible()
+    fireEvent.pointerEnter(animalCaption, { pointerType: "mouse" })
+    expect(screen.getByText("Animal alert")).toBeVisible()
+    fireEvent.click(animalCaption)
+    expect(onActivate).not.toHaveBeenCalled()
+    fireEvent.pointerLeave(animalCaption)
     expect(screen.getByText("Animal resting")).toBeVisible()
     fireEvent.pointerEnter(choice, { pointerType: "mouse" })
     expect(screen.getByText("Animal alert")).toBeVisible()
