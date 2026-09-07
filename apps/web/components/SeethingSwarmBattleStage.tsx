@@ -121,7 +121,9 @@ function BattlePlayback({
     }
     measureTravel()
     const layoutObserver = new ResizeObserver(measureTravel)
-    const stage = firstAnchorRef.current?.closest("[data-choreography-identity]")
+    const stage = firstAnchorRef.current?.closest(
+      "[data-choreography-identity]",
+    )
     if (stage) layoutObserver.observe(stage)
     if (firstAnchorRef.current) layoutObserver.observe(firstAnchorRef.current)
     if (secondAnchorRef.current) layoutObserver.observe(secondAnchorRef.current)
@@ -130,7 +132,13 @@ function BattlePlayback({
       layoutObserver.disconnect()
       window.removeEventListener("resize", measureTravel)
     }
-  }, [choreography, compactCombatantSize, readySides, shouldReduceMotion, winnerId])
+  }, [
+    choreography,
+    compactCombatantSize,
+    readySides,
+    shouldReduceMotion,
+    winnerId,
+  ])
 
   const handlePlaybackComplete = (side: SeethingSwarmBattleCombatantSide) => {
     if (cue === "strike") {

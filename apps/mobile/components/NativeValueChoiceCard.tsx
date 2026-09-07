@@ -116,56 +116,56 @@ function NativeValueChoiceCard(
           />
         ) : null}
       </Pressable>
-        {combatant ? (
-          <View
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-            onPointerEnter={(event) => {
-              if (event.nativeEvent.pointerType !== "touch") setIsHovered(true)
-            }}
-            onPointerLeave={() => setIsHovered(false)}
-            onPointerCancel={() => setIsHovered(false)}
-            className={cn(
-              "absolute top-1/2 h-44 w-1/2 -translate-y-1/2 flex-col items-center justify-end border-y-4 border-black px-2 pb-2 xl:top-auto xl:bottom-0 xl:h-68 xl:translate-y-0 xl:flex-row xl:items-end xl:border-x-4 xl:border-t-0 xl:px-4",
-              isWinner ? "z-30" : "z-20",
-              isFirst
-                ? "bg-mapache-vivid-primary-cyan left-0 xl:justify-end"
-                : "bg-mapache-vivid-primary-raspberry right-0 xl:justify-start",
-            )}
-          >
-            <View className="w-28 items-center xl:w-56">
-              <View
-                accessibilityElementsHidden
-                importantForAccessibility="no-hide-descendants"
-                className="h-6 w-full xl:h-10"
-              />
-              {combatant(
-                isEnabled && (isHovered || isFocused),
-                reward ? (
-                  <View className="border-2 border-black bg-white px-1">
-                    <Text className="text-center text-xs leading-4 font-black text-black xl:text-base">
-                      {reward.label}
-                    </Text>
-                    <View className="h-1 overflow-hidden bg-black/15">
-                      <View
-                        className="bg-mapache-vivid-primary-raspberry h-full"
-                        style={{ width: `${reward.progressPercentage}%` }}
-                      />
-                    </View>
-                  </View>
-                ) : null,
-              )}
-            </View>
-            <Text
+      {combatant ? (
+        <View
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          onPointerEnter={(event) => {
+            if (event.nativeEvent.pointerType !== "touch") setIsHovered(true)
+          }}
+          onPointerLeave={() => setIsHovered(false)}
+          onPointerCancel={() => setIsHovered(false)}
+          className={cn(
+            "absolute top-1/2 h-44 w-1/2 -translate-y-1/2 flex-col items-center justify-end border-y-4 border-black px-2 pb-2 xl:top-auto xl:bottom-0 xl:h-68 xl:translate-y-0 xl:flex-row xl:items-end xl:border-x-4 xl:border-t-0 xl:px-4",
+            isWinner ? "z-30" : "z-20",
+            isFirst
+              ? "bg-mapache-vivid-primary-cyan left-0 xl:justify-end"
+              : "bg-mapache-vivid-primary-raspberry right-0 xl:justify-start",
+          )}
+        >
+          <View className="w-28 items-center xl:w-56">
+            <View
               accessibilityElementsHidden
               importantForAccessibility="no-hide-descendants"
-              numberOfLines={1}
-              className="max-w-full border-2 border-black bg-white px-1 text-center text-xs leading-5 font-black text-black xl:hidden"
-            >
-              {isFirst ? "↑" : "↓"} {displayName}
-            </Text>
+              className="h-6 w-full xl:h-10"
+            />
+            {combatant(
+              isEnabled && (isHovered || isFocused),
+              reward ? (
+                <View className="border-2 border-black bg-white px-1">
+                  <Text className="text-center text-xs leading-4 font-black text-black xl:text-base">
+                    {reward.label}
+                  </Text>
+                  <View className="h-1 overflow-hidden bg-black/15">
+                    <View
+                      className="bg-mapache-vivid-primary-raspberry h-full"
+                      style={{ width: `${reward.progressPercentage}%` }}
+                    />
+                  </View>
+                </View>
+              ) : null,
+            )}
           </View>
-        ) : null}
+          <Text
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            numberOfLines={1}
+            className="max-w-full border-2 border-black bg-white px-1 text-center text-xs leading-5 font-black text-black xl:hidden"
+          >
+            {isFirst ? "↑" : "↓"} {displayName}
+          </Text>
+        </View>
+      ) : null}
     </>
   )
 }

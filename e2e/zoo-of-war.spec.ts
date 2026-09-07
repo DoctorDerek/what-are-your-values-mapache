@@ -389,16 +389,12 @@ test("the Zoo of War holds both animals through a committed battle", async ({
   for (const card of await cards.all()) {
     await expect(card.getByRole("button", { name: /^Choose / })).toBeVisible()
     const valueId = await card.getAttribute("data-value-card")
-    const combatant = stage.locator(`[data-combatant-side][data-value-id="${valueId}"]`)
+    const combatant = stage.locator(
+      `[data-combatant-side][data-value-id="${valueId}"]`,
+    )
     await expect(combatant).toHaveCount(1)
-    await expect(combatant).toHaveAttribute(
-      "aria-hidden",
-      "true",
-    )
-    await expect(combatant).toHaveAttribute(
-      "data-value-id",
-      valueId!,
-    )
+    await expect(combatant).toHaveAttribute("aria-hidden", "true")
+    await expect(combatant).toHaveAttribute("data-value-id", valueId!)
   }
   await expect(stage).toHaveAttribute(
     "data-battle-stage-mode",
@@ -559,13 +555,17 @@ for (const { width, height } of [
       await expect(choice.locator("p")).toBeInViewport()
       if (needsReadingScroll) await page.keyboard.press("Home")
       const valueId = await card.getAttribute("data-value-card")
-      const animal = stage.locator(`[data-combatant-side][data-value-id="${valueId}"]`)
+      const animal = stage.locator(
+        `[data-combatant-side][data-value-id="${valueId}"]`,
+      )
       await expect(animal).toHaveCount(1)
       await expect(animal).toBeInViewport()
       const textDoesNotOverlapAnimal = await card.evaluate((card) => {
         const animal = card
           .closest("[data-battle-stage-state]")!
-          .querySelector(`[data-combatant-side][data-value-id="${card.getAttribute("data-value-card")}"]`)!
+          .querySelector(
+            `[data-combatant-side][data-value-id="${card.getAttribute("data-value-card")}"]`,
+          )!
           .getBoundingClientRect()
         return [...card.querySelectorAll("h2, p")].every((text) => {
           const bounds = window.getVisibleTextBounds(text)

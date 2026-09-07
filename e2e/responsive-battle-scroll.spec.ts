@@ -197,16 +197,20 @@ for (const viewport of [
           card: measure(card),
           reading: measure(card.querySelector('[role="region"]')!),
           animal: measure(
-            card.closest("[data-choreography-identity]")!.querySelector(
-              `[data-combatant-side][data-value-id="${card.getAttribute("data-value-card")}"]`,
-            )!,
+            card
+              .closest("[data-choreography-identity]")!
+              .querySelector(
+                `[data-combatant-side][data-value-id="${card.getAttribute("data-value-card")}"]`,
+              )!,
           ),
         }))
       })
     const [first, second] = cardGeometry
     if (!first || !second) throw new Error("Both value cards must be present")
     await expect(stage.locator("[data-combatant-side]")).toHaveCount(2)
-    expect(Math.abs(first.animal.bottom - second.animal.bottom)).toBeLessThanOrEqual(1)
+    expect(
+      Math.abs(first.animal.bottom - second.animal.bottom),
+    ).toBeLessThanOrEqual(1)
     expect(first.animal.right).toBeLessThanOrEqual(second.animal.left)
     if (viewport.width < 1280) {
       expect(first.card.bottom).toBeLessThanOrEqual(second.card.top)
