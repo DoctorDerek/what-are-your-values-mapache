@@ -352,53 +352,69 @@ export default function Crucible({
         />
       </div>
 
-      <SeethingSwarmBattleStage
-        battle={currentBattle}
-        pendingBattle={state.context.pendingBattle}
-        isNextBattleReady={state.context.pendingBattle !== null}
-        isPaused={isMenuOpen}
-        runtimeClipCatalog={runtimeClipCatalog}
-        shouldReduceMotion={shouldReduceMotion}
-        winnerId={winnerId}
-        onResultAnimationComplete={handleResultAnimationComplete}
+      <div
+        role="region"
+        aria-label="Battle choices"
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (
+            event.target === event.currentTarget &&
+            (event.key === " " ||
+              event.key === "Enter" ||
+              event.key.startsWith("Arrow"))
+          )
+            event.stopPropagation()
+        }}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain outline-none"
       >
-        {(combatants) => (
-          <>
-            <ValueChoiceCard
-              ref={firstChoiceRef}
-              key={`Card A: ${idA} vs. ${idB}`}
-              position="first"
-              value={valA}
-              level={levelA}
-              focusedId={focusedId}
-              winnerId={winnerId}
-              isEnabled={isInteractive}
-              isAnimating={isAnimating}
-              controlHint={firstControlHint}
-              combatant={combatants.first}
-              reward={reward?.valueId === idA ? reward : null}
-              onActivate={handleSelect}
-              onFocus={handleCardFocus}
-            />
-            <ValueChoiceCard
-              ref={secondChoiceRef}
-              key={`Card B: ${idB} vs. ${idA}`}
-              position="second"
-              value={valB}
-              level={levelB}
-              focusedId={focusedId}
-              winnerId={winnerId}
-              isEnabled={isInteractive}
-              isAnimating={isAnimating}
-              controlHint={secondControlHint}
-              combatant={combatants.second}
-              reward={reward?.valueId === idB ? reward : null}
-              onActivate={handleSelect}
-              onFocus={handleCardFocus}
-            />
-          </>
-        )}
-      </SeethingSwarmBattleStage>
+        <SeethingSwarmBattleStage
+          battle={currentBattle}
+          pendingBattle={state.context.pendingBattle}
+          isNextBattleReady={state.context.pendingBattle !== null}
+          isPaused={isMenuOpen}
+          runtimeClipCatalog={runtimeClipCatalog}
+          shouldReduceMotion={shouldReduceMotion}
+          winnerId={winnerId}
+          onResultAnimationComplete={handleResultAnimationComplete}
+        >
+          {(combatants) => (
+            <>
+              <ValueChoiceCard
+                ref={firstChoiceRef}
+                key={`Card A: ${idA} vs. ${idB}`}
+                position="first"
+                value={valA}
+                level={levelA}
+                focusedId={focusedId}
+                winnerId={winnerId}
+                isEnabled={isInteractive}
+                isAnimating={isAnimating}
+                controlHint={firstControlHint}
+                combatant={combatants.first}
+                reward={reward?.valueId === idA ? reward : null}
+                onActivate={handleSelect}
+                onFocus={handleCardFocus}
+              />
+              <ValueChoiceCard
+                ref={secondChoiceRef}
+                key={`Card B: ${idB} vs. ${idA}`}
+                position="second"
+                value={valB}
+                level={levelB}
+                focusedId={focusedId}
+                winnerId={winnerId}
+                isEnabled={isInteractive}
+                isAnimating={isAnimating}
+                controlHint={secondControlHint}
+                combatant={combatants.second}
+                reward={reward?.valueId === idB ? reward : null}
+                onActivate={handleSelect}
+                onFocus={handleCardFocus}
+              />
+            </>
+          )}
+        </SeethingSwarmBattleStage>
+      </div>
     </MapacheScreen>
   )
 }
