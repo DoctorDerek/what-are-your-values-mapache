@@ -55,18 +55,112 @@ describe("NativeValueChoiceCard", () => {
       />,
     )
     const choice = screen.getByRole("button", { name: /^Choose / })
+    expect(screen.getAllByRole("button")).toHaveLength(1)
+    expect(choice).toHaveProp(
+      "accessibilityHint",
+      getValueDisplayDefinition(selfAcceptance),
+    )
+    const captionText = `↑ ${getValueDisplayName(selfAcceptance)}`
+    expect(screen.queryByText(captionText)).toBeNull()
+    const animalCaption = screen.getByText(captionText, {
+      includeHiddenElements: true,
+    })
+    await fireEvent(animalCaption, "pointerEnter", {
+      nativeEvent: { pointerType: "mouse" },
+    })
+    expect(
+      screen.getByText("Animal alert", { includeHiddenElements: true }),
+    ).toBeOnTheScreen()
+    expect(onActivate).not.toHaveBeenCalled()
+    await fireEvent(animalCaption, "pointerLeave")
+    expect(
+      screen.getByText("Animal resting", { includeHiddenElements: true }),
+    ).toBeOnTheScreen()
+    await fireEvent(animalCaption, "pointerEnter", {
+      nativeEvent: { pointerType: "touch" },
+    })
+    expect(
+      screen.getByText("Animal resting", { includeHiddenElements: true }),
+    ).toBeOnTheScreen()
+    await fireEvent(animalCaption, "pointerEnter", {
+      nativeEvent: { pointerType: "mouse" },
+    })
+    await fireEvent(animalCaption, "pointerCancel")
+    expect(
+      screen.getByText("Animal resting", { includeHiddenElements: true }),
+    ).toBeOnTheScreen()
     await fireEvent(choice, "hoverIn")
-    expect(screen.getByText("Animal alert")).toBeOnTheScreen()
+    expect(
+      screen.getByText("Animal alert", { includeHiddenElements: true }),
+    ).toBeOnTheScreen()
     await fireEvent(choice, "focus")
     await fireEvent(choice, "hoverOut")
-    expect(screen.getByText("Animal alert")).toBeOnTheScreen()
+    expect(
+      screen.getByText("Animal alert", { includeHiddenElements: true }),
+    ).toBeOnTheScreen()
     expect(onActivate).not.toHaveBeenCalled()
     await fireEvent(choice, "blur")
-    expect(screen.getByText("Animal resting")).toBeOnTheScreen()
+    expect(
+      screen.getByText("Animal resting", { includeHiddenElements: true }),
+    ).toBeOnTheScreen()
     await fireEvent.press(choice)
     expect(onActivate).toHaveBeenCalledTimes(1)
     expect(onActivate).toHaveBeenCalledWith(selfAcceptance.id)
+    await fireEvent.press(animalCaption)
+    expect(onActivate).toHaveBeenCalledTimes(2)
+    expect(onActivate).toHaveBeenLastCalledWith(selfAcceptance.id)
   })
+
+  it.each(["first", "second"] as const)(
+    "keeps the %s animal reward associated with its disabled value choice",
+    async (position) => {
+      const onActivate = jest.fn()
+      await render(
+        <NativeValueChoiceCard
+          position={position}
+          value={selfAcceptance}
+          level={4}
+          controlHint={null}
+          winnerId={selfAcceptance.id}
+          isEnabled={false}
+          isAnimating
+          onActivate={onActivate}
+          reward={{
+            valueId: selfAcceptance.id,
+            label: "+1 XP · Level 4",
+            progressLabel: "1/4 XP toward Level 5",
+            progressPercentage: 25,
+          }}
+          combatant={(isAttended, reward) => (
+            <>
+              <Text>{isAttended ? "Animal alert" : "Animal resting"}</Text>
+              {reward}
+            </>
+          )}
+        />,
+      )
+      const choice = screen.getByRole("button", { name: /^Choose .*Level 4/ })
+      const reward = screen.getByText("+1 XP · Level 4", {
+        includeHiddenElements: true,
+      })
+      expect(choice).toBeDisabled()
+      expect(choice).toHaveProp("accessibilityState", {
+        disabled: true,
+        selected: true,
+      })
+      expect(screen.getAllByRole("button")).toHaveLength(1)
+      expect(reward).toBeOnTheScreen()
+      expect(screen.queryByText("+1 XP · Level 4")).toBeNull()
+      await fireEvent(choice, "focus")
+      await fireEvent.press(reward)
+      await fireEvent.press(choice)
+      expect(
+        screen.getByText("Animal resting", { includeHiddenElements: true }),
+      ).toBeOnTheScreen()
+      expect(onActivate).not.toHaveBeenCalled()
+    },
+  )
+
   it("preserves complete canonical and maximum-length Custom Value names", async () => {
     const user = userEvent.setup()
     const cases = Object.freeze([
@@ -92,8 +186,11 @@ describe("NativeValueChoiceCard", () => {
         isEnabled: true,
         isAnimating: false,
         onActivate,
+        combatant: () => <Text>Animal</Text>,
       } satisfies ComponentProps<typeof NativeValueChoiceCard>
-      const { unmount } = await render(<NativeValueChoiceCard {...props} />)
+      const { unmount, rerender } = await render(
+        <NativeValueChoiceCard {...props} />,
+      )
       const displayName = getValueDisplayName(choiceCase.value)
       const name = screen.getByText(displayName)
       const choice = screen.getByRole("button", {
@@ -112,6 +209,27 @@ describe("NativeValueChoiceCard", () => {
       await user.press(choice)
       expect(onActivate).toHaveBeenCalledTimes(1)
       expect(onActivate).toHaveBeenCalledWith(choiceCase.value.id)
+
+      const animal = screen.getByText("Animal", { includeHiddenElements: true })
+      await fireEvent.press(animal)
+      expect(onActivate).toHaveBeenCalledTimes(2)
+      expect(onActivate).toHaveBeenLastCalledWith(choiceCase.value.id)
+      await rerender(<NativeValueChoiceCard {...props} isEnabled={false} />)
+      await fireEvent.press(animal)
+      await fireEvent.press(choice)
+      expect(onActivate).toHaveBeenCalledTimes(2)
+
+      await rerender(<NativeValueChoiceCard {...props} combatant={undefined} />)
+      expect(
+        screen.queryByText("Animal", { includeHiddenElements: true }),
+      ).toBeNull()
+      expect(choice).toHaveProp(
+        "accessibilityHint",
+        getValueDisplayDefinition(choiceCase.value),
+      )
+      await user.press(choice)
+      expect(onActivate).toHaveBeenCalledTimes(3)
+      expect(onActivate).toHaveBeenLastCalledWith(choiceCase.value.id)
 
       await unmount()
     }

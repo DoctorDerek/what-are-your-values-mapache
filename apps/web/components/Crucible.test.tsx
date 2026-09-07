@@ -399,16 +399,19 @@ describe("Crucible Component Integration", () => {
     )
     const firstCard = firstChoice.closest<HTMLElement>("[data-value-card]")
     if (!firstCard) throw new Error("The selected value card is missing")
-    const reward = within(firstCard).getByText(/^\+\d+ XP · Level /)
+    const selectedCombatant = container.querySelector<HTMLElement>(
+      `[data-combatant-side="first"][data-value-id="${winner.id}"]`,
+    )
+    if (!selectedCombatant)
+      throw new Error("The selected value animal is missing")
+    const reward = within(selectedCombatant).getByText(/^\+\d+ XP · Level /)
     expect(reward).toBeVisible()
     expect(reward.closest("[data-combatant-traveler]")).toHaveAttribute(
       "data-combatant-traveler",
       "first",
     )
     expect(firstChoice).toBeInTheDocument()
-    expect(
-      firstCard.querySelector('[data-combatant-side="first"]'),
-    ).toHaveAttribute("data-value-id", winner.id)
+    expect(selectedCombatant).toHaveAttribute("data-value-id", winner.id)
     const strike = container.querySelector(
       '[data-placeholder-playback="one-shot"]',
     )
