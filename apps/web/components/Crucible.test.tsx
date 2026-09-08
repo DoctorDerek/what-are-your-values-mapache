@@ -139,11 +139,12 @@ describe("Crucible Component Integration", () => {
     )
     expect(presentationRegion).not.toHaveClass("absolute")
     expect(presentationRegion).toContainElement(battleActions)
-    expect(presentationRegion?.nextElementSibling).toHaveClass(
-      "min-h-0",
-      "flex-1",
-      "flex-col",
-      "xl:flex-row",
+    const choicesRegion = screen.getByRole("region", { name: "Battle choices" })
+    expect(presentationRegion?.nextElementSibling).toBe(choicesRegion)
+    expect(choicesRegion).toContainElement(
+      screen.getAllByRole("button", {
+        name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
+      })[0]!,
     )
   })
 
@@ -187,7 +188,7 @@ describe("Crucible Component Integration", () => {
     expect(heading).toBeVisible()
     const firstControlHint = within(identityRail).getByText("[1 / A]")
     expect(firstControlHint).toBeVisible()
-    expect(within(identityRail).getByText(/^LVL \d+$/)).toBeVisible()
+    expect(within(identityRail).getByText(/^Level \d+$/)).toBeVisible()
 
     const secondChoice = screen.getByRole("button", {
       name: getValueChoiceAccessibilityLabel({
@@ -412,6 +413,13 @@ describe("Crucible Component Integration", () => {
     )
     expect(firstChoice).toBeInTheDocument()
     expect(selectedCombatant).toHaveAttribute("data-value-id", winner.id)
+    const traveler = selectedCombatant.querySelector(
+      "[data-combatant-traveler]",
+    )
+    if (!traveler) throw new Error("Selected animal traveler is missing")
+    fireEvent.animationEnd(traveler, {
+      animationName: "seething-swarm-approach",
+    })
     const strike = container.querySelector(
       '[data-placeholder-playback="one-shot"]',
     )
@@ -610,8 +618,9 @@ describe("Crucible Component Integration", () => {
     expect(onExit).not.toHaveBeenCalled()
   })
 
-  it("keeps both value cards vertically readable without horizontal overflow", async () => {
+  it("keeps full definitions in each choice and gives keyboard readers one scroll region", async () => {
     const { battleCycle, battle } = createBattleProps("readable-copy-seed")
+    const onWinnerSelected = vi.fn()
     const definitions = battle.pair.map((valueId) => {
       const definition = battleCycle.activeDeck.values.find(
         ({ id }) => id === valueId,
@@ -630,16 +639,17 @@ describe("Crucible Component Integration", () => {
         battle={battle}
         progressById={battleCycle.progressById}
         onExit={vi.fn()}
-        onWinnerSelected={vi.fn()}
+        onWinnerSelected={onWinnerSelected}
       />,
     )
 
-    expect(screen.getByRole("main", { name: "Value battle" })).toHaveClass(
-      "overflow-hidden",
-      "overscroll-none",
-      "select-none",
-      "touch-manipulation",
-    )
+    const choicesRegion = screen.getByRole("region", { name: "Battle choices" })
+    expect(screen.getAllByRole("region")).toHaveLength(1)
+    expect(choicesRegion).toHaveAttribute("tabindex", "0")
+    fireEvent.focus(choicesRegion)
+    for (const key of [" ", "Enter", "ArrowDown", "ArrowUp"])
+      fireEvent.keyDown(choicesRegion, { key })
+    expect(onWinnerSelected).not.toHaveBeenCalled()
 
     for (const [index, definition] of definitions.entries()) {
       const choice = await screen.findByRole("button", {
@@ -658,11 +668,10 @@ describe("Crucible Component Integration", () => {
 
       expect(choice).toContainElement(heading)
       expect(choice).toContainElement(definitionCopy)
-      expect(heading).toHaveClass("break-words", "[overflow-wrap:anywhere]")
-      expect(definitionCopy).toHaveClass(
-        "break-words",
-        "[overflow-wrap:anywhere]",
-      )
+      expect(choicesRegion).toContainElement(choice)
+      expect(choice).toHaveAccessibleDescription(definitionCopy.textContent!)
+      expect(heading).toBeVisible()
+      expect(definitionCopy).toBeVisible()
     }
   })
 

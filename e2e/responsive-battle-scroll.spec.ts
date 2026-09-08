@@ -194,15 +194,8 @@ for (const viewport of [
           return { left, right, top, bottom, width }
         }
         return cards.map((card) => ({
-          card: measure(card),
-          reading: measure(card.querySelector('[role="region"]')!),
-          animal: measure(
-            card
-              .closest("[data-choreography-identity]")!
-              .querySelector(
-                `[data-combatant-side][data-value-id="${card.getAttribute("data-value-card")}"]`,
-              )!,
-          ),
+          card: measure(card.querySelector("button")!),
+          animal: measure(card.querySelector("[data-combatant-side]")!),
         }))
       })
     const [first, second] = cardGeometry
@@ -214,14 +207,13 @@ for (const viewport of [
     expect(first.animal.right).toBeLessThanOrEqual(second.animal.left)
     if (viewport.width < 1280) {
       expect(first.card.bottom).toBeLessThanOrEqual(second.card.top)
-      expect(first.reading.bottom).toBeLessThanOrEqual(first.animal.top)
-      expect(second.animal.bottom).toBeLessThanOrEqual(second.reading.top)
-      expect(first.reading.width).toBe(first.card.width)
-      expect(second.reading.width).toBe(second.card.width)
+      expect(first.card.bottom).toBeLessThanOrEqual(first.animal.top)
+      expect(second.animal.bottom).toBeLessThanOrEqual(second.card.top)
+      expect(first.card.width).toBe(second.card.width)
     } else {
       expect(first.card.right).toBeLessThanOrEqual(second.card.left)
-      expect(first.reading.bottom).toBeLessThanOrEqual(first.animal.top)
-      expect(second.reading.bottom).toBeLessThanOrEqual(second.animal.top)
+      expect(first.card.bottom).toBeLessThanOrEqual(first.animal.top)
+      expect(second.card.bottom).toBeLessThanOrEqual(second.animal.top)
     }
     for (const side of ["first", "second"] as const) {
       const identity = await stage.getAttribute("data-choreography-identity")
@@ -238,6 +230,9 @@ for (const viewport of [
             ),
         )
         .toBe(true)
+      await stage
+        .locator(`[data-battle-arena-side="${side}"]`)
+        .scrollIntoViewIfNeeded()
       const animalBounds = await stage
         .locator(`[data-combatant-side="${side}"]`)
         .boundingBox()
@@ -261,8 +256,8 @@ for (const viewport of [
       for (const strike of strikes) {
         expect(strike.side).toBe(side)
         expect(strike.imageIsLoaded).toBe(true)
-        expect(strike.attackerIsUnobscured).toBe(true)
-        expect(strike.inViewport).toBe(true)
+        expect(strike.attackerIsUnobscured, JSON.stringify(strike)).toBe(true)
+        expect(strike.inViewport, JSON.stringify(strike)).toBe(true)
         expect(strike.overlapsVisibleText).toBe(false)
         expect(strike.contactDistance).toBeLessThan(strike.originDistance)
         expect(
@@ -275,5 +270,80 @@ for (const viewport of [
         page.getByRole("button", { name: /^Choose / }).first(),
       ).toBeEnabled()
     }
+  })
+}
+
+for (const viewport of [
+  { width: 320, height: 568 },
+  { width: 640, height: 450 },
+  { width: 1280, height: 844 },
+]) {
+  test(`full definitions reflow through one scroll area at ${viewport.width}px with 200% text`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport)
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await page.goto("/")
+    await page.getByRole("button", { name: "Start", exact: true }).click()
+    await page.getByRole("button", { name: "Battle", exact: true }).click()
+    await page.addStyleTag({ content: "html { font-size: 200%; }" })
+    const battle = page.getByRole("main", { name: "Value battle" })
+    const region = battle.getByRole("region", { name: "Battle choices" })
+    const choices = region.getByRole("button", { name: /^Choose / })
+    await expect(battle.getByRole("region")).toHaveCount(1)
+    await expect(choices).toHaveCount(2)
+    for (const choice of await choices.all()) {
+      const heading = choice.getByRole("heading")
+      await heading.scrollIntoViewIfNeeded()
+      await expect(heading).toBeInViewport({ ratio: 1 })
+      await expect(
+        region.getByText((await heading.textContent())!, { exact: true }),
+      ).toHaveCount(1)
+      const definition = choice.locator("p")
+      await definition.scrollIntoViewIfNeeded()
+      await expect(definition).toBeInViewport({ ratio: 1 })
+      expect(
+        await definition.evaluate((element) => ({
+          overflows: element.scrollHeight > element.clientHeight + 1,
+          hasInnerScrollbox: [
+            ...element.closest("button")!.parentElement!.querySelectorAll("*"),
+          ].some((child) =>
+            ["auto", "scroll"].includes(getComputedStyle(child).overflowY),
+          ),
+        })),
+      ).toEqual({ overflows: false, hasInnerScrollbox: false })
+      await expect(choice.getByText(/^Level \d+$/)).toBeVisible()
+    }
+    await battle.getByRole("button", { name: "Menu", exact: true }).focus()
+    await page.keyboard.press("Tab")
+    await expect(
+      battle.getByRole("button", { name: "Stop", exact: true }),
+    ).toBeFocused()
+    const regionBoundsBeforeFocus = await region.boundingBox()
+    await page.keyboard.press("Tab")
+    await expect(region).toBeFocused()
+    await page.keyboard.press("Home")
+    await expect(region).toHaveCSS("border-left-color", "rgb(255, 255, 255)")
+    expect(await region.boundingBox()).toEqual(regionBoundsBeforeFocus)
+    await expect
+      .poll(() => region.evaluate((element) => element.scrollTop))
+      .toBe(0)
+    await page.keyboard.press("End")
+    await expect
+      .poll(() => region.evaluate((element) => element.scrollTop))
+      .toBeGreaterThan(0)
+    await expect(
+      battle.getByRole("button", { name: "Menu", exact: true }),
+    ).toBeInViewport()
+    expect(
+      await region.evaluate((element) => element.scrollWidth),
+    ).toBeLessThanOrEqual(viewport.width)
+    const identity = await region
+      .locator("[data-choreography-identity]")
+      .getAttribute("data-choreography-identity")
+    await choices.last().click()
+    await expect(
+      region.locator("[data-choreography-identity]"),
+    ).not.toHaveAttribute("data-choreography-identity", identity!)
   })
 }

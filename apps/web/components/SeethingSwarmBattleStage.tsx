@@ -11,14 +11,11 @@ import {
   type SeethingSwarmBattleCombatantSide,
 } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import {
-  createSeethingSwarmBattleTravel,
   resolveSeethingSwarmPlaceholderRole,
   SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS,
   type SeethingSwarmBattleExchangeCue,
-  type SeethingSwarmBattlePoint,
 } from "@game/machines/src/SeethingSwarmBattleExchange"
 import { getSeethingSwarmBattleClips } from "@game/machines/src/SeethingSwarmBattlePlayback"
-import { motion } from "motion/react"
 import type { StaticImageData } from "next/image"
 import {
   useCallback,
@@ -37,8 +34,8 @@ import SeethingSwarmPlaceholder from "@/components/SeethingSwarmPlaceholder"
 
 type SeethingSwarmBattleStageStyle = CSSProperties & {
   "--battle-result-duration": string
-  "--battle-compact-combatant-size": string
-  "--battle-compact-combatant-scale": number
+  "--battle-approach-duration": string
+  "--battle-tile-size": string
 }
 
 function subscribeToDocumentVisibility(onChange: () => void) {
@@ -56,7 +53,6 @@ function getServerIsDocumentHidden() {
 
 function BattlePlayback({
   choreography,
-  compactCombatantSize,
   winnerId,
   isNextBattleReady,
   shouldReduceMotion,
@@ -64,7 +60,6 @@ function BattlePlayback({
   children,
 }: {
   choreography: SeethingSwarmBattleChoreography<StaticImageData>
-  compactCombatantSize: number
   winnerId: ValueId | null
   isNextBattleReady: boolean
   shouldReduceMotion: boolean
@@ -79,9 +74,7 @@ function BattlePlayback({
   const [readySides, setReadySides] = useState<
     ReadonlySet<SeethingSwarmBattleCombatantSide>
   >(() => new Set())
-  const [travel, setTravel] = useState<SeethingSwarmBattlePoint | null>(null)
-  const firstAnchorRef = useRef<HTMLDivElement>(null)
-  const secondAnchorRef = useRef<HTMLDivElement>(null)
+  const battleVisibilityRef = useRef<HTMLDivElement>(null)
   const cue = winnerId ? resultCue : "introduction"
   const completedSidesRef = useRef(new Set<SeethingSwarmBattleCombatantSide>())
   const hasReportedResultRef = useRef(false)
@@ -95,50 +88,13 @@ function BattlePlayback({
   useEffect(() => reportResult(), [reportResult])
 
   useLayoutEffect(() => {
-    if (!winnerId || shouldReduceMotion || readySides.size !== 2) return
-    const measureTravel = () => {
-      const first = firstAnchorRef.current?.getBoundingClientRect()
-      const second = secondAnchorRef.current?.getBoundingClientRect()
-      if (!first || !second) return
-      const firstPoint = {
-        x: first.x + first.width / 2,
-        y: first.y + first.height / 2,
-      }
-      const secondPoint = {
-        x: second.x + second.width / 2,
-        y: second.y + second.height / 2,
-      }
-      const isFirstWinner = choreography.combatants[0].valueId === winnerId
-      const nextTravel = createSeethingSwarmBattleTravel({
-        attacker: isFirstWinner ? firstPoint : secondPoint,
-        defender: isFirstWinner ? secondPoint : firstPoint,
-        attackerSide: isFirstWinner ? "first" : "second",
-        combatantWidth: isFirstWinner ? first.width : second.width,
+    if (winnerId && !shouldReduceMotion && readySides.size === 2)
+      battleVisibilityRef.current?.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+        behavior: "instant",
       })
-      setTravel(nextTravel)
-      if (nextTravel.x === 0 && nextTravel.y === 0)
-        setResultCue((current) => (current === "approach" ? "strike" : current))
-    }
-    measureTravel()
-    const layoutObserver = new ResizeObserver(measureTravel)
-    const stage = firstAnchorRef.current?.closest(
-      "[data-choreography-identity]",
-    )
-    if (stage) layoutObserver.observe(stage)
-    if (firstAnchorRef.current) layoutObserver.observe(firstAnchorRef.current)
-    if (secondAnchorRef.current) layoutObserver.observe(secondAnchorRef.current)
-    window.addEventListener("resize", measureTravel)
-    return () => {
-      layoutObserver.disconnect()
-      window.removeEventListener("resize", measureTravel)
-    }
-  }, [
-    choreography,
-    compactCombatantSize,
-    readySides,
-    shouldReduceMotion,
-    winnerId,
-  ])
+  }, [isNextBattleReady, readySides.size, shouldReduceMotion, winnerId])
 
   const handlePlaybackComplete = (side: SeethingSwarmBattleCombatantSide) => {
     if (cue === "strike") {
@@ -168,37 +124,21 @@ function BattlePlayback({
           <div
             aria-hidden="true"
             key={combatant.side}
-            ref={combatant.side === "first" ? firstAnchorRef : secondAnchorRef}
-            className="pointer-events-none relative flex size-(--battle-combatant-size) shrink-0 items-end justify-center"
+            ref={combatant.side === "first" ? battleVisibilityRef : undefined}
+            className="pointer-events-none relative z-10 flex size-(--battle-combatant-size) shrink-0 scroll-mt-16 scroll-mb-2 items-end justify-center"
             data-animal-id={combatant.animalId}
             data-combatant-side={combatant.side}
             data-value-id={combatant.valueId}
             data-battle-cue={cue}
           >
-            <motion.div
-              className="relative flex size-(--battle-combatant-size) shrink-0 items-end justify-center"
+            <div
+              className={`relative flex size-(--battle-combatant-size) shrink-0 items-end justify-center ${combatant.side === "first" ? "[--battle-travel-direction:1]" : "[--battle-travel-direction:-1]"} ${!shouldReduceMotion && combatant.valueId === winnerId && readySides.size === 2 ? "animate-seething-swarm-approach" : ""}`}
               data-combatant-traveler={combatant.side}
-              initial={false}
-              animate={{
-                x:
-                  !shouldReduceMotion && combatant.valueId === winnerId
-                    ? (travel?.x ?? 0)
-                    : 0,
-                y:
-                  !shouldReduceMotion && combatant.valueId === winnerId
-                    ? (travel?.y ?? 0)
-                    : 0,
-              }}
-              transition={{
-                duration: shouldReduceMotion
-                  ? 0
-                  : SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS / 1000,
-                ease: "easeOut",
-              }}
-              onAnimationComplete={() => {
+              onAnimationEnd={(event) => {
                 if (
+                  event.target === event.currentTarget &&
+                  event.animationName === "seething-swarm-approach" &&
                   cue === "approach" &&
-                  travel &&
                   combatant.valueId === winnerId
                 )
                   setResultCue("strike")
@@ -209,7 +149,7 @@ function BattlePlayback({
                   {reward}
                 </span>
               ) : null}
-              <span className="relative flex size-28 shrink-0 origin-bottom scale-(--battle-combatant-scale) items-end justify-center">
+              <span className="relative flex size-(--battle-tile-size) shrink-0 origin-bottom scale-(--battle-combatant-scale) items-end justify-center [--spacing:calc(var(--battle-tile-size)/28)]">
                 {"clips" in combatant ? (
                   <SeethingSwarmCombatant
                     combatant={combatant}
@@ -238,7 +178,7 @@ function BattlePlayback({
                   />
                 )}
               </span>
-            </motion.div>
+            </div>
           </div>
         )
       },
@@ -270,26 +210,6 @@ export default function SeethingSwarmBattleStage({
     second: (isAttended: boolean, reward?: ReactNode) => ReactNode
   }) => ReactNode
 }) {
-  const stageRef = useRef<HTMLDivElement>(null)
-  const [compactCombatantSize, setCompactCombatantSize] = useState(
-    SEETHING_SWARM_BATTLE_TILE_SIZE,
-  )
-  useLayoutEffect(() => {
-    const stage = stageRef.current
-    if (!stage) return
-    const measureStage = () => {
-      setCompactCombatantSize(
-        Math.min(
-          SEETHING_SWARM_BATTLE_TILE_SIZE,
-          stage.getBoundingClientRect().height / 3,
-        ),
-      )
-    }
-    measureStage()
-    const observer = new ResizeObserver(measureStage)
-    observer.observe(stage)
-    return () => observer.disconnect()
-  }, [])
   const isDocumentHidden = useSyncExternalStore(
     subscribeToDocumentVisibility,
     getIsDocumentHidden,
@@ -327,15 +247,13 @@ export default function SeethingSwarmBattleStage({
   }, [pendingBattle, runtimeClipCatalog])
   const stageStyle: SeethingSwarmBattleStageStyle = {
     "--battle-result-duration": `${SEETHING_SWARM_BATTLE_RESULT_DURATION_MS}ms`,
-    "--battle-compact-combatant-size": `${compactCombatantSize}px`,
-    "--battle-compact-combatant-scale":
-      compactCombatantSize / SEETHING_SWARM_BATTLE_TILE_SIZE,
+    "--battle-approach-duration": `${SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS}ms`,
+    "--battle-tile-size": `${SEETHING_SWARM_BATTLE_TILE_SIZE}px`,
   }
 
   return (
     <div
-      ref={stageRef}
-      className="[container-type:size] relative flex min-h-0 min-w-0 flex-1 flex-col [--battle-arena-height:calc(var(--battle-combatant-size)+4rem)] [--battle-combatant-scale:var(--battle-compact-combatant-scale)] [--battle-combatant-size:var(--battle-compact-combatant-size)] xl:flex-row xl:[--battle-combatant-scale:2] xl:[--battle-combatant-size:14rem]"
+      className="relative grid min-h-full min-w-0 grid-cols-2 grid-rows-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] [--battle-arena-height:calc(var(--battle-combatant-size)+4rem)] [--battle-combatant-scale:1] [--battle-combatant-size:calc(var(--battle-tile-size)*var(--battle-combatant-scale))] xl:grid-rows-[minmax(max-content,1fr)_auto] xl:[--battle-combatant-scale:2]"
       data-battle-stage-mode={choreography.mode}
       data-battle-stage-state={winnerId ? "resolving" : "awaiting-input"}
       data-choreography-identity={choreography.choreographyIdentity}
@@ -344,7 +262,6 @@ export default function SeethingSwarmBattleStage({
       <BattlePlayback
         key={choreography.choreographyIdentity}
         choreography={choreography}
-        compactCombatantSize={compactCombatantSize}
         winnerId={winnerId}
         isNextBattleReady={isNextBattleReady}
         shouldReduceMotion={shouldReduceMotion || isPaused || isDocumentHidden}

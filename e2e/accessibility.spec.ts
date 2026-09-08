@@ -182,6 +182,7 @@ test("overflowing value cards remain keyboard-readable beside achievement feedba
   const battle = page.getByRole("main", { name: "Value battle" })
   const stage = battle.locator("[data-battle-stage-state]")
   const firstAnimal = battle.locator('[data-combatant-side="first"]')
+  await firstAnimal.scrollIntoViewIfNeeded()
   const animalBounds = await firstAnimal.boundingBox()
   if (!animalBounds) throw new Error("The first card animal is not visible")
   await page.mouse.click(
@@ -220,7 +221,7 @@ test("overflowing value cards remain keyboard-readable beside achievement feedba
   await expect(stage).toHaveAttribute("data-choreography-identity", identity!)
   await page.keyboard.press("Tab")
   await expect(
-    readingRegion.getByRole("button", { name: /^Choose / }),
+    readingRegion.getByRole("button", { name: /^Choose / }).first(),
   ).toBeFocused()
   await page.keyboard.press("Enter")
   await expect
