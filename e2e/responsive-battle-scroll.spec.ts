@@ -1,4 +1,4 @@
-import { expect } from "@playwright/test"
+import { expect, type Locator } from "@playwright/test"
 import { test } from "./fixtures"
 import { installVisibleTextBounds } from "./visible-text-bounds"
 
@@ -24,6 +24,64 @@ interface ResponsiveStrikeEvidence {
 declare global {
   interface Window {
     responsiveStrikes: ResponsiveStrikeEvidence[]
+  }
+}
+
+async function expectCompleteTextReachable(text: Locator) {
+  for (const edge of ["start", "end"] as const) {
+    const evidence = await text.evaluate((element, edge) => {
+      const surface = element.closest("main")!
+      const surfaceBounds = surface.getBoundingClientRect()
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
+      const textNodes: Node[] = []
+      while (walker.nextNode()) {
+        if (walker.currentNode.textContent?.length)
+          textNodes.push(walker.currentNode)
+      }
+      const node = edge === "start" ? textNodes[0]! : textNodes.at(-1)!
+      const offset = edge === "start" ? 0 : node.textContent!.length - 1
+      const character = document.createRange()
+      character.setStart(node, offset)
+      character.setEnd(node, offset + 1)
+      const beforeScroll = character.getBoundingClientRect()
+      surface.scrollBy({
+        top:
+          edge === "start"
+            ? beforeScroll.top - surfaceBounds.top - surface.clientTop
+            : beforeScroll.bottom -
+              surfaceBounds.top -
+              surface.clientTop -
+              surface.clientHeight,
+        behavior: "instant",
+      })
+      const characterBounds = character.getBoundingClientRect()
+      const content = document.createRange()
+      content.selectNodeContents(element)
+      return {
+        edgeIsVisible:
+          characterBounds.top >=
+            Math.max(0, surfaceBounds.top + surface.clientTop) - 1 &&
+          characterBounds.bottom <=
+            Math.min(
+              innerHeight,
+              surfaceBounds.top + surface.clientTop + surface.clientHeight,
+            ) +
+              1,
+        allLinesFitWidth: [...content.getClientRects()].every(
+          (line) =>
+            line.left >= surfaceBounds.left &&
+            line.right <= Math.min(innerWidth, surfaceBounds.right),
+        ),
+        textIsNotClipped:
+          getComputedStyle(element).overflowY === "visible" ||
+          element.scrollHeight <= element.clientHeight + 1,
+      }
+    }, edge)
+    expect(evidence, `${edge} of ${await text.textContent()}`).toEqual({
+      edgeIsVisible: true,
+      allLinesFitWidth: true,
+      textIsNotClipped: true,
+    })
   }
 }
 
@@ -274,11 +332,12 @@ for (const viewport of [
 }
 
 for (const viewport of [
-  { width: 320, height: 568 },
-  { width: 640, height: 450 },
-  { width: 1280, height: 844 },
+  { width: 320, height: 568, textScale: 200 },
+  { width: 640, height: 450, textScale: 200 },
+  { width: 1280, height: 844, textScale: 200 },
+  { width: 320, height: 568, textScale: 400 },
 ]) {
-  test(`full definitions reflow through one scroll area at ${viewport.width}px with 200% text`, async ({
+  test(`controls and full definitions share scrolling at ${viewport.width}px with ${viewport.textScale}% text`, async ({
     page,
   }) => {
     await page.setViewportSize(viewport)
@@ -286,10 +345,11 @@ for (const viewport of [
     await page.goto("/")
     await page.getByRole("button", { name: "Start", exact: true }).click()
     await page.getByRole("button", { name: "Battle", exact: true }).click()
-    await page.addStyleTag({ content: "html { font-size: 200%; }" })
+    await page.addStyleTag({
+      content: `html { font-size: ${viewport.textScale}%; }`,
+    })
     const battle = page.getByRole("main", { name: "Value battle" })
-    const region = battle.getByRole("region", { name: "Battle choices" })
-    const choices = region.getByRole("button", { name: /^Choose / })
+    const choices = battle.getByRole("button", { name: /^Choose / })
     const actionBar = battle.getByRole("navigation", { name: "Battle actions" })
     const menuAction = actionBar.getByRole("button", {
       name: "Menu",
@@ -335,8 +395,6 @@ for (const viewport of [
     for (const [index, { button, label }] of actionBounds.entries()) {
       expect(button.left).toBeGreaterThanOrEqual(0)
       expect(button.right).toBeLessThanOrEqual(viewport.width)
-      expect(button.top).toBeGreaterThanOrEqual(0)
-      expect(button.bottom).toBeLessThanOrEqual(viewport.height)
       expect(label.left).toBeGreaterThanOrEqual(button.left)
       expect(label.right).toBeLessThanOrEqual(button.right)
       expect(label.top).toBeGreaterThanOrEqual(button.top)
@@ -351,6 +409,14 @@ for (const viewport of [
         ).toBe(false)
       }
     }
+    for (const action of await actionBar.getByRole("button").all()) {
+      await action.scrollIntoViewIfNeeded()
+      await expect(action).toBeInViewport({ ratio: 1 })
+    }
+    if (viewport.textScale === 400)
+      expect((await actionBar.boundingBox())!.height).toBeGreaterThan(
+        viewport.height,
+      )
     await expect(undoAction).toBeDisabled()
     await expect(redoAction).toBeDisabled()
     await menuAction.click()
@@ -360,18 +426,24 @@ for (const viewport of [
       .getByRole("button", { name: "Resume Battle", exact: true })
       .click()
     await expect(menu).toBeHidden()
-    await expect(battle.getByRole("region")).toHaveCount(1)
+    await expect(battle.getByRole("region")).toHaveCount(0)
+    expect(
+      await battle.evaluate(
+        (surface) =>
+          [...surface.querySelectorAll("*")].filter((element) =>
+            ["auto", "scroll"].includes(getComputedStyle(element).overflowY),
+          ).length,
+      ),
+    ).toBe(0)
     await expect(choices).toHaveCount(2)
     for (const choice of await choices.all()) {
       const heading = choice.getByRole("heading")
-      await heading.scrollIntoViewIfNeeded()
-      await expect(heading).toBeInViewport({ ratio: 1 })
+      await expectCompleteTextReachable(heading)
       await expect(
-        region.getByText((await heading.textContent())!, { exact: true }),
+        battle.getByText((await heading.textContent())!, { exact: true }),
       ).toHaveCount(1)
       const definition = choice.locator("p")
-      await definition.scrollIntoViewIfNeeded()
-      await expect(definition).toBeInViewport({ ratio: 1 })
+      await expectCompleteTextReachable(definition)
       expect(
         await definition.evaluate((element) => ({
           overflows: element.scrollHeight > element.clientHeight + 1,
@@ -384,31 +456,52 @@ for (const viewport of [
       ).toEqual({ overflows: false, hasInnerScrollbox: false })
       await expect(choice.getByText(/^Level \d+$/)).toBeVisible()
     }
-    await battle.getByRole("button", { name: "Menu", exact: true }).focus()
-    await page.keyboard.press("Tab")
-    await expect(
-      battle.getByRole("button", { name: "Stop", exact: true }),
-    ).toBeFocused()
-    const regionBoundsBeforeFocus = await region.boundingBox()
-    await page.keyboard.press("Tab")
-    await expect(region).toBeFocused()
+    await menuAction.focus()
+    const surfaceBoundsBeforeFocus = await battle.boundingBox()
+    await page.keyboard.press("Shift+Tab")
+    await expect(battle).toBeFocused()
     await page.keyboard.press("Home")
-    await expect(region).toHaveCSS("border-left-color", "rgb(255, 255, 255)")
-    expect(await region.boundingBox()).toEqual(regionBoundsBeforeFocus)
+    await expect(battle).toHaveCSS("border-left-color", "rgb(255, 255, 255)")
+    expect(await battle.boundingBox()).toEqual(surfaceBoundsBeforeFocus)
     await expect
-      .poll(() => region.evaluate((element) => element.scrollTop))
+      .poll(() => battle.evaluate((element) => element.scrollTop))
       .toBe(0)
+    const beforeWheel = await battle.evaluate((surface) => ({
+      pageScroll: window.scrollY,
+      controlsTop: surface.querySelector("nav")!.getBoundingClientRect().top,
+    }))
+    await menuAction.hover()
+    await page.mouse.wheel(0, 200)
+    await expect
+      .poll(() => battle.evaluate((surface) => surface.scrollTop))
+      .toBeGreaterThan(0)
+    expect((await actionBar.boundingBox())!.y).toBeLessThan(
+      beforeWheel.controlsTop,
+    )
+    expect(await page.evaluate(() => scrollY)).toBe(beforeWheel.pageScroll)
     await page.keyboard.press("End")
     await expect
-      .poll(() => region.evaluate((element) => element.scrollTop))
-      .toBeGreaterThan(0)
-    await expect(
-      battle.getByRole("button", { name: "Menu", exact: true }),
-    ).toBeInViewport()
+      .poll(() =>
+        battle.evaluate(
+          (element) =>
+            element.scrollTop >=
+            element.scrollHeight - element.clientHeight - 1,
+        ),
+      )
+      .toBe(true)
+    await expect(menuAction).not.toBeInViewport()
+    await choices.last().hover()
+    const beforeValueWheel = await battle.evaluate(
+      (surface) => surface.scrollTop,
+    )
+    await page.mouse.wheel(0, -200)
+    await expect
+      .poll(() => battle.evaluate((surface) => surface.scrollTop))
+      .toBeLessThan(beforeValueWheel)
     expect(
-      await region.evaluate((element) => element.scrollWidth),
+      await battle.evaluate((element) => element.scrollWidth),
     ).toBeLessThanOrEqual(viewport.width)
-    const identity = await region
+    const identity = await battle
       .locator("[data-choreography-identity]")
       .getAttribute("data-choreography-identity")
     const originalChoiceLabels = await choices.evaluateAll((buttons) =>
@@ -416,7 +509,7 @@ for (const viewport of [
     )
     await choices.last().click()
     await expect(
-      region.locator("[data-choreography-identity]"),
+      battle.locator("[data-choreography-identity]"),
     ).not.toHaveAttribute("data-choreography-identity", identity!)
     await expect(undoAction).toBeEnabled()
     const nextChoiceLabels = await choices.evaluateAll((buttons) =>

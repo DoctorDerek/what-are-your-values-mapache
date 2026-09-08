@@ -126,7 +126,7 @@ describe("Crucible Component Integration", () => {
     expect(battleSurface).toHaveAttribute("data-slot", "mapache-screen")
     expect(battleSurface).toHaveClass(
       "h-[100dvh]",
-      "overflow-hidden",
+      "overflow-y-auto",
       "[--mapache-screen-spacing:0px]",
     )
     expect(battleActions).toHaveClass("relative", "shrink-0")
@@ -139,9 +139,9 @@ describe("Crucible Component Integration", () => {
     )
     expect(presentationRegion).not.toHaveClass("absolute")
     expect(presentationRegion).toContainElement(battleActions)
-    const choicesRegion = screen.getByRole("region", { name: "Battle choices" })
-    expect(presentationRegion?.nextElementSibling).toBe(choicesRegion)
-    expect(choicesRegion).toContainElement(
+    expect(battleSurface).toContainElement(battleActions)
+    expect(screen.queryByRole("region", { name: "Battle choices" })).toBeNull()
+    expect(presentationRegion?.nextElementSibling).toContainElement(
       screen.getAllByRole("button", {
         name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
       })[0]!,
@@ -618,7 +618,7 @@ describe("Crucible Component Integration", () => {
     expect(onExit).not.toHaveBeenCalled()
   })
 
-  it("keeps full definitions in each choice and gives keyboard readers one scroll region", async () => {
+  it("keeps controls and full definitions in one keyboard-readable battle surface", async () => {
     const { battleCycle, battle } = createBattleProps("readable-copy-seed")
     const onWinnerSelected = vi.fn()
     const definitions = battle.pair.map((valueId) => {
@@ -643,12 +643,15 @@ describe("Crucible Component Integration", () => {
       />,
     )
 
-    const choicesRegion = screen.getByRole("region", { name: "Battle choices" })
-    expect(screen.getAllByRole("region")).toHaveLength(1)
-    expect(choicesRegion).toHaveAttribute("tabindex", "0")
-    fireEvent.focus(choicesRegion)
+    const battleSurface = screen.getByRole("main", { name: "Value battle" })
+    expect(screen.queryByRole("region", { name: "Battle choices" })).toBeNull()
+    expect(battleSurface).toHaveAttribute("tabindex", "0")
+    expect(battleSurface).toContainElement(
+      screen.getByRole("navigation", { name: "Battle actions" }),
+    )
+    fireEvent.focus(battleSurface)
     for (const key of [" ", "Enter", "ArrowDown", "ArrowUp"])
-      fireEvent.keyDown(choicesRegion, { key })
+      fireEvent.keyDown(battleSurface, { key })
     expect(onWinnerSelected).not.toHaveBeenCalled()
 
     for (const [index, definition] of definitions.entries()) {
@@ -668,7 +671,7 @@ describe("Crucible Component Integration", () => {
 
       expect(choice).toContainElement(heading)
       expect(choice).toContainElement(definitionCopy)
-      expect(choicesRegion).toContainElement(choice)
+      expect(battleSurface).toContainElement(choice)
       expect(choice).toHaveAccessibleDescription(definitionCopy.textContent!)
       expect(heading).toBeVisible()
       expect(definitionCopy).toBeVisible()

@@ -201,28 +201,36 @@ test("overflowing value cards remain keyboard-readable beside achievement feedba
     "awaiting-input",
   )
   const identity = await stage.getAttribute("data-choreography-identity")
-  const readingRegion = battle.getByRole("region").first()
   await expect
     .poll(() =>
-      readingRegion.evaluate(
-        (element) => element.scrollHeight - element.clientHeight,
-      ),
+      battle.evaluate((element) => element.scrollHeight - element.clientHeight),
     )
     .toBeGreaterThan(0)
-  await readingRegion.focus()
+  await battle.focus()
   await page.keyboard.press("PageDown")
   await expect
-    .poll(() => readingRegion.evaluate((element) => element.scrollTop))
+    .poll(() => battle.evaluate((element) => element.scrollTop))
     .toBeGreaterThan(0)
   await page.keyboard.press("ArrowDown")
   await page.keyboard.press(" ")
   await page.keyboard.press("Enter")
-  await expect(readingRegion).toBeFocused()
+  await expect(battle).toBeFocused()
   await expect(stage).toHaveAttribute("data-choreography-identity", identity!)
-  await page.keyboard.press("Tab")
-  await expect(
-    readingRegion.getByRole("button", { name: /^Choose / }).first(),
-  ).toBeFocused()
+  const firstChoice = battle.getByRole("button", { name: /^Choose / }).first()
+  for (
+    let index = 0;
+    index < (await battle.getByRole("button").count());
+    index++
+  ) {
+    await page.keyboard.press("Tab")
+    if (
+      await firstChoice.evaluate(
+        (element) => element === document.activeElement,
+      )
+    )
+      break
+  }
+  await expect(firstChoice).toBeFocused()
   await page.keyboard.press("Enter")
   await expect
     .poll(() => stage.getAttribute("data-choreography-identity"))
