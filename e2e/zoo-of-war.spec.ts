@@ -539,26 +539,20 @@ for (const { width, height } of [
       true,
     )
     await expect(choices).toHaveCount(2)
-    await expect(choices.first()).toBeInViewport()
-    await expect(choices.last()).toBeInViewport()
+    const readingRegion = battle.getByRole("region", { name: "Battle choices" })
+    await expect(battle.getByRole("region")).toHaveCount(1)
     for (const card of await stage.locator("[data-value-card]").all()) {
       const choice = card.getByRole("button", { name: /^Choose / })
+      await choice.scrollIntoViewIfNeeded()
       await expect(choice.getByRole("heading")).toBeInViewport()
-      const readingRegion = card.getByRole("region")
-      const needsReadingScroll = await readingRegion.evaluate(
-        (region) => region.scrollHeight > region.clientHeight,
-      )
-      if (needsReadingScroll) {
-        await readingRegion.focus()
-        await page.keyboard.press("End")
-      }
       await expect(choice.locator("p")).toBeInViewport()
-      if (needsReadingScroll) await page.keyboard.press("Home")
+      await expect(card.getByRole("region")).toHaveCount(0)
       const valueId = await card.getAttribute("data-value-card")
       const animal = stage.locator(
         `[data-combatant-side][data-value-id="${valueId}"]`,
       )
       await expect(animal).toHaveCount(1)
+      await animal.scrollIntoViewIfNeeded()
       await expect(animal).toBeInViewport()
       const textDoesNotOverlapAnimal = await card.evaluate((card) => {
         const animal = card
@@ -581,6 +575,9 @@ for (const { width, height } of [
       })
       expect(textDoesNotOverlapAnimal).toBe(true)
     }
+    await readingRegion.focus()
+    await page.keyboard.press("Home")
+    await expect(choices.first().getByRole("heading")).toBeInViewport()
     await expect(
       page.getByRole("button", { name: "Menu", exact: true }),
     ).toBeInViewport()

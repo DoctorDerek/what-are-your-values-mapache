@@ -101,6 +101,14 @@ async function beginStrike(
   winnerSide: SeethingSwarmBattleCombatantSide = "first",
 ) {
   for (const image of container.querySelectorAll("img")) fireEvent.load(image)
+  await waitFor(() => {
+    for (const side of ["first", "second"] as const)
+      expect(getSprite(container, side).parentElement).toHaveAttribute(
+        "data-playback-ready",
+        "true",
+      )
+  })
+  finishApproach(container, winnerSide)
   await waitFor(() =>
     expect(getRole(container, winnerSide)).toHaveAttribute(
       "data-battle-role",
@@ -109,9 +117,51 @@ async function beginStrike(
   )
 }
 
+function finishApproach(
+  container: HTMLElement,
+  winnerSide: SeethingSwarmBattleCombatantSide = "first",
+) {
+  const traveler = getCombatant(container, winnerSide).querySelector(
+    "[data-combatant-traveler]",
+  )
+  if (!traveler) throw new Error("The approaching animal traveler is missing")
+  fireEvent.animationEnd(traveler, { animationName: "seething-swarm-approach" })
+}
+
 afterEach(() => vi.restoreAllMocks())
 
 describe("SeethingSwarmBattleStage", () => {
+  it("waits for its own approach completion rather than bubbled sprite animations", () => {
+    const props = {
+      ...createStageProps("owned-approach-completion"),
+      runtimeClipCatalog: createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
+    }
+    const { container } = render(
+      <SeethingSwarmBattleStage {...props} winnerId={props.battle.pair[0]} />,
+    )
+    const first = getCombatant(container, "first")
+    const traveler = first.querySelector("[data-combatant-traveler]")
+    const restingAnimal = first.querySelector("[data-placeholder-playback]")
+    if (!traveler || !restingAnimal)
+      throw new Error("Approaching animal is missing")
+    fireEvent.animationEnd(restingAnimal, {
+      animationName: "seething-swarm-approach",
+    })
+    fireEvent.animationEnd(traveler, { animationName: "unrelated-animation" })
+    expect(first).toHaveAttribute("data-battle-cue", "approach")
+    expect(getRole(container, "first")).toHaveAttribute(
+      "data-battle-role",
+      "rest",
+    )
+    finishApproach(container)
+    expect(first).toHaveAttribute("data-battle-cue", "strike")
+    expect(getRole(container, "first")).toHaveAttribute(
+      "data-battle-role",
+      "attack",
+    )
+    expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
+  })
+
   it("retains a loaded pose and image identity until the next role is ready", async () => {
     vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockReturnValue(
       false,
@@ -478,6 +528,7 @@ describe("SeethingSwarmBattleStage", () => {
     )
     for (const image of container.querySelectorAll("img"))
       fireEvent.error(image)
+    finishApproach(container)
     await waitFor(() =>
       expect(getRole(container, "first")).toHaveAttribute(
         "data-battle-role",
@@ -517,6 +568,7 @@ describe("SeethingSwarmBattleStage", () => {
         isNextBattleReady
       />,
     )
+    finishApproach(container, "second")
     const strike = container.querySelectorAll(
       '[data-placeholder-playback="one-shot"]',
     )
