@@ -20,6 +20,7 @@ import type { StaticImageData } from "next/image"
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -73,6 +74,7 @@ function BattlePlayback({
   const [readySides, setReadySides] = useState<
     ReadonlySet<SeethingSwarmBattleCombatantSide>
   >(() => new Set())
+  const battleVisibilityRef = useRef<HTMLDivElement>(null)
   const cue = winnerId ? resultCue : "introduction"
   const completedSidesRef = useRef(new Set<SeethingSwarmBattleCombatantSide>())
   const hasReportedResultRef = useRef(false)
@@ -84,6 +86,15 @@ function BattlePlayback({
   }, [isNextBattleReady, onResultComplete, shouldReduceMotion, winnerId])
 
   useEffect(() => reportResult(), [reportResult])
+
+  useLayoutEffect(() => {
+    if (winnerId && !shouldReduceMotion && readySides.size === 2)
+      battleVisibilityRef.current?.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+        behavior: "instant",
+      })
+  }, [isNextBattleReady, readySides.size, shouldReduceMotion, winnerId])
 
   const handlePlaybackComplete = (side: SeethingSwarmBattleCombatantSide) => {
     if (cue === "strike") {
@@ -113,7 +124,8 @@ function BattlePlayback({
           <div
             aria-hidden="true"
             key={combatant.side}
-            className="pointer-events-none relative flex size-(--battle-combatant-size) shrink-0 items-end justify-center"
+            ref={combatant.side === "first" ? battleVisibilityRef : undefined}
+            className="pointer-events-none relative z-10 flex size-(--battle-combatant-size) shrink-0 scroll-mt-16 scroll-mb-2 items-end justify-center"
             data-animal-id={combatant.animalId}
             data-combatant-side={combatant.side}
             data-value-id={combatant.valueId}
