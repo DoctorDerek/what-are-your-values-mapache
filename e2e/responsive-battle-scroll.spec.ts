@@ -314,9 +314,17 @@ for (const viewport of [
       ).toEqual({ overflows: false, hasInnerScrollbox: false })
       await expect(choice.getByText(/^Level \d+$/)).toBeVisible()
     }
-    await region.focus()
+    await battle.getByRole("button", { name: "Menu", exact: true }).focus()
+    await page.keyboard.press("Tab")
+    await expect(
+      battle.getByRole("button", { name: "Stop", exact: true }),
+    ).toBeFocused()
+    const regionBoundsBeforeFocus = await region.boundingBox()
+    await page.keyboard.press("Tab")
+    await expect(region).toBeFocused()
     await page.keyboard.press("Home")
-    await expect(region).toHaveCSS("outline-style", "solid")
+    await expect(region).toHaveCSS("border-left-color", "rgb(255, 255, 255)")
+    expect(await region.boundingBox()).toEqual(regionBoundsBeforeFocus)
     await expect
       .poll(() => region.evaluate((element) => element.scrollTop))
       .toBe(0)
