@@ -97,7 +97,7 @@ const firstAchievementPresentation = Object.freeze({
 describe("Crucible Component Integration", () => {
   afterEach(() => vi.restoreAllMocks())
 
-  it("keeps battle feedback in flow between controls and playable value cards", () => {
+  it("composes achievement feedback over the arena without another layout row", () => {
     const { battleCycle, battle } = createBattleProps(
       "achievement-banner-space-seed",
     )
@@ -121,7 +121,8 @@ describe("Crucible Component Integration", () => {
     const banner = screen.getByRole("complementary", {
       name: "Achievement unlocked",
     })
-    const presentationRegion = banner.parentElement
+    const overlay = banner.parentElement
+    const stage = overlay?.parentElement
 
     expect(battleSurface).toHaveAttribute("data-slot", "mapache-screen")
     expect(battleSurface).toHaveClass(
@@ -131,20 +132,52 @@ describe("Crucible Component Integration", () => {
     )
     expect(battleActions).toHaveClass("relative", "shrink-0")
     expect(banner).toHaveClass("relative")
-    expect(presentationRegion).toHaveClass(
+    expect(overlay).toHaveClass(
       "pointer-events-none",
-      "relative",
-      "shrink-0",
-      "flex-col",
+      "absolute",
+      "col-start-1",
+      "col-end-3",
+      "row-start-2",
+      "row-end-3",
     )
-    expect(presentationRegion).not.toHaveClass("absolute")
-    expect(presentationRegion).toContainElement(battleActions)
+    expect(overlay).not.toContainElement(battleActions)
     expect(battleSurface).toContainElement(battleActions)
     expect(screen.queryByRole("region", { name: "Battle choices" })).toBeNull()
-    expect(presentationRegion?.nextElementSibling).toContainElement(
+    expect(stage).toContainElement(
       screen.getAllByRole("button", {
         name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
       })[0]!,
+    )
+  })
+
+  it("dismisses an achievement without selecting a value or advancing the pair", () => {
+    const { battleCycle, battle } = createBattleProps(
+      "achievement-dismiss-seed",
+    )
+    const onAchievementPresented = vi.fn()
+    const onWinnerSelected = vi.fn()
+
+    const { container } = render(
+      <Crucible
+        {...createHistoryProps()}
+        activeDeck={battleCycle.activeDeck}
+        achievement={firstAchievementPresentation}
+        battle={battle}
+        progressById={battleCycle.progressById}
+        onAchievementPresented={onAchievementPresented}
+        onExit={vi.fn()}
+        onWinnerSelected={onWinnerSelected}
+      />,
+    )
+    const combatantsBeforeDismissal = getPresentedCombatantIds(container)
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss achievement" }))
+
+    expect(onAchievementPresented).toHaveBeenCalledExactlyOnceWith(
+      firstAchievement.id,
+    )
+    expect(onWinnerSelected).not.toHaveBeenCalled()
+    expect(getPresentedCombatantIds(container)).toEqual(
+      combatantsBeforeDismissal,
     )
   })
 

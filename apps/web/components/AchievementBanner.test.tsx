@@ -1,16 +1,15 @@
 import { ACHIEVEMENT_CATALOG } from "@game/machines/src/AchievementCatalog"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
-import { fireEvent, render, screen } from "@testing-library/react"
+import { act, fireEvent, render, screen } from "@testing-library/react"
 import type { HTMLAttributes, PropsWithChildren } from "react"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import AchievementBanner from "./AchievementBanner"
 
 type MotionAsideProps = PropsWithChildren<
-  Omit<HTMLAttributes<HTMLElement>, "onAnimationComplete"> & {
+  HTMLAttributes<HTMLElement> & {
     readonly initial: unknown
     readonly animate: unknown
     readonly transition: unknown
-    readonly onAnimationComplete: () => void
   }
 >
 
@@ -21,7 +20,6 @@ vi.mock("motion/react", () => ({
       initial,
       animate,
       transition,
-      onAnimationComplete,
       ...props
     }: MotionAsideProps) => (
       <aside
@@ -29,7 +27,6 @@ vi.mock("motion/react", () => ({
         data-motion-initial={JSON.stringify(initial)}
         data-motion-animate={JSON.stringify(animate)}
         data-motion-transition={JSON.stringify(transition)}
-        onTransitionEnd={onAnimationComplete}
       >
         {children}
       </aside>
@@ -49,6 +46,11 @@ const firstAchievementPresentation = Object.freeze({
 }) satisfies AchievementPresentation
 
 describe("AchievementBanner Integration", () => {
+  afterEach(() => {
+    vi.clearAllTimers()
+    vi.useRealTimers()
+  })
+
   it("presents exact milestone copy accessibly and dismisses only its canonical ID", () => {
     const onPresented = vi.fn()
 
@@ -86,7 +88,7 @@ describe("AchievementBanner Integration", () => {
     expect(onPresented).toHaveBeenCalledExactlyOnceWith(firstAchievement.id)
   })
 
-  it("keeps battle feedback stationary without moving over the value cards", () => {
+  it("presents a compact battle milestone with its existing polite announcement", () => {
     render(
       <AchievementBanner
         achievement={firstAchievementPresentation}
@@ -106,14 +108,17 @@ describe("AchievementBanner Integration", () => {
       "data-motion-initial",
       JSON.stringify({ opacity: 0, y: 0 }),
     )
-    expect(screen.getByText("Compare your first pair of values.")).toBeVisible()
+    expect(screen.queryByText("Compare your first pair of values.")).toBeNull()
     expect(screen.getByRole("heading", { name: "First Battle" })).toBeVisible()
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Achievement unlocked: First Battle.",
+    )
     expect(
       screen.getByRole("button", { name: "Dismiss achievement" }),
     ).toBeEnabled()
   })
 
-  it("anchors dismissal at the top-right without dividing milestone copy", () => {
+  it("keeps the optional dismiss target beside the wrapping milestone name", () => {
     render(
       <AchievementBanner
         achievement={firstAchievementPresentation}
@@ -127,21 +132,19 @@ describe("AchievementBanner Integration", () => {
     const achievementHeading = screen.getByRole("heading", {
       name: "First Battle",
     })
-    const achievementPanel = achievementHeading.closest(".pointer-events-auto")
+    const achievementPanel = achievementHeading.parentElement?.parentElement
     const dismissButton = screen.getByRole("button", {
       name: "Dismiss achievement",
     })
 
-    expect(achievementPanel).toHaveClass(
-      "relative",
-      "xl:grid",
-      "xl:grid-cols-2",
-    )
-    expect(achievementHeading.parentElement).toHaveClass("pr-16", "xl:pr-0")
+    expect(achievementPanel).toHaveClass("relative", "flex")
+    expect(achievementPanel).not.toHaveClass("overflow-y-auto")
+    expect(achievementHeading.parentElement).toHaveClass("min-w-0", "flex-1")
     expect(dismissButton).toHaveClass(
-      "absolute",
-      "top-4",
-      "right-4",
+      "pointer-events-auto",
+      "shrink-0",
+      "min-h-[44px]",
+      "min-w-[44px]",
       "focus-visible:outline-black",
     )
   })
@@ -157,9 +160,9 @@ describe("AchievementBanner Integration", () => {
       />,
     )
 
-    const achievementPanel = screen
-      .getByRole("heading", { name: "First Battle" })
-      .closest(".pointer-events-auto")
+    const achievementPanel = screen.getByRole("heading", {
+      name: "First Battle",
+    }).parentElement?.parentElement
     expect(achievementPanel).toHaveClass(
       "bg-mapache-vivid-white",
       "text-mapache-vivid-black",
@@ -167,23 +170,58 @@ describe("AchievementBanner Integration", () => {
     expect(achievementPanel).not.toHaveClass("bg-mapache-vivid-primary-yellow")
   })
 
-  it("acknowledges through semantic Motion completion without requiring dismissal", () => {
+  it.each([false, true])(
+    "keeps an eight-second dwell across updates with Reduced Motion %s",
+    (shouldReduceMotion) => {
+      vi.useFakeTimers()
+      const onPresented = vi.fn()
+      const props = {
+        achievement: firstAchievementPresentation,
+        isAcknowledgementPending: false,
+        shouldReduceMotion,
+        onPresented,
+      }
+      const { rerender } = render(<AchievementBanner {...props} />)
+
+      act(() => vi.advanceTimersByTime(4000))
+      rerender(
+        <AchievementBanner
+          {...props}
+          achievement={{ ...firstAchievementPresentation }}
+        />,
+      )
+      act(() => vi.advanceTimersByTime(3999))
+      expect(onPresented).not.toHaveBeenCalled()
+      act(() => vi.advanceTimersByTime(1))
+      expect(onPresented).toHaveBeenCalledExactlyOnceWith(firstAchievement.id)
+    },
+  )
+
+  it("cancels the old dwell when the queued milestone changes or unmounts", () => {
+    vi.useFakeTimers()
     const onPresented = vi.fn()
+    const props = {
+      achievement: firstAchievementPresentation,
+      isAcknowledgementPending: false,
+      shouldReduceMotion: true,
+      onPresented,
+    }
+    const { rerender, unmount } = render(<AchievementBanner {...props} />)
+    act(() => vi.advanceTimersByTime(4000))
+    const nextAchievement = {
+      ...firstAchievementPresentation,
+      id: ACHIEVEMENT_CATALOG[1].id,
+    }
+    rerender(<AchievementBanner {...props} achievement={nextAchievement} />)
+    act(() => vi.advanceTimersByTime(4000))
+    expect(onPresented).not.toHaveBeenCalled()
+    act(() => vi.advanceTimersByTime(4000))
+    expect(onPresented).toHaveBeenCalledExactlyOnceWith(nextAchievement.id)
 
-    render(
-      <AchievementBanner
-        achievement={firstAchievementPresentation}
-        isAcknowledgementPending={false}
-        shouldReduceMotion={false}
-        onPresented={onPresented}
-      />,
-    )
-
-    fireEvent.transitionEnd(
-      screen.getByRole("complementary", { name: "Achievement unlocked" }),
-    )
-
-    expect(onPresented).toHaveBeenCalledExactlyOnceWith(firstAchievement.id)
+    rerender(<AchievementBanner {...props} />)
+    unmount()
+    act(() => vi.advanceTimersByTime(8000))
+    expect(onPresented).toHaveBeenCalledTimes(1)
   })
 
   it("removes movement under Reduced Motion while preserving readable dwell time", () => {
@@ -214,18 +252,22 @@ describe("AchievementBanner Integration", () => {
   })
 
   it("prevents duplicate explicit dismissal while durable acknowledgement is pending", () => {
+    vi.useFakeTimers()
+    const onPresented = vi.fn()
     render(
       <AchievementBanner
         achievement={firstAchievementPresentation}
         isAcknowledgementPending
         shouldReduceMotion={false}
-        onPresented={vi.fn()}
+        onPresented={onPresented}
       />,
     )
 
     expect(
       screen.getByRole("button", { name: "Dismiss achievement" }),
     ).toBeDisabled()
+    act(() => vi.advanceTimersByTime(8000))
+    expect(onPresented).not.toHaveBeenCalled()
   })
 
   it("renders nothing without a pending milestone", () => {
