@@ -149,7 +149,7 @@ function BattlePlayback({
                   {reward}
                 </span>
               ) : null}
-              <span className="relative flex size-(--battle-tile-size) shrink-0 origin-bottom scale-(--battle-combatant-scale) items-end justify-center">
+              <span className="relative flex size-(--battle-tile-size) shrink-0 origin-bottom scale-(--battle-combatant-scale) items-end justify-center [--spacing:calc(var(--battle-tile-size)/28)]">
                 {"clips" in combatant ? (
                   <SeethingSwarmCombatant
                     combatant={combatant}
