@@ -290,6 +290,76 @@ for (const viewport of [
     const battle = page.getByRole("main", { name: "Value battle" })
     const region = battle.getByRole("region", { name: "Battle choices" })
     const choices = region.getByRole("button", { name: /^Choose / })
+    const actionBar = battle.getByRole("navigation", { name: "Battle actions" })
+    const menuAction = actionBar.getByRole("button", {
+      name: "Menu",
+      exact: true,
+    })
+    const undoAction = actionBar.getByRole("button", {
+      name: "Undo",
+      exact: true,
+    })
+    const redoAction = actionBar.getByRole("button", {
+      name: "Redo",
+      exact: true,
+    })
+    const stopAction = actionBar.getByRole("button", {
+      name: "Stop",
+      exact: true,
+    })
+    const actionBounds = await actionBar
+      .getByRole("button")
+      .evaluateAll((buttons) =>
+        buttons.map((button) => {
+          const measure = ({ left, right, top, bottom }: DOMRect) => ({
+            left,
+            right,
+            top,
+            bottom,
+          })
+          const label = document.createRange()
+          label.selectNodeContents(button)
+          return {
+            name: button.getAttribute("aria-label"),
+            button: measure(button.getBoundingClientRect()),
+            label: measure(label.getBoundingClientRect()),
+          }
+        }),
+      )
+    expect(actionBounds.map(({ name }) => name)).toEqual([
+      "Menu",
+      "Undo",
+      "Redo",
+      "Stop",
+    ])
+    for (const [index, { button, label }] of actionBounds.entries()) {
+      expect(button.left).toBeGreaterThanOrEqual(0)
+      expect(button.right).toBeLessThanOrEqual(viewport.width)
+      expect(button.top).toBeGreaterThanOrEqual(0)
+      expect(button.bottom).toBeLessThanOrEqual(viewport.height)
+      expect(label.left).toBeGreaterThanOrEqual(button.left)
+      expect(label.right).toBeLessThanOrEqual(button.right)
+      expect(label.top).toBeGreaterThanOrEqual(button.top)
+      expect(label.bottom).toBeLessThanOrEqual(button.bottom)
+      for (const { button: other } of actionBounds.slice(index + 1)) {
+        expect(
+          button.left < other.right &&
+            button.right > other.left &&
+            button.top < other.bottom &&
+            button.bottom > other.top,
+          "Battle actions must not overlap at enlarged text sizes",
+        ).toBe(false)
+      }
+    }
+    await expect(undoAction).toBeDisabled()
+    await expect(redoAction).toBeDisabled()
+    await menuAction.click()
+    const menu = page.getByRole("dialog", { name: "Menu", exact: true })
+    await expect(menu).toBeVisible()
+    await menu
+      .getByRole("button", { name: "Resume Battle", exact: true })
+      .click()
+    await expect(menu).toBeHidden()
     await expect(battle.getByRole("region")).toHaveCount(1)
     await expect(choices).toHaveCount(2)
     for (const choice of await choices.all()) {
@@ -341,9 +411,29 @@ for (const viewport of [
     const identity = await region
       .locator("[data-choreography-identity]")
       .getAttribute("data-choreography-identity")
+    const originalChoiceLabels = await choices.evaluateAll((buttons) =>
+      buttons.map((button) => button.getAttribute("aria-label")!),
+    )
     await choices.last().click()
     await expect(
       region.locator("[data-choreography-identity]"),
     ).not.toHaveAttribute("data-choreography-identity", identity!)
+    await expect(undoAction).toBeEnabled()
+    const nextChoiceLabels = await choices.evaluateAll((buttons) =>
+      buttons.map((button) => button.getAttribute("aria-label")!),
+    )
+    await undoAction.click()
+    await expect(redoAction).toBeEnabled()
+    for (const [index, label] of originalChoiceLabels.entries())
+      await expect(choices.nth(index)).toHaveAccessibleName(label)
+    await redoAction.click()
+    await expect(redoAction).toBeDisabled()
+    await expect(undoAction).toBeEnabled()
+    for (const [index, label] of nextChoiceLabels.entries())
+      await expect(choices.nth(index)).toHaveAccessibleName(label)
+    await stopAction.click()
+    await expect(
+      page.getByRole("heading", { name: "Top Five", exact: true }),
+    ).toBeVisible()
   })
 }
