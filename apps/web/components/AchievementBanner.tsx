@@ -2,6 +2,7 @@
 
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
 import { motion } from "motion/react"
+import { useEffect } from "react"
 
 const ACHIEVEMENT_BANNER_DURATION_SECONDS = 8
 
@@ -40,6 +41,15 @@ export default function AchievementBanner({
   onPresented: (achievementId: AchievementPresentation["id"]) => void
 }) {
   const isBattlePlacement = placement === "battle"
+  const achievementId = achievement?.id
+  useEffect(() => {
+    if (!achievementId || isAcknowledgementPending) return
+    const timeoutId = window.setTimeout(
+      () => onPresented(achievementId),
+      ACHIEVEMENT_BANNER_DURATION_SECONDS * 1000,
+    )
+    return () => window.clearTimeout(timeoutId)
+  }, [achievementId, isAcknowledgementPending, onPresented])
   const achievementBannerMotion = createAchievementBannerMotion(
     shouldReduceMotion,
     isBattlePlacement,
@@ -54,7 +64,6 @@ export default function AchievementBanner({
       initial={achievementBannerMotion.initial}
       animate={achievementBannerMotion.animate}
       transition={achievementBannerMotion.transition}
-      onAnimationComplete={() => onPresented(achievement.id)}
       className={
         isBattlePlacement
           ? "pointer-events-none relative mx-auto w-fit max-w-[calc(100%-8px)] min-w-0"
