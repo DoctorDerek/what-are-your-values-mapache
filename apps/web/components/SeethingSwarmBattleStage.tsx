@@ -195,6 +195,7 @@ export default function SeethingSwarmBattleStage({
   shouldReduceMotion,
   winnerId,
   onResultAnimationComplete,
+  achievementOverlay,
   children,
 }: {
   battle: PresentedBattle
@@ -205,6 +206,7 @@ export default function SeethingSwarmBattleStage({
   shouldReduceMotion: boolean
   winnerId: ValueId | null
   onResultAnimationComplete: () => void
+  achievementOverlay?: ReactNode
   children: (combatants: {
     first: (isAttended: boolean, reward?: ReactNode) => ReactNode
     second: (isAttended: boolean, reward?: ReactNode) => ReactNode
@@ -269,6 +271,9 @@ export default function SeethingSwarmBattleStage({
       >
         {children}
       </BattlePlayback>
+      <div className="pointer-events-none absolute inset-0 z-40 col-start-1 col-end-3 row-start-2 row-end-3 flex items-start justify-center pt-[4px]">
+        {achievementOverlay}
+      </div>
     </div>
   )
 }

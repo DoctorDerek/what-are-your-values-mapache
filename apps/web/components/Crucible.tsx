@@ -352,14 +352,6 @@ export default function Crucible({
           onRedo={handleRedo}
           onStop={onExit}
         />
-
-        <AchievementBanner
-          achievement={achievement}
-          isAcknowledgementPending={isAchievementAcknowledgementPending}
-          placement="battle"
-          shouldReduceMotion={shouldReduceMotion}
-          onPresented={onAchievementPresented}
-        />
       </div>
 
       <SeethingSwarmBattleStage
@@ -371,6 +363,15 @@ export default function Crucible({
         shouldReduceMotion={shouldReduceMotion}
         winnerId={winnerId}
         onResultAnimationComplete={handleResultAnimationComplete}
+        achievementOverlay={
+          <AchievementBanner
+            achievement={achievement}
+            isAcknowledgementPending={isAchievementAcknowledgementPending}
+            placement="battle"
+            shouldReduceMotion={shouldReduceMotion}
+            onPresented={onAchievementPresented}
+          />
+        }
       >
         {(combatants) => (
           <>
