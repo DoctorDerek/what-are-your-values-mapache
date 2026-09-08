@@ -365,7 +365,7 @@ export default function Crucible({
           )
             event.stopPropagation()
         }}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain outline-none focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white"
       >
         <SeethingSwarmBattleStage
           battle={currentBattle}
