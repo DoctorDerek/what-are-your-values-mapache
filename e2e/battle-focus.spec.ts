@@ -63,19 +63,12 @@ for (const viewport of [
       const textOutline = card.locator('[data-card-focus-outline="value"]')
       const animalOutline = card.locator('[data-card-focus-outline="animal"]')
       await expect(outlines.filter({ visible: true })).toHaveCount(2)
-      const wide = viewport.width >= 1280
-      const text = await captureOutlineEdge(
-        textOutline,
-        wide || index === 0 ? "start" : "end",
-      )
-      const animal = await captureOutlineEdge(
-        animalOutline,
-        wide || index === 0 ? "end" : "start",
-      )
-      expect(text.width).toBeCloseTo(animal.width * (wide ? 1 : 2), 0)
+      const text = await captureOutlineEdge(textOutline, "start")
+      const animal = await captureOutlineEdge(animalOutline, "end")
+      expect(text.width).toBeCloseTo(animal.width, 0)
 
-      const textOuterY = wide || index === 0 ? 4 : text.height - 4
-      const animalOuterY = wide || index === 0 ? animal.height - 4 : 4
+      const textOuterY = 4
+      const animalOuterY = animal.height - 4
       for (const [region, edgeY] of [
         [text, textOuterY],
         [animal, animalOuterY],
@@ -95,37 +88,18 @@ for (const viewport of [
         animal.isWhiteAt(animal.width / 2, animalOuterY),
         "animal outer edge",
       ).toBe(true)
-      const textJoinY = wide || index === 0 ? text.height - 4 : 4
-      const animalJoinY = wide || index === 0 ? 4 : animal.height - 4
-      const textJoin = await captureOutlineEdge(
-        textOutline,
-        wide || index === 0 ? "end" : "start",
-      )
-      const animalJoin = await captureOutlineEdge(
-        animalOutline,
-        wide || index === 0 ? "start" : "end",
-      )
-      const joinedTextX =
-        wide || index === 0 ? text.width / 4 : text.width * 0.75
+      const textJoinY = text.height - 4
+      const animalJoinY = 4
+      const textJoin = await captureOutlineEdge(textOutline, "end")
+      const animalJoin = await captureOutlineEdge(animalOutline, "start")
       expect(
-        textJoin.isWhiteAt(joinedTextX, textJoinY),
+        textJoin.isWhiteAt(text.width / 2, textJoinY),
         "no internal text seam",
       ).toBe(false)
       expect(
         animalJoin.isWhiteAt(animal.width / 2, animalJoinY),
         "no internal animal seam",
       ).toBe(false)
-      if (!wide) {
-        const stepX = index === 0 ? text.width * 0.75 : text.width / 4
-        const cornerX = text.width / 2 + (index === 0 ? -4 : 4)
-        expect(textJoin.isWhiteAt(stepX, textJoinY), "stepped outer edge").toBe(
-          true,
-        )
-        expect(
-          textJoin.isWhiteAt(cornerX, textJoinY),
-          "connected inner corner",
-        ).toBe(true)
-      }
       await battle.getByRole("button", { name: "Menu", exact: true }).focus()
       await expect(outlines.filter({ visible: true })).toHaveCount(0)
     }
@@ -165,10 +139,14 @@ for (const viewport of [
 
     for (const target of [
       choices.first(),
+      choices.last(),
       battle.locator('[data-battle-arena-side="first"]'),
+      battle.locator('[data-battle-arena-side="second"]'),
     ]) {
       const beforeClick = await stage.getAttribute("data-choreography-identity")
-      await target.click()
+      const bounds = await target.boundingBox()
+      if (!bounds) throw new Error("The card target must have layout bounds")
+      await target.click({ position: { x: 8, y: bounds.height - 8 } })
       await expect(stage).not.toHaveAttribute(
         "data-choreography-identity",
         beforeClick!,

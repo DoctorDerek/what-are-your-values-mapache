@@ -61,12 +61,12 @@ function NativeValueChoiceCard(
         accessibilityRole="button"
         accessibilityState={{ disabled: !isEnabled, selected: isWinner }}
         className={cn(
-          "relative min-h-0 flex-1 flex-col items-center border-black xl:border-4",
+          "relative min-h-0 min-w-0 flex-1 flex-col items-center border-black xl:border-4",
           isWinner && "border-white",
           isFirst
             ? "bg-mapache-vivid-primary-cyan"
             : "bg-mapache-vivid-primary-raspberry",
-          combatant && (isFirst ? "pb-22 xl:pb-68" : "pt-22 xl:pt-0 xl:pb-68"),
+          combatant && "pb-44 xl:pb-68",
         )}
         disabled={!isEnabled}
         onPress={handleActivate}
@@ -89,7 +89,7 @@ function NativeValueChoiceCard(
             >
               {displayName}
             </Text>
-            <View className="mt-2 w-full min-w-0 flex-row items-center justify-between gap-2 xl:gap-5">
+            <View className="mt-2 w-full min-w-0 flex-row flex-wrap items-center justify-between gap-2 xl:gap-5">
               <Text
                 aria-hidden
                 className={cn(
@@ -131,11 +131,11 @@ function NativeValueChoiceCard(
           onPointerLeave={() => setIsHovered(false)}
           onPointerCancel={() => setIsHovered(false)}
           className={cn(
-            "absolute top-1/2 h-44 w-1/2 -translate-y-1/2 flex-col items-center justify-end border-y-4 border-black px-2 pb-2 xl:top-auto xl:bottom-0 xl:h-68 xl:translate-y-0 xl:flex-row xl:items-end xl:border-x-4 xl:border-t-0 xl:px-4",
+            "absolute bottom-0 h-44 w-1/2 flex-col items-center justify-end border-black px-2 pb-2 xl:h-68 xl:border-x-4 xl:border-b-4 xl:px-4",
             isWinner ? "z-30" : "z-20",
             isFirst
-              ? "bg-mapache-vivid-primary-cyan left-0 xl:justify-end"
-              : "bg-mapache-vivid-primary-raspberry right-0 xl:justify-start",
+              ? "bg-mapache-vivid-primary-cyan left-0"
+              : "bg-mapache-vivid-primary-raspberry right-0",
           )}
         >
           <View className="w-28 items-center xl:w-56">
@@ -161,14 +161,6 @@ function NativeValueChoiceCard(
               ) : null,
             )}
           </View>
-          <Text
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-            numberOfLines={1}
-            className="max-w-full border-2 border-black bg-white px-1 text-center text-xs leading-5 font-black text-black xl:hidden"
-          >
-            {isFirst ? "↑" : "↓"} {displayName}
-          </Text>
         </Pressable>
       ) : null}
     </>

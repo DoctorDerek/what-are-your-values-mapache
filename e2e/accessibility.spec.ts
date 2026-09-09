@@ -333,6 +333,7 @@ for (const viewport of [
           ),
         }
       })
+    await dismiss.click({ trial: true })
     const beforeDismissal = await readBattleLayout()
     const identity = await stage.getAttribute("data-choreography-identity")
     await dismiss.click()

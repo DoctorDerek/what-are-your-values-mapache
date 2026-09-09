@@ -57,8 +57,8 @@ export const ValueChoiceCard = forwardRef<
   const displayName = getValueDisplayName(value)
   const isWinner = isAnimating && winnerId === value.id
   const positionClasses = isFirst
-    ? "bg-mapache-vivid-primary-cyan col-span-2 row-start-1 border-black xl:col-span-1 xl:col-start-1 xl:border-r-8"
-    : "bg-mapache-vivid-primary-raspberry col-span-2 row-start-3 xl:col-span-1 xl:col-start-2 xl:row-start-1"
+    ? "bg-mapache-vivid-primary-cyan col-start-1 border-r-8 border-black"
+    : "bg-mapache-vivid-primary-raspberry col-start-2"
   const controlHintContrastClasses = isFirst
     ? "text-black drop-shadow-[1px_1px_0px_#ffffff]"
     : "text-white drop-shadow-[1px_1px_0px_#000000]"
@@ -88,12 +88,12 @@ export const ValueChoiceCard = forwardRef<
       className="group/choice contents [--choice-focus-width:8px]"
     >
       <div
-        className={`${positionClasses} relative flex min-h-0 min-w-0 flex-col items-center`}
+        className={`${positionClasses} relative row-start-1 flex min-h-0 min-w-0 flex-col items-center`}
       >
         <span
           aria-hidden="true"
           data-card-focus-outline="value"
-          className={`pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block ${isFirst ? "xl:-right-[8px]" : ""} ${combatant ? (isFirst ? "border-t-(length:--choice-focus-width) after:absolute after:right-0 after:bottom-0 after:left-[calc(50%-var(--choice-focus-width))] after:h-(--choice-focus-width) after:bg-white xl:after:hidden" : "border-b-(length:--choice-focus-width) after:absolute after:top-0 after:right-[calc(50%-var(--choice-focus-width))] after:left-0 after:h-(--choice-focus-width) after:bg-white xl:border-t-(length:--choice-focus-width) xl:border-b-0 xl:after:hidden") : "border-y-(length:--choice-focus-width)"}`}
+          className={`pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block ${isFirst ? "-right-[8px]" : ""} ${combatant ? "border-t-(length:--choice-focus-width)" : "border-y-(length:--choice-focus-width)"}`}
         />
         <button
           ref={ref}
@@ -107,7 +107,7 @@ export const ValueChoiceCard = forwardRef<
           aria-describedby={accessibleDefinitionId}
           disabled={!isEnabled}
           onClick={() => onActivate(value.id)}
-          className="flex w-full min-w-0 flex-1 cursor-pointer flex-col justify-center px-3 py-3 text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8 xl:py-8"
+          className="flex w-full min-w-0 flex-1 cursor-pointer flex-col justify-center px-[min(0.75rem,8%)] py-3 text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8 xl:py-8"
         >
           <div className="my-auto w-full">
             <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 xl:gap-5">
@@ -126,7 +126,7 @@ export const ValueChoiceCard = forwardRef<
             </div>
             <p
               id={accessibleDefinitionId}
-              className="mx-auto mt-3 max-w-2xl border-2 border-white/20 bg-black/40 p-3 text-[clamp(1rem,2.8vw,1.5rem)] leading-snug font-bold [overflow-wrap:anywhere] break-words whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] xl:mt-6 xl:p-6 xl:text-[clamp(1.25rem,2vw,1.875rem)] xl:leading-relaxed"
+              className="mx-auto mt-3 max-w-2xl border-2 border-white/20 bg-black/40 px-[min(0.75rem,8%)] py-3 text-[clamp(1rem,2.8vw,1.5rem)] leading-snug font-bold [overflow-wrap:anywhere] break-words whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] xl:mt-6 xl:p-6 xl:text-[clamp(1.25rem,2vw,1.875rem)] xl:leading-relaxed"
             >
               “{getValueDisplayDefinition(value)}”
             </p>
@@ -138,12 +138,12 @@ export const ValueChoiceCard = forwardRef<
           data-battle-arena-side={position}
           htmlFor={choiceId}
           aria-hidden="true"
-          className={`@container relative row-start-2 flex h-(--battle-arena-height) min-w-0 items-end justify-center pb-2 before:absolute before:inset-x-0 before:h-1 before:bg-black xl:before:hidden ${isEnabled ? "cursor-pointer" : "cursor-default"} ${isWinner ? "z-30" : "z-20"} ${isFirst ? "bg-mapache-vivid-primary-cyan col-start-1 before:bottom-0 after:absolute after:inset-y-0 after:right-0 after:w-1 after:bg-black xl:after:w-2" : "bg-mapache-vivid-primary-raspberry col-start-2 before:top-0"}`}
+          className={`@container relative row-start-2 flex h-(--battle-arena-height) min-w-0 items-end justify-center pb-2 ${isEnabled ? "cursor-pointer" : "cursor-default"} ${isWinner ? "z-30" : "z-20"} ${isFirst ? "bg-mapache-vivid-primary-cyan col-start-1 after:absolute after:inset-y-0 after:right-0 after:w-2 after:bg-black" : "bg-mapache-vivid-primary-raspberry col-start-2"}`}
         >
           <span
             aria-hidden="true"
             data-card-focus-outline="animal"
-            className={`pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block ${isFirst ? "border-b-(length:--choice-focus-width)" : "border-t-(length:--choice-focus-width) xl:border-t-0 xl:border-b-(length:--choice-focus-width)"}`}
+            className="pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-b-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block"
           />
           <span className="flex w-(--battle-combatant-size) flex-col items-center">
             <span aria-hidden="true" className="block h-6 w-full xl:h-10" />
