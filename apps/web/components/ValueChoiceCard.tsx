@@ -110,14 +110,14 @@ export const ValueChoiceCard = forwardRef<
             <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 xl:gap-5">
               <span
                 aria-hidden="true"
-                className={`w-16 max-w-full text-center text-sm font-black whitespace-nowrap uppercase xl:w-28 xl:text-2xl ${controlHintContrastClasses} ${controlHint ? "" : "invisible"}`}
+                className={`w-16 max-w-full min-w-0 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:w-28 xl:text-2xl ${controlHintContrastClasses} ${controlHint ? "" : "invisible"}`}
               >
                 {controlHint ?? reservedControlHint}
               </span>
               <h2 className="order-first mx-auto w-full max-w-4xl min-w-0 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000]">
                 {displayName}
               </h2>
-              <span className="inline-block border-2 border-black bg-white px-2 py-1 text-sm font-black whitespace-nowrap text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000]">
+              <span className="inline-block max-w-full min-w-0 border-2 border-black bg-white px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000]">
                 Level {level}
               </span>
             </div>
