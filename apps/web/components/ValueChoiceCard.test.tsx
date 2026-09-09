@@ -15,7 +15,6 @@ describe("animal card attention", () => {
       position: "first" as const,
       value,
       level: 1,
-      focusedId: null,
       winnerId: null,
       isEnabled: true,
       isAnimating: false,
@@ -94,7 +93,6 @@ describe("animal card attention", () => {
           position={position}
           value={value}
           level={4}
-          focusedId={value.id}
           winnerId={value.id}
           isEnabled={false}
           isAnimating

@@ -22,7 +22,6 @@ type ValueChoiceCardProps = {
   position: ValueChoicePosition
   value: ActiveValueDefinition
   level: number
-  focusedId: ValueId | null
   winnerId: ValueId | null
   isEnabled: boolean
   isAnimating: boolean
@@ -41,7 +40,6 @@ export const ValueChoiceCard = forwardRef<
     position,
     value,
     level,
-    focusedId,
     winnerId,
     isEnabled,
     isAnimating,
@@ -87,11 +85,16 @@ export const ValueChoiceCard = forwardRef<
       }}
       onPointerLeave={() => setIsHovered(false)}
       onPointerCancel={() => setIsHovered(false)}
-      className="group/choice contents"
+      className="group/choice contents [--choice-focus-width:8px]"
     >
       <div
-        className={`${positionClasses} relative flex min-h-0 min-w-0 flex-col items-center group-focus-within/choice:ring-8 group-focus-within/choice:ring-white group-focus-within/choice:ring-inset ${focusedId === value.id || isWinner ? "ring-8 ring-white ring-inset" : ""}`}
+        className={`${positionClasses} relative flex min-h-0 min-w-0 flex-col items-center`}
       >
+        <span
+          aria-hidden="true"
+          data-card-focus-outline="value"
+          className={`pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block ${isFirst ? "xl:-right-[8px]" : ""} ${combatant ? (isFirst ? "border-t-(length:--choice-focus-width) after:absolute after:right-0 after:bottom-0 after:left-[calc(50%-var(--choice-focus-width))] after:h-(--choice-focus-width) after:bg-white xl:after:hidden" : "border-b-(length:--choice-focus-width) after:absolute after:top-0 after:right-[calc(50%-var(--choice-focus-width))] after:left-0 after:h-(--choice-focus-width) after:bg-white xl:border-t-(length:--choice-focus-width) xl:border-b-0 xl:after:hidden") : "border-y-(length:--choice-focus-width)"}`}
+        />
         <button
           ref={ref}
           id={choiceId}
@@ -137,6 +140,11 @@ export const ValueChoiceCard = forwardRef<
           aria-hidden="true"
           className={`@container relative row-start-2 flex h-(--battle-arena-height) min-w-0 items-end justify-center pb-2 before:absolute before:inset-x-0 before:h-1 before:bg-black xl:before:hidden ${isEnabled ? "cursor-pointer" : "cursor-default"} ${isWinner ? "z-30" : "z-20"} ${isFirst ? "bg-mapache-vivid-primary-cyan col-start-1 before:bottom-0 after:absolute after:inset-y-0 after:right-0 after:w-1 after:bg-black xl:after:w-2" : "bg-mapache-vivid-primary-raspberry col-start-2 before:top-0"}`}
         >
+          <span
+            aria-hidden="true"
+            data-card-focus-outline="animal"
+            className={`pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block ${isFirst ? "border-b-(length:--choice-focus-width)" : "border-t-(length:--choice-focus-width) xl:border-t-0 xl:border-b-(length:--choice-focus-width)"}`}
+          />
           <span className="flex w-(--battle-combatant-size) flex-col items-center">
             <span aria-hidden="true" className="block h-6 w-full xl:h-10" />
             {combatant(

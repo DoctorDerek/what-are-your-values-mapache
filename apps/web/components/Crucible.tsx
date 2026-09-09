@@ -381,7 +381,6 @@ export default function Crucible({
               position="first"
               value={valA}
               level={levelA}
-              focusedId={focusedId}
               winnerId={winnerId}
               isEnabled={isInteractive}
               isAnimating={isAnimating}
@@ -397,7 +396,6 @@ export default function Crucible({
               position="second"
               value={valB}
               level={levelB}
-              focusedId={focusedId}
               winnerId={winnerId}
               isEnabled={isInteractive}
               isAnimating={isAnimating}
