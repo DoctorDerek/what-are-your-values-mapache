@@ -242,9 +242,10 @@ for (const viewport of [
   { width: 390, height: 844, textScale: 100 },
   { width: 320, height: 568, textScale: 200 },
   { width: 320, height: 568, textScale: 400 },
+  { width: 320, height: 568, textScale: 400, fontFamily: "Verdana" },
   { width: 1280, height: 844, textScale: 200 },
 ]) {
-  test(`achievement overlays preserve play and geometry at ${viewport.width}px with ${viewport.textScale}% text`, async ({
+  test(`achievement overlays preserve play and geometry at ${viewport.width}px with ${viewport.textScale}% text${"fontFamily" in viewport ? ` in ${viewport.fontFamily}` : ""}`, async ({
     page,
   }) => {
     await page.setViewportSize(viewport)
@@ -252,7 +253,7 @@ for (const viewport of [
     await startAtHub(page)
     await page.getByRole("button", { name: "Battle", exact: true }).click()
     const textScaleStyle = await page.addStyleTag({
-      content: `html { font-size: ${viewport.textScale}%; }`,
+      content: `html { font-size: ${viewport.textScale}%; }${"fontFamily" in viewport ? ` body { font-family: ${viewport.fontFamily}, sans-serif; }` : ""}`,
     })
     const battle = page.getByRole("main", { name: "Value battle" })
     const stage = battle.locator("[data-choreography-identity]")
