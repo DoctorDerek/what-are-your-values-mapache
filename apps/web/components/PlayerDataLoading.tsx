@@ -1,3 +1,4 @@
+import { introductionCopy } from "@game/data/src/IntroductionCopy"
 import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
 import MapacheScreen from "@/components/MapacheScreen"
 
@@ -23,7 +24,11 @@ export default function PlayerDataLoading() {
       >
         {playerDataRecoveryCopy.loading}
       </p>
-      <noscript>
+      <noscript className="text-mapache-vivid-white max-w-2xl">
+        <h1 className="mb-4 text-3xl font-black [overflow-wrap:anywhere] uppercase">
+          {introductionCopy.title}
+        </h1>
+        <p className="mb-4 text-lg font-bold">{introductionCopy.tagline}</p>
         <p className="text-mapache-vivid-white text-lg font-bold">
           The interactive game requires JavaScript.
         </p>

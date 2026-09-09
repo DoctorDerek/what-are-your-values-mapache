@@ -18,18 +18,20 @@ test.describe("static English editorial document", () => {
         name: "What Are Your Values, Mapache?",
       }),
     ).toBeVisible()
-    const gameFallback = page.getByRole("main", { name: "Loading game" })
-    await expect(
-      gameFallback.getByText(
-        "A high-speed autobattler designed to help you find your values in life.",
-      ),
-    ).toBeVisible()
-    await expect(
-      page.getByText("The interactive game requires JavaScript."),
-    ).toBeVisible()
+    const gameFallback = page.getByRole("main", {
+      name: "Loading your values…",
+    })
+    const noScriptCopy = gameFallback.locator("noscript p")
+    await expect(noScriptCopy).toHaveText([
+      "A high-speed autobattler designed to help you find your values in life.",
+      "The interactive game requires JavaScript.",
+    ])
+    for (const paragraph of await noScriptCopy.all())
+      await expect(paragraph).toBeVisible()
 
     await page.getByRole("link", { name: "Read the Introduction" }).click()
     await expect(page).toHaveURL(/#introduction$/)
+    await expect(page.locator("#introduction")).toBeInViewport()
 
     const editorialArticle = page.getByRole("article", {
       name: "What Are Your Values, Mapache? information",
