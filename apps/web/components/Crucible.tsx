@@ -82,8 +82,17 @@ export default function Crucible({
   const controlHintInputModality = useWebControlHintInputModality()
   const firstChoiceRef = useRef<HTMLButtonElement>(null)
   const secondChoiceRef = useRef<HTMLButtonElement>(null)
+  const battleSurfaceRef = useRef<HTMLElement>(null)
   const revealBattleSurface = useCallback((surface: HTMLElement | null) => {
+    battleSurfaceRef.current = surface
     surface?.scrollIntoView({ block: "start", behavior: "instant" })
+  }, [])
+  const releaseChoiceFocus = useCallback(() => {
+    if (
+      document.activeElement === firstChoiceRef.current ||
+      document.activeElement === secondChoiceRef.current
+    )
+      battleSurfaceRef.current?.focus({ preventScroll: true })
   }, [])
   const pendingAccessibilityActionRef =
     useRef<PendingBattleAccessibilityAction | null>(null)
@@ -104,6 +113,7 @@ export default function Crucible({
       if (!isInteractive || isMenuOpen || pendingAccessibilityActionRef.current)
         return
 
+      releaseChoiceFocus()
       pendingAccessibilityActionRef.current =
         createPendingBattleAccessibilityAction({
           action: { kind: "selection", selectedValueId: winnerId },
@@ -112,7 +122,7 @@ export default function Crucible({
       setRewardAction(pendingAccessibilityActionRef.current)
       send({ type: "VALUE.WINNER_SELECTED", valueId: winnerId })
     },
-    [isInteractive, isMenuOpen, progressById, send],
+    [isInteractive, isMenuOpen, progressById, releaseChoiceFocus, send],
   )
 
   const handleUndo = useCallback(() => {
@@ -124,13 +134,21 @@ export default function Crucible({
     )
       return
 
+    releaseChoiceFocus()
     pendingAccessibilityActionRef.current =
       createPendingBattleAccessibilityAction({
         action: { kind: "undo" },
         progressById,
       })
     onUndo()
-  }, [canUndo, isInteractive, isMenuOpen, onUndo, progressById])
+  }, [
+    canUndo,
+    isInteractive,
+    isMenuOpen,
+    onUndo,
+    progressById,
+    releaseChoiceFocus,
+  ])
 
   const handleRedo = useCallback(() => {
     if (
@@ -141,13 +159,21 @@ export default function Crucible({
     )
       return
 
+    releaseChoiceFocus()
     pendingAccessibilityActionRef.current =
       createPendingBattleAccessibilityAction({
         action: { kind: "redo" },
         progressById,
       })
     onRedo()
-  }, [canRedo, isInteractive, isMenuOpen, onRedo, progressById])
+  }, [
+    canRedo,
+    isInteractive,
+    isMenuOpen,
+    onRedo,
+    progressById,
+    releaseChoiceFocus,
+  ])
 
   const focusedId = state.context.focusedId
   const currentBattle = state.context.currentBattle
@@ -186,7 +212,11 @@ export default function Crucible({
         e.preventDefault()
         onOpenMenu()
       } else if (e.key === "Enter" || e.key === " ") {
-        if (focusedId) {
+        if (
+          focusedId &&
+          (document.activeElement === firstChoiceRef.current ||
+            document.activeElement === secondChoiceRef.current)
+        ) {
           e.preventDefault()
           handleSelect(focusedId)
         }
@@ -253,7 +283,6 @@ export default function Crucible({
         message,
       }),
     )
-    firstChoiceRef.current?.focus({ preventScroll: true })
   }, [
     activeDeck,
     battle,
@@ -381,7 +410,6 @@ export default function Crucible({
               position="first"
               value={valA}
               level={levelA}
-              focusedId={focusedId}
               winnerId={winnerId}
               isEnabled={isInteractive}
               isAnimating={isAnimating}
@@ -397,7 +425,6 @@ export default function Crucible({
               position="second"
               value={valB}
               level={levelB}
-              focusedId={focusedId}
               winnerId={winnerId}
               isEnabled={isInteractive}
               isAnimating={isAnimating}
