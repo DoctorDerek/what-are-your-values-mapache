@@ -55,8 +55,15 @@ async function expectCompleteTextReachable(text: Locator) {
         behavior: "instant",
       })
       const characterBounds = character.getBoundingClientRect()
-      const content = document.createRange()
-      content.selectNodeContents(element)
+      const cardBounds = element.closest("button")!.getBoundingClientRect()
+      const visibleTextRects = textNodes.flatMap((textNode) =>
+        [...textNode.textContent!.matchAll(/\S+/gu)].flatMap((match) => {
+          const textRun = document.createRange()
+          textRun.setStart(textNode, match.index)
+          textRun.setEnd(textNode, match.index + match[0].length)
+          return [...textRun.getClientRects()]
+        }),
+      )
       return {
         edgeIsVisible:
           characterBounds.top >=
@@ -67,10 +74,10 @@ async function expectCompleteTextReachable(text: Locator) {
               surfaceBounds.top + surface.clientTop + surface.clientHeight,
             ) +
               1,
-        allLinesFitWidth: [...content.getClientRects()].every(
+        allLinesFitWidth: visibleTextRects.every(
           (line) =>
-            line.left >= surfaceBounds.left &&
-            line.right <= Math.min(innerWidth, surfaceBounds.right),
+            line.left >= Math.max(surfaceBounds.left, cardBounds.left) &&
+            line.right <= Math.min(innerWidth, cardBounds.right),
         ),
         textIsNotClipped:
           getComputedStyle(element).overflowY === "visible" ||
@@ -263,16 +270,11 @@ for (const viewport of [
       Math.abs(first.animal.bottom - second.animal.bottom),
     ).toBeLessThanOrEqual(1)
     expect(first.animal.right).toBeLessThanOrEqual(second.animal.left)
-    if (viewport.width < 1280) {
-      expect(first.card.bottom).toBeLessThanOrEqual(second.card.top)
-      expect(first.card.bottom).toBeLessThanOrEqual(first.animal.top)
-      expect(second.animal.bottom).toBeLessThanOrEqual(second.card.top)
-      expect(first.card.width).toBe(second.card.width)
-    } else {
-      expect(first.card.right).toBeLessThanOrEqual(second.card.left)
-      expect(first.card.bottom).toBeLessThanOrEqual(first.animal.top)
-      expect(second.card.bottom).toBeLessThanOrEqual(second.animal.top)
-    }
+    expect(first.card.right).toBeLessThanOrEqual(second.card.left)
+    expect(first.card.top).toBeCloseTo(second.card.top, 0)
+    expect(first.card.bottom).toBeCloseTo(second.card.bottom, 0)
+    expect(first.card.bottom).toBeLessThanOrEqual(first.animal.top)
+    expect(second.card.bottom).toBeLessThanOrEqual(second.animal.top)
     for (const side of ["first", "second"] as const) {
       const identity = await stage.getAttribute("data-choreography-identity")
       await expect

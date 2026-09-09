@@ -123,8 +123,8 @@ beforeEach(() => {
     callback,
   ) {
     callback(
-      0,
       this.props.testID === "battle-combatant-first" ? 0 : 200,
+      0,
       112,
       112,
     )

@@ -60,32 +60,35 @@ describe("NativeValueChoiceCard", () => {
       "accessibilityHint",
       getValueDisplayDefinition(selfAcceptance),
     )
-    const captionText = `↑ ${getValueDisplayName(selfAcceptance)}`
-    expect(screen.queryByText(captionText)).toBeNull()
-    const animalCaption = screen.getByText(captionText, {
+    expect(
+      screen.getAllByText(getValueDisplayName(selfAcceptance), {
+        includeHiddenElements: true,
+      }),
+    ).toHaveLength(1)
+    const animal = screen.getByText("Animal resting", {
       includeHiddenElements: true,
     })
-    await fireEvent(animalCaption, "pointerEnter", {
+    await fireEvent(animal, "pointerEnter", {
       nativeEvent: { pointerType: "mouse" },
     })
     expect(
       screen.getByText("Animal alert", { includeHiddenElements: true }),
     ).toBeOnTheScreen()
     expect(onActivate).not.toHaveBeenCalled()
-    await fireEvent(animalCaption, "pointerLeave")
+    await fireEvent(animal, "pointerLeave")
     expect(
       screen.getByText("Animal resting", { includeHiddenElements: true }),
     ).toBeOnTheScreen()
-    await fireEvent(animalCaption, "pointerEnter", {
+    await fireEvent(animal, "pointerEnter", {
       nativeEvent: { pointerType: "touch" },
     })
     expect(
       screen.getByText("Animal resting", { includeHiddenElements: true }),
     ).toBeOnTheScreen()
-    await fireEvent(animalCaption, "pointerEnter", {
+    await fireEvent(animal, "pointerEnter", {
       nativeEvent: { pointerType: "mouse" },
     })
-    await fireEvent(animalCaption, "pointerCancel")
+    await fireEvent(animal, "pointerCancel")
     expect(
       screen.getByText("Animal resting", { includeHiddenElements: true }),
     ).toBeOnTheScreen()
@@ -106,7 +109,7 @@ describe("NativeValueChoiceCard", () => {
     await fireEvent.press(choice)
     expect(onActivate).toHaveBeenCalledTimes(1)
     expect(onActivate).toHaveBeenCalledWith(selfAcceptance.id)
-    await fireEvent.press(animalCaption)
+    await fireEvent.press(animal)
     expect(onActivate).toHaveBeenCalledTimes(2)
     expect(onActivate).toHaveBeenLastCalledWith(selfAcceptance.id)
   })
