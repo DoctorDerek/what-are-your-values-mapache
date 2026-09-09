@@ -336,8 +336,9 @@ for (const viewport of [
   { width: 640, height: 450, textScale: 200 },
   { width: 1280, height: 844, textScale: 200 },
   { width: 320, height: 568, textScale: 400 },
+  { width: 320, height: 568, textScale: 400, fontFamily: "monospace" },
 ]) {
-  test(`controls and full definitions share scrolling at ${viewport.width}px with ${viewport.textScale}% text`, async ({
+  test(`controls and full definitions share scrolling at ${viewport.width}px with ${viewport.textScale}% text${viewport.fontFamily ? " using fallback font metrics" : ""}`, async ({
     page,
   }) => {
     await page.setViewportSize(viewport)
@@ -348,6 +349,10 @@ for (const viewport of [
     await page.addStyleTag({
       content: `html { font-size: ${viewport.textScale}%; }`,
     })
+    if (viewport.fontFamily)
+      await page.addStyleTag({
+        content: `body { font-family: ${viewport.fontFamily}; }`,
+      })
     const battle = page.getByRole("main", { name: "Value battle" })
     const choices = battle.getByRole("button", { name: /^Choose / })
     const actionBar = battle.getByRole("navigation", { name: "Battle actions" })
@@ -454,12 +459,16 @@ for (const viewport of [
           ),
         })),
       ).toEqual({ overflows: false, hasInnerScrollbox: false })
-      await expect(choice.getByText(/^Level \d+$/)).toBeVisible()
+      const level = choice.getByText(/^Level \d+$/)
+      await expect(level).toBeVisible()
+      await expectCompleteTextReachable(level)
     }
     await menuAction.focus()
     const surfaceBoundsBeforeFocus = await battle.boundingBox()
     await page.keyboard.press("Shift+Tab")
     await expect(battle).toBeFocused()
+    for (const choice of await choices.all())
+      await expectCompleteTextReachable(choice.getByText(/^\[\d \/ [A-Z]\]$/))
     await page.keyboard.press("Home")
     await expect(battle).toHaveCSS("border-left-color", "rgb(255, 255, 255)")
     expect(await battle.boundingBox()).toEqual(surfaceBoundsBeforeFocus)
