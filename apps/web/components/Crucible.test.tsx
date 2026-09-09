@@ -636,15 +636,16 @@ describe("Crucible Component Integration", () => {
       }),
     })
 
-    act(() => {
-      window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }))
+    fireEvent.keyDown(screen.getByRole("main", { name: "Value battle" }), {
+      key: "Escape",
     })
+    expect(onOpenMenu).toHaveBeenCalledTimes(1)
+    const cardA = screen.getAllByRole("button", { name: /^Choose / })[0]!
+    act(() => cardA.focus())
+    fireEvent.keyDown(cardA, { key: "ArrowRight" })
     expect(cardB).toHaveFocus()
 
-    act(() => {
-      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }))
-      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }))
-    })
+    fireEvent.keyDown(cardB, { key: "Enter" })
 
     expect(onWinnerSelected).toHaveBeenCalledWith(winnerId, battle.scheduler)
     expect(onOpenMenu).toHaveBeenCalledTimes(1)
@@ -685,6 +686,8 @@ describe("Crucible Component Integration", () => {
     fireEvent.focus(battleSurface)
     for (const key of [" ", "Enter", "ArrowDown", "ArrowUp"])
       fireEvent.keyDown(battleSurface, { key })
+    for (const key of ["Home", "End", "PageUp", "PageDown", "Tab"])
+      expect(fireEvent.keyDown(battleSurface, { key })).toBe(true)
     expect(onWinnerSelected).not.toHaveBeenCalled()
 
     for (const [index, definition] of definitions.entries()) {
