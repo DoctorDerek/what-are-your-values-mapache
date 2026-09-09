@@ -109,6 +109,7 @@ vi.mock("./SeethingSwarmBattleStage", async () => {
       winnerId,
       onResultAnimationComplete,
       children,
+      achievementOverlay,
     }: {
       readonly isNextBattleReady: boolean
       readonly winnerId: string | null
@@ -117,6 +118,7 @@ vi.mock("./SeethingSwarmBattleStage", async () => {
         first: (isAttended: boolean, reward?: ReactNode) => ReactNode
         second: (isAttended: boolean, reward?: ReactNode) => ReactNode
       }) => ReactNode
+      readonly achievementOverlay?: ReactNode
     }) {
       useEffect(() => {
         if (winnerId && isNextBattleReady) onResultAnimationComplete()
@@ -132,6 +134,7 @@ vi.mock("./SeethingSwarmBattleStage", async () => {
               <span aria-hidden="true">{reward}</span>
             ),
           })}
+          {achievementOverlay}
         </div>
       )
     },
@@ -1224,10 +1227,7 @@ describe("GameClient Integration", () => {
     expect(within(achievementBanner).getByRole("status")).toHaveTextContent(
       "Achievement unlocked: First Battle.",
     )
-    const presentationRegion = achievementBanner.parentElement
-    expect(battleSurface).not.toHaveClass("pb-[min(50dvh,17rem)]")
-    expect(presentationRegion).toHaveClass("relative", "shrink-0", "flex-col")
-    expect(presentationRegion).not.toHaveClass("absolute")
+    expect(battleSurface).toContainElement(achievementBanner)
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Undo" })).toBeEnabled(),
     )
@@ -1245,9 +1245,7 @@ describe("GameClient Integration", () => {
         screen.queryByRole("complementary", { name: "Achievement unlocked" }),
       ).not.toBeInTheDocument(),
     )
-    expect(screen.getByRole("main", { name: "Value battle" })).not.toHaveClass(
-      "pb-[min(50dvh,17rem)]",
-    )
+    expect(battleSurface).toBeVisible()
     expect(screen.getByRole("button", { name: "Undo" })).toBeEnabled()
   })
 

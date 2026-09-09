@@ -195,6 +195,7 @@ export default function SeethingSwarmBattleStage({
   shouldReduceMotion,
   winnerId,
   onResultAnimationComplete,
+  achievementOverlay,
   children,
 }: {
   battle: PresentedBattle
@@ -205,6 +206,7 @@ export default function SeethingSwarmBattleStage({
   shouldReduceMotion: boolean
   winnerId: ValueId | null
   onResultAnimationComplete: () => void
+  achievementOverlay?: ReactNode
   children: (combatants: {
     first: (isAttended: boolean, reward?: ReactNode) => ReactNode
     second: (isAttended: boolean, reward?: ReactNode) => ReactNode
@@ -253,7 +255,7 @@ export default function SeethingSwarmBattleStage({
 
   return (
     <div
-      className="relative grid min-h-full min-w-0 grid-cols-2 grid-rows-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] [--battle-arena-height:calc(var(--battle-combatant-size)+4rem)] [--battle-combatant-scale:1] [--battle-combatant-size:calc(var(--battle-tile-size)*var(--battle-combatant-scale))] xl:grid-rows-[minmax(max-content,1fr)_auto] xl:[--battle-combatant-scale:2]"
+      className="relative grid min-h-min min-w-0 flex-1 grid-cols-2 grid-rows-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] [--battle-arena-height:calc(var(--battle-combatant-size)+4rem)] [--battle-combatant-scale:1] [--battle-combatant-size:calc(var(--battle-tile-size)*var(--battle-combatant-scale))] xl:grid-rows-[minmax(max-content,1fr)_auto] xl:[--battle-combatant-scale:2]"
       data-battle-stage-mode={choreography.mode}
       data-battle-stage-state={winnerId ? "resolving" : "awaiting-input"}
       data-choreography-identity={choreography.choreographyIdentity}
@@ -269,6 +271,9 @@ export default function SeethingSwarmBattleStage({
       >
         {children}
       </BattlePlayback>
+      <div className="pointer-events-none absolute inset-0 z-40 col-start-1 col-end-3 row-start-2 row-end-3 flex items-start justify-center pt-[4px]">
+        {achievementOverlay}
+      </div>
     </div>
   )
 }

@@ -72,7 +72,10 @@ test("a delayed attack keeps the loaded animal visible without replacing its ima
     expect(
       await retainedImage.evaluate(
         (image) =>
-          image.isConnected && image.complete && image.naturalWidth > 0,
+          image instanceof HTMLImageElement &&
+          image.isConnected &&
+          image.complete &&
+          image.naturalWidth > 0,
       ),
     ).toBe(true)
     const requestedAttack = await first
@@ -539,8 +542,7 @@ for (const { width, height } of [
       true,
     )
     await expect(choices).toHaveCount(2)
-    const readingRegion = battle.getByRole("region", { name: "Battle choices" })
-    await expect(battle.getByRole("region")).toHaveCount(1)
+    await expect(battle.getByRole("region")).toHaveCount(0)
     for (const card of await stage.locator("[data-value-card]").all()) {
       const choice = card.getByRole("button", { name: /^Choose / })
       await choice.scrollIntoViewIfNeeded()
@@ -575,12 +577,13 @@ for (const { width, height } of [
       })
       expect(textDoesNotOverlapAnimal).toBe(true)
     }
-    await readingRegion.focus()
+    await battle.focus()
     await page.keyboard.press("Home")
-    await expect(choices.first().getByRole("heading")).toBeInViewport()
     await expect(
       page.getByRole("button", { name: "Menu", exact: true }),
     ).toBeInViewport()
+    await choices.first().getByRole("heading").scrollIntoViewIfNeeded()
+    await expect(choices.first().getByRole("heading")).toBeInViewport()
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(width)

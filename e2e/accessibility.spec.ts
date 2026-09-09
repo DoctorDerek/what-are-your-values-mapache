@@ -180,6 +180,7 @@ test("overflowing value cards remain keyboard-readable beside achievement feedba
   await startAtHub(page)
   await page.getByRole("button", { name: "Battle", exact: true }).click()
   const battle = page.getByRole("main", { name: "Value battle" })
+  await page.addStyleTag({ content: "html { font-size: 200%; }" })
   const stage = battle.locator("[data-battle-stage-state]")
   const firstAnimal = battle.locator('[data-combatant-side="first"]')
   await firstAnimal.scrollIntoViewIfNeeded()
@@ -201,30 +202,147 @@ test("overflowing value cards remain keyboard-readable beside achievement feedba
     "awaiting-input",
   )
   const identity = await stage.getAttribute("data-choreography-identity")
-  const readingRegion = battle.getByRole("region").first()
   await expect
     .poll(() =>
-      readingRegion.evaluate(
-        (element) => element.scrollHeight - element.clientHeight,
-      ),
+      battle.evaluate((element) => element.scrollHeight - element.clientHeight),
     )
     .toBeGreaterThan(0)
-  await readingRegion.focus()
+  await battle.focus()
   await page.keyboard.press("PageDown")
   await expect
-    .poll(() => readingRegion.evaluate((element) => element.scrollTop))
+    .poll(() => battle.evaluate((element) => element.scrollTop))
     .toBeGreaterThan(0)
   await page.keyboard.press("ArrowDown")
   await page.keyboard.press(" ")
   await page.keyboard.press("Enter")
-  await expect(readingRegion).toBeFocused()
+  await expect(battle).toBeFocused()
   await expect(stage).toHaveAttribute("data-choreography-identity", identity!)
-  await page.keyboard.press("Tab")
-  await expect(
-    readingRegion.getByRole("button", { name: /^Choose / }).first(),
-  ).toBeFocused()
+  const firstChoice = battle.getByRole("button", { name: /^Choose / }).first()
+  for (
+    let index = 0;
+    index < (await battle.getByRole("button").count());
+    index++
+  ) {
+    await page.keyboard.press("Tab")
+    if (
+      await firstChoice.evaluate(
+        (element) => element === document.activeElement,
+      )
+    )
+      break
+  }
+  await expect(firstChoice).toBeFocused()
   await page.keyboard.press("Enter")
   await expect
     .poll(() => stage.getAttribute("data-choreography-identity"))
     .not.toBe(identity)
 })
+
+for (const viewport of [
+  { width: 390, height: 844, textScale: 100 },
+  { width: 320, height: 568, textScale: 200 },
+  { width: 320, height: 568, textScale: 400 },
+  { width: 1280, height: 844, textScale: 200 },
+]) {
+  test(`achievement overlays preserve play and geometry at ${viewport.width}px with ${viewport.textScale}% text`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport)
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await startAtHub(page)
+    await page.getByRole("button", { name: "Battle", exact: true }).click()
+    const textScaleStyle = await page.addStyleTag({
+      content: `html { font-size: ${viewport.textScale}%; }`,
+    })
+    const battle = page.getByRole("main", { name: "Value battle" })
+    const stage = battle.locator("[data-choreography-identity]")
+    const choices = battle.getByRole("button", { name: /^Choose / })
+    await choices.first().click()
+    const banner = battle.getByRole("complementary", {
+      name: "Achievement unlocked",
+    })
+    await expect(
+      banner.getByRole("heading", { name: "First Battle" }),
+    ).toBeVisible()
+    await expect(choices.last()).toBeEnabled()
+    const beforeNextChoice = await stage.getAttribute(
+      "data-choreography-identity",
+    )
+    await choices.last().click()
+    await expect(stage).not.toHaveAttribute(
+      "data-choreography-identity",
+      beforeNextChoice!,
+    )
+    await expect(
+      banner.getByRole("heading", { name: "First Battle" }),
+    ).toBeVisible()
+    await banner.scrollIntoViewIfNeeded()
+    await expect(banner).toBeInViewport({ ratio: 1 })
+    const dismiss = banner.getByRole("button", { name: "Dismiss achievement" })
+    await expect(dismiss).not.toBeFocused()
+    const dismissBounds = await dismiss.boundingBox()
+    expect(dismissBounds!.width).toBeGreaterThanOrEqual(44)
+    expect(dismissBounds!.height).toBeGreaterThanOrEqual(44)
+    const overlayBounds = await banner.boundingBox()
+    const arenaBounds = await battle
+      .locator('[data-battle-arena-side="first"]')
+      .boundingBox()
+    expect(overlayBounds!.y).toBeGreaterThanOrEqual(arenaBounds!.y)
+    expect(overlayBounds!.y + overlayBounds!.height).toBeLessThanOrEqual(
+      arenaBounds!.y + arenaBounds!.height,
+    )
+    for (const choice of await choices.all()) {
+      const bounds = await choice.boundingBox()
+      expect(
+        overlayBounds!.x < bounds!.x + bounds!.width &&
+          overlayBounds!.x + overlayBounds!.width > bounds!.x &&
+          overlayBounds!.y < bounds!.y + bounds!.height &&
+          overlayBounds!.y + overlayBounds!.height > bounds!.y,
+        "The achievement overlay must not obscure value text",
+      ).toBe(false)
+    }
+    expect(
+      await battle.evaluate((surface) =>
+        [...surface.querySelectorAll("*")].some((element) =>
+          ["auto", "scroll"].includes(getComputedStyle(element).overflowY),
+        ),
+      ),
+    ).toBe(false)
+    const readBattleLayout = () =>
+      battle.evaluate((surface) => {
+        const measure = (element: Element) => {
+          const { x, y, width, height } = element.getBoundingClientRect()
+          return { x, y: y + surface.scrollTop, width, height }
+        }
+        return {
+          scrollTop: surface.scrollTop,
+          scrollHeight: surface.scrollHeight,
+          controls: measure(surface.querySelector("nav")!),
+          cards: [...surface.querySelectorAll("[data-value-card] button")].map(
+            measure,
+          ),
+          arenas: [...surface.querySelectorAll("[data-battle-arena-side]")].map(
+            measure,
+          ),
+        }
+      })
+    const beforeDismissal = await readBattleLayout()
+    const identity = await stage.getAttribute("data-choreography-identity")
+    await dismiss.click()
+    await expect(banner).toBeHidden()
+    await expect(stage).toHaveAttribute("data-choreography-identity", identity!)
+    await expect.poll(readBattleLayout).toEqual(beforeDismissal)
+    await expect(choices.first()).toBeEnabled()
+    await textScaleStyle.evaluate((style) =>
+      style.parentNode?.removeChild(style),
+    )
+    await page.getByRole("button", { name: "Menu", exact: true }).click()
+    await page
+      .getByRole("dialog", { name: "Menu", exact: true })
+      .getByRole("button", { name: "Achievements", exact: true })
+      .click()
+    await expect(
+      page.getByText("Compare your first pair of values.", { exact: true }),
+    ).toBeVisible()
+  })
+}

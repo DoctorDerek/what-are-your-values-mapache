@@ -97,7 +97,7 @@ const firstAchievementPresentation = Object.freeze({
 describe("Crucible Component Integration", () => {
   afterEach(() => vi.restoreAllMocks())
 
-  it("keeps battle feedback in flow between controls and playable value cards", () => {
+  it("composes achievement feedback over the arena without another layout row", () => {
     const { battleCycle, battle } = createBattleProps(
       "achievement-banner-space-seed",
     )
@@ -121,30 +121,63 @@ describe("Crucible Component Integration", () => {
     const banner = screen.getByRole("complementary", {
       name: "Achievement unlocked",
     })
-    const presentationRegion = banner.parentElement
+    const overlay = banner.parentElement
+    const stage = overlay?.parentElement
 
     expect(battleSurface).toHaveAttribute("data-slot", "mapache-screen")
     expect(battleSurface).toHaveClass(
       "h-[100dvh]",
-      "overflow-hidden",
+      "overflow-y-auto",
       "[--mapache-screen-spacing:0px]",
     )
     expect(battleActions).toHaveClass("relative", "shrink-0")
     expect(banner).toHaveClass("relative")
-    expect(presentationRegion).toHaveClass(
+    expect(overlay).toHaveClass(
       "pointer-events-none",
-      "relative",
-      "shrink-0",
-      "flex-col",
+      "absolute",
+      "col-start-1",
+      "col-end-3",
+      "row-start-2",
+      "row-end-3",
     )
-    expect(presentationRegion).not.toHaveClass("absolute")
-    expect(presentationRegion).toContainElement(battleActions)
-    const choicesRegion = screen.getByRole("region", { name: "Battle choices" })
-    expect(presentationRegion?.nextElementSibling).toBe(choicesRegion)
-    expect(choicesRegion).toContainElement(
+    expect(overlay).not.toContainElement(battleActions)
+    expect(battleSurface).toContainElement(battleActions)
+    expect(screen.queryByRole("region", { name: "Battle choices" })).toBeNull()
+    expect(stage).toContainElement(
       screen.getAllByRole("button", {
         name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
       })[0]!,
+    )
+  })
+
+  it("dismisses an achievement without selecting a value or advancing the pair", () => {
+    const { battleCycle, battle } = createBattleProps(
+      "achievement-dismiss-seed",
+    )
+    const onAchievementPresented = vi.fn()
+    const onWinnerSelected = vi.fn()
+
+    const { container } = render(
+      <Crucible
+        {...createHistoryProps()}
+        activeDeck={battleCycle.activeDeck}
+        achievement={firstAchievementPresentation}
+        battle={battle}
+        progressById={battleCycle.progressById}
+        onAchievementPresented={onAchievementPresented}
+        onExit={vi.fn()}
+        onWinnerSelected={onWinnerSelected}
+      />,
+    )
+    const combatantsBeforeDismissal = getPresentedCombatantIds(container)
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss achievement" }))
+
+    expect(onAchievementPresented).toHaveBeenCalledExactlyOnceWith(
+      firstAchievement.id,
+    )
+    expect(onWinnerSelected).not.toHaveBeenCalled()
+    expect(getPresentedCombatantIds(container)).toEqual(
+      combatantsBeforeDismissal,
     )
   })
 
@@ -603,22 +636,23 @@ describe("Crucible Component Integration", () => {
       }),
     })
 
-    act(() => {
-      window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }))
+    fireEvent.keyDown(screen.getByRole("main", { name: "Value battle" }), {
+      key: "Escape",
     })
+    expect(onOpenMenu).toHaveBeenCalledTimes(1)
+    const cardA = screen.getAllByRole("button", { name: /^Choose / })[0]!
+    act(() => cardA.focus())
+    fireEvent.keyDown(cardA, { key: "ArrowRight" })
     expect(cardB).toHaveFocus()
 
-    act(() => {
-      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }))
-      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }))
-    })
+    fireEvent.keyDown(cardB, { key: "Enter" })
 
     expect(onWinnerSelected).toHaveBeenCalledWith(winnerId, battle.scheduler)
     expect(onOpenMenu).toHaveBeenCalledTimes(1)
     expect(onExit).not.toHaveBeenCalled()
   })
 
-  it("keeps full definitions in each choice and gives keyboard readers one scroll region", async () => {
+  it("keeps controls and full definitions in one keyboard-readable battle surface", async () => {
     const { battleCycle, battle } = createBattleProps("readable-copy-seed")
     const onWinnerSelected = vi.fn()
     const definitions = battle.pair.map((valueId) => {
@@ -643,12 +677,17 @@ describe("Crucible Component Integration", () => {
       />,
     )
 
-    const choicesRegion = screen.getByRole("region", { name: "Battle choices" })
-    expect(screen.getAllByRole("region")).toHaveLength(1)
-    expect(choicesRegion).toHaveAttribute("tabindex", "0")
-    fireEvent.focus(choicesRegion)
+    const battleSurface = screen.getByRole("main", { name: "Value battle" })
+    expect(screen.queryByRole("region", { name: "Battle choices" })).toBeNull()
+    expect(battleSurface).toHaveAttribute("tabindex", "0")
+    expect(battleSurface).toContainElement(
+      screen.getByRole("navigation", { name: "Battle actions" }),
+    )
+    fireEvent.focus(battleSurface)
     for (const key of [" ", "Enter", "ArrowDown", "ArrowUp"])
-      fireEvent.keyDown(choicesRegion, { key })
+      fireEvent.keyDown(battleSurface, { key })
+    for (const key of ["Home", "End", "PageUp", "PageDown", "Tab"])
+      expect(fireEvent.keyDown(battleSurface, { key })).toBe(true)
     expect(onWinnerSelected).not.toHaveBeenCalled()
 
     for (const [index, definition] of definitions.entries()) {
@@ -668,7 +707,7 @@ describe("Crucible Component Integration", () => {
 
       expect(choice).toContainElement(heading)
       expect(choice).toContainElement(definitionCopy)
-      expect(choicesRegion).toContainElement(choice)
+      expect(battleSurface).toContainElement(choice)
       expect(choice).toHaveAccessibleDescription(definitionCopy.textContent!)
       expect(heading).toBeVisible()
       expect(definitionCopy).toBeVisible()
