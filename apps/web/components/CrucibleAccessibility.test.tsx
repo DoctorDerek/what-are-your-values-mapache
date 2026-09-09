@@ -14,6 +14,7 @@ import { projectBattlePair } from "@game/machines/src/BattleScheduler"
 import type { PresentedBattle } from "@game/machines/src/CombatMachine"
 import { getLevelFromXP } from "@game/utils/src/LevelMath"
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -249,7 +250,10 @@ describe("Crucible accessibility integration", () => {
       }),
     )
 
+    act(() => initialFirstChoice.focus())
+    expect(initialFirstChoice).toHaveFocus()
     fireEvent.click(initialFirstChoice)
+    expect(screen.getByRole("main", { name: "Value battle" })).toHaveFocus()
     expect(props.onWinnerSelected).toHaveBeenCalledTimes(1)
     expect(props.onWinnerSelected).toHaveBeenCalledWith(
       fixture.winnerId,
@@ -304,13 +308,17 @@ describe("Crucible accessibility integration", () => {
         activeDeck: fixture.initialBattleCycle.activeDeck,
       })
     })
-    expect(resultingFirstChoice).toHaveFocus()
+    expect(resultingFirstChoice).not.toHaveFocus()
+    expect(screen.getByRole("main", { name: "Value battle" })).toHaveFocus()
     const firstSelectionStatusChild = status.firstElementChild
     if (!firstSelectionStatusChild) {
       throw new Error("Selection announcement is missing its keyed child")
     }
 
-    fireEvent.click(screen.getByRole("button", { name: "Undo" }))
+    const undo = screen.getByRole("button", { name: "Undo" })
+    act(() => undo.focus())
+    fireEvent.click(undo)
+    expect(undo).toHaveFocus()
     expect(props.onUndo).toHaveBeenCalledTimes(1)
     rerender(
       <Crucible
@@ -342,7 +350,7 @@ describe("Crucible accessibility integration", () => {
         activeDeck: fixture.initialBattleCycle.activeDeck,
       })
     })
-    expect(restoredFirstChoice).toHaveFocus()
+    expect(restoredFirstChoice).not.toHaveFocus()
 
     fireEvent.click(restoredFirstChoice)
     rerender(
@@ -368,7 +376,7 @@ describe("Crucible accessibility integration", () => {
     expect(props.onWinnerSelected).toHaveBeenCalledTimes(2)
   })
 
-  it("announces Redo only after its restored durable result and focuses the next pair", async () => {
+  it("announces Redo after its durable result without focusing a new choice", async () => {
     const fixture = createBattleAccessibilityFixture("durable-redo-seed")
     const props = createCrucibleProps(fixture)
     const { rerender } = render(<Crucible {...props} canRedo />)
@@ -415,6 +423,41 @@ describe("Crucible accessibility integration", () => {
         activeDeck: fixture.initialBattleCycle.activeDeck,
       })
     })
-    expect(resultingFirstChoice).toHaveFocus()
+    expect(resultingFirstChoice).not.toHaveFocus()
+    expect(document.activeElement).toBe(document.body)
+  })
+
+  it("does not steal focus acquired by another control during a result", async () => {
+    const fixture = createBattleAccessibilityFixture("retained-control-focus")
+    const props = createCrucibleProps(fixture)
+    const { rerender } = render(
+      <>
+        <button type="button">Keep my focus</button>
+        <Crucible {...props} />
+      </>,
+    )
+    const choice = await screen.findByRole("button", {
+      name: /Choice 1\.$/,
+    })
+    act(() => choice.focus())
+    fireEvent.click(choice)
+    const otherControl = screen.getByRole("button", { name: "Keep my focus" })
+    act(() => otherControl.focus())
+    rerender(
+      <>
+        <button type="button">Keep my focus</button>
+        <Crucible
+          {...props}
+          battle={fixture.resultingBattle}
+          progressById={fixture.resultingBattleCycle.progressById}
+        />
+      </>,
+    )
+    await waitFor(() => expect(getBattleStatus()).toHaveTextContent("Next:"))
+    expect(otherControl).toHaveFocus()
+    for (const nextChoice of screen.getAllByRole("button", {
+      name: /^Choose /,
+    }))
+      expect(nextChoice).not.toHaveFocus()
   })
 })

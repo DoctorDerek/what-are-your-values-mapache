@@ -652,6 +652,33 @@ describe("Crucible Component Integration", () => {
     expect(onExit).not.toHaveBeenCalled()
   })
 
+  it("does not consume Enter or Space for a card after focus leaves it", async () => {
+    const { battleCycle, battle } = createBattleProps("actual-control-focus")
+    const onWinnerSelected = vi.fn()
+    const onOpenMenu = vi.fn()
+    render(
+      <Crucible
+        {...createHistoryProps()}
+        activeDeck={battleCycle.activeDeck}
+        battle={battle}
+        progressById={battleCycle.progressById}
+        onExit={vi.fn()}
+        onOpenMenu={onOpenMenu}
+        onWinnerSelected={onWinnerSelected}
+      />,
+    )
+    const choices = await screen.findAllByRole("button", { name: /^Choose / })
+    const menu = screen.getByRole("button", { name: "Menu" })
+    act(() => choices[0]!.focus())
+    act(() => menu.focus())
+    for (const key of ["Enter", " "])
+      expect(fireEvent.keyDown(menu, { key })).toBe(true)
+    expect(menu).toHaveFocus()
+    expect(onWinnerSelected).not.toHaveBeenCalled()
+    fireEvent.click(menu)
+    expect(onOpenMenu).toHaveBeenCalledOnce()
+  })
+
   it("keeps controls and full definitions in one keyboard-readable battle surface", async () => {
     const { battleCycle, battle } = createBattleProps("readable-copy-seed")
     const onWinnerSelected = vi.fn()
