@@ -53,7 +53,7 @@ function requirePresentation(
 }
 
 describe("Achievement presentation", () => {
-  it("projects the complete permanent catalog with exact GDD v5.2 English copy", () => {
+  it("projects every milestone with its title, concise reason, and exact requirement", () => {
     expect(
       ACHIEVEMENT_CATALOG.map((achievement) => ({
         id: achievement.id,
@@ -63,6 +63,7 @@ describe("Achievement presentation", () => {
       {
         id: "battle.first",
         title: "First Battle",
+        unlockReason: "First pair compared.",
         requirement: "Compare your first pair of values.",
       },
       ...[
@@ -72,17 +73,20 @@ describe("Achievement presentation", () => {
       ].map((threshold) => ({
         id: `battle.${threshold}`,
         title: `${threshold.toLocaleString("en-US")} Battles`,
+        unlockReason: `${threshold.toLocaleString("en-US")} pairs compared.`,
         requirement: `Compare ${threshold.toLocaleString("en-US")} pairs of values.`,
       })),
       {
         id: "topFive.first",
         title: "Reveal Your Top Five",
+        unlockReason: "Five values earned XP.",
         requirement:
           "Reach the first moment when at least five different values have earned XP and the Hub can display a player-produced Top Five.",
       },
       ...[5, 10, 25, 37, 50, 77, 100].map((threshold) => ({
         id: `valueLevel.${threshold}`,
         title: `Reach Level ${threshold}`,
+        unlockReason: `A value reached Level ${threshold}.`,
         requirement: `Raise any value to Level ${threshold}.`,
       })),
     ])
@@ -247,6 +251,7 @@ describe("Achievement presentation", () => {
     })
 
     expect(requirePresentation(catalog, "battle.first")).toMatchObject({
+      unlockReason: "First pair compared.",
       status: "unlocked",
       progress: null,
       unlockedAt: UNLOCKED_AT,

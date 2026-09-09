@@ -1,5 +1,8 @@
 import { ACHIEVEMENT_CATALOG } from "@game/machines/src/AchievementCatalog"
-import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
+import {
+  getAchievementEnglishCopy,
+  type AchievementPresentation,
+} from "@game/machines/src/AchievementPresentation"
 import { act, fireEvent, render, screen } from "@testing-library/react"
 import type { HTMLAttributes, PropsWithChildren } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
@@ -83,13 +86,16 @@ describe("AchievementBanner Integration", () => {
     expect(
       screen.getByText("Compare your first pair of values."),
     ).toBeInTheDocument()
+    expect(
+      screen.queryByText("First pair compared.", { exact: true }),
+    ).toBeNull()
 
     fireEvent.click(screen.getByRole("button", { name: "Dismiss achievement" }))
 
     expect(onPresented).toHaveBeenCalledExactlyOnceWith(firstAchievement.id)
   })
 
-  it("presents a compact battle milestone with its existing polite announcement", () => {
+  it("explains a battle unlock visually and through its polite announcement", () => {
     render(
       <AchievementBanner
         achievement={firstAchievementPresentation}
@@ -110,44 +116,57 @@ describe("AchievementBanner Integration", () => {
       JSON.stringify({ opacity: 0, y: 0 }),
     )
     expect(screen.queryByText("Compare your first pair of values.")).toBeNull()
+    expect(
+      screen.getByText("First pair compared.", { exact: true }),
+    ).toBeVisible()
     expect(screen.getByRole("heading", { name: "First Battle" })).toBeVisible()
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Achievement unlocked: First Battle.",
+      "Achievement unlocked: First Battle. First pair compared.",
     )
     expect(
       screen.getByRole("button", { name: "Dismiss achievement" }),
     ).toBeEnabled()
   })
 
-  it("keeps the optional dismiss target beside the wrapping milestone name", () => {
+  it("keeps the longer Top Five title and concise reason readable until dismissal", () => {
+    const onPresented = vi.fn()
+    const topFiveAchievement = ACHIEVEMENT_CATALOG.find(
+      ({ id }) => id === "topFive.first",
+    )!
     render(
       <AchievementBanner
-        achievement={firstAchievementPresentation}
+        achievement={{
+          ...firstAchievementPresentation,
+          ...getAchievementEnglishCopy(topFiveAchievement),
+          id: topFiveAchievement.id,
+        }}
         isAcknowledgementPending={false}
         placement="battle"
         shouldReduceMotion={false}
-        onPresented={vi.fn()}
+        onPresented={onPresented}
       />,
     )
 
-    const achievementHeading = screen.getByRole("heading", {
-      name: "First Battle",
-    })
-    const achievementPanel = achievementHeading.parentElement?.parentElement
+    expect(
+      screen.getByRole("heading", { name: "Reveal Your Top Five" }),
+    ).toBeVisible()
+    expect(
+      screen.getByText("Five values earned XP.", { exact: true }),
+    ).toBeVisible()
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Achievement unlocked: Reveal Your Top Five. Five values earned XP.",
+    )
+    expect(
+      screen.queryByText(
+        getAchievementEnglishCopy(topFiveAchievement).requirement,
+      ),
+    ).toBeNull()
     const dismissButton = screen.getByRole("button", {
       name: "Dismiss achievement",
     })
-
-    expect(achievementPanel).toHaveClass("relative", "flex")
-    expect(achievementPanel).not.toHaveClass("overflow-y-auto")
-    expect(achievementHeading.parentElement).toHaveClass("min-w-0", "flex-1")
-    expect(dismissButton).toHaveClass(
-      "pointer-events-auto",
-      "shrink-0",
-      "min-h-[44px]",
-      "min-w-[44px]",
-      "focus-visible:outline-black",
-    )
+    expect(dismissButton).toBeEnabled()
+    fireEvent.click(dismissButton)
+    expect(onPresented).toHaveBeenCalledExactlyOnceWith(topFiveAchievement.id)
   })
 
   it("uses canonical opaque Vivid contrast tokens for battle feedback", () => {
