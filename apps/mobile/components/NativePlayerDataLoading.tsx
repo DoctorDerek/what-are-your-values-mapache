@@ -1,20 +1,25 @@
 import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
+import { View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
-import { Text } from "@/components/ui/text"
 
 export default function NativePlayerDataLoading() {
   return (
     <MapacheScreen
-      accessibilityLabel="Loading player data"
+      accessible
+      accessibilityLabel={playerDataRecoveryCopy.loading}
       accessibilityLiveRegion="polite"
+      accessibilityState={{ busy: true }}
       className="items-center justify-center px-6"
     >
-      <Text
-        variant="h1"
-        className="text-mapache-vivid-primary-cyan text-4xl uppercase"
+      <View
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        className="flex-row gap-2"
       >
-        {playerDataRecoveryCopy.loading}
-      </Text>
+        <View className="bg-mapache-vivid-primary-cyan size-6 border-2 border-black" />
+        <View className="bg-mapache-vivid-primary-orange size-6 border-2 border-black" />
+        <View className="bg-mapache-vivid-primary-raspberry size-6 border-2 border-black" />
+      </View>
     </MapacheScreen>
   )
 }
