@@ -87,6 +87,7 @@ const firstAchievement = ACHIEVEMENT_CATALOG[0]
 const firstAchievementPresentation = Object.freeze({
   id: firstAchievement.id,
   title: "First Battle",
+  unlockReason: "First pair compared.",
   requirement: "Compare your first pair of values.",
   status: "unlocked",
   progress: null,

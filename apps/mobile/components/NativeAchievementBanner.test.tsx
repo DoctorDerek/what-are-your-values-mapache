@@ -7,6 +7,7 @@ import NativeAchievementBanner from "@/components/NativeAchievementBanner"
 const firstBattle = Object.freeze({
   id: readAchievementId("battle.first", "Native achievement banner test ID"),
   title: "First Battle",
+  unlockReason: "First pair compared.",
   requirement: "Compare your first pair of values.",
   status: "unlocked",
   progress: null,
@@ -18,6 +19,7 @@ const fiveBattles = Object.freeze({
   ...firstBattle,
   id: readAchievementId("battle.5", "Native achievement banner test ID"),
   title: "5 Battles",
+  unlockReason: "5 pairs compared.",
   requirement: "Compare 5 pairs of values.",
 }) satisfies AchievementPresentation
 

@@ -7,6 +7,7 @@ import NativeAchievements from "@/components/NativeAchievements"
 const lockedAchievement = Object.freeze({
   id: readAchievementId("battle.first", "Native achievement test ID"),
   title: "First Battle",
+  unlockReason: "First pair compared.",
   requirement: "Compare your first pair of values.",
   status: "locked",
   progress: Object.freeze({
@@ -22,6 +23,7 @@ const lockedAchievement = Object.freeze({
 const unlockedAchievement = Object.freeze({
   id: readAchievementId("battle.5", "Native achievement test ID"),
   title: "5 Battles",
+  unlockReason: "5 pairs compared.",
   requirement: "Compare 5 pairs of values.",
   status: "unlocked",
   progress: null,

@@ -18,6 +18,7 @@ const englishUnlockedDateFormatter = new Intl.DateTimeFormat("en-US", {
 
 export type AchievementEnglishCopy = Readonly<{
   title: string
+  unlockReason: string
   requirement: string
 }>
 
@@ -36,6 +37,7 @@ export type AchievementProgressPresentation =
 export type AchievementPresentation = Readonly<{
   id: AchievementId
   title: string
+  unlockReason: string
   requirement: string
   status: "locked" | "unlocked"
   progress: AchievementProgressPresentation | null
@@ -77,6 +79,10 @@ export function getAchievementEnglishCopy(
         condition.threshold === 1
           ? "First Battle"
           : `${formattedThreshold} Battles`,
+      unlockReason:
+        condition.threshold === 1
+          ? "First pair compared."
+          : `${formattedThreshold} pairs compared.`,
       requirement:
         condition.threshold === 1
           ? "Compare your first pair of values."
@@ -86,6 +92,7 @@ export function getAchievementEnglishCopy(
   if (condition.kind === "topFive") {
     return Object.freeze({
       title: "Reveal Your Top Five",
+      unlockReason: "Five values earned XP.",
       requirement:
         "Reach the first moment when at least five different values have earned XP and the Hub can display a player-produced Top Five.",
     })
@@ -95,6 +102,7 @@ export function getAchievementEnglishCopy(
 
   return Object.freeze({
     title: `Reach Level ${formattedThreshold}`,
+    unlockReason: `A value reached Level ${formattedThreshold}.`,
     requirement: `Raise any value to Level ${formattedThreshold}.`,
   })
 }

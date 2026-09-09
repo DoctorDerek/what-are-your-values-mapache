@@ -264,6 +264,12 @@ for (const viewport of [
     await expect(
       banner.getByRole("heading", { name: "First Battle" }),
     ).toBeVisible()
+    await expect(
+      banner.getByText("First pair compared.", { exact: true }),
+    ).toBeVisible()
+    await expect(banner.getByRole("status")).toHaveText(
+      "Achievement unlocked: First Battle. First pair compared.",
+    )
     await expect(choices.last()).toBeEnabled()
     const beforeNextChoice = await stage.getAttribute(
       "data-choreography-identity",
