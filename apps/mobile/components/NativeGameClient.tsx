@@ -138,17 +138,13 @@ function NativeGameClientContent() {
   usePreparedNativeSeethingSwarmClips(hubClips)
   const [isBattleRequested, setIsBattleRequested] = useState(false)
   const isHubReady = state.matches("Hub")
+  const canAwaitBattle = isHubReady && !isProductMenuOpen && activeInformationPanelId === null && !isControlsOpen
+  if (isBattleRequested && !canAwaitBattle) setIsBattleRequested(false)
   useEffect(()=>{
-    if (!isBattleRequested) return
-    if (!isHubReady || isProductMenuOpen || activeInformationPanelId !== null || isControlsOpen) {
-      setIsBattleRequested(false)
-      return
-    }
-    if (isBattlePrepared) {
-      setIsBattleRequested(false)
+    if (isBattleRequested && canAwaitBattle && isBattlePrepared) {
       send({type:"BATTLE.START_REQUESTED"})
     }
-  },[isBattleRequested,isBattlePrepared,isHubReady,isProductMenuOpen,activeInformationPanelId,isControlsOpen,send])
+  },[isBattleRequested,isBattlePrepared,canAwaitBattle,send])
   const handleStartBattle = () => {
     if (isBattlePrepared) send({type:"BATTLE.START_REQUESTED"})
     else setIsBattleRequested(previous=>!previous)
