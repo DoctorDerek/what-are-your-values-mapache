@@ -23,6 +23,7 @@ import { AccessibilityInfo, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeAchievementBanner from "@/components/NativeAchievementBanner"
 import NativeBattleActionBar from "@/components/NativeBattleActionBar"
+import { usePreparedNativeSeethingSwarmBattle } from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSeethingSwarmBattleStage from "@/components/NativeSeethingSwarmBattleStage"
 import NativeValueChoiceCard from "@/components/NativeValueChoiceCard"
 import { Text } from "@/components/ui/text"
@@ -74,6 +75,10 @@ export default function NativeCrucible({
   const [state, send] = useMachine(combatMachine, {
     input: { onWinnerSelected },
   })
+  const isPresentationReady = usePreparedNativeSeethingSwarmBattle(
+    battle,
+    runtimeClipCatalog,
+  )
   const firstChoiceRef = useRef<View>(null)
   const pendingAccessibilityActionRef =
     useRef<PendingBattleAccessibilityAction | null>(null)
@@ -81,11 +86,14 @@ export default function NativeCrucible({
     useState<PendingBattleAccessibilityAction | null>(null)
 
   useEffect(() => {
-    send({ type: "BATTLE.PROJECTED", battle })
-  }, [battle, send])
+    if (isPresentationReady) send({ type: "BATTLE.PROJECTED", battle })
+  }, [battle, isPresentationReady, send])
 
   const isInteractive =
-    state.matches("AwaitingInput") && !isMenuOpen && !isPersistencePending
+    state.matches("AwaitingInput") &&
+    !isMenuOpen &&
+    !isPersistencePending &&
+    isPresentationReady
   const isAnimating = state.matches("AnimatingResult")
   const currentBattle = state.context.currentBattle
   const currentPair = currentBattle?.pair ?? null

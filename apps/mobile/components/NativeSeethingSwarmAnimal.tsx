@@ -18,6 +18,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated"
 import { scheduleOnRN } from "react-native-worklets"
+import { useNativeSeethingSwarmAssetStatus } from "@/components/NativeSeethingSwarmAssetPreparation"
 
 export default function NativeSeethingSwarmAnimal({
   clip,
@@ -46,6 +47,8 @@ export default function NativeSeethingSwarmAnimal({
 }) {
   const frameProgress = useSharedValue(0)
   const [loadedAsset, setLoadedAsset] = useState<number | null>(null)
+  const preparedStatus = useNativeSeethingSwarmAssetStatus(clip.relativePath)
+  const isImageLoaded = loadedAsset === clip.asset || preparedStatus === "ready"
   const playbackCompleteRef = useRef(onPlaybackComplete)
   useEffect(() => {
     playbackCompleteRef.current = onPlaybackComplete
@@ -94,7 +97,7 @@ export default function NativeSeethingSwarmAnimal({
     frameProgress.set(
       playbackMode === "hold-final-frame" ? clip.frameCount - 1 : 0,
     )
-    if (loadedAsset !== clip.asset) return
+    if (!isImageLoaded) return
     if (shouldReduceMotion || clip.frameCount === 1) {
       if (playbackMode === "one-shot") finishPlayback()
       return
@@ -128,7 +131,7 @@ export default function NativeSeethingSwarmAnimal({
     clip.frameCount,
     frameDurationMs,
     frameProgress,
-    loadedAsset,
+    isImageLoaded,
     playbackMode,
     playbackIdentity,
     shouldReduceMotion,

@@ -1,4 +1,9 @@
 import {
+  createSeethingSwarmTypographyOnlyRuntimeClipCatalog,
+  type SeethingSwarmRuntimeClipCatalog,
+} from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import { ZOO_ANIMALS } from "@game/data/src/ZooAnimals"
+import {
   BATTLE_PROFILE_MANIFEST_KEY,
   BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY,
   BATTLE_PROFILE_SNAPSHOT_A_KEY,
@@ -35,6 +40,17 @@ jest.mock("@/lib/ExpoDurableStore", () => ({
   },
 }))
 
+jest.mock("@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog", () => {
+  const { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } =
+    jest.requireActual<
+      typeof import("@game/data/src/SeethingSwarmRuntimeClipCatalog")
+    >("@game/data/src/SeethingSwarmRuntimeClipCatalog")
+  return {
+    SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG:
+      createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
+  }
+})
+
 jest.mock("@/components/useNativePlayerDataFiles", () => ({
   __esModule: true,
   default: jest.fn(),
@@ -56,9 +72,14 @@ const compareAndSwapVerified = jest.mocked(
   expoDurableStore.compareAndSwapVerified,
 )
 const usePlayerDataFiles = jest.mocked(useNativePlayerDataFiles)
+const runtimeCatalogModule = jest.requireMock<{
+  SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG: SeethingSwarmRuntimeClipCatalog<number>
+}>("@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog")
 const chooseBackup = jest.fn(async () => undefined)
 
 beforeEach(() => {
+  runtimeCatalogModule.SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG =
+    createSeethingSwarmTypographyOnlyRuntimeClipCatalog()
   const store = createInMemoryDurableStore()
   readAll.mockImplementation(store.readAll)
   compareAndSwapVerified.mockImplementation(store.compareAndSwapVerified)
@@ -95,6 +116,81 @@ function getOpenDialog(label: string) {
 }
 
 describe("NativeGameClient Menu navigation", () => {
+  it("prepares animals before Battle and cancels a cold intent when the Menu opens", async () => {
+    const animals = ZOO_ANIMALS.map((animal, index) => ({
+      animalId: animal.id,
+      characterClips: [
+        {
+          kind: "character" as const,
+          animalId: animal.id,
+          animationId: "idle",
+          relativePath: `${animal.id}/idle.png`,
+          frameWidth: 32,
+          frameHeight: 32,
+          frameCount: 4,
+          visibleBounds: { left: 0, top: 0, width: 32, height: 32 },
+          asset: index + 1,
+        },
+      ],
+      auxiliaryEffectClips: [],
+    }))
+    runtimeCatalogModule.SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG = {
+      mode: "licensed",
+      evidenceSnapshotId: "native-intent-test",
+      animals,
+      characterClipCount: animals.length,
+      auxiliaryEffectClipCount: 0,
+    }
+    await render(<NativeGameClient />)
+    await fireEvent.press(await screen.findByRole("button", { name: "Start" }))
+    expect(
+      screen.getAllByTestId(/^prepared-animal-/, {
+        includeHiddenElements: true,
+      }).length,
+    ).toBeGreaterThan(0)
+    await fireEvent.press(await screen.findByRole("button", { name: "Battle" }))
+    expect(
+      screen.getByRole("button", {
+        name: "Preparing battle. Press to cancel.",
+      }),
+    ).toBeBusy()
+    await fireEvent.press(screen.getByRole("button", { name: "Menu" }))
+    await fireEvent.press(screen.getByRole("button", { name: "Close Menu" }))
+    await fireEvent.press(screen.getByRole("button", { name: "Battle" }))
+    await fireEvent.press(
+      screen.getByRole("button", {
+        name: "Preparing battle. Press to cancel.",
+      }),
+    )
+    expect(screen.getByRole("button", { name: "Battle" })).not.toBeBusy()
+    await fireEvent.press(screen.getByRole("button", { name: "Battle" }))
+    for (const prepared of screen.getAllByTestId(/^prepared-animal-/, {
+      includeHiddenElements: true,
+    }))
+      await fireEvent(prepared, "load")
+    expect(
+      await screen.findAllByRole("button", { name: /^Choose / }),
+    ).toHaveLength(2)
+  })
+
+  it("retains the introduction during initial persistence instead of showing another loading surface", async () => {
+    const store = createInMemoryDurableStore()
+    const write = Promise.withResolvers<void>()
+    readAll.mockImplementation(store.readAll)
+    compareAndSwapVerified.mockImplementation(async (transaction) => {
+      await write.promise
+      return store.compareAndSwapVerified(transaction)
+    })
+    await render(<NativeGameClient />)
+    const start = await screen.findByRole("button", { name: "Start" })
+    await fireEvent.press(start)
+    expect(screen.getByRole("button", { name: "Start" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Start" })).toBeBusy()
+    expect(screen.queryByLabelText("Loading your values…")).toBeNull()
+    await act(async () => write.resolve())
+    expect(await screen.findByRole("button", { name: "Battle" })).toBeEnabled()
+  })
+
   it("routes every shipped destination and resumes the exact active pair", async () => {
     const user = userEvent.setup()
     await render(<NativeGameClient />)

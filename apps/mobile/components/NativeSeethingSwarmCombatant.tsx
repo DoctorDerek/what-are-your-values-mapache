@@ -12,6 +12,7 @@ import {
 import { useEffect, useMemo, useState } from "react"
 import { View } from "react-native"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
+import { useNativeSeethingSwarmPreparedAssets } from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSeethingSwarmPlaceholder from "@/components/NativeSeethingSwarmPlaceholder"
 
 export default function NativeSeethingSwarmCombatant({
@@ -42,10 +43,11 @@ export default function NativeSeethingSwarmCombatant({
           : "rest"
   if (playback.cue !== cue) setPlayback({ cue, stepIndex: 0 })
   const requestedStepIndex = playback.cue === cue ? playback.stepIndex : 0
-  const [loadedClips, setLoadedClips] = useState<ReadonlySet<string>>(
+  const preparedAssets = useNativeSeethingSwarmPreparedAssets()
+  const [loadedImageClips, setLoadedClips] = useState<ReadonlySet<string>>(
     () => new Set(),
   )
-  const [failedClips, setFailedClips] = useState<ReadonlySet<string>>(
+  const [failedImageClips, setFailedClips] = useState<ReadonlySet<string>>(
     () => new Set(),
   )
   const [displayedClipId, setDisplayedClipId] = useState(
@@ -58,6 +60,25 @@ export default function NativeSeethingSwarmCombatant({
   const steps = useMemo(
     () => createSeethingSwarmBattlePlayback({ combatant, winnerId, cue }),
     [combatant, winnerId, cue],
+  )
+  const loadedClips = new Set([
+    ...loadedImageClips,
+    ...residentClips
+      .filter(
+        (clip) => preparedAssets?.get(clip.relativePath)?.status === "ready",
+      )
+      .map((clip) => clip.animationId),
+  ])
+  const failedClips = new Set([
+    ...failedImageClips,
+    ...residentClips
+      .filter(
+        (clip) => preparedAssets?.get(clip.relativePath)?.status === "failed",
+      )
+      .map((clip) => clip.animationId),
+  ])
+  const hasNoUsableImage = residentClips.every((clip) =>
+    failedClips.has(clip.animationId),
   )
   const maximumIntegerScale = useMemo(
     () =>
@@ -170,7 +191,7 @@ export default function NativeSeethingSwarmCombatant({
           </View>
         )
       })}
-      {!hasVisibleImage ? (
+      {!hasVisibleImage && hasNoUsableImage ? (
         <NativeSeethingSwarmPlaceholder
           side={combatant.side}
           role={role === "entry" || role === "anticipation" ? "rest" : role}

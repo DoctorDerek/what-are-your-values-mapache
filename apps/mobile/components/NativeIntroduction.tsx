@@ -5,9 +5,11 @@ import { Text } from "@/components/ui/text"
 
 export default function NativeIntroduction({
   notice = null,
+  isPending = false,
   onComplete,
 }: {
   notice?: string | null
+  isPending?: boolean
   onComplete: () => void
 }) {
   return (
@@ -15,6 +17,7 @@ export default function NativeIntroduction({
       title={introductionCopy.title}
       primaryActionLabel={introductionCopy.startAction}
       onPrimaryAction={onComplete}
+      isPrimaryActionPending={isPending}
     >
       <View className="gap-4">
         {notice ? (

@@ -12,6 +12,7 @@ import {
 import type { StaticImageData } from "next/image"
 import { useEffect, useMemo, useState } from "react"
 import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
+import { useSeethingSwarmPreparedAssets } from "@/components/SeethingSwarmAssetPreparation"
 import SeethingSwarmPlaceholder from "@/components/SeethingSwarmPlaceholder"
 
 export default function SeethingSwarmCombatant({
@@ -42,10 +43,11 @@ export default function SeethingSwarmCombatant({
           : "rest"
   if (playback.cue !== cue) setPlayback({ cue, stepIndex: 0 })
   const requestedStepIndex = playback.cue === cue ? playback.stepIndex : 0
-  const [loadedClips, setLoadedClips] = useState<ReadonlySet<string>>(
+  const preparedAssets = useSeethingSwarmPreparedAssets()
+  const [loadedImageClips, setLoadedClips] = useState<ReadonlySet<string>>(
     () => new Set(),
   )
-  const [failedClips, setFailedClips] = useState<ReadonlySet<string>>(
+  const [failedImageClips, setFailedClips] = useState<ReadonlySet<string>>(
     () => new Set(),
   )
   const [displayedClipId, setDisplayedClipId] = useState(
@@ -58,6 +60,25 @@ export default function SeethingSwarmCombatant({
   const steps = useMemo(
     () => createSeethingSwarmBattlePlayback({ combatant, winnerId, cue }),
     [combatant, winnerId, cue],
+  )
+  const loadedClips = new Set([
+    ...loadedImageClips,
+    ...residentClips
+      .filter(
+        (clip) => preparedAssets?.get(clip.relativePath)?.status === "ready",
+      )
+      .map((clip) => clip.animationId),
+  ])
+  const failedClips = new Set([
+    ...failedImageClips,
+    ...residentClips
+      .filter(
+        (clip) => preparedAssets?.get(clip.relativePath)?.status === "failed",
+      )
+      .map((clip) => clip.animationId),
+  ])
+  const hasNoUsableImage = residentClips.every((clip) =>
+    failedClips.has(clip.animationId),
   )
   const maximumIntegerScale = useMemo(
     () =>
@@ -176,7 +197,7 @@ export default function SeethingSwarmCombatant({
           </span>
         )
       })}
-      {!hasVisibleImage ? (
+      {!hasVisibleImage && hasNoUsableImage ? (
         <SeethingSwarmPlaceholder
           side={combatant.side}
           role={role === "entry" || role === "anticipation" ? "rest" : role}

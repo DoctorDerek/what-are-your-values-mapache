@@ -14,6 +14,7 @@ import {
   useState,
   type CSSProperties,
 } from "react"
+import { useSeethingSwarmAssetStatus } from "@/components/SeethingSwarmAssetPreparation"
 
 type SeethingSwarmAnimalStyle = CSSProperties & {
   "--animal-animation-duration": string
@@ -60,7 +61,9 @@ export default function SeethingSwarmAnimal({
   const [loadedAssetSource, setLoadedAssetSource] = useState<string | null>(
     null,
   )
-  const isImageLoaded = loadedAssetSource === clip.asset.src
+  const preparedStatus = useSeethingSwarmAssetStatus(clip.relativePath)
+  const isImageLoaded =
+    loadedAssetSource === clip.asset.src || preparedStatus === "ready"
   const imageRef = useRef<HTMLImageElement>(null)
   const handleImageReady = useCallback(() => {
     setLoadedAssetSource(clip.asset.src)

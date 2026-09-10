@@ -35,6 +35,7 @@ import {
   resolveShouldReduceMotion,
 } from "@game/machines/src/PlayerSettingsPresentation"
 import { rootMachine } from "@game/machines/src/RootMachine"
+import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPreparation"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { useMachine } from "@xstate/react"
 import { useReducedMotion } from "motion/react"
@@ -43,6 +44,10 @@ import Controls from "@/components/Controls"
 import { ReopenedInformationPanel } from "@/components/InformationPanel"
 import InformationPanelContent from "@/components/InformationPanelContent"
 import ProductMenu from "@/components/ProductMenu"
+import SeethingSwarmAssetPreparation, {
+  usePreparedSeethingSwarmBattle,
+  usePreparedSeethingSwarmClips,
+} from "@/components/SeethingSwarmAssetPreparation"
 import { SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG } from "@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog"
 import { createIndexedDbDurableStore } from "@/lib/IndexedDbDurableStore"
 import {
@@ -198,6 +203,40 @@ function WritableGameClient({
         : null,
     [battleProfile],
   )
+  const hasValidatedProfile =
+    state.context.battleProfileStoreState !== null ||
+    state.matches("Splash") ||
+    state.matches("InitializingProfile")
+  const isBattlePrepared = usePreparedSeethingSwarmBattle(
+    hasValidatedProfile ? presentedBattle : null,
+    SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
+  )
+  const hubClips = useMemo(
+    () =>
+      getHubPreparationClips(
+        rankedValues,
+        SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
+      ),
+    [rankedValues],
+  )
+  usePreparedSeethingSwarmClips(hubClips)
+  const [isBattleRequested, setIsBattleRequested] = useState(false)
+  const isHubReady = state.matches("Hub")
+  const canAwaitBattle =
+    isHubReady &&
+    !isProductMenuOpen &&
+    activeInformationPanelId === null &&
+    !isControlsOpen
+  if (isBattleRequested && !canAwaitBattle) setIsBattleRequested(false)
+  useEffect(() => {
+    if (isBattleRequested && canAwaitBattle && isBattlePrepared) {
+      send({ type: "BATTLE.START_REQUESTED" })
+    }
+  }, [isBattleRequested, isBattlePrepared, canAwaitBattle, send])
+  const handleStartBattle = () => {
+    if (isBattlePrepared) send({ type: "BATTLE.START_REQUESTED" })
+    else setIsBattleRequested((previous) => !previous)
+  }
   const handleWinnerSelected = useCallback(
     (winnerId: ValueId, expectedScheduler: BattleSchedulerRestorePoint) => {
       send({
@@ -524,11 +563,7 @@ function WritableGameClient({
             ? "Deleting data…"
             : null
 
-  if (
-    state.matches("Hydrating") ||
-    state.matches("LoadingProfile") ||
-    state.matches("InitializingProfile")
-  ) {
+  if (state.matches("Hydrating") || state.matches("LoadingProfile")) {
     return <PlayerDataLoading />
   }
 
@@ -610,9 +645,10 @@ function WritableGameClient({
     )
   }
 
-  if (state.matches("Splash")) {
+  if (state.matches("Splash") || state.matches("InitializingProfile")) {
     return (
       <Splash
+        isPending={state.matches("InitializingProfile")}
         notice={state.context.portabilityNotice}
         onComplete={() => send({ type: "INTRODUCTION.COMPLETED" })}
       />
@@ -695,7 +731,8 @@ function WritableGameClient({
           onOpenValue={(valueId, focusTargetId) =>
             openAllValues({ focusTargetId, valueId })
           }
-          onStartBattle={() => send({ type: "BATTLE.START_REQUESTED" })}
+          isBattlePending={isBattleRequested}
+          onStartBattle={handleStartBattle}
         />
         <ProductMenu
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}
@@ -887,5 +924,9 @@ export default function GameClient() {
   if (writerLease.status === "read-only")
     return <ReadOnlyGameClient durableStore={durableStore} />
 
-  return <WritableGameClient durableStore={durableStore} />
+  return (
+    <SeethingSwarmAssetPreparation>
+      <WritableGameClient durableStore={durableStore} />
+    </SeethingSwarmAssetPreparation>
+  )
 }

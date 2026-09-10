@@ -12,6 +12,7 @@ type InformationPanelFrameProps = Readonly<{
   children: ReactNode
   primaryActionLabel: string
   onPrimaryAction: () => void
+  isPrimaryActionPending?: boolean
   accessibleCloseLabel?: string
   dialogTitle?: boolean
 }>
@@ -21,6 +22,7 @@ function InformationPanelFrame({
   children,
   primaryActionLabel,
   onPrimaryAction,
+  isPrimaryActionPending = false,
   accessibleCloseLabel,
   dialogTitle = false,
 }: InformationPanelFrameProps) {
@@ -71,6 +73,8 @@ function InformationPanelFrame({
           type="button"
           size="lg"
           onClick={onPrimaryAction}
+          disabled={isPrimaryActionPending}
+          aria-busy={isPrimaryActionPending}
           className="w-full text-4xl sm:text-5xl"
         >
           {primaryActionLabel}

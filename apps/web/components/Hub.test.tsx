@@ -302,6 +302,13 @@ describe("Hub Component Integration", () => {
     })
     expect(within(sixthValueButton).getByLabelText("Rank 6")).toBeVisible()
     expect(sixthValueButton.querySelector("[data-animal-id]")).toBeNull()
+    const failedPresentation = animalPresentations[0]
+    const failedImage = failedPresentation.querySelector("img")
+    if (!failedImage) throw new Error("Expected the first ranked animal image")
+    fireEvent.error(failedImage)
+    expect(failedPresentation.querySelector("img")).toBeNull()
+    expect(failedPresentation).toHaveTextContent("#1")
+    expect(screen.getAllByLabelText(/^Rank \d+$/)).toHaveLength(100)
   })
 
   it("renders an equal Custom Value initial tile without inferring an animal", () => {

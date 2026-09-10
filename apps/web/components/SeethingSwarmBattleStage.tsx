@@ -15,7 +15,6 @@ import {
   SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS,
   type SeethingSwarmBattleExchangeCue,
 } from "@game/machines/src/SeethingSwarmBattleExchange"
-import { getSeethingSwarmBattleClips } from "@game/machines/src/SeethingSwarmBattlePlayback"
 import type { StaticImageData } from "next/image"
 import {
   useCallback,
@@ -28,7 +27,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react"
-import { preload } from "react-dom"
+import { usePreparedSeethingSwarmBattle } from "@/components/SeethingSwarmAssetPreparation"
 import SeethingSwarmCombatant from "@/components/SeethingSwarmCombatant"
 import SeethingSwarmPlaceholder from "@/components/SeethingSwarmPlaceholder"
 
@@ -225,28 +224,8 @@ export default function SeethingSwarmBattleStage({
       }),
     [battle, runtimeClipCatalog],
   )
-  useEffect(() => {
-    if (!pendingBattle) return
-    const pendingChoreography = createSeethingSwarmBattleChoreography({
-      battle: pendingBattle,
-      catalog: runtimeClipCatalog,
-    })
-    if (pendingChoreography.mode !== "licensed") return
-    for (const combatant of pendingChoreography.combatants) {
-      const initialClips = new Set(
-        [
-          ...combatant.clips.entry.sequence,
-          ...combatant.clips.rest.sequence,
-        ].map((clip) => clip.animationId),
-      )
-      for (const clip of getSeethingSwarmBattleClips(combatant)) {
-        preload(clip.asset.src, {
-          as: "image",
-          fetchPriority: initialClips.has(clip.animationId) ? "high" : "low",
-        })
-      }
-    }
-  }, [pendingBattle, runtimeClipCatalog])
+  usePreparedSeethingSwarmBattle(battle, runtimeClipCatalog)
+  usePreparedSeethingSwarmBattle(pendingBattle, runtimeClipCatalog)
   const stageStyle: SeethingSwarmBattleStageStyle = {
     "--battle-result-duration": `${SEETHING_SWARM_BATTLE_RESULT_DURATION_MS}ms`,
     "--battle-approach-duration": `${SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS}ms`,

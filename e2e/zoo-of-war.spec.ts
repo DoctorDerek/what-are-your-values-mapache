@@ -8,9 +8,11 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(installVisibleTextBounds)
 })
 
-test("a delayed attack keeps the loaded animal visible without replacing its images", async ({
+test("prepares before Battle and retains real animals while the next pair loads", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.emulateMedia({ reducedMotion: "reduce" })
   const heldRoutes: Route[] = []
   let releaseAll = false
   await page.route(/\.png(?:\?|$)/, (route) => {
@@ -19,56 +21,45 @@ test("a delayed attack keeps the loaded animal visible without replacing its ima
   })
   try {
     await page.goto("/", { waitUntil: "domcontentloaded" })
+    await page.getByRole("button", { name: "Start", exact: true }).waitFor()
+    await expect.poll(() => heldRoutes.length).toBeGreaterThan(0)
     await page.getByRole("button", { name: "Start", exact: true }).click()
     await page.getByRole("button", { name: "Battle", exact: true }).click()
+    const preparing = page.getByRole("button", {
+      name: "Preparing battle. Press to cancel.",
+    })
+    await expect(preparing).toBeVisible()
     const battle = page.getByRole("main", { name: "Value battle" })
+    await expect(battle).toHaveCount(0)
+    await preparing.click()
+    await page.getByRole("button", { name: "Battle", exact: true }).click()
+    releaseAll = true
+    await Promise.all(heldRoutes.splice(0).map((route) => route.continue()))
     const stage = battle.locator("[data-choreography-identity]")
     await expect(stage).toHaveAttribute("data-battle-stage-mode", "licensed")
-    for (const side of ["first", "second"]) {
-      const pendingAnimal = battle.locator(`[data-combatant-side="${side}"]`)
-      await expect(
-        pendingAnimal.locator("[data-placeholder-playback]"),
-      ).toBeVisible()
-      await expect(pendingAnimal.locator("[data-battle-role]")).toHaveCount(2)
-    }
+    await expect(
+      battle.locator('[data-battle-active-clip="true"]'),
+    ).toHaveCount(2)
+    await expect(battle.locator("[data-placeholder-playback]")).toHaveCount(0)
     const identity = await stage.getAttribute("data-choreography-identity")
     const initialImageCount = await battle.locator("img").count()
-    await page.keyboard.press("1")
-    const sources: string[] = []
-    for (const side of ["first", "second"]) {
-      const combatant = battle.locator(`[data-combatant-side="${side}"]`)
-      await expect(combatant).toHaveAttribute("data-battle-cue", "approach")
-      const requestedClip = await combatant
-        .locator("[data-battle-requested-clip]")
-        .getAttribute("data-battle-requested-clip")
-      sources.push(
-        await combatant
-          .locator(`[data-battle-clip="${requestedClip}"] img`)
-          .evaluate((image: HTMLImageElement) => image.src),
-      )
-    }
-    for (const source of new Set(sources)) {
-      await expect
-        .poll(() =>
-          heldRoutes.some((route) => route.request().url() === source),
-        )
-        .toBe(true)
-      const index = heldRoutes.findIndex(
-        (route) => route.request().url() === source,
-      )
-      const [heldRoute] = heldRoutes.splice(index, 1)
-      if (!heldRoute)
-        throw new Error("Expected the animal image request to remain pending")
-      await heldRoute.continue()
-    }
-    const first = battle.locator('[data-combatant-side="first"]')
-    const rest = first.locator("img").filter({ visible: true })
-    await expect(rest).toBeVisible()
-    const retainedImage = await rest.elementHandle()
-    if (!retainedImage)
-      throw new Error("Expected the loaded animal image to remain mounted")
-    await expect(first).toHaveAttribute("data-battle-cue", "strike")
-    await expect(rest).toBeVisible()
+    const retainedImage = await battle
+      .locator('[data-battle-active-clip="true"] img')
+      .first()
+      .elementHandle()
+    if (!retainedImage) throw new Error("Expected a real loaded animal")
+    releaseAll = false
+    await battle
+      .getByRole("button", { name: /^Choose / })
+      .first()
+      .click()
+    await expect.poll(() => heldRoutes.length).toBeGreaterThan(0)
+    await expect(stage).toHaveAttribute("data-choreography-identity", identity!)
+    await expect(
+      battle.locator('[data-battle-active-clip="true"]'),
+    ).toHaveCount(2)
+    await expect(battle.locator("[data-placeholder-playback]")).toHaveCount(0)
+    await expect(battle.locator("img")).toHaveCount(initialImageCount)
     expect(
       await retainedImage.evaluate(
         (image) =>
@@ -78,22 +69,20 @@ test("a delayed attack keeps the loaded animal visible without replacing its ima
           image.naturalWidth > 0,
       ),
     ).toBe(true)
-    const requestedAttack = await first
-      .locator("[data-battle-requested-clip]")
-      .getAttribute("data-battle-requested-clip")
-    await expect(
-      first.locator(`[data-battle-clip="${requestedAttack}"] img`),
-    ).not.toBeVisible()
-    await expect(battle.locator("img")).toHaveCount(initialImageCount)
     releaseAll = true
     await Promise.all(heldRoutes.splice(0).map((route) => route.continue()))
-    await expect
-      .poll(() => stage.getAttribute("data-choreography-identity"))
-      .not.toBe(identity)
+    await expect(stage).not.toHaveAttribute(
+      "data-choreography-identity",
+      identity!,
+    )
     await expect(stage).toHaveAttribute(
       "data-battle-stage-state",
       "awaiting-input",
     )
+    await expect(
+      battle.locator('[data-battle-active-clip="true"]'),
+    ).toHaveCount(2)
+    await expect(battle.locator("[data-placeholder-playback]")).toHaveCount(0)
   } finally {
     releaseAll = true
     await Promise.all(heldRoutes.splice(0).map((route) => route.continue()))

@@ -1,6 +1,7 @@
 "use client"
 
 import { projectHubValues } from "@game/data/src/HubValueProjection"
+import { presentationLoadingCopy } from "@game/data/src/PresentationLoadingCopy"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
 import {
   resolveValueAnimalPresentation,
@@ -10,9 +11,10 @@ import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwa
 import { getValueDisplayName, type ValueId } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import type { StaticImageData } from "next/image"
-import type { Ref } from "react"
+import { useState, type Ref } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
 import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
+import { useSeethingSwarmAssetStatus } from "@/components/SeethingSwarmAssetPreparation"
 import { Button } from "@/components/ui/button"
 import ValueLevelProgress from "@/components/ValueLevelProgress"
 
@@ -27,6 +29,15 @@ function ValueRankPresentation({
   valuePresentation: ValueAnimalPresentation<StaticImageData> | undefined
   shouldReduceMotion: boolean
 }) {
+  const imagePath =
+    valuePresentation?.kind === "animal"
+      ? valuePresentation.clip.relativePath
+      : null
+  const preparedStatus = useSeethingSwarmAssetStatus(imagePath ?? "")
+  const [failedImagePath, setFailedImagePath] = useState<string | null>(null)
+  const hasImageFailed =
+    imagePath !== null &&
+    (preparedStatus === "failed" || failedImagePath === imagePath)
   if (!valuePresentation || valuePresentation.kind === "typography-only")
     return (
       <span
@@ -45,19 +56,24 @@ function ValueRankPresentation({
         data-value-presentation={valuePresentation.kind}
         className="relative flex h-[72px] w-[72px] flex-none items-center justify-center overflow-hidden bg-white shadow-[inset_0_0_0_4px_#000000]"
       >
-        {valuePresentation.kind === "animal" ? (
+        {valuePresentation.kind === "animal" && !hasImageFailed ? (
           <SeethingSwarmAnimal
             clip={valuePresentation.clip}
+            onLoadError={() => setFailedImagePath(imagePath)}
             shouldReduceMotion={shouldReduceMotion}
           />
         ) : (
           <span className="text-mapache-vivid-secondary-purple text-4xl font-black uppercase">
-            {valuePresentation.initial}
+            {valuePresentation.kind === "custom-initial"
+              ? valuePresentation.initial
+              : `#${rank}`}
           </span>
         )}
-        <span className="bg-mapache-vivid-secondary-purple absolute top-0 left-0 z-10 border-r-4 border-b-4 border-black px-1.5 py-1 text-sm leading-none font-black text-white uppercase">
-          #{rank}
-        </span>
+        {!hasImageFailed ? (
+          <span className="bg-mapache-vivid-secondary-purple absolute top-0 left-0 z-10 border-r-4 border-b-4 border-black px-1.5 py-1 text-sm leading-none font-black text-white uppercase">
+            #{rank}
+          </span>
+        ) : null}
       </span>
       <span aria-label={`Rank ${rank}`} className="sr-only">
         Rank {rank}
@@ -113,11 +129,13 @@ function ValueRow({
 }
 
 function ValueActionRail({
+  isBattlePending,
   browseAllValuesButtonRef,
   onBrowseAllValues,
   onAddCustomValue,
   onStartBattle,
 }: {
+  isBattlePending: boolean
   browseAllValuesButtonRef?: Ref<HTMLButtonElement>
   onBrowseAllValues: (focusTargetId: string) => void
   onAddCustomValue: (focusTargetId: string) => void
@@ -131,9 +149,22 @@ function ValueActionRail({
       <button
         type="button"
         onClick={onStartBattle}
-        className="bg-mapache-vivid-primary-orange min-h-16 flex-1 cursor-pointer border-4 border-black px-5 py-5 text-4xl font-black text-white uppercase shadow-[10px_10px_0px_0px_#000000] transition-transform hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-x-[10px] active:translate-y-[10px] active:shadow-none"
+        aria-busy={isBattlePending}
+        aria-label={
+          isBattlePending
+            ? presentationLoadingCopy.cancelBattlePreparation
+            : undefined
+        }
+        className="bg-mapache-vivid-primary-orange relative min-h-16 flex-1 cursor-pointer border-4 border-black px-5 py-5 text-4xl font-black text-white uppercase shadow-[10px_10px_0px_0px_#000000] transition-transform hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-x-[10px] active:translate-y-[10px] active:shadow-none"
       >
-        Battle
+        <span className={isBattlePending ? "invisible" : undefined}>
+          Battle
+        </span>
+        {isBattlePending ? (
+          <span className="absolute inset-0 flex items-center justify-center text-lg">
+            {presentationLoadingCopy.preparing}
+          </span>
+        ) : null}
       </button>
       <button
         ref={browseAllValuesButtonRef}
@@ -157,6 +188,7 @@ function ValueActionRail({
 }
 
 export default function Hub({
+  isBattlePending = false,
   rankedValues,
   runtimeClipCatalog,
   browseAllValuesButtonRef,
@@ -168,6 +200,7 @@ export default function Hub({
   onOpenValue,
   onStartBattle,
 }: {
+  isBattlePending?: boolean
   rankedValues: readonly RankedValue[]
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   browseAllValuesButtonRef?: Ref<HTMLButtonElement>
@@ -257,6 +290,7 @@ export default function Hub({
               </ol>
             </section>
             <ValueActionRail
+              isBattlePending={isBattlePending}
               browseAllValuesButtonRef={browseAllValuesButtonRef}
               onBrowseAllValues={onBrowseAllValues}
               onAddCustomValue={onAddCustomValue}
@@ -285,6 +319,7 @@ export default function Hub({
         ) : (
           <>
             <ValueActionRail
+              isBattlePending={isBattlePending}
               browseAllValuesButtonRef={browseAllValuesButtonRef}
               onBrowseAllValues={onBrowseAllValues}
               onAddCustomValue={onAddCustomValue}
