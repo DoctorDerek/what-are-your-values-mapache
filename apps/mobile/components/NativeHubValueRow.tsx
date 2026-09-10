@@ -4,8 +4,10 @@ import {
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import { getValueDisplayName } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
+import { useState } from "react"
 import { Pressable, View } from "react-native"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
+import { useNativeSeethingSwarmAssetStatus } from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeValueLevelProgress from "@/components/NativeValueLevelProgress"
 import { Text } from "@/components/ui/text"
 import { cn } from "@/lib/utils"
@@ -19,6 +21,10 @@ function NativeValueRankPresentation({
   valuePresentation: ValueAnimalPresentation<number> | undefined
   shouldReduceMotion: boolean
 }) {
+  const imagePath = valuePresentation?.kind === "animal" ? valuePresentation.clip.relativePath : null
+  const preparedStatus = useNativeSeethingSwarmAssetStatus(imagePath ?? "")
+  const [failedImagePath, setFailedImagePath] = useState<string | null>(null)
+  const hasImageFailed = imagePath !== null && (preparedStatus === "failed" || failedImagePath === imagePath)
   if (!valuePresentation || valuePresentation.kind === "typography-only")
     return (
       <Text className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-xl font-black text-white uppercase">
@@ -39,19 +45,20 @@ function NativeValueRankPresentation({
       }}
       testID={`hub-top-five-rank-${rank}-presentation`}
     >
-      {valuePresentation.kind === "animal" ? (
+      {valuePresentation.kind === "animal" && !hasImageFailed ? (
         <NativeSeethingSwarmAnimal
           clip={valuePresentation.clip}
+          onLoadError={()=>setFailedImagePath(imagePath)}
           shouldReduceMotion={shouldReduceMotion}
         />
       ) : (
         <Text className="text-mapache-vivid-secondary-purple text-4xl font-black uppercase">
-          {valuePresentation.initial}
+          {valuePresentation.kind === "custom-initial" ? valuePresentation.initial : `#${rank}`}
         </Text>
       )}
-      <Text className="bg-mapache-vivid-secondary-purple absolute top-0 left-0 z-10 border-r-4 border-b-4 border-black px-1.5 py-1 text-sm leading-none font-black text-white uppercase">
+      {!hasImageFailed ? <Text className="bg-mapache-vivid-secondary-purple absolute top-0 left-0 z-10 border-r-4 border-b-4 border-black px-1.5 py-1 text-sm leading-none font-black text-white uppercase">
         #{rank}
-      </Text>
+      </Text> : null}
     </View>
   )
 }
