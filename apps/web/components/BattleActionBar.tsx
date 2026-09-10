@@ -8,7 +8,10 @@ function BattleActionLabel({
   showKeyboardControlHints: boolean
 }) {
   return (
-    <span aria-hidden="true" className="inline-grid items-center justify-items-center">
+    <span
+      aria-hidden="true"
+      className="inline-grid items-center justify-items-center"
+    >
       <span
         className={`col-start-1 row-start-1 ${showKeyboardControlHints ? "xl:invisible" : ""}`}
       >

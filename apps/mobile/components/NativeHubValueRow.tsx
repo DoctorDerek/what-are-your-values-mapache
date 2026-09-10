@@ -40,7 +40,8 @@ function NativeValueRankPresentation({
         importantForAccessibility="no-hide-descendants"
         className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-xl font-black text-white uppercase"
       >
-        #{rank}{medal ? ` ${medal.emoji}` : ""}
+        #{rank}
+        {medal ? ` ${medal.emoji}` : ""}
       </Text>
     )
 
@@ -52,34 +53,34 @@ function NativeValueRankPresentation({
       pointerEvents="none"
       className="flex-row items-center gap-2"
     >
-    <View
-      className="relative flex-none items-center justify-center overflow-hidden bg-white"
-      style={{
-        width: SEETHING_SWARM_HUB_TILE_SIZE,
-        height: SEETHING_SWARM_HUB_TILE_SIZE,
-      }}
-      testID={`hub-top-five-rank-${rank}-presentation`}
-    >
-      {valuePresentation.kind === "animal" && !hasImageFailed ? (
-        <NativeSeethingSwarmAnimal
-          clip={valuePresentation.clip}
-          onLoadError={() => setFailedImagePath(imagePath)}
-          shouldReduceMotion={shouldReduceMotion}
-        />
-      ) : (
-        <Text className="text-mapache-vivid-secondary-purple text-4xl font-black uppercase">
-          {valuePresentation.kind === "custom-initial"
-            ? valuePresentation.initial
-            : `#${rank}`}
-        </Text>
-      )}
-      {!hasImageFailed ? (
-        <Text className="bg-mapache-vivid-secondary-purple absolute top-0 left-0 z-10 border-r-4 border-b-4 border-black px-1.5 py-1 text-sm leading-none font-black text-white uppercase">
-          #{rank}
-        </Text>
-      ) : null}
-    </View>
-    {medal ? <Text className="text-2xl">{medal.emoji}</Text> : null}
+      <View
+        className="relative flex-none items-center justify-center overflow-hidden bg-white"
+        style={{
+          width: SEETHING_SWARM_HUB_TILE_SIZE,
+          height: SEETHING_SWARM_HUB_TILE_SIZE,
+        }}
+        testID={`hub-top-five-rank-${rank}-presentation`}
+      >
+        {valuePresentation.kind === "animal" && !hasImageFailed ? (
+          <NativeSeethingSwarmAnimal
+            clip={valuePresentation.clip}
+            onLoadError={() => setFailedImagePath(imagePath)}
+            shouldReduceMotion={shouldReduceMotion}
+          />
+        ) : (
+          <Text className="text-mapache-vivid-secondary-purple text-4xl font-black uppercase">
+            {valuePresentation.kind === "custom-initial"
+              ? valuePresentation.initial
+              : `#${rank}`}
+          </Text>
+        )}
+        {!hasImageFailed ? (
+          <Text className="bg-mapache-vivid-secondary-purple absolute top-0 left-0 z-10 border-r-4 border-b-4 border-black px-1.5 py-1 text-sm leading-none font-black text-white uppercase">
+            #{rank}
+          </Text>
+        ) : null}
+      </View>
+      {medal ? <Text className="text-2xl">{medal.emoji}</Text> : null}
     </View>
   )
 }

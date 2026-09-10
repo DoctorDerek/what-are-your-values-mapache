@@ -43,7 +43,8 @@ export default function NativeValueDetailsCard({
             accessibilityLabel={accessibleLabel}
             className="bg-mapache-vivid-secondary-purple border-2 border-black px-2 py-1 text-xl font-black text-white"
           >
-            #{rank}{medal ? ` ${medal.emoji}` : ""}
+            #{rank}
+            {medal ? ` ${medal.emoji}` : ""}
           </Text>
         ) : null}
         <Text
