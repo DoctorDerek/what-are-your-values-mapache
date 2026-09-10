@@ -87,9 +87,19 @@ export default function AchievementBanner({
           aria-label="Dismiss achievement"
           disabled={isAcknowledgementPending}
           onClick={() => onPresented(achievement.id)}
-          className={`pointer-events-auto cursor-pointer border-black bg-white font-black text-black shadow-[4px_4px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black disabled:cursor-wait disabled:opacity-60 ${isBattlePlacement ? "float-right mb-[4px] ml-[8px] min-h-[44px] min-w-[44px] border-2 text-[20px]" : "absolute top-4 right-4 min-h-11 min-w-11 border-4 px-3 py-1 text-xl xl:top-5 xl:right-5"}`}
+          className={`pointer-events-auto inline-grid cursor-pointer place-items-center border-black bg-white text-black shadow-[4px_4px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black disabled:cursor-wait disabled:opacity-60 ${isBattlePlacement ? "float-right mb-[4px] ml-[8px] min-h-[44px] min-w-[44px] border-2 text-[20px]" : "absolute top-4 right-4 min-h-11 min-w-11 border-4 px-3 py-1 text-xl xl:top-5 xl:right-5"}`}
         >
-          ×
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            viewBox="0 0 20 20"
+            className="size-[1em]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="m6 6 8 8m0-8-8 8" />
+          </svg>
         </button>
         <div className={isBattlePlacement ? "min-w-0" : "min-w-0 pr-16"}>
           {!isBattlePlacement ? (
