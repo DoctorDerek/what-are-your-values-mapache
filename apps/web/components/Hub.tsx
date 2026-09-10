@@ -10,6 +10,7 @@ import {
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import { getValueDisplayName, type ValueId } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
+import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import type { StaticImageData } from "next/image"
 import { useState, type Ref } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
@@ -38,19 +39,21 @@ function ValueRankPresentation({
   const hasImageFailed =
     imagePath !== null &&
     (preparedStatus === "failed" || failedImagePath === imagePath)
+  const { medal } = getValueRankPresentation(rank)
   if (!valuePresentation || valuePresentation.kind === "typography-only")
     return (
       <span
-        aria-label={`Rank ${rank}`}
+        aria-hidden="true"
         data-value-presentation="typography-only"
-        className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-2xl font-black text-white uppercase"
+        className="bg-mapache-vivid-secondary-purple flex flex-none items-center gap-2 border-4 border-black px-3 py-2 text-2xl font-black text-white uppercase"
       >
-        #{rank}
+        <span>#{rank}</span>
+        {medal ? <span>{medal.emoji}</span> : null}
       </span>
     )
 
   return (
-    <>
+    <span aria-hidden="true" className="flex flex-none items-center gap-2">
       <span
         aria-hidden="true"
         data-value-presentation={valuePresentation.kind}
@@ -75,10 +78,8 @@ function ValueRankPresentation({
           </span>
         ) : null}
       </span>
-      <span aria-label={`Rank ${rank}`} className="sr-only">
-        Rank {rank}
-      </span>
-    </>
+      {medal ? <span className="text-2xl">{medal.emoji}</span> : null}
+    </span>
   )
 }
 
@@ -98,6 +99,7 @@ function ValueRow({
   const { definition, progress, rank } = rankedValue
   const displayName = getValueDisplayName(definition)
   const rowId = `hub-value-${definition.id}`
+  const { accessibleLabel } = getValueRankPresentation(rank)
 
   return (
     <li
@@ -110,7 +112,11 @@ function ValueRow({
         type="button"
         onClick={(event) => onOpenValue(definition.id, event.currentTarget.id)}
         className="flex w-full min-w-0 cursor-pointer flex-wrap items-center gap-4 p-4 text-left hover:-translate-y-1 hover:shadow-[0_6px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black sm:gap-6 sm:p-5"
-        aria-label={`Open ${displayName} in All Values`}
+        aria-label={
+          hasComparisons
+            ? `${accessibleLabel}. Open ${displayName} in All Values`
+            : `Open ${displayName} in All Values`
+        }
       >
         {hasComparisons ? (
           <ValueRankPresentation
