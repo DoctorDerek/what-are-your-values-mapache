@@ -21,6 +21,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react"
+import { Profiler } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import Crucible from "./Crucible"
 
@@ -97,6 +98,85 @@ const firstAchievementPresentation = Object.freeze({
 
 describe("Crucible Component Integration", () => {
   afterEach(() => vi.restoreAllMocks())
+
+  it("renders both complete choices on the first commit before projection effects", () => {
+    const { battleCycle, battle } = createBattleProps("initial-battle-render")
+    const container = document.body.appendChild(document.createElement("div"))
+    const renderedChoices: (string | null)[][] = []
+    render(
+      <Profiler
+        id="initial-battle"
+        onRender={() => {
+          renderedChoices.push(
+            within(container)
+              .queryAllByRole("button", {
+                name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
+              })
+              .map((choice) => choice.textContent),
+          )
+        }}
+      >
+        <Crucible
+          {...createHistoryProps()}
+          activeDeck={battleCycle.activeDeck}
+          battle={battle}
+          progressById={battleCycle.progressById}
+          onExit={vi.fn()}
+          onWinnerSelected={vi.fn()}
+        />
+      </Profiler>,
+      { container },
+    )
+    expect(renderedChoices[0]).toHaveLength(2)
+    battle.pair.forEach((valueId, index) => {
+      const value = battleCycle.activeDeck.values.find(
+        ({ id }) => id === valueId,
+      )
+      if (!value) throw new Error("Initial battle value is missing")
+      expect(renderedChoices[0][index]).toContain(getValueDisplayName(value))
+      expect(renderedChoices[0][index]).toContain(
+        getValueDisplayDefinition(value),
+      )
+    })
+  })
+
+  it("keeps safe navigation available while the next projection is pending", () => {
+    const { battleCycle, battle } = createBattleProps("pending-next-navigation")
+    const props = {
+      ...createHistoryProps(),
+      activeDeck: battleCycle.activeDeck,
+      battle,
+      progressById: battleCycle.progressById,
+      canUndo: true,
+      canRedo: true,
+      shouldReduceMotion: true,
+      onExit: vi.fn(),
+      onWinnerSelected: vi.fn(),
+    }
+    const { rerender } = render(<Crucible {...props} />)
+    const choices = screen.getAllByRole("button", {
+      name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
+    })
+    fireEvent.click(choices[0])
+    choices.forEach((choice) => expect(choice).toBeDisabled())
+    expect(screen.getByRole("button", { name: /^Undo/ })).toBeDisabled()
+    expect(screen.getByRole("button", { name: /^Redo/ })).toBeDisabled()
+    expect(screen.getByRole("button", { name: /^Menu/ })).toBeEnabled()
+    expect(screen.getByRole("button", { name: /^Stop/ })).toBeEnabled()
+    fireEvent.click(screen.getByRole("button", { name: /^Menu/ }))
+    fireEvent.keyDown(window, { key: "Escape" })
+    fireEvent.click(screen.getByRole("button", { name: /^Stop/ }))
+    fireEvent.keyDown(window, { key: "2" })
+    expect(props.onOpenMenu).toHaveBeenCalledTimes(2)
+    expect(props.onExit).toHaveBeenCalledTimes(1)
+    expect(props.onWinnerSelected).toHaveBeenCalledTimes(1)
+
+    rerender(<Crucible {...props} isPersistencePending />)
+    expect(screen.getByRole("button", { name: /^Menu/ })).toBeDisabled()
+    expect(screen.getByRole("button", { name: /^Stop/ })).toBeDisabled()
+    fireEvent.keyDown(window, { key: "Escape" })
+    expect(props.onOpenMenu).toHaveBeenCalledTimes(2)
+  })
 
   it("composes achievement feedback over the arena without another layout row", () => {
     const { battleCycle, battle } = createBattleProps(

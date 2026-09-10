@@ -69,6 +69,18 @@ test("prepares before Battle and retains real animals while the next pair loads"
           image.naturalWidth > 0,
       ),
     ).toBe(true)
+    await expect(battle.getByRole("button", { name: /^Undo/ })).toBeDisabled()
+    await expect(battle.getByRole("button", { name: /^Redo/ })).toBeDisabled()
+    await expect(battle.getByRole("button", { name: /^Stop/ })).toBeEnabled()
+    await battle.getByRole("button", { name: /^Menu/ }).click()
+    const menu = page.getByRole("dialog", { name: "Menu", exact: true })
+    await expect(menu).toBeVisible()
+    await menu
+      .getByRole("button", { name: "Resume Battle", exact: true })
+      .click()
+    await expect(menu).not.toBeVisible()
+    await expect(stage).toHaveAttribute("data-choreography-identity", identity!)
+    await expect(battle.locator("[data-placeholder-playback]")).toHaveCount(0)
     releaseAll = true
     await Promise.all(heldRoutes.splice(0).map((route) => route.continue()))
     await expect(stage).not.toHaveAttribute(
