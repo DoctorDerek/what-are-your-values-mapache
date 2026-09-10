@@ -139,8 +139,7 @@ export default function NativeCrucible({
 
   useEffect(() => {
     const pendingAction = pendingAccessibilityActionRef.current
-    if (!pendingAction || currentBattle !== battle || !isInteractive)
-      return
+    if (!pendingAction || currentBattle !== battle || !isInteractive) return
 
     const message = getBattleAccessibilityAnnouncement({
       pendingAction,
