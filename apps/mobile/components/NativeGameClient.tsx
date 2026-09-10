@@ -286,8 +286,7 @@ export default function NativeGameClient() {
 
   if (
     state.matches("Hydrating") ||
-    state.matches("LoadingProfile") ||
-    state.matches("InitializingProfile")
+    state.matches("LoadingProfile")
   )
     return <NativePlayerDataLoading />
 
@@ -382,9 +381,10 @@ export default function NativeGameClient() {
     )
   }
 
-  if (state.matches("Splash"))
+  if (state.matches("Splash") || state.matches("InitializingProfile"))
     return (
       <NativeIntroduction
+        isPending={state.matches("InitializingProfile")}
         notice={state.context.portabilityNotice}
         onComplete={() => send({ type: "INTRODUCTION.COMPLETED" })}
       />

@@ -526,8 +526,7 @@ function WritableGameClient({
 
   if (
     state.matches("Hydrating") ||
-    state.matches("LoadingProfile") ||
-    state.matches("InitializingProfile")
+    state.matches("LoadingProfile")
   ) {
     return <PlayerDataLoading />
   }
@@ -610,9 +609,10 @@ function WritableGameClient({
     )
   }
 
-  if (state.matches("Splash")) {
+  if (state.matches("Splash") || state.matches("InitializingProfile")) {
     return (
       <Splash
+        isPending={state.matches("InitializingProfile")}
         notice={state.context.portabilityNotice}
         onComplete={() => send({ type: "INTRODUCTION.COMPLETED" })}
       />

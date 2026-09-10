@@ -5,9 +5,11 @@ import InformationPanel from "@/components/InformationPanel"
 
 export default function Splash({
   notice = null,
+  isPending = false,
   onComplete,
 }: {
   notice?: string | null
+  isPending?: boolean
   onComplete: () => void
 }) {
   return (
@@ -15,6 +17,7 @@ export default function Splash({
       title={introductionCopy.title}
       primaryActionLabel={introductionCopy.startAction}
       onPrimaryAction={onComplete}
+      isPrimaryActionPending={isPending}
     >
       <div className="flex flex-col gap-6 text-black">
         {notice ? (

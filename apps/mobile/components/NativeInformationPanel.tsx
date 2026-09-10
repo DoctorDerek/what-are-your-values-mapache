@@ -10,6 +10,7 @@ type NativeInformationPanelFrameProps = Readonly<{
   children: ReactNode
   primaryActionLabel: string
   onPrimaryAction: () => void
+  isPrimaryActionPending?: boolean
   accessibleCloseLabel?: string
   modal?: boolean
 }>
@@ -19,6 +20,7 @@ function NativeInformationPanelFrame({
   children,
   primaryActionLabel,
   onPrimaryAction,
+  isPrimaryActionPending = false,
   accessibleCloseLabel,
   modal = false,
 }: NativeInformationPanelFrameProps) {
@@ -61,7 +63,7 @@ function NativeInformationPanelFrame({
           </ScrollView>
 
           <View className="border-t-4 border-black p-5">
-            <Button size="large" onPress={onPrimaryAction}>
+            <Button size="large" onPress={onPrimaryAction} disabled={isPrimaryActionPending} accessibilityState={{busy:isPrimaryActionPending, disabled:isPrimaryActionPending}}>
               <Text>{primaryActionLabel}</Text>
             </Button>
           </View>
