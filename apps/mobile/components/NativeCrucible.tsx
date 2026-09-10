@@ -93,6 +93,7 @@ export default function NativeCrucible({
     !isMenuOpen &&
     !isPersistencePending &&
     isPresentationReady
+  const canNavigate = !isPersistencePending && !isMenuOpen
   const isAnimating = state.matches("AnimatingResult")
   const currentBattle = state.context.currentBattle
   const currentPair = currentBattle.pair
@@ -201,10 +202,10 @@ export default function NativeCrucible({
       accessibilityState={{ busy: isPersistencePending }}
     >
       <NativeBattleActionBar
-        canOpenMenu={isInteractive}
+        canOpenMenu={canNavigate}
         canUndo={isInteractive && canUndo}
         canRedo={isInteractive && canRedo}
-        canStop={isInteractive}
+        canStop={canNavigate}
         onOpenMenu={onOpenMenu}
         onUndo={handleUndo}
         onRedo={handleRedo}

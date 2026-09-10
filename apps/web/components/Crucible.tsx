@@ -115,6 +115,7 @@ export default function Crucible({
     state.matches("AwaitingInput") &&
     !isPersistencePending &&
     isPresentationReady
+  const canNavigate = !isPersistencePending && !isMenuOpen
 
   const handleSelect = useCallback(
     (winnerId: ValueId) => {
@@ -195,7 +196,15 @@ export default function Crucible({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.defaultPrevented || !isInteractive || isMenuOpen) return
+      if (e.defaultPrevented || isMenuOpen) return
+      if (e.key === "Escape") {
+        if (canNavigate) {
+          e.preventDefault()
+          onOpenMenu()
+        }
+        return
+      }
+      if (!isInteractive) return
 
       const normalizedKey = e.key.toLowerCase()
       const isUndoCommand = normalizedKey === "z" && !e.shiftKey
@@ -215,9 +224,6 @@ export default function Crucible({
       } else if (e.key === "2" || normalizedKey === "d") {
         e.preventDefault()
         handleSelect(currentPair[1])
-      } else if (e.key === "Escape") {
-        e.preventDefault()
-        onOpenMenu()
       } else if (e.key === "Enter" || e.key === " ") {
         if (
           focusedId &&
@@ -247,6 +253,7 @@ export default function Crucible({
     focusedId,
     canUndo,
     canRedo,
+    canNavigate,
     send,
     onOpenMenu,
     handleUndo,
@@ -365,10 +372,10 @@ export default function Crucible({
 
       <div className="pointer-events-none relative z-50 flex shrink-0 flex-col items-center">
         <BattleActionBar
-          canOpenMenu={isInteractive}
+          canOpenMenu={canNavigate}
           canUndo={isInteractive && canUndo}
           canRedo={isInteractive && canRedo}
-          canStop={isInteractive}
+          canStop={canNavigate}
           showKeyboardControlHints={showKeyboardControlHints}
           onOpenMenu={onOpenMenu}
           onUndo={handleUndo}
