@@ -23,6 +23,7 @@ import { useMachine } from "@xstate/react"
 import type { StaticImageData } from "next/image"
 import { useCallback, useEffect, useRef, useState } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
+import { usePreparedSeethingSwarmBattle } from "@/components/SeethingSwarmAssetPreparation"
 import useWebControlHintInputModality from "@/lib/useWebControlHintInputModality"
 import AchievementBanner from "./AchievementBanner"
 import BattleActionBar from "./BattleActionBar"
@@ -79,6 +80,7 @@ export default function Crucible({
   const [state, send] = useMachine(combatMachine, {
     input: { onWinnerSelected },
   })
+  const isPresentationReady = usePreparedSeethingSwarmBattle(battle, runtimeClipCatalog)
   const controlHintInputModality = useWebControlHintInputModality()
   const firstChoiceRef = useRef<HTMLButtonElement>(null)
   const secondChoiceRef = useRef<HTMLButtonElement>(null)
@@ -103,10 +105,10 @@ export default function Crucible({
     useState<BattleAccessibilityAnnouncement | null>(null)
 
   useEffect(() => {
-    send({ type: "BATTLE.PROJECTED", battle })
-  }, [battle, send])
+    if (isPresentationReady) send({ type: "BATTLE.PROJECTED", battle })
+  }, [battle, isPresentationReady, send])
 
-  const isInteractive = state.matches("AwaitingInput") && !isPersistencePending
+  const isInteractive = state.matches("AwaitingInput") && !isPersistencePending && isPresentationReady
 
   const handleSelect = useCallback(
     (winnerId: ValueId) => {

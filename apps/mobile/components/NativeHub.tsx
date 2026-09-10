@@ -1,5 +1,6 @@
 import { projectHubValues } from "@game/data/src/HubValueProjection"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
+import { presentationLoadingCopy } from "@game/data/src/PresentationLoadingCopy"
 import { resolveValueAnimalPresentation } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 
 export default function NativeHub({
+  isBattlePending = false,
   rankedValues,
   runtimeClipCatalog,
   dataNotice,
@@ -24,6 +26,7 @@ export default function NativeHub({
   onOpenValue,
   onStartBattle,
 }: {
+  isBattlePending?: boolean
   rankedValues: readonly RankedValue[]
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
   dataNotice: string | null
@@ -40,8 +43,9 @@ export default function NativeHub({
 
   const hubActionRail = (
     <View className="my-5 gap-3">
-      <Button size="large" onPress={onStartBattle}>
-        <Text>Battle</Text>
+      <Button size="large" onPress={onStartBattle} accessibilityState={{busy:isBattlePending}} accessibilityLabel={isBattlePending ? presentationLoadingCopy.cancelBattlePreparation : "Battle"}>
+        <Text className={isBattlePending ? "opacity-0" : undefined}>Battle</Text>
+        {isBattlePending ? <View pointerEvents="none" className="absolute inset-0 items-center justify-center"><Text className="text-lg">{presentationLoadingCopy.preparing}</Text></View> : null}
       </Button>
       <Button variant="secondary" onPress={onBrowseAllValues}>
         <Text>Browse All Values</Text>

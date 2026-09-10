@@ -18,7 +18,7 @@ export default function SeethingSwarmAssetPreparation({children}:{children:React
   return <PreparationContext value={actor}>
     {children}
     <div hidden aria-hidden="true">
-      {[...assets.values()].map(({clip,generation})=><Image unoptimized key={generation} src={clip.asset} alt="" width={clip.asset.width} height={clip.asset.height} decoding="async" loading="eager" onLoad={async event=>{
+      {[...assets.values()].map(({clip,generation})=><Image unoptimized key={generation} src={clip.asset} alt="" width={clip.frameWidth * clip.frameCount} height={clip.frameHeight} decoding="async" loading="eager" fetchPriority="low" onLoad={async event=>{
         const image = event.currentTarget
         try {
           await image.decode()

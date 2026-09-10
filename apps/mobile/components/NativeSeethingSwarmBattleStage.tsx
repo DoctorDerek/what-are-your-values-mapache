@@ -23,6 +23,7 @@ import {
 import { AppState, View } from "react-native"
 import NativeSeethingSwarmBattleTraveler from "@/components/NativeSeethingSwarmBattleTraveler"
 import NativeSeethingSwarmCombatant from "@/components/NativeSeethingSwarmCombatant"
+import { usePreparedNativeSeethingSwarmBattle } from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSeethingSwarmPlaceholder from "@/components/NativeSeethingSwarmPlaceholder"
 
 function NativeBattlePlayback({
@@ -227,6 +228,7 @@ export default function NativeSeethingSwarmBattleStage({
     () => createSeethingSwarmBattleChoreography({ battle, catalog }),
     [battle, catalog],
   )
+  usePreparedNativeSeethingSwarmBattle(battle, catalog)
 
   return (
     <NativeBattlePlayback

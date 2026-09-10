@@ -81,7 +81,7 @@ export function createSeethingSwarmAssetPreparationMachine<Asset>() {
       }) },
       "ASSET.SETTLED": { actions: assign(({context,event}) => {
         const asset = context.assets.get(event.path)
-        if (!asset || asset.generation !== event.generation || asset.status === event.status) return {}
+        if (!asset || asset.generation !== event.generation || asset.status !== "pending") return {}
         return {assets:new Map(context.assets).set(event.path,{...asset,status:event.status})}
       }) },
     },

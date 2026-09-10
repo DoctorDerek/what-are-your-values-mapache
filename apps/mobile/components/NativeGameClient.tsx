@@ -29,6 +29,8 @@ import {
   resolveShouldReduceMotion,
 } from "@game/machines/src/PlayerSettingsPresentation"
 import { rootMachine } from "@game/machines/src/RootMachine"
+import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPreparation"
+import NativeSeethingSwarmAssetPreparation, { usePreparedNativeSeethingSwarmBattle, usePreparedNativeSeethingSwarmClips } from "@/components/NativeSeethingSwarmAssetPreparation"
 import { useMachine } from "@xstate/react"
 import * as ExpoCrypto from "expo-crypto"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -67,6 +69,10 @@ const nativeRootMachineInput = Object.freeze({
 })
 
 export default function NativeGameClient() {
+  return <NativeSeethingSwarmAssetPreparation><NativeGameClientContent /></NativeSeethingSwarmAssetPreparation>
+}
+
+function NativeGameClientContent() {
   const [schedulerSeed] = useState(() => ExpoCrypto.randomUUID())
   const systemShouldReduceMotion = useReducedMotion()
   const [isProductMenuOpen, setIsProductMenuOpen] = useState(false)
@@ -126,6 +132,27 @@ export default function NativeGameClient() {
         : null,
     [battleProfile],
   )
+  const hasValidatedProfile = state.context.battleProfileStoreState !== null || state.matches("Splash") || state.matches("InitializingProfile")
+  const isBattlePrepared = usePreparedNativeSeethingSwarmBattle(hasValidatedProfile ? presentedBattle : null, SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG)
+  const hubClips = useMemo(()=>getHubPreparationClips(rankedValues, SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG),[rankedValues])
+  usePreparedNativeSeethingSwarmClips(hubClips)
+  const [isBattleRequested, setIsBattleRequested] = useState(false)
+  const isHubReady = state.matches("Hub")
+  useEffect(()=>{
+    if (!isBattleRequested) return
+    if (!isHubReady || isProductMenuOpen || activeInformationPanelId !== null || isControlsOpen) {
+      setIsBattleRequested(false)
+      return
+    }
+    if (isBattlePrepared) {
+      setIsBattleRequested(false)
+      send({type:"BATTLE.START_REQUESTED"})
+    }
+  },[isBattleRequested,isBattlePrepared,isHubReady,isProductMenuOpen,activeInformationPanelId,isControlsOpen,send])
+  const handleStartBattle = () => {
+    if (isBattlePrepared) send({type:"BATTLE.START_REQUESTED"})
+    else setIsBattleRequested(previous=>!previous)
+  }
   const handleWinnerSelected = useCallback(
     (winnerId: ValueId, expectedScheduler: BattleSchedulerRestorePoint) => {
       send({
@@ -488,7 +515,8 @@ export default function NativeGameClient() {
           }
           onOpenMenu={() => setIsProductMenuOpen(true)}
           onOpenValue={(valueId) => openAllValues({ valueId })}
-          onStartBattle={() => send({ type: "BATTLE.START_REQUESTED" })}
+          isBattlePending={isBattleRequested}
+          onStartBattle={handleStartBattle}
         />
         <NativeProductMenu
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}

@@ -16,7 +16,7 @@ export default function NativeSeethingSwarmAssetPreparation({children}:{children
   return <PreparationContext value={actor}>
     {children}
     <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" className="absolute size-0 overflow-hidden opacity-0">
-      {[...assets.values()].map(({clip,generation})=><Image key={generation} source={clip.asset} alt="" accessible={false} fadeDuration={0} style={{width:clip.frameWidth*clip.frameCount,height:clip.frameHeight}} onLoad={()=>actor.send({type:"ASSET.SETTLED",path:clip.relativePath,generation,status:"ready"})} onError={()=>actor.send({type:"ASSET.SETTLED",path:clip.relativePath,generation,status:"failed"})} />)}
+      {[...assets.values()].map(({clip,generation})=><Image key={generation} testID={`prepared-animal-${generation}`} source={clip.asset} alt="" accessible={false} fadeDuration={0} style={{width:clip.frameWidth*clip.frameCount,height:clip.frameHeight}} onLoad={()=>actor.send({type:"ASSET.SETTLED",path:clip.relativePath,generation,status:"ready"})} onError={()=>actor.send({type:"ASSET.SETTLED",path:clip.relativePath,generation,status:"failed"})} />)}
     </View>
   </PreparationContext>
 }
