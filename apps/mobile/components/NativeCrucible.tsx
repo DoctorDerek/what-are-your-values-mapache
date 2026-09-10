@@ -26,7 +26,6 @@ import NativeBattleActionBar from "@/components/NativeBattleActionBar"
 import { usePreparedNativeSeethingSwarmBattle } from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSeethingSwarmBattleStage from "@/components/NativeSeethingSwarmBattleStage"
 import NativeValueChoiceCard from "@/components/NativeValueChoiceCard"
-import { Text } from "@/components/ui/text"
 
 const NATIVE_CONTROL_HINT_INPUT_MODALITY = "touch-pointer" as const
 
@@ -73,7 +72,7 @@ export default function NativeCrucible({
   ) => void
 }) {
   const [state, send] = useMachine(combatMachine, {
-    input: { onWinnerSelected },
+    input: { initialBattle: battle, onWinnerSelected },
   })
   const isPresentationReady = usePreparedNativeSeethingSwarmBattle(
     battle,
@@ -94,9 +93,10 @@ export default function NativeCrucible({
     !isMenuOpen &&
     !isPersistencePending &&
     isPresentationReady
+  const canNavigate = !isPersistencePending && !isMenuOpen
   const isAnimating = state.matches("AnimatingResult")
   const currentBattle = state.context.currentBattle
-  const currentPair = currentBattle?.pair ?? null
+  const currentPair = currentBattle.pair
   const handleSelect = useCallback(
     (winnerId: ValueId) => {
       if (!isInteractive || pendingAccessibilityActionRef.current) return
@@ -139,13 +139,7 @@ export default function NativeCrucible({
 
   useEffect(() => {
     const pendingAction = pendingAccessibilityActionRef.current
-    if (
-      !pendingAction ||
-      !currentPair ||
-      currentBattle !== battle ||
-      !isInteractive
-    )
-      return
+    if (!pendingAction || currentBattle !== battle || !isInteractive) return
 
     const message = getBattleAccessibilityAnnouncement({
       pendingAction,
@@ -172,20 +166,6 @@ export default function NativeCrucible({
     isInteractive,
     progressById,
   ])
-
-  if (!currentBattle || !currentPair) {
-    return (
-      <MapacheScreen className="items-center justify-center px-6">
-        <Text
-          accessibilityLiveRegion="polite"
-          variant="h1"
-          className="text-mapache-vivid-primary-cyan text-4xl uppercase"
-        >
-          Forging Matrix…
-        </Text>
-      </MapacheScreen>
-    )
-  }
 
   const [firstValueId, secondValueId] = currentPair
   const firstValue = activeDeck.values.find(({ id }) => id === firstValueId)
@@ -221,10 +201,10 @@ export default function NativeCrucible({
       accessibilityState={{ busy: isPersistencePending }}
     >
       <NativeBattleActionBar
-        canOpenMenu={isInteractive}
+        canOpenMenu={canNavigate}
         canUndo={isInteractive && canUndo}
         canRedo={isInteractive && canRedo}
-        canStop={isInteractive}
+        canStop={canNavigate}
         onOpenMenu={onOpenMenu}
         onUndo={handleUndo}
         onRedo={handleRedo}

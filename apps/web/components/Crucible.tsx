@@ -78,7 +78,7 @@ export default function Crucible({
   ) => void
 }) {
   const [state, send] = useMachine(combatMachine, {
-    input: { onWinnerSelected },
+    input: { initialBattle: battle, onWinnerSelected },
   })
   const isPresentationReady = usePreparedSeethingSwarmBattle(
     battle,
@@ -115,6 +115,7 @@ export default function Crucible({
     state.matches("AwaitingInput") &&
     !isPersistencePending &&
     isPresentationReady
+  const canNavigate = !isPersistencePending && !isMenuOpen
 
   const handleSelect = useCallback(
     (winnerId: ValueId) => {
@@ -185,7 +186,7 @@ export default function Crucible({
 
   const focusedId = state.context.focusedId
   const currentBattle = state.context.currentBattle
-  const currentPair = currentBattle?.pair ?? null
+  const currentPair = currentBattle.pair
   const isAnimating = state.matches("AnimatingResult")
   const handleResultAnimationComplete = useCallback(() => {
     if (isAnimating) {
@@ -195,8 +196,15 @@ export default function Crucible({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.defaultPrevented || !isInteractive || !currentPair || isMenuOpen)
+      if (e.defaultPrevented || isMenuOpen) return
+      if (e.key === "Escape") {
+        if (canNavigate) {
+          e.preventDefault()
+          onOpenMenu()
+        }
         return
+      }
+      if (!isInteractive) return
 
       const normalizedKey = e.key.toLowerCase()
       const isUndoCommand = normalizedKey === "z" && !e.shiftKey
@@ -216,9 +224,6 @@ export default function Crucible({
       } else if (e.key === "2" || normalizedKey === "d") {
         e.preventDefault()
         handleSelect(currentPair[1])
-      } else if (e.key === "Escape") {
-        e.preventDefault()
-        onOpenMenu()
       } else if (e.key === "Enter" || e.key === " ") {
         if (
           focusedId &&
@@ -248,6 +253,7 @@ export default function Crucible({
     focusedId,
     canUndo,
     canRedo,
+    canNavigate,
     send,
     onOpenMenu,
     handleUndo,
@@ -268,7 +274,6 @@ export default function Crucible({
     const pendingAction = pendingAccessibilityActionRef.current
     if (
       !pendingAction ||
-      !currentPair ||
       currentBattle !== battle ||
       !isInteractive ||
       isMenuOpen
@@ -300,18 +305,6 @@ export default function Crucible({
     isMenuOpen,
     progressById,
   ])
-
-  if (!currentBattle || !currentPair) {
-    return (
-      <MapacheScreen
-        spacing="safe-area-only"
-        viewport="fixed"
-        className="flex items-center justify-center text-6xl font-black text-white uppercase"
-      >
-        Forging Matrix...
-      </MapacheScreen>
-    )
-  }
 
   const [idA, idB] = currentPair
   const valA = activeDeck.values.find(({ id }) => id === idA)
@@ -379,10 +372,10 @@ export default function Crucible({
 
       <div className="pointer-events-none relative z-50 flex shrink-0 flex-col items-center">
         <BattleActionBar
-          canOpenMenu={isInteractive}
+          canOpenMenu={canNavigate}
           canUndo={isInteractive && canUndo}
           canRedo={isInteractive && canRedo}
-          canStop={isInteractive}
+          canStop={canNavigate}
           showKeyboardControlHints={showKeyboardControlHints}
           onOpenMenu={onOpenMenu}
           onUndo={handleUndo}

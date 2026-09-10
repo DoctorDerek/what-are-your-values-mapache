@@ -60,6 +60,34 @@ function createCrucibleProps(isPersistencePending: boolean) {
 }
 
 describe("NativeCrucible", () => {
+  it("keeps Menu and Stop available while waiting for the next projection", async () => {
+    const props = createCrucibleProps(false)
+    const { rerender } = await render(
+      <NativeCrucible {...props} shouldReduceMotion />,
+    )
+    const choices = screen.getAllByRole("button", {
+      name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
+    })
+    await fireEvent.press(choices[0])
+    choices.forEach((choice) => expect(choice).toBeDisabled())
+    expect(screen.getByRole("button", { name: "Undo" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Redo" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Menu" })).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Stop" })).toBeEnabled()
+    await fireEvent.press(screen.getByRole("button", { name: "Menu" }))
+    await fireEvent.press(screen.getByRole("button", { name: "Stop" }))
+    await fireEvent.press(choices[1])
+    expect(props.onOpenMenu).toHaveBeenCalledTimes(1)
+    expect(props.onExit).toHaveBeenCalledTimes(1)
+    expect(props.onWinnerSelected).toHaveBeenCalledTimes(1)
+
+    await rerender(
+      <NativeCrucible {...props} isPersistencePending shouldReduceMotion />,
+    )
+    expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Stop" })).toBeDisabled()
+  })
+
   it("keeps the resolved pair until both animal motion and durable projection finish", async () => {
     jest.useFakeTimers()
     AppState.currentState = "active"

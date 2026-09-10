@@ -24,10 +24,11 @@ describe("Combat Machine", () => {
     const battle = projectBattle(battleCycle)
     const [winnerId] = battle.pair
     const actor = createActor(combatMachine, {
-      input: { onWinnerSelected },
+      input: { initialBattle: battle, onWinnerSelected },
     })
+    expect(actor.getSnapshot().context.currentBattle).toBe(battle)
+    expect(actor.getSnapshot().matches("AwaitingInput")).toBe(true)
     actor.start()
-    actor.send({ type: "BATTLE.PROJECTED", battle })
 
     expect(actor.getSnapshot().matches("AwaitingInput")).toBe(true)
     actor.send({ type: "VALUE.FOCUS_REQUESTED", valueId: winnerId })
@@ -57,10 +58,9 @@ describe("Combat Machine", () => {
     })
     const nextBattle = projectBattle(nextBattleCycle)
     const actor = createActor(combatMachine, {
-      input: { onWinnerSelected },
+      input: { initialBattle: currentBattle, onWinnerSelected },
     })
     actor.start()
-    actor.send({ type: "BATTLE.PROJECTED", battle: currentBattle })
     actor.send({ type: "VALUE.WINNER_SELECTED", valueId: winnerId })
     actor.send({ type: "BATTLE.PROJECTED", battle: nextBattle })
 
@@ -76,13 +76,13 @@ describe("Combat Machine", () => {
   })
 
   it("waits for a projection when animation finishes before Root advances", () => {
+    const onWinnerSelected = vi.fn()
     const battleCycle = createInitialBattleCycle("delayed-projection-seed")
     const battle = projectBattle(battleCycle)
     const actor = createActor(combatMachine, {
-      input: { onWinnerSelected: vi.fn() },
+      input: { initialBattle: battle, onWinnerSelected },
     })
     actor.start()
-    actor.send({ type: "BATTLE.PROJECTED", battle })
     actor.send({
       type: "VALUE.WINNER_SELECTED",
       valueId: battle.pair[0],
@@ -90,6 +90,21 @@ describe("Combat Machine", () => {
     actor.send({ type: "ANIMATION.RESULT_FINISHED" })
 
     expect(actor.getSnapshot().matches("Preparing")).toBe(true)
-    expect(actor.getSnapshot().context.currentBattle).toBeNull()
+    expect(actor.getSnapshot().context.currentBattle).toBe(battle)
+    actor.send({ type: "VALUE.WINNER_SELECTED", valueId: battle.pair[0] })
+    actor.send({ type: "VALUE.FOCUS_REQUESTED", valueId: battle.pair[1] })
+    expect(onWinnerSelected).toHaveBeenCalledTimes(1)
+    expect(actor.getSnapshot().context.focusedId).toBeNull()
+
+    const nextBattle = projectBattle(
+      createBattleCycleCandidate({
+        battleCycle,
+        winnerId: battle.pair[0],
+        expectedScheduler: battle.scheduler,
+      }),
+    )
+    actor.send({ type: "BATTLE.PROJECTED", battle: nextBattle })
+    expect(actor.getSnapshot().matches("AwaitingInput")).toBe(true)
+    expect(actor.getSnapshot().context.currentBattle).toBe(nextBattle)
   })
 })
