@@ -236,12 +236,17 @@ describe("NativeHub", () => {
     expect(screen.getByText("Top Five")).toBeOnTheScreen()
     expect(screen.getByText("All Other Values")).toBeOnTheScreen()
     expect(screen.getByText("Your imported data is ready.")).toBeOnTheScreen()
-    expect(screen.getByText("#1")).toBeOnTheScreen()
+    expect(
+      screen.getByText("#1 🥇", { includeHiddenElements: true }),
+    ).toBeOnTheScreen()
+    expect(
+      screen.getByText("#6 🥈", { includeHiddenElements: true }),
+    ).toBeOnTheScreen()
     expect(nativeAnimalRendererMock).not.toHaveBeenCalled()
 
     await user.press(
       screen.getByRole("button", {
-        name: `Rank 1. Open ${firstRankedValueName} in All Values`,
+        name: `Rank 1, gold medal. Open ${firstRankedValueName} in All Values`,
       }),
     )
     await user.press(screen.getByRole("button", { name: "Battle" }))
@@ -272,14 +277,9 @@ describe("NativeHub", () => {
       },
     )
     expect(animalPresentations).toHaveLength(5)
-    for (const animalPresentation of animalPresentations) {
-      expect(animalPresentation).toHaveProp("accessible", false)
-      expect(animalPresentation).toHaveProp(
-        "importantForAccessibility",
-        "no-hide-descendants",
-      )
-      expect(animalPresentation).toHaveProp("pointerEvents", "none")
-    }
+    expect(
+      screen.queryByTestId(/^hub-top-five-rank-\d+-presentation$/),
+    ).toBeNull()
     expect(
       Array.from(
         new Set(
@@ -306,7 +306,7 @@ describe("NativeHub", () => {
     const firstRankedValue = rankedValues[0]
     expect(
       screen.getByRole("button", {
-        name: `Rank 1. Open ${getValueDisplayName(firstRankedValue.definition)} in All Values`,
+        name: `Rank 1, gold medal. Open ${getValueDisplayName(firstRankedValue.definition)} in All Values`,
       }),
     ).toBeOnTheScreen()
     await act(async () =>
@@ -339,11 +339,7 @@ describe("NativeHub", () => {
       { includeHiddenElements: true },
     )
     expect(customValueTile).toHaveStyle({ width: 72, height: 72 })
-    expect(customValueTile).toHaveProp("accessible", false)
-    expect(customValueTile).toHaveProp(
-      "importantForAccessibility",
-      "no-hide-descendants",
-    )
+    expect(screen.queryByTestId("hub-top-five-rank-1-presentation")).toBeNull()
     expect(
       screen.getByText("🧠", { includeHiddenElements: true }),
     ).toBeOnTheScreen()
@@ -368,7 +364,7 @@ describe("NativeHub", () => {
 
     await user.press(
       screen.getByRole("button", {
-        name: "Rank 1. Open 🧠 Curiosity in All Values",
+        name: "Rank 1, gold medal. Open 🧠 Curiosity in All Values",
       }),
     )
     expect(callbacks.onOpenValue).toHaveBeenCalledWith(customValue.id)

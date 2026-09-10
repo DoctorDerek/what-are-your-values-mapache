@@ -109,20 +109,21 @@ describe("Hub Component Integration", () => {
     const onAddCustomValue = vi.fn()
     const onOpenValue = vi.fn()
 
-    const { container } = render(
-      <Hub
-        {...animalPresentationProps}
-        rankedValues={rankValues(
-          battleCycle.activeDeck,
-          battleCycle.progressById,
-        )}
-        dataNotice={null}
-        onBrowseAllValues={onBrowseAllValues}
-        onAddCustomValue={onAddCustomValue}
-        onOpenMenu={vi.fn()}
-        onOpenValue={onOpenValue}
-        onStartBattle={vi.fn()}
-      />,
+    const hubProps = {
+      ...animalPresentationProps,
+      dataNotice: null,
+      onBrowseAllValues,
+      onAddCustomValue,
+      onOpenMenu: vi.fn(),
+      onOpenValue,
+      onStartBattle: vi.fn(),
+    }
+    const currentRanking = rankValues(
+      battleCycle.activeDeck,
+      battleCycle.progressById,
+    )
+    const { container, rerender } = render(
+      <Hub {...hubProps} rankedValues={currentRanking} />,
     )
 
     expect(screen.getByRole("main")).toHaveAttribute(
@@ -141,6 +142,29 @@ describe("Hub Component Integration", () => {
     expect(screen.getByText(/Not ranked yet\./)).toBeVisible()
     expect(container.querySelector("[data-value-presentation]")).toBeNull()
     expect(container.querySelector("[data-animal-id]")).toBeNull()
+    expect(screen.queryByText(/^Rank \d/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/🥇|🥈|🥉/)).not.toBeInTheDocument()
+    const [winnerId] = projectScheduledPair(
+      battleCycle.activeDeck,
+      battleCycle.scheduler,
+    ).pair
+    const comparedCycle = createBattleCycleCandidate({
+      battleCycle,
+      winnerId,
+      expectedScheduler: battleCycle.scheduler,
+    })
+    rerender(
+      <Hub
+        {...hubProps}
+        rankedValues={rankValues(
+          comparedCycle.activeDeck,
+          comparedCycle.progressById,
+        )}
+      />,
+    )
+    expect(screen.getAllByText("🥇")).toHaveLength(5)
+    rerender(<Hub {...hubProps} rankedValues={currentRanking} />)
+    expect(screen.queryByText(/🥇|🥈|🥉/)).not.toBeInTheDocument()
     const firstRow = screen.getAllByRole("listitem")[0]
     expect(within(firstRow).getByText("Acceptance")).toBeVisible()
   })
@@ -238,7 +262,14 @@ describe("Hub Component Integration", () => {
         name: `Open ${getValueDisplayName(winner)} in All Values`,
       }),
     ).toBeVisible()
-    expect(screen.getByLabelText("Rank 1")).toBeVisible()
+    expect(
+      screen.getByRole("button", {
+        name: `Open ${getValueDisplayName(winner)} in All Values`,
+      }),
+    ).toHaveAccessibleDescription("Rank 1, gold medal")
+    for (const medal of ["🥇", "🥈", "🥉"]) {
+      expect(screen.getAllByText(medal)).toHaveLength(5)
+    }
     expect(screen.getByText("Level 3")).toBeVisible()
     expect(
       container.querySelectorAll('[data-value-presentation="typography-only"]'),
@@ -295,12 +326,13 @@ describe("Hub Component Integration", () => {
     expect(
       container.querySelectorAll('[data-reduced-motion="true"]'),
     ).toHaveLength(5)
-    expect(screen.getAllByLabelText(/^Rank \d+$/)).toHaveLength(100)
+    expect(screen.getAllByText(/^Rank \d+(, \w+ medal)?$/)).toHaveLength(100)
     const sixthValue = rankedValues[5]
     const sixthValueButton = screen.getByRole("button", {
       name: `Open ${getValueDisplayName(sixthValue.definition)} in All Values`,
     })
-    expect(within(sixthValueButton).getByLabelText("Rank 6")).toBeVisible()
+    expect(sixthValueButton).toHaveAccessibleDescription("Rank 6, silver medal")
+    expect(within(sixthValueButton).getByText("🥈")).toBeVisible()
     expect(sixthValueButton.querySelector("[data-animal-id]")).toBeNull()
     const failedPresentation = animalPresentations[0]
     const failedImage = failedPresentation.querySelector("img")
@@ -308,7 +340,8 @@ describe("Hub Component Integration", () => {
     fireEvent.error(failedImage)
     expect(failedPresentation.querySelector("img")).toBeNull()
     expect(failedPresentation).toHaveTextContent("#1")
-    expect(screen.getAllByLabelText(/^Rank \d+$/)).toHaveLength(100)
+    expect(screen.getAllByText(/^Rank \d+(, \w+ medal)?$/)).toHaveLength(100)
+    expect(screen.getAllByText("🥇")).toHaveLength(5)
   })
 
   it("renders an equal Custom Value initial tile without inferring an animal", () => {
@@ -338,7 +371,8 @@ describe("Hub Component Integration", () => {
     expect(customValueTile).toHaveClass("h-[72px]", "w-[72px]")
     expect(customValueTile).toHaveAttribute("aria-hidden", "true")
     expect(within(customValueTile).getByText("🧠")).toBeVisible()
-    expect(within(customValueButton).getByLabelText("Rank 1")).toBeVisible()
+    expect(customValueButton).toHaveAccessibleDescription("Rank 1, gold medal")
+    expect(within(customValueButton).getByText("🥇")).toBeVisible()
     expect(customValueTile.querySelector("[data-animal-id]")).toBeNull()
     expect(
       container.querySelectorAll('[data-value-presentation="animal"]'),

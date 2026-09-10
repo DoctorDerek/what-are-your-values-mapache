@@ -54,6 +54,7 @@ describe("All Values Component Integration", () => {
     const rankedValues = createRankedValues(createActiveDeck([]))
 
     renderAllValues(rankedValues)
+    expect(screen.queryByText(/🥇|🥈|🥉/)).not.toBeInTheDocument()
 
     expect(screen.getByRole("main")).toHaveAttribute(
       "data-slot",
@@ -611,6 +612,24 @@ describe("All Values Component Integration", () => {
     )
 
     expect(screen.getAllByText("Top Five")).toHaveLength(1)
+    for (const medal of ["🥇", "🥈", "🥉"]) {
+      expect(screen.getAllByText(medal)).toHaveLength(5)
+    }
+    expect(screen.getByText("Rank 5, gold medal")).toBeInTheDocument()
+    expect(screen.getByText("Rank 6, silver medal")).toBeInTheDocument()
+    expect(screen.getByText("Rank 10, silver medal")).toBeInTheDocument()
+    expect(screen.getByText("Rank 11, bronze medal")).toBeInTheDocument()
+    expect(screen.getByText("Rank 15, bronze medal")).toBeInTheDocument()
+    expect(screen.getByText("Rank 16")).toBeInTheDocument()
+    fireEvent.change(
+      screen.getByRole("searchbox", { name: "Search All Values" }),
+      {
+        target: { value: getValueDisplayName(rankedValues[5].definition) },
+      },
+    )
+    expect(screen.getByText("#6")).toBeVisible()
+    expect(screen.getByText("🥈")).toBeVisible()
+    expect(screen.queryByText("🥇")).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole("button", { name: "Close" }))
     expect(onClose).toHaveBeenCalledTimes(1)
   })
