@@ -1,3 +1,31 @@
+function BattleActionLabel({
+  label,
+  shortcut,
+  showKeyboardControlHints,
+}: {
+  label: string
+  shortcut: string
+  showKeyboardControlHints: boolean
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-grid items-center justify-items-center"
+    >
+      <span
+        className={`col-start-1 row-start-1 ${showKeyboardControlHints ? "xl:invisible" : ""}`}
+      >
+        {label}
+      </span>
+      <span
+        className={`col-start-1 row-start-1 hidden xl:inline ${showKeyboardControlHints ? "" : "invisible"}`}
+      >
+        {label} <span>{shortcut}</span>
+      </span>
+    </span>
+  )
+}
+
 export default function BattleActionBar({
   canOpenMenu,
   canUndo,
@@ -21,9 +49,6 @@ export default function BattleActionBar({
 }) {
   const historyActionClasses =
     "min-w-max flex-1 cursor-pointer border-4 border-black bg-white px-2 py-2 text-sm font-black text-black uppercase shadow-[4px_4px_0px_0px_#000000] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-x-1 active:translate-y-1 active:shadow-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0px_0px_#000000] xl:px-5 xl:py-3 xl:text-xl"
-  const keyboardControlHintClasses = showKeyboardControlHints
-    ? "hidden xl:inline"
-    : "hidden xl:invisible xl:inline"
 
   return (
     <nav
@@ -37,10 +62,11 @@ export default function BattleActionBar({
         onClick={onOpenMenu}
         className={historyActionClasses}
       >
-        Menu{" "}
-        <span aria-hidden="true" className={keyboardControlHintClasses}>
-          [ESC]
-        </span>
+        <BattleActionLabel
+          label="Menu"
+          shortcut="[ESC]"
+          showKeyboardControlHints={showKeyboardControlHints}
+        />
       </button>
       <button
         type="button"
@@ -49,10 +75,11 @@ export default function BattleActionBar({
         onClick={onUndo}
         className={historyActionClasses}
       >
-        Undo{" "}
-        <span aria-hidden="true" className={keyboardControlHintClasses}>
-          [Z]
-        </span>
+        <BattleActionLabel
+          label="Undo"
+          shortcut="[Z]"
+          showKeyboardControlHints={showKeyboardControlHints}
+        />
       </button>
       <button
         type="button"
@@ -61,10 +88,11 @@ export default function BattleActionBar({
         onClick={onRedo}
         className={historyActionClasses}
       >
-        Redo{" "}
-        <span aria-hidden="true" className={keyboardControlHintClasses}>
-          [Y]
-        </span>
+        <BattleActionLabel
+          label="Redo"
+          shortcut="[Y]"
+          showKeyboardControlHints={showKeyboardControlHints}
+        />
       </button>
       <button
         type="button"

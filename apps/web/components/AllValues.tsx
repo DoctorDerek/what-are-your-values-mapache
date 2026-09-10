@@ -15,6 +15,7 @@ import {
   type ValueId,
 } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
+import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { findRankedValueNameMatches } from "@game/data/src/ValueSearch"
 import type { FormEvent } from "react"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -224,6 +225,7 @@ export default function AllValues({
       const isEditing = definition.id === editingValueId
       const isDeleting = definition.id === deletingValueId
       const customValueId = definition.kind === "custom" ? definition.id : null
+      const { medal, accessibleLabel } = getValueRankPresentation(rank)
 
       return (
         <li
@@ -235,11 +237,12 @@ export default function AllValues({
         >
           <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-5">
             {hasComparisons ? (
-              <span
-                aria-label={`Rank ${rank}`}
-                className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-2xl font-black text-white uppercase"
-              >
-                #{rank}
+              <span className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-2xl font-black text-white uppercase">
+                <span aria-hidden="true" className="flex items-center gap-2">
+                  <span>#{rank}</span>
+                  {medal ? <span>{medal.emoji}</span> : null}
+                </span>
+                <span className="sr-only">{accessibleLabel}</span>
               </span>
             ) : null}
             <h3 className="min-w-0 flex-1 text-3xl font-black [overflow-wrap:anywhere] break-words uppercase sm:text-4xl">

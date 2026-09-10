@@ -3,6 +3,7 @@ import {
   getValueDisplayName,
 } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
+import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { View } from "react-native"
 import NativeValueLevelProgress from "@/components/NativeValueLevelProgress"
 import { Button } from "@/components/ui/button"
@@ -26,6 +27,7 @@ export default function NativeValueDetailsCard({
 }) {
   const { definition, progress, rank } = rankedValue
   const displayName = getValueDisplayName(definition)
+  const { medal, accessibleLabel } = getValueRankPresentation(rank)
 
   return (
     <View
@@ -38,10 +40,11 @@ export default function NativeValueDetailsCard({
       <View className="flex-row flex-wrap items-center gap-2">
         {showRank ? (
           <Text
-            accessibilityLabel={`Rank ${rank}`}
+            accessibilityLabel={accessibleLabel}
             className="bg-mapache-vivid-secondary-purple border-2 border-black px-2 py-1 text-xl font-black text-white"
           >
             #{rank}
+            {medal ? ` ${medal.emoji}` : ""}
           </Text>
         ) : null}
         <Text

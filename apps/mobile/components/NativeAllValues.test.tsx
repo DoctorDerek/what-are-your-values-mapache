@@ -258,8 +258,8 @@ describe("NativeAllValues", () => {
 
     expect(screen.getAllByText("Top Five")).toHaveLength(1)
     expect(screen.getAllByText("All Other Values")).toHaveLength(1)
-    expect(screen.getByLabelText("Rank 1")).toBeOnTheScreen()
-    expect(screen.getByLabelText("Rank 6")).toBeOnTheScreen()
+    expect(screen.getByLabelText("Rank 1, gold medal")).toBeOnTheScreen()
+    expect(screen.getByLabelText("Rank 6, silver medal")).toBeOnTheScreen()
   })
 
   it("explains that a failed save preserved the current data and draft", async () => {

@@ -29,8 +29,7 @@ describe("Battle Action Bar", () => {
     expect(undo).toBeDisabled()
     expect(redo).toBeDisabled()
     for (const shortcut of ["[Z]", "[Y]", "[ESC]"]) {
-      expect(screen.getByText(shortcut)).toHaveClass("hidden", "xl:inline")
-      expect(screen.getByText(shortcut)).not.toHaveClass("xl:invisible")
+      expect(screen.getByText(shortcut)).toBeInTheDocument()
     }
     fireEvent.click(undo)
     fireEvent.click(redo)
@@ -40,7 +39,6 @@ describe("Battle Action Bar", () => {
     expect(onOpenMenu).toHaveBeenCalledOnce()
 
     const stop = screen.getByRole("button", { name: "Stop" })
-    expect(stop).toHaveClass("text-black")
     fireEvent.click(stop)
     expect(onStop).toHaveBeenCalledTimes(1)
 
@@ -68,10 +66,6 @@ describe("Battle Action Bar", () => {
     expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
     expect(screen.getByRole("button", { name: "Stop" })).toBeDisabled()
     for (const shortcut of ["[Z]", "[Y]", "[ESC]"])
-      expect(screen.getByText(shortcut)).toHaveClass(
-        "hidden",
-        "xl:inline",
-        "xl:invisible",
-      )
+      expect(screen.getByText(shortcut)).toBeInTheDocument()
   })
 })

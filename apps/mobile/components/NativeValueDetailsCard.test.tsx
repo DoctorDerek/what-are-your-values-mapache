@@ -34,25 +34,42 @@ describe("NativeValueDetailsCard", () => {
     const [acceptance] = createRankedValues([])
     if (!acceptance) throw new Error("Canonical test value is unavailable")
 
-    await render(
-      <NativeValueDetailsCard
-        isHighlighted={false}
-        isPersistencePending={false}
-        rankedValue={acceptance}
-        showRank
-        onDelete={jest.fn()}
-        onEdit={jest.fn()}
-      />,
+    const cardProps = {
+      isHighlighted: false,
+      isPersistencePending: false,
+      showRank: true,
+      onDelete: jest.fn(),
+      onEdit: jest.fn(),
+    }
+    const { rerender } = await render(
+      <NativeValueDetailsCard {...cardProps} rankedValue={acceptance} />,
     )
 
     const details = screen.getByLabelText("Acceptance details")
-    expect(within(details).getByLabelText("Rank 1")).toBeOnTheScreen()
+    expect(
+      within(details).getByLabelText("Rank 1, gold medal"),
+    ).toBeOnTheScreen()
+    expect(within(details).getByText("#1 🥇")).toBeOnTheScreen()
     expect(
       within(details).getByText("“to be accepted as I am”"),
     ).toBeOnTheScreen()
     expect(within(details).queryByText("Yours")).toBeNull()
     expect(within(details).queryByRole("button", { name: "Edit" })).toBeNull()
     expect(within(details).queryByRole("button", { name: "Delete" })).toBeNull()
+    for (const [rank, label, text] of [
+      [11, "Rank 11, bronze medal", "#11 🥉"],
+      [16, "Rank 16", "#16"],
+    ] as const) {
+      await rerender(
+        <NativeValueDetailsCard
+          {...cardProps}
+          rankedValue={{ ...acceptance, rank }}
+        />,
+      )
+      expect(screen.getByLabelText(label)).toBeOnTheScreen()
+      expect(screen.getByText(text)).toBeOnTheScreen()
+      expect(screen.queryByLabelText("Rank 1, gold medal")).toBeNull()
+    }
   })
 
   it("routes highlighted Custom Value actions and locks them during persistence", async () => {
