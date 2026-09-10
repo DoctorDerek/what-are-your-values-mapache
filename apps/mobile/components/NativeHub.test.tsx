@@ -18,7 +18,13 @@ import { rankValues } from "@game/data/src/ValueRanking"
 import { VALUE_TO_ANIMAL_MAP } from "@game/data/src/ValueToAnimalMap"
 import { ZOO_ANIMALS } from "@game/data/src/ZooAnimals"
 import { describe, expect, it, jest } from "@jest/globals"
-import { render, screen, userEvent } from "@testing-library/react-native"
+import {
+  act,
+  render,
+  screen,
+  userEvent,
+  within,
+} from "@testing-library/react-native"
 import NativeHub from "@/components/NativeHub"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
 
@@ -303,6 +309,15 @@ describe("NativeHub", () => {
         name: `Rank 1. Open ${getValueDisplayName(firstRankedValue.definition)} in All Values`,
       }),
     ).toBeOnTheScreen()
+    await act(async () =>
+      nativeAnimalRendererMock.mock.calls[0][0].onLoadError?.(),
+    )
+    expect(
+      within(animalPresentations[0]).getByText("#1", {
+        includeHiddenElements: true,
+      }),
+    ).toBeOnTheScreen()
+    expect(animalPresentations[0]).toHaveStyle({ width: 72, height: 72 })
   })
 
   it("renders an equal Custom Value initial tile without inferring an animal", async () => {

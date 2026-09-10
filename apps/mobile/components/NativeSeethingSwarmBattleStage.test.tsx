@@ -23,6 +23,7 @@ import {
 import type { ComponentProps } from "react"
 import { AppState, Pressable, View, type AppStateStatus } from "react-native"
 import { getAnimatedStyle } from "react-native-reanimated"
+import NativeSeethingSwarmAssetPreparation from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSeethingSwarmBattleStage from "@/components/NativeSeethingSwarmBattleStage"
 
 const pair = [
@@ -142,6 +143,53 @@ afterEach(() => {
 })
 
 describe("NativeSeethingSwarmBattleStage", () => {
+  it.each(["load", "error"] as const)(
+    "uses prepared %s outcomes across entry and a committed result",
+    async (outcome) => {
+      const initial = props()
+      const { rerender } = await render(
+        <NativeSeethingSwarmAssetPreparation>
+          <NativeSeethingSwarmBattleStage {...initial} />
+        </NativeSeethingSwarmAssetPreparation>,
+      )
+      expect(
+        screen.queryByTestId("battle-placeholder-first", hidden),
+      ).toBeNull()
+      for (const prepared of screen.getAllByTestId(/^prepared-animal-/, hidden))
+        await fireEvent(prepared, outcome)
+      if (outcome === "load") {
+        expect(
+          screen.queryByTestId("battle-placeholder-first", hidden),
+        ).toBeNull()
+        expect(image("raccoonpack")).toHaveProp("source", 1)
+        await advance(700)
+        await advance(700)
+        expect(image("raccoonpack")).toHaveProp("source", 3)
+      } else {
+        expect(
+          screen.getByTestId("battle-placeholder-first", hidden),
+        ).toBeOnTheScreen()
+        expect(
+          screen.getByTestId("battle-placeholder-second", hidden),
+        ).toBeOnTheScreen()
+      }
+      await rerender(
+        <NativeSeethingSwarmAssetPreparation>
+          <NativeSeethingSwarmBattleStage
+            {...initial}
+            winnerId={pair[0]}
+            isNextBattleReady
+          />
+        </NativeSeethingSwarmAssetPreparation>,
+      )
+      await advance(200)
+      await advance(600)
+      await advance(600)
+      await advance(600)
+      expect(initial.onResultComplete).toHaveBeenCalledTimes(1)
+    },
+  )
+
   it("keeps two facing animals through entry anticipation and looping rest", async () => {
     const initial = props()
     await render(<NativeSeethingSwarmBattleStage {...initial} />)

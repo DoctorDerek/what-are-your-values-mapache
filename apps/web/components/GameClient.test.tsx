@@ -37,12 +37,25 @@ import GameClient from "./GameClient"
 const VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN =
   /^Choose .+\. Level \d+\. Choice [12]\.$/
 
+vi.mock(
+  "@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog",
+  async () => {
+    const { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } =
+      await import("@game/data/src/SeethingSwarmRuntimeClipCatalog")
+    return {
+      SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG:
+        createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
+    }
+  },
+)
+
 const durableStoreFailure = vi.hoisted(() => ({
   initialEntries: [] as [string, string][],
   readCount: 0,
   readEnabled: false,
   writeCount: 0,
   writeEnabled: false,
+  writeGate: null as Promise<void> | null,
 }))
 
 const webExclusiveWriterLease = vi.hoisted(() => ({
@@ -89,6 +102,7 @@ vi.mock("@/lib/IndexedDbDurableStore", async () => {
           transaction: DurableStoreTransaction,
         ) => {
           durableStoreFailure.writeCount += 1
+          if (durableStoreFailure.writeGate) await durableStoreFailure.writeGate
           if (durableStoreFailure.writeEnabled) {
             throw new Error("IndexedDB write failed")
           }
@@ -209,10 +223,29 @@ describe("GameClient Integration", () => {
     durableStoreFailure.readEnabled = false
     durableStoreFailure.writeCount = 0
     durableStoreFailure.writeEnabled = false
+    durableStoreFailure.writeGate = null
     webExclusiveWriterLease.status = "writer"
     localStorage.clear()
     document.documentElement.removeAttribute("data-wayvm-reduced-motion")
     vi.restoreAllMocks()
+  })
+
+  it("retains the introduction and disables duplicate starts until its initial save completes", async () => {
+    const write = Promise.withResolvers<void>()
+    durableStoreFailure.writeGate = write.promise
+    render(<GameClient />)
+    const start = await screen.findByRole("button", {
+      name: "Start",
+    })
+    fireEvent.click(start)
+    expect(screen.getByRole("button", { name: "Start" })).toBe(start)
+    expect(start).toBeDisabled()
+    expect(start).toHaveAttribute("aria-busy", "true")
+    expect(
+      screen.queryByRole("main", { name: "Loading your values…" }),
+    ).toBeNull()
+    write.resolve()
+    await screen.findByRole("button", { name: "Battle" })
   })
 
   it("keeps storage and game input unavailable while writer ownership is unresolved", () => {
