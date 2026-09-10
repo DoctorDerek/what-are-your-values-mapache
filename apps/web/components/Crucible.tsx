@@ -78,7 +78,7 @@ export default function Crucible({
   ) => void
 }) {
   const [state, send] = useMachine(combatMachine, {
-    input: { onWinnerSelected },
+    input: { initialBattle: battle, onWinnerSelected },
   })
   const isPresentationReady = usePreparedSeethingSwarmBattle(
     battle,
@@ -185,7 +185,7 @@ export default function Crucible({
 
   const focusedId = state.context.focusedId
   const currentBattle = state.context.currentBattle
-  const currentPair = currentBattle?.pair ?? null
+  const currentPair = currentBattle.pair
   const isAnimating = state.matches("AnimatingResult")
   const handleResultAnimationComplete = useCallback(() => {
     if (isAnimating) {
@@ -195,8 +195,7 @@ export default function Crucible({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.defaultPrevented || !isInteractive || !currentPair || isMenuOpen)
-        return
+      if (e.defaultPrevented || !isInteractive || isMenuOpen) return
 
       const normalizedKey = e.key.toLowerCase()
       const isUndoCommand = normalizedKey === "z" && !e.shiftKey
@@ -268,7 +267,6 @@ export default function Crucible({
     const pendingAction = pendingAccessibilityActionRef.current
     if (
       !pendingAction ||
-      !currentPair ||
       currentBattle !== battle ||
       !isInteractive ||
       isMenuOpen
@@ -300,18 +298,6 @@ export default function Crucible({
     isMenuOpen,
     progressById,
   ])
-
-  if (!currentBattle || !currentPair) {
-    return (
-      <MapacheScreen
-        spacing="safe-area-only"
-        viewport="fixed"
-        className="flex items-center justify-center text-6xl font-black text-white uppercase"
-      >
-        Forging Matrix...
-      </MapacheScreen>
-    )
-  }
 
   const [idA, idB] = currentPair
   const valA = activeDeck.values.find(({ id }) => id === idA)

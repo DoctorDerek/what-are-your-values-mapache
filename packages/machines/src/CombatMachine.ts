@@ -10,7 +10,7 @@ export type PresentedBattle = {
 export const combatMachine = setup({
   types: {
     context: {} as {
-      currentBattle: PresentedBattle | null
+      currentBattle: PresentedBattle
       pendingBattle: PresentedBattle | null
       winnerId: ValueId | null
       focusedId: ValueId | null
@@ -25,6 +25,7 @@ export const combatMachine = setup({
       | { type: "VALUE.WINNER_SELECTED"; valueId: ValueId }
       | { type: "ANIMATION.RESULT_FINISHED" },
     input: {} as {
+      initialBattle: PresentedBattle
       onWinnerSelected: (
         winnerId: ValueId,
         expectedScheduler: BattleSchedulerRestorePoint,
@@ -34,9 +35,8 @@ export const combatMachine = setup({
   guards: {
     isPresentedValue: ({ context, event }) => {
       if (
-        (event.type !== "VALUE.FOCUS_REQUESTED" &&
-          event.type !== "VALUE.WINNER_SELECTED") ||
-        !context.currentBattle
+        event.type !== "VALUE.FOCUS_REQUESTED" &&
+        event.type !== "VALUE.WINNER_SELECTED"
       ) {
         return false
       }
@@ -47,7 +47,7 @@ export const combatMachine = setup({
   },
   actions: {
     notifyWinnerSelected: ({ context, event }) => {
-      if (event.type !== "VALUE.WINNER_SELECTED" || !context.currentBattle) {
+      if (event.type !== "VALUE.WINNER_SELECTED") {
         throw new Error("Winner selection is missing its projected battle")
       }
 
@@ -56,9 +56,9 @@ export const combatMachine = setup({
   },
 }).createMachine({
   id: "combat",
-  initial: "Preparing",
+  initial: "AwaitingInput",
   context: ({ input }) => ({
-    currentBattle: null,
+    currentBattle: input.initialBattle,
     pendingBattle: null,
     winnerId: null,
     focusedId: null,
@@ -117,7 +117,8 @@ export const combatMachine = setup({
             guard: "hasPendingBattle",
             target: "AwaitingInput",
             actions: assign({
-              currentBattle: ({ context }) => context.pendingBattle,
+              currentBattle: ({ context }) =>
+                context.pendingBattle ?? context.currentBattle,
               pendingBattle: null,
               winnerId: null,
               focusedId: null,
@@ -126,7 +127,6 @@ export const combatMachine = setup({
           {
             target: "Preparing",
             actions: assign({
-              currentBattle: null,
               winnerId: null,
               focusedId: null,
             }),

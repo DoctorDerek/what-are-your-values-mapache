@@ -24,10 +24,9 @@ describe("Combat Machine", () => {
     const battle = projectBattle(battleCycle)
     const [winnerId] = battle.pair
     const actor = createActor(combatMachine, {
-      input: { onWinnerSelected },
+      input: { initialBattle: battle, onWinnerSelected },
     })
     actor.start()
-    actor.send({ type: "BATTLE.PROJECTED", battle })
 
     expect(actor.getSnapshot().matches("AwaitingInput")).toBe(true)
     actor.send({ type: "VALUE.FOCUS_REQUESTED", valueId: winnerId })
@@ -57,10 +56,9 @@ describe("Combat Machine", () => {
     })
     const nextBattle = projectBattle(nextBattleCycle)
     const actor = createActor(combatMachine, {
-      input: { onWinnerSelected },
+      input: { initialBattle: currentBattle, onWinnerSelected },
     })
     actor.start()
-    actor.send({ type: "BATTLE.PROJECTED", battle: currentBattle })
     actor.send({ type: "VALUE.WINNER_SELECTED", valueId: winnerId })
     actor.send({ type: "BATTLE.PROJECTED", battle: nextBattle })
 
@@ -79,10 +77,9 @@ describe("Combat Machine", () => {
     const battleCycle = createInitialBattleCycle("delayed-projection-seed")
     const battle = projectBattle(battleCycle)
     const actor = createActor(combatMachine, {
-      input: { onWinnerSelected: vi.fn() },
+      input: { initialBattle: battle, onWinnerSelected: vi.fn() },
     })
     actor.start()
-    actor.send({ type: "BATTLE.PROJECTED", battle })
     actor.send({
       type: "VALUE.WINNER_SELECTED",
       valueId: battle.pair[0],
@@ -90,6 +87,6 @@ describe("Combat Machine", () => {
     actor.send({ type: "ANIMATION.RESULT_FINISHED" })
 
     expect(actor.getSnapshot().matches("Preparing")).toBe(true)
-    expect(actor.getSnapshot().context.currentBattle).toBeNull()
+    expect(actor.getSnapshot().context.currentBattle).toBe(battle)
   })
 })
