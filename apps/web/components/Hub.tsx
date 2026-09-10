@@ -112,18 +112,20 @@ function ValueRow({
         type="button"
         onClick={(event) => onOpenValue(definition.id, event.currentTarget.id)}
         className="flex w-full min-w-0 cursor-pointer flex-wrap items-center gap-4 p-4 text-left hover:-translate-y-1 hover:shadow-[0_6px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black sm:gap-6 sm:p-5"
-        aria-label={
-          hasComparisons
-            ? `${accessibleLabel}. Open ${displayName} in All Values`
-            : `Open ${displayName} in All Values`
-        }
+        aria-label={`Open ${displayName} in All Values`}
+        aria-describedby={hasComparisons ? `${rowId}-rank` : undefined}
       >
         {hasComparisons ? (
-          <ValueRankPresentation
-            rank={rank}
-            valuePresentation={valuePresentation}
-            shouldReduceMotion={shouldReduceMotion}
-          />
+          <>
+            <ValueRankPresentation
+              rank={rank}
+              valuePresentation={valuePresentation}
+              shouldReduceMotion={shouldReduceMotion}
+            />
+            <span id={`${rowId}-rank`} className="sr-only">
+              {accessibleLabel}
+            </span>
+          </>
         ) : null}
         <span className="min-w-0 flex-1 text-2xl font-black [overflow-wrap:anywhere] break-words uppercase sm:text-3xl">
           {displayName}
