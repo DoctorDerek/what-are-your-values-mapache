@@ -9,7 +9,10 @@ import MapacheScreen from "@/components/MapacheScreen"
 export default function PlayerDataLoading() {
   const [showIndicator, setShowIndicator] = useState(false)
   useEffect(() => {
-    const delay = setTimeout(() => setShowIndicator(true), STARTUP_INDICATOR_DELAY_MS)
+    const delay = setTimeout(
+      () => setShowIndicator(true),
+      STARTUP_INDICATOR_DELAY_MS,
+    )
     return () => clearTimeout(delay)
   }, [])
   return (
@@ -20,7 +23,10 @@ export default function PlayerDataLoading() {
       viewport="scrollable"
       className="flex flex-col items-center justify-center gap-6 text-center"
     >
-      <div aria-hidden="true" className={`flex gap-2 ${showIndicator ? "visible" : "invisible"}`}>
+      <div
+        aria-hidden="true"
+        className={`flex gap-2 ${showIndicator ? "visible" : "invisible"}`}
+      >
         <span className="bg-mapache-vivid-primary-cyan size-6 border-2 border-black" />
         <span className="bg-mapache-vivid-primary-orange size-6 border-2 border-black" />
         <span className="bg-mapache-vivid-primary-raspberry size-6 border-2 border-black" />

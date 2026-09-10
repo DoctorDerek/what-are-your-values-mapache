@@ -63,7 +63,15 @@ function NativeInformationPanelFrame({
           </ScrollView>
 
           <View className="border-t-4 border-black p-5">
-            <Button size="large" onPress={onPrimaryAction} disabled={isPrimaryActionPending} accessibilityState={{busy:isPrimaryActionPending, disabled:isPrimaryActionPending}}>
+            <Button
+              size="large"
+              onPress={onPrimaryAction}
+              disabled={isPrimaryActionPending}
+              accessibilityState={{
+                busy: isPrimaryActionPending,
+                disabled: isPrimaryActionPending,
+              }}
+            >
               <Text>{primaryActionLabel}</Text>
             </Button>
           </View>

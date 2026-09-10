@@ -30,7 +30,6 @@ import {
 } from "@game/machines/src/PlayerSettingsPresentation"
 import { rootMachine } from "@game/machines/src/RootMachine"
 import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPreparation"
-import NativeSeethingSwarmAssetPreparation, { usePreparedNativeSeethingSwarmBattle, usePreparedNativeSeethingSwarmClips } from "@/components/NativeSeethingSwarmAssetPreparation"
 import { useMachine } from "@xstate/react"
 import * as ExpoCrypto from "expo-crypto"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -53,6 +52,10 @@ import NativePersistenceFailure, {
 } from "@/components/NativePersistenceFailure"
 import NativePlayerDataLoading from "@/components/NativePlayerDataLoading"
 import NativeProductMenu from "@/components/NativeProductMenu"
+import NativeSeethingSwarmAssetPreparation, {
+  usePreparedNativeSeethingSwarmBattle,
+  usePreparedNativeSeethingSwarmClips,
+} from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSettings from "@/components/NativeSettings"
 import useNativePlayerDataFiles from "@/components/useNativePlayerDataFiles"
 import { SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG } from "@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog"
@@ -69,7 +72,11 @@ const nativeRootMachineInput = Object.freeze({
 })
 
 export default function NativeGameClient() {
-  return <NativeSeethingSwarmAssetPreparation><NativeGameClientContent /></NativeSeethingSwarmAssetPreparation>
+  return (
+    <NativeSeethingSwarmAssetPreparation>
+      <NativeGameClientContent />
+    </NativeSeethingSwarmAssetPreparation>
+  )
 }
 
 function NativeGameClientContent() {
@@ -132,22 +139,39 @@ function NativeGameClientContent() {
         : null,
     [battleProfile],
   )
-  const hasValidatedProfile = state.context.battleProfileStoreState !== null || state.matches("Splash") || state.matches("InitializingProfile")
-  const isBattlePrepared = usePreparedNativeSeethingSwarmBattle(hasValidatedProfile ? presentedBattle : null, SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG)
-  const hubClips = useMemo(()=>getHubPreparationClips(rankedValues, SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG),[rankedValues])
+  const hasValidatedProfile =
+    state.context.battleProfileStoreState !== null ||
+    state.matches("Splash") ||
+    state.matches("InitializingProfile")
+  const isBattlePrepared = usePreparedNativeSeethingSwarmBattle(
+    hasValidatedProfile ? presentedBattle : null,
+    SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG,
+  )
+  const hubClips = useMemo(
+    () =>
+      getHubPreparationClips(
+        rankedValues,
+        SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG,
+      ),
+    [rankedValues],
+  )
   usePreparedNativeSeethingSwarmClips(hubClips)
   const [isBattleRequested, setIsBattleRequested] = useState(false)
   const isHubReady = state.matches("Hub")
-  const canAwaitBattle = isHubReady && !isProductMenuOpen && activeInformationPanelId === null && !isControlsOpen
+  const canAwaitBattle =
+    isHubReady &&
+    !isProductMenuOpen &&
+    activeInformationPanelId === null &&
+    !isControlsOpen
   if (isBattleRequested && !canAwaitBattle) setIsBattleRequested(false)
-  useEffect(()=>{
+  useEffect(() => {
     if (isBattleRequested && canAwaitBattle && isBattlePrepared) {
-      send({type:"BATTLE.START_REQUESTED"})
+      send({ type: "BATTLE.START_REQUESTED" })
     }
-  },[isBattleRequested,isBattlePrepared,canAwaitBattle,send])
+  }, [isBattleRequested, isBattlePrepared, canAwaitBattle, send])
   const handleStartBattle = () => {
-    if (isBattlePrepared) send({type:"BATTLE.START_REQUESTED"})
-    else setIsBattleRequested(previous=>!previous)
+    if (isBattlePrepared) send({ type: "BATTLE.START_REQUESTED" })
+    else setIsBattleRequested((previous) => !previous)
   }
   const handleWinnerSelected = useCallback(
     (winnerId: ValueId, expectedScheduler: BattleSchedulerRestorePoint) => {
@@ -307,10 +331,7 @@ function NativeGameClientContent() {
     return () => subscription.remove()
   }, [send])
 
-  if (
-    state.matches("Hydrating") ||
-    state.matches("LoadingProfile")
-  )
+  if (state.matches("Hydrating") || state.matches("LoadingProfile"))
     return <NativePlayerDataLoading />
 
   if (state.matches("PersistenceFailure")) {

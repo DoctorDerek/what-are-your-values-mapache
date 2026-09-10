@@ -1,5 +1,5 @@
-import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
 import { STARTUP_INDICATOR_DELAY_MS } from "@game/data/src/PresentationLoadingCopy"
+import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
 import { useEffect, useState } from "react"
 import { View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
@@ -7,7 +7,10 @@ import MapacheScreen from "@/components/MapacheScreen"
 export default function NativePlayerDataLoading() {
   const [showIndicator, setShowIndicator] = useState(false)
   useEffect(() => {
-    const delay = setTimeout(() => setShowIndicator(true), STARTUP_INDICATOR_DELAY_MS)
+    const delay = setTimeout(
+      () => setShowIndicator(true),
+      STARTUP_INDICATOR_DELAY_MS,
+    )
     return () => clearTimeout(delay)
   }, [])
   return (

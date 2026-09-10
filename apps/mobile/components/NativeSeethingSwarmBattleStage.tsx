@@ -21,9 +21,9 @@ import {
   type ReactNode,
 } from "react"
 import { AppState, View } from "react-native"
+import { usePreparedNativeSeethingSwarmBattle } from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSeethingSwarmBattleTraveler from "@/components/NativeSeethingSwarmBattleTraveler"
 import NativeSeethingSwarmCombatant from "@/components/NativeSeethingSwarmCombatant"
-import { usePreparedNativeSeethingSwarmBattle } from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSeethingSwarmPlaceholder from "@/components/NativeSeethingSwarmPlaceholder"
 
 function NativeBattlePlayback({

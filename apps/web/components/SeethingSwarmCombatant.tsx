@@ -12,8 +12,8 @@ import {
 import type { StaticImageData } from "next/image"
 import { useEffect, useMemo, useState } from "react"
 import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
-import SeethingSwarmPlaceholder from "@/components/SeethingSwarmPlaceholder"
 import { useSeethingSwarmPreparedAssets } from "@/components/SeethingSwarmAssetPreparation"
+import SeethingSwarmPlaceholder from "@/components/SeethingSwarmPlaceholder"
 
 export default function SeethingSwarmCombatant({
   combatant,
@@ -61,9 +61,25 @@ export default function SeethingSwarmCombatant({
     () => createSeethingSwarmBattlePlayback({ combatant, winnerId, cue }),
     [combatant, winnerId, cue],
   )
-  const loadedClips = new Set([...loadedImageClips, ...residentClips.filter(clip=>preparedAssets?.get(clip.relativePath)?.status === "ready").map(clip=>clip.animationId)])
-  const failedClips = new Set([...failedImageClips, ...residentClips.filter(clip=>preparedAssets?.get(clip.relativePath)?.status === "failed").map(clip=>clip.animationId)])
-  const hasNoUsableImage = residentClips.every(clip=>failedClips.has(clip.animationId))
+  const loadedClips = new Set([
+    ...loadedImageClips,
+    ...residentClips
+      .filter(
+        (clip) => preparedAssets?.get(clip.relativePath)?.status === "ready",
+      )
+      .map((clip) => clip.animationId),
+  ])
+  const failedClips = new Set([
+    ...failedImageClips,
+    ...residentClips
+      .filter(
+        (clip) => preparedAssets?.get(clip.relativePath)?.status === "failed",
+      )
+      .map((clip) => clip.animationId),
+  ])
+  const hasNoUsableImage = residentClips.every((clip) =>
+    failedClips.has(clip.animationId),
+  )
   const maximumIntegerScale = useMemo(
     () =>
       Math.min(

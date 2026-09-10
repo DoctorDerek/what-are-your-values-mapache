@@ -7,7 +7,6 @@ import {
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeCharacterClip } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import Image, { type StaticImageData } from "next/image"
-import { useSeethingSwarmAssetStatus } from "@/components/SeethingSwarmAssetPreparation"
 import {
   useCallback,
   useLayoutEffect,
@@ -15,6 +14,7 @@ import {
   useState,
   type CSSProperties,
 } from "react"
+import { useSeethingSwarmAssetStatus } from "@/components/SeethingSwarmAssetPreparation"
 
 type SeethingSwarmAnimalStyle = CSSProperties & {
   "--animal-animation-duration": string
@@ -62,7 +62,8 @@ export default function SeethingSwarmAnimal({
     null,
   )
   const preparedStatus = useSeethingSwarmAssetStatus(clip.relativePath)
-  const isImageLoaded = loadedAssetSource === clip.asset.src || preparedStatus === "ready"
+  const isImageLoaded =
+    loadedAssetSource === clip.asset.src || preparedStatus === "ready"
   const imageRef = useRef<HTMLImageElement>(null)
   const handleImageReady = useCallback(() => {
     setLoadedAssetSource(clip.asset.src)

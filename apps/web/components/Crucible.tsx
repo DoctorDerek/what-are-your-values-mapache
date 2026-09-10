@@ -80,7 +80,10 @@ export default function Crucible({
   const [state, send] = useMachine(combatMachine, {
     input: { onWinnerSelected },
   })
-  const isPresentationReady = usePreparedSeethingSwarmBattle(battle, runtimeClipCatalog)
+  const isPresentationReady = usePreparedSeethingSwarmBattle(
+    battle,
+    runtimeClipCatalog,
+  )
   const controlHintInputModality = useWebControlHintInputModality()
   const firstChoiceRef = useRef<HTMLButtonElement>(null)
   const secondChoiceRef = useRef<HTMLButtonElement>(null)
@@ -108,7 +111,10 @@ export default function Crucible({
     if (isPresentationReady) send({ type: "BATTLE.PROJECTED", battle })
   }, [battle, isPresentationReady, send])
 
-  const isInteractive = state.matches("AwaitingInput") && !isPersistencePending && isPresentationReady
+  const isInteractive =
+    state.matches("AwaitingInput") &&
+    !isPersistencePending &&
+    isPresentationReady
 
   const handleSelect = useCallback(
     (winnerId: ValueId) => {

@@ -36,7 +36,6 @@ import {
 } from "@game/machines/src/PlayerSettingsPresentation"
 import { rootMachine } from "@game/machines/src/RootMachine"
 import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPreparation"
-import SeethingSwarmAssetPreparation, { usePreparedSeethingSwarmBattle, usePreparedSeethingSwarmClips } from "@/components/SeethingSwarmAssetPreparation"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { useMachine } from "@xstate/react"
 import { useReducedMotion } from "motion/react"
@@ -45,6 +44,10 @@ import Controls from "@/components/Controls"
 import { ReopenedInformationPanel } from "@/components/InformationPanel"
 import InformationPanelContent from "@/components/InformationPanelContent"
 import ProductMenu from "@/components/ProductMenu"
+import SeethingSwarmAssetPreparation, {
+  usePreparedSeethingSwarmBattle,
+  usePreparedSeethingSwarmClips,
+} from "@/components/SeethingSwarmAssetPreparation"
 import { SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG } from "@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog"
 import { createIndexedDbDurableStore } from "@/lib/IndexedDbDurableStore"
 import {
@@ -200,22 +203,39 @@ function WritableGameClient({
         : null,
     [battleProfile],
   )
-  const hasValidatedProfile = state.context.battleProfileStoreState !== null || state.matches("Splash") || state.matches("InitializingProfile")
-  const isBattlePrepared = usePreparedSeethingSwarmBattle(hasValidatedProfile ? presentedBattle : null, SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG)
-  const hubClips = useMemo(()=>getHubPreparationClips(rankedValues, SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG),[rankedValues])
+  const hasValidatedProfile =
+    state.context.battleProfileStoreState !== null ||
+    state.matches("Splash") ||
+    state.matches("InitializingProfile")
+  const isBattlePrepared = usePreparedSeethingSwarmBattle(
+    hasValidatedProfile ? presentedBattle : null,
+    SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
+  )
+  const hubClips = useMemo(
+    () =>
+      getHubPreparationClips(
+        rankedValues,
+        SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
+      ),
+    [rankedValues],
+  )
   usePreparedSeethingSwarmClips(hubClips)
   const [isBattleRequested, setIsBattleRequested] = useState(false)
   const isHubReady = state.matches("Hub")
-  const canAwaitBattle = isHubReady && !isProductMenuOpen && activeInformationPanelId === null && !isControlsOpen
+  const canAwaitBattle =
+    isHubReady &&
+    !isProductMenuOpen &&
+    activeInformationPanelId === null &&
+    !isControlsOpen
   if (isBattleRequested && !canAwaitBattle) setIsBattleRequested(false)
-  useEffect(()=>{
+  useEffect(() => {
     if (isBattleRequested && canAwaitBattle && isBattlePrepared) {
-      send({type:"BATTLE.START_REQUESTED"})
+      send({ type: "BATTLE.START_REQUESTED" })
     }
-  },[isBattleRequested,isBattlePrepared,canAwaitBattle,send])
+  }, [isBattleRequested, isBattlePrepared, canAwaitBattle, send])
   const handleStartBattle = () => {
-    if (isBattlePrepared) send({type:"BATTLE.START_REQUESTED"})
-    else setIsBattleRequested(previous=>!previous)
+    if (isBattlePrepared) send({ type: "BATTLE.START_REQUESTED" })
+    else setIsBattleRequested((previous) => !previous)
   }
   const handleWinnerSelected = useCallback(
     (winnerId: ValueId, expectedScheduler: BattleSchedulerRestorePoint) => {
@@ -543,10 +563,7 @@ function WritableGameClient({
             ? "Deleting data…"
             : null
 
-  if (
-    state.matches("Hydrating") ||
-    state.matches("LoadingProfile")
-  ) {
+  if (state.matches("Hydrating") || state.matches("LoadingProfile")) {
     return <PlayerDataLoading />
   }
 
@@ -907,5 +924,9 @@ export default function GameClient() {
   if (writerLease.status === "read-only")
     return <ReadOnlyGameClient durableStore={durableStore} />
 
-  return <SeethingSwarmAssetPreparation><WritableGameClient durableStore={durableStore} /></SeethingSwarmAssetPreparation>
+  return (
+    <SeethingSwarmAssetPreparation>
+      <WritableGameClient durableStore={durableStore} />
+    </SeethingSwarmAssetPreparation>
+  )
 }

@@ -21,10 +21,15 @@ function NativeValueRankPresentation({
   valuePresentation: ValueAnimalPresentation<number> | undefined
   shouldReduceMotion: boolean
 }) {
-  const imagePath = valuePresentation?.kind === "animal" ? valuePresentation.clip.relativePath : null
+  const imagePath =
+    valuePresentation?.kind === "animal"
+      ? valuePresentation.clip.relativePath
+      : null
   const preparedStatus = useNativeSeethingSwarmAssetStatus(imagePath ?? "")
   const [failedImagePath, setFailedImagePath] = useState<string | null>(null)
-  const hasImageFailed = imagePath !== null && (preparedStatus === "failed" || failedImagePath === imagePath)
+  const hasImageFailed =
+    imagePath !== null &&
+    (preparedStatus === "failed" || failedImagePath === imagePath)
   if (!valuePresentation || valuePresentation.kind === "typography-only")
     return (
       <Text className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-xl font-black text-white uppercase">
@@ -48,17 +53,21 @@ function NativeValueRankPresentation({
       {valuePresentation.kind === "animal" && !hasImageFailed ? (
         <NativeSeethingSwarmAnimal
           clip={valuePresentation.clip}
-          onLoadError={()=>setFailedImagePath(imagePath)}
+          onLoadError={() => setFailedImagePath(imagePath)}
           shouldReduceMotion={shouldReduceMotion}
         />
       ) : (
         <Text className="text-mapache-vivid-secondary-purple text-4xl font-black uppercase">
-          {valuePresentation.kind === "custom-initial" ? valuePresentation.initial : `#${rank}`}
+          {valuePresentation.kind === "custom-initial"
+            ? valuePresentation.initial
+            : `#${rank}`}
         </Text>
       )}
-      {!hasImageFailed ? <Text className="bg-mapache-vivid-secondary-purple absolute top-0 left-0 z-10 border-r-4 border-b-4 border-black px-1.5 py-1 text-sm leading-none font-black text-white uppercase">
-        #{rank}
-      </Text> : null}
+      {!hasImageFailed ? (
+        <Text className="bg-mapache-vivid-secondary-purple absolute top-0 left-0 z-10 border-r-4 border-b-4 border-black px-1.5 py-1 text-sm leading-none font-black text-white uppercase">
+          #{rank}
+        </Text>
+      ) : null}
     </View>
   )
 }
