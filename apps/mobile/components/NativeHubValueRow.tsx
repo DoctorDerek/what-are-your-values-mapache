@@ -4,6 +4,7 @@ import {
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import { getValueDisplayName } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
+import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { useState } from "react"
 import { Pressable, View } from "react-native"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
@@ -30,10 +31,16 @@ function NativeValueRankPresentation({
   const hasImageFailed =
     imagePath !== null &&
     (preparedStatus === "failed" || failedImagePath === imagePath)
+  const { medal } = getValueRankPresentation(rank)
   if (!valuePresentation || valuePresentation.kind === "typography-only")
     return (
-      <Text className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-xl font-black text-white uppercase">
-        #{rank}
+      <Text
+        accessibilityElementsHidden
+        accessible={false}
+        importantForAccessibility="no-hide-descendants"
+        className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-xl font-black text-white uppercase"
+      >
+        #{rank}{medal ? ` ${medal.emoji}` : ""}
       </Text>
     )
 
@@ -43,6 +50,9 @@ function NativeValueRankPresentation({
       accessible={false}
       importantForAccessibility="no-hide-descendants"
       pointerEvents="none"
+      className="flex-row items-center gap-2"
+    >
+    <View
       className="relative flex-none items-center justify-center overflow-hidden bg-white"
       style={{
         width: SEETHING_SWARM_HUB_TILE_SIZE,
@@ -69,6 +79,8 @@ function NativeValueRankPresentation({
         </Text>
       ) : null}
     </View>
+    {medal ? <Text className="text-2xl">{medal.emoji}</Text> : null}
+    </View>
   )
 }
 
@@ -89,13 +101,14 @@ export default function NativeHubValueRow({
 }) {
   const { definition, progress, rank } = rankedValue
   const displayName = getValueDisplayName(definition)
+  const { accessibleLabel } = getValueRankPresentation(rank)
 
   return (
     <Pressable
       accessibilityHint="Opens the complete value definition without changing your ranking."
       accessibilityLabel={
         showRank
-          ? `Rank ${rank}. Open ${displayName} in All Values`
+          ? `${accessibleLabel}. Open ${displayName} in All Values`
           : `Open ${displayName} in All Values`
       }
       accessibilityRole="button"
