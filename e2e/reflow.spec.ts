@@ -126,6 +126,31 @@ for (const width of [390, 1440]) {
     expect(
       Math.abs(first!.y + first!.height - second!.y - second!.height),
     ).toBeLessThan(1)
+    if (width === 1440) {
+      await page.keyboard.press("Tab")
+      await page.addStyleTag({ content: "html { font-size: 200%; }" })
+      for (const heading of await choices.getByRole("heading").all()) {
+        const header = await heading.evaluate((element) => {
+          const bounds = element.getBoundingClientRect()
+          const parent = element.parentElement!.getBoundingClientRect()
+          const metadata = [...element.parentElement!.children]
+            .filter((child) => child !== element)
+            .map((child) => child.getBoundingClientRect())
+          return {
+            top: bounds.top,
+            metadataTop: Math.min(...metadata.map((item) => item.top)),
+            metadataBottom: Math.max(...metadata.map((item) => item.bottom)),
+            centerOffset: Math.abs(
+              bounds.left + bounds.width / 2 - parent.left - parent.width / 2,
+            ),
+          }
+        })
+        if (header.top > header.metadataTop + 1) {
+          expect(header.top).toBeGreaterThanOrEqual(header.metadataBottom)
+          expect(header.centerOffset).toBeLessThan(1)
+        }
+      }
+    }
     const arena = battle.locator('[data-battle-arena-side="first"]')
     const arenaBounds = await arena.boundingBox()
     await arena.click({ position: { x: 20, y: arenaBounds!.height - 10 } })
