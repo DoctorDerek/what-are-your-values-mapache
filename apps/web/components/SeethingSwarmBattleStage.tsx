@@ -1,10 +1,12 @@
 import {
+  createSeethingSwarmBattlePresentationGeometry,
   SEETHING_SWARM_BATTLE_RESULT_DURATION_MS,
   SEETHING_SWARM_BATTLE_TILE_SIZE,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type { PresentedBattle } from "@game/machines/src/CombatMachine"
+import { getSeethingSwarmBattleClips } from "@game/machines/src/SeethingSwarmBattlePlayback"
 import {
   createSeethingSwarmBattleChoreography,
   type SeethingSwarmBattleChoreography,
@@ -35,6 +37,7 @@ type SeethingSwarmBattleStageStyle = CSSProperties & {
   "--battle-result-duration": string
   "--battle-approach-duration": string
   "--battle-tile-size": string
+  "--battle-visible-height": string
 }
 
 function subscribeToDocumentVisibility(onChange: () => void) {
@@ -124,14 +127,14 @@ function BattlePlayback({
             aria-hidden="true"
             key={combatant.side}
             ref={combatant.side === "first" ? battleVisibilityRef : undefined}
-            className="pointer-events-none relative z-10 flex size-(--battle-combatant-size) shrink-0 scroll-mt-16 scroll-mb-2 items-end justify-center"
+            className="pointer-events-none relative z-10 flex h-(--battle-visible-size) w-(--battle-combatant-size) shrink-0 scroll-mt-16 scroll-mb-2 items-end justify-center"
             data-animal-id={combatant.animalId}
             data-combatant-side={combatant.side}
             data-value-id={combatant.valueId}
             data-battle-cue={cue}
           >
             <div
-              className={`relative flex size-(--battle-combatant-size) shrink-0 items-end justify-center ${combatant.side === "first" ? "[--battle-travel-direction:1]" : "[--battle-travel-direction:-1]"} ${!shouldReduceMotion && combatant.valueId === winnerId && readySides.size === 2 ? "animate-seething-swarm-approach" : ""}`}
+              className={`relative flex h-(--battle-visible-size) w-(--battle-combatant-size) shrink-0 items-end justify-center ${combatant.side === "first" ? "[--battle-travel-direction:1]" : "[--battle-travel-direction:-1]"} ${!shouldReduceMotion && combatant.valueId === winnerId && readySides.size === 2 ? "animate-seething-swarm-approach" : ""}`}
               data-combatant-traveler={combatant.side}
               onAnimationEnd={(event) => {
                 if (
@@ -144,7 +147,7 @@ function BattlePlayback({
               }}
             >
               {reward ? (
-                <span className="absolute bottom-full left-1/2 z-10 w-max -translate-x-1/2 pb-1">
+                <span className="absolute top-full left-1/2 z-10 w-max -translate-x-1/2 pt-1">
                   {reward}
                 </span>
               ) : null}
@@ -228,11 +231,20 @@ export default function SeethingSwarmBattleStage({
     "--battle-result-duration": `${SEETHING_SWARM_BATTLE_RESULT_DURATION_MS}ms`,
     "--battle-approach-duration": `${SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS}ms`,
     "--battle-tile-size": `${SEETHING_SWARM_BATTLE_TILE_SIZE}px`,
+    "--battle-visible-height": `${Math.max(
+      ...choreography.combatants.map((combatant) =>
+        "clips" in combatant
+          ? createSeethingSwarmBattlePresentationGeometry(
+              getSeethingSwarmBattleClips(combatant),
+            ).maximumVisibleHeight
+          : SEETHING_SWARM_BATTLE_TILE_SIZE,
+      ),
+    )}px`,
   }
 
   return (
     <div
-      className="relative grid min-h-min min-w-0 flex-1 grid-cols-2 grid-rows-[minmax(max-content,1fr)_auto] [--battle-arena-height:max(calc(var(--battle-combatant-size)+4rem),9rem)] [--battle-combatant-scale:1] [--battle-combatant-size:calc(var(--battle-tile-size)*var(--battle-combatant-scale))] xl:[--battle-combatant-scale:2]"
+      className="relative grid min-h-min min-w-0 flex-1 grid-cols-2 grid-rows-[max-content_minmax(max-content,1fr)] [--battle-combatant-scale:1] [--battle-combatant-size:calc(var(--battle-tile-size)*var(--battle-combatant-scale))] [--battle-visible-size:calc(var(--battle-visible-height)*var(--battle-combatant-scale))] xl:[--battle-combatant-scale:2]"
       data-battle-stage-mode={choreography.mode}
       data-battle-stage-state={winnerId ? "resolving" : "awaiting-input"}
       data-choreography-identity={choreography.choreographyIdentity}

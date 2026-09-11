@@ -107,9 +107,9 @@ export const ValueChoiceCard = forwardRef<
           aria-describedby={accessibleDefinitionId}
           disabled={!isEnabled}
           onClick={() => onActivate(value.id)}
-          className="flex w-full min-w-0 flex-1 cursor-pointer flex-col justify-center px-[min(0.75rem,8%)] py-3 text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8 xl:py-8"
+          className="flex w-full min-w-0 flex-1 cursor-pointer flex-col justify-start px-[min(0.75rem,8%)] pt-[clamp(2rem,10vh,6rem)] text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8"
         >
-          <div className="my-auto w-full">
+          <div className="w-full">
             <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 xl:gap-5">
               <span
                 aria-hidden="true"
@@ -140,7 +140,7 @@ export const ValueChoiceCard = forwardRef<
           data-battle-arena-side={position}
           htmlFor={choiceId}
           aria-hidden="true"
-          className={`@container relative row-start-2 flex h-(--battle-arena-height) min-w-0 items-end justify-center pb-2 ${isEnabled ? "cursor-pointer" : "cursor-default"} ${isWinner ? "z-30" : "z-20"} ${isFirst ? "bg-mapache-vivid-primary-cyan col-start-1 after:absolute after:inset-y-0 after:right-0 after:w-2 after:bg-black" : "bg-mapache-vivid-primary-raspberry col-start-2"}`}
+          className={`@container relative row-start-2 flex min-w-0 items-start justify-center pt-2 pb-12 ${isEnabled ? "cursor-pointer" : "cursor-default"} ${isWinner ? "z-30" : "z-20"} ${isFirst ? "bg-mapache-vivid-primary-cyan col-start-1 after:absolute after:inset-y-0 after:right-0 after:w-2 after:bg-black" : "bg-mapache-vivid-primary-raspberry col-start-2"}`}
         >
           <span
             aria-hidden="true"
@@ -148,7 +148,6 @@ export const ValueChoiceCard = forwardRef<
             className="pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-b-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block"
           />
           <span className="flex w-(--battle-combatant-size) flex-col items-center">
-            <span aria-hidden="true" className="block h-6 w-full xl:h-10" />
             {combatant(
               isEnabled && (isHovered || isFocused),
               reward ? (
