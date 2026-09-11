@@ -838,12 +838,11 @@ describe("GameClient Integration", () => {
     expect(
       await screen.findByRole("heading", { name: "Top Five" }),
     ).toBeVisible()
-    expect(
-      screen.getByRole("button", {
-        name: `Open ${winnerName} in All Values`,
-      }),
-    ).toBeVisible()
-    expect(screen.getByLabelText("Rank 1")).toBeVisible()
+    const winningValue = screen.getByRole("button", {
+      name: `Open ${winnerName} in All Values`,
+    })
+    expect(winningValue).toBeVisible()
+    expect(winningValue).toHaveAccessibleDescription("Rank 1, gold medal")
     expect(screen.getByText("Level 3")).toBeVisible()
     expect(setItem).not.toHaveBeenCalled()
   })

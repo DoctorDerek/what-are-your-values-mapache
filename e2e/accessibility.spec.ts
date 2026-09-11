@@ -290,6 +290,25 @@ for (const viewport of [
     const dismissBounds = await dismiss.boundingBox()
     expect(dismissBounds!.width).toBeGreaterThanOrEqual(44)
     expect(dismissBounds!.height).toBeGreaterThanOrEqual(44)
+    const dismissMark = dismiss.locator("svg")
+    await expect(dismissMark).toBeVisible()
+    const dismissMarkBounds = await dismissMark.boundingBox()
+    expect(
+      Math.abs(
+        dismissMarkBounds!.x +
+          dismissMarkBounds!.width / 2 -
+          (dismissBounds!.x + dismissBounds!.width / 2),
+      ),
+      "The dismiss mark stays horizontally centered in its target",
+    ).toBeLessThanOrEqual(1)
+    expect(
+      Math.abs(
+        dismissMarkBounds!.y +
+          dismissMarkBounds!.height / 2 -
+          (dismissBounds!.y + dismissBounds!.height / 2),
+      ),
+      "The dismiss mark stays vertically centered in its target",
+    ).toBeLessThanOrEqual(1)
     const overlayBounds = await banner.boundingBox()
     const arenaBounds = await battle
       .locator('[data-battle-arena-side="first"]')
