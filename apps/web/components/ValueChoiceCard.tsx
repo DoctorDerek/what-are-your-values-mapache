@@ -111,18 +111,20 @@ export const ValueChoiceCard = forwardRef<
           <div className="w-full">
             <div className="flow-root w-full min-w-0">
               {controlHint ? (
-              <span
-                aria-hidden="true"
-                className={`float-left max-w-[45%] min-w-0 py-1 pr-2 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:py-3 xl:pr-5 xl:text-2xl ${controlHintContrastClasses}`}
-              >
-                {controlHint}
-              </span>
+                <span
+                  aria-hidden="true"
+                  className={`float-left max-w-[45%] min-w-0 border-2 border-transparent py-1 pr-2 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:border-4 xl:py-2 xl:pr-5 xl:text-2xl ${controlHintContrastClasses}`}
+                >
+                  {controlHint}
+                </span>
               ) : null}
-              <span className={`block w-fit min-w-0 border-2 border-black bg-white px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000] ${controlHint ? "float-right ml-2 max-w-[55%] xl:ml-5" : "mx-auto max-w-full"}`}>
+              <span
+                className={`block w-fit min-w-0 border-2 border-black bg-white px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000] ${controlHint ? "float-right ml-2 max-w-[55%] xl:ml-5" : "mx-auto max-w-full"}`}
+              >
                 Level {level}
               </span>
               <h2
-                className={`mx-auto flow-root w-max max-w-full min-w-0 clear-both pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words hyphens-auto text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000] ${controlHint ? "xl:clear-none xl:pt-0" : ""} ${isFirst ? "[anchor-name:--battle-first-value]" : "[anchor-name:--battle-second-value]"}`}
+                className={`clear-both mx-auto flow-root w-max max-w-full min-w-0 pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words hyphens-auto text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000] ${controlHint ? "xl:clear-none xl:pt-0" : ""} ${isFirst ? "[anchor-name:--battle-first-value]" : "[anchor-name:--battle-second-value]"}`}
               >
                 {displayName}
               </h2>
