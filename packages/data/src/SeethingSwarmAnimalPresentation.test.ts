@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import { CANONICAL_VALUES } from "./CanonicalValues"
 import {
   createSeethingSwarmAnimalPresentationGeometry,
+  createSeethingSwarmBattlePresentationGeometry,
   resolveValueAnimalPresentation,
   SEETHING_SWARM_HUB_ANIMATION_CANDIDATES,
   SEETHING_SWARM_HUB_FRAME_DURATION_MS,
@@ -48,6 +49,44 @@ function isCalmAnimation(animationId: string) {
 }
 
 describe("SeethingSwarm animal presentation", () => {
+  it("reserves the tallest resident animation at one shared integer scale", () => {
+    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const original = catalog.animals[0].characterClips[0]
+    const clips = [
+      {
+        ...original,
+        frameWidth: 64,
+        frameHeight: 64,
+        visibleBounds: { left: 0, top: 0, width: 48, height: 20 },
+      },
+      {
+        ...original,
+        frameWidth: 64,
+        frameHeight: 64,
+        visibleBounds: { left: 0, top: 0, width: 24, height: 50 },
+      },
+    ]
+    const geometry = createSeethingSwarmBattlePresentationGeometry(clips)
+    expect(geometry).toEqual({
+      maximumIntegerScale: 2,
+      maximumVisibleHeight: 100,
+    })
+    for (const clip of clips) {
+      const frame = createSeethingSwarmAnimalPresentationGeometry(
+        clip.frameWidth,
+        clip.frameHeight,
+        clip.visibleBounds,
+        112,
+        geometry.maximumIntegerScale,
+      )
+      expect(
+        clip.visibleBounds.height * frame.integerScale,
+      ).toBeLessThanOrEqual(geometry.maximumVisibleHeight)
+    }
+    expect(
+      createSeethingSwarmBattlePresentationGeometry([...clips].reverse()),
+    ).toEqual(geometry)
+  })
   it("defines the immutable calm animation and fixed Hub geometry policy", () => {
     expect(SEETHING_SWARM_HUB_ANIMATION_CANDIDATES).toEqual([
       "idle",

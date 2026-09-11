@@ -379,6 +379,13 @@ describe("SeethingSwarmBattleStage", () => {
       />,
     )
     const initialWidth = getSprite(container, "first").width
+    const stage = container.querySelector<HTMLElement>(
+      "[data-battle-stage-state]",
+    )!
+    const initialHeight = stage.style.getPropertyValue(
+      "--battle-visible-height",
+    )
+    expect(parseFloat(initialHeight)).toBeGreaterThan(0)
     rerender(
       <SeethingSwarmBattleStage
         {...props}
@@ -390,6 +397,9 @@ describe("SeethingSwarmBattleStage", () => {
     expect(getSprite(container, "first").width).toBe(initialWidth)
     await finishClip(container, "first")
     expect(getSprite(container, "first").width).toBe(initialWidth)
+    expect(stage.style.getPropertyValue("--battle-visible-height")).toBe(
+      initialHeight,
+    )
   })
 
   it("retains every aerial strip and waits for landing as well as the opposing reaction", async () => {
