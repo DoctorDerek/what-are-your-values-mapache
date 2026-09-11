@@ -109,7 +109,9 @@ export const ValueChoiceCard = forwardRef<
           className="flex w-full min-w-0 flex-1 cursor-pointer flex-col justify-start px-[min(0.75rem,8%)] pt-[clamp(2rem,10vh,6rem)] text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8"
         >
           <div className="w-full">
-            <div className="flow-root w-full min-w-0">
+            <div
+              className={`flow-root w-full min-w-0 ${isFirst ? "[anchor-name:--battle-first-value]" : "[anchor-name:--battle-second-value]"}`}
+            >
               {controlHint ? (
                 <span
                   aria-hidden="true"
@@ -124,7 +126,7 @@ export const ValueChoiceCard = forwardRef<
                 Level {level}
               </span>
               <h2
-                className={`clear-both mx-auto flow-root w-max max-w-full min-w-0 pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words hyphens-auto text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000] ${controlHint ? "xl:clear-none xl:pt-0" : ""} ${isFirst ? "[anchor-name:--battle-first-value]" : "[anchor-name:--battle-second-value]"}`}
+                className={`clear-both mx-auto flow-root w-max max-w-full min-w-0 pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words hyphens-auto text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000] ${controlHint ? "xl:clear-none xl:pt-0" : ""}`}
               >
                 {displayName}
               </h2>
