@@ -100,6 +100,53 @@ async function openMenuDestination(page: Page, destinationName: string) {
   await menu.getByRole("button", { name: destinationName, exact: true }).click()
 }
 
+for (const textScale of [200, 400]) {
+  test(`battle value text remains complete and reachable at ${textScale}% text`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await startAtHub(page)
+    await page.getByRole("button", { name: "Battle", exact: true }).click()
+    const battle = page.getByRole("main", { name: "Value battle" })
+    const choices = battle.getByRole("button", { name: /^Choose / })
+    await expect(choices).toHaveCount(2)
+    const textBefore = await choices.allTextContents()
+    await page.addStyleTag({ content: `html { font-size: ${textScale}%; }` })
+    await expect(choices).toHaveCount(2)
+    expect(await choices.allTextContents()).toEqual(textBefore)
+    for (const choice of await choices.all()) {
+      for (const text of [choice.getByRole("heading"), choice.locator("p")]) {
+        await expect(text).toHaveCSS("hyphens", "auto")
+        expect(
+          await text.evaluate(
+            (element) => element.scrollWidth <= element.clientWidth + 1,
+          ),
+        ).toBe(true)
+        await text.scrollIntoViewIfNeeded()
+        const bounds = await text.boundingBox()
+        expect(bounds!.height).toBeGreaterThan(0)
+      }
+    }
+    expect(
+      await battle.evaluate((surface) =>
+        [...surface.querySelectorAll("*")].some((element) =>
+          ["auto", "scroll"].includes(getComputedStyle(element).overflowY),
+        ),
+      ),
+    ).toBe(false)
+    expect(
+      await battle.evaluate(
+        (surface) =>
+          surface.clientWidth <= document.documentElement.clientWidth,
+      ),
+    ).toBe(true)
+    await choices.last().click()
+    await expect(
+      battle.getByRole("button", { name: "Undo", exact: true }),
+    ).toBeEnabled()
+  })
+}
+
 test("Introduction Hub Crucible and achievement feedback reflow without document overflow", async ({
   page,
 }) => {

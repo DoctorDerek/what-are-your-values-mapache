@@ -8,6 +8,31 @@ import { describe, expect, it, vi } from "vitest"
 import { ValueChoiceCard } from "@/components/ValueChoiceCard"
 
 describe("animal card attention", () => {
+  it("preserves long value copy and selection without inserting text break markers", () => {
+    const value = CANONICAL_VALUES.find(
+      (value) => value.englishName === "Diligence",
+    )!
+    const onActivate = vi.fn()
+    render(
+      <ValueChoiceCard
+        position="first"
+        value={value}
+        level={1}
+        winnerId={null}
+        isEnabled
+        isAnimating={false}
+        controlHint={null}
+        onActivate={onActivate}
+        onFocus={vi.fn()}
+      />,
+    )
+    const choice = screen.getByRole("button", { name: /^Choose / })
+    expect(screen.getByRole("heading").textContent).toBe(value.englishName)
+    expect(choice).toHaveAccessibleDescription(`“${value.sourceDefinition}”`)
+    expect(choice.textContent).not.toMatch(/[\u00ad\u200b]/u)
+    fireEvent.click(choice)
+    expect(onActivate).toHaveBeenCalledExactlyOnceWith(value.id)
+  })
   it("combines pointer and actual focus without selecting or repeating attention", () => {
     const value = CANONICAL_VALUES[0]
     const onActivate = vi.fn()
