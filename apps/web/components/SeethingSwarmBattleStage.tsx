@@ -6,7 +6,6 @@ import {
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type { PresentedBattle } from "@game/machines/src/CombatMachine"
-import { getSeethingSwarmBattleClips } from "@game/machines/src/SeethingSwarmBattlePlayback"
 import {
   createSeethingSwarmBattleChoreography,
   type SeethingSwarmBattleChoreography,
@@ -17,6 +16,7 @@ import {
   SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS,
   type SeethingSwarmBattleExchangeCue,
 } from "@game/machines/src/SeethingSwarmBattleExchange"
+import { getSeethingSwarmBattleClips } from "@game/machines/src/SeethingSwarmBattlePlayback"
 import type { StaticImageData } from "next/image"
 import {
   useCallback,

@@ -126,13 +126,14 @@ export function createSeethingSwarmBattlePresentationGeometry<PlatformAsset>(
   clips: readonly SeethingSwarmRuntimeCharacterClip<PlatformAsset>[],
 ) {
   const maximumIntegerScale = Math.min(
-    ...clips.map((clip) =>
-      createSeethingSwarmAnimalPresentationGeometry(
-        clip.frameWidth,
-        clip.frameHeight,
-        clip.visibleBounds,
-        SEETHING_SWARM_BATTLE_TILE_SIZE,
-      ).integerScale,
+    ...clips.map(
+      (clip) =>
+        createSeethingSwarmAnimalPresentationGeometry(
+          clip.frameWidth,
+          clip.frameHeight,
+          clip.visibleBounds,
+          SEETHING_SWARM_BATTLE_TILE_SIZE,
+        ).integerScale,
     ),
   )
   return Object.freeze({
