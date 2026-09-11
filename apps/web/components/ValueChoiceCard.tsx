@@ -62,7 +62,6 @@ export const ValueChoiceCard = forwardRef<
   const controlHintContrastClasses = isFirst
     ? "text-black drop-shadow-[1px_1px_0px_#ffffff]"
     : "text-white drop-shadow-[1px_1px_0px_#000000]"
-  const reservedControlHint = isFirst ? "[1 / A]" : "[2 / D]"
   const accessibleDefinitionId = useId()
   const choiceId = useId()
   const rewardStyle: CSSProperties & { "--reward-progress": string } = {
@@ -110,21 +109,23 @@ export const ValueChoiceCard = forwardRef<
           className="flex w-full min-w-0 flex-1 cursor-pointer flex-col justify-start px-[min(0.75rem,8%)] pt-[clamp(2rem,10vh,6rem)] text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8"
         >
           <div className="w-full">
-            <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 xl:gap-5">
+            <div className="flow-root w-full min-w-0">
+              {controlHint ? (
               <span
                 aria-hidden="true"
-                className={`w-16 max-w-full min-w-0 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:w-28 xl:text-2xl ${controlHintContrastClasses} ${controlHint ? "" : "invisible"}`}
+                className={`float-left max-w-[45%] min-w-0 py-1 pr-2 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:py-3 xl:pr-5 xl:text-2xl ${controlHintContrastClasses}`}
               >
-                {controlHint ?? reservedControlHint}
+                {controlHint}
+              </span>
+              ) : null}
+              <span className={`block w-fit min-w-0 border-2 border-black bg-white px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000] ${controlHint ? "float-right ml-2 max-w-[55%] xl:ml-5" : "mx-auto max-w-full"}`}>
+                Level {level}
               </span>
               <h2
-                className={`order-first mx-auto w-full max-w-4xl min-w-0 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words hyphens-auto text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000] ${isFirst ? "[anchor-name:--battle-first-value]" : "[anchor-name:--battle-second-value]"}`}
+                className={`mx-auto flow-root w-max max-w-full min-w-0 clear-both pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words hyphens-auto text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000] ${controlHint ? "xl:clear-none xl:pt-0" : ""} ${isFirst ? "[anchor-name:--battle-first-value]" : "[anchor-name:--battle-second-value]"}`}
               >
                 {displayName}
               </h2>
-              <span className="inline-block max-w-full min-w-0 border-2 border-black bg-white px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000]">
-                Level {level}
-              </span>
             </div>
             <p
               id={accessibleDefinitionId}
