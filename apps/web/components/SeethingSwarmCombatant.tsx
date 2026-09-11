@@ -1,5 +1,5 @@
 import {
-  createSeethingSwarmAnimalPresentationGeometry,
+  createSeethingSwarmBattlePresentationGeometry,
   SEETHING_SWARM_BATTLE_TILE_SIZE,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { ValueId } from "@game/data/src/Value"
@@ -80,19 +80,8 @@ export default function SeethingSwarmCombatant({
   const hasNoUsableImage = residentClips.every((clip) =>
     failedClips.has(clip.animationId),
   )
-  const maximumIntegerScale = useMemo(
-    () =>
-      Math.min(
-        ...residentClips.map(
-          (clip) =>
-            createSeethingSwarmAnimalPresentationGeometry(
-              clip.frameWidth,
-              clip.frameHeight,
-              clip.visibleBounds,
-              SEETHING_SWARM_BATTLE_TILE_SIZE,
-            ).integerScale,
-        ),
-      ),
+  const { maximumIntegerScale } = useMemo(
+    () => createSeethingSwarmBattlePresentationGeometry(residentClips),
     [residentClips],
   )
   const retainedClipId =
