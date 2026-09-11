@@ -178,7 +178,7 @@ describe("Crucible Component Integration", () => {
     expect(props.onOpenMenu).toHaveBeenCalledTimes(2)
   })
 
-  it("composes achievement feedback over the arena without another layout row", () => {
+  it("owns achievement feedback at the battle screen without another layout row", () => {
     const { battleCycle, battle } = createBattleProps(
       "achievement-banner-space-seed",
     )
@@ -203,7 +203,6 @@ describe("Crucible Component Integration", () => {
       name: "Achievement unlocked",
     })
     const overlay = banner.parentElement
-    const stage = overlay?.parentElement
 
     expect(battleSurface).toHaveAttribute("data-slot", "mapache-screen")
     expect(battleSurface).toHaveClass(
@@ -213,18 +212,12 @@ describe("Crucible Component Integration", () => {
     )
     expect(battleActions).toHaveClass("relative", "shrink-0")
     expect(banner).toHaveClass("relative")
-    expect(overlay).toHaveClass(
-      "pointer-events-none",
-      "absolute",
-      "col-start-1",
-      "col-end-3",
-      "row-start-2",
-      "row-end-3",
-    )
+    expect(overlay).toHaveClass("pointer-events-none", "absolute")
     expect(overlay).not.toContainElement(battleActions)
     expect(battleSurface).toContainElement(battleActions)
     expect(screen.queryByRole("region", { name: "Battle choices" })).toBeNull()
-    expect(stage).toContainElement(
+    expect(overlay?.parentElement).toBe(battleSurface)
+    expect(battleSurface).toContainElement(
       screen.getAllByRole("button", {
         name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
       })[0]!,

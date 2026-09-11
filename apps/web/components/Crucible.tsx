@@ -370,7 +370,7 @@ export default function Crucible({
         ) : null}
       </p>
 
-      <div className="pointer-events-none relative z-50 flex shrink-0 flex-col items-center">
+      <div className="pointer-events-none relative z-50 flex shrink-0 flex-col items-center [anchor-name:--battle-actions]">
         <BattleActionBar
           canOpenMenu={canNavigate}
           canUndo={isInteractive && canUndo}
@@ -393,15 +393,6 @@ export default function Crucible({
         shouldReduceMotion={shouldReduceMotion}
         winnerId={winnerId}
         onResultAnimationComplete={handleResultAnimationComplete}
-        achievementOverlay={
-          <AchievementBanner
-            achievement={achievement}
-            isAcknowledgementPending={isAchievementAcknowledgementPending}
-            placement="battle"
-            shouldReduceMotion={shouldReduceMotion}
-            onPresented={onAchievementPresented}
-          />
-        }
       >
         {(combatants) => (
           <>
@@ -438,6 +429,15 @@ export default function Crucible({
           </>
         )}
       </SeethingSwarmBattleStage>
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-60 flex h-max justify-center self-start supports-[position-try-fallbacks:--battle-achievement-over-controls]:top-[anchor(--battle-actions_bottom)] supports-[position-try-fallbacks:--battle-achievement-over-controls]:bottom-[max(anchor(--battle-first-value_top),anchor(--battle-second-value_top))] supports-[position-try-fallbacks:--battle-achievement-over-controls]:self-center supports-[position-try-fallbacks:--battle-achievement-over-controls]:[position-try-fallbacks:--battle-achievement-over-controls]">
+        <AchievementBanner
+          achievement={achievement}
+          isAcknowledgementPending={isAchievementAcknowledgementPending}
+          placement="battle"
+          shouldReduceMotion={shouldReduceMotion}
+          onPresented={onAchievementPresented}
+        />
+      </div>
     </MapacheScreen>
   )
 }
