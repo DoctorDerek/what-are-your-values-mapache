@@ -118,7 +118,7 @@ export const ValueChoiceCard = forwardRef<
                 {controlHint ?? reservedControlHint}
               </span>
               <h2
-                className={`order-first mx-auto w-full max-w-4xl min-w-0 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000] ${isFirst ? "[anchor-name:--battle-first-value]" : "[anchor-name:--battle-second-value]"}`}
+                className={`order-first mx-auto w-full max-w-4xl min-w-0 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words hyphens-auto text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000] ${isFirst ? "[anchor-name:--battle-first-value]" : "[anchor-name:--battle-second-value]"}`}
               >
                 {displayName}
               </h2>
@@ -128,7 +128,7 @@ export const ValueChoiceCard = forwardRef<
             </div>
             <p
               id={accessibleDefinitionId}
-              className="mx-auto mt-3 max-w-2xl border-2 border-white/20 bg-black/40 px-[min(0.75rem,8%)] py-3 text-[clamp(1rem,2.8vw,1.5rem)] leading-snug font-bold [overflow-wrap:anywhere] break-words whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] xl:mt-6 xl:p-6 xl:text-[clamp(1.25rem,2vw,1.875rem)] xl:leading-relaxed"
+              className="mx-auto mt-3 max-w-2xl border-2 border-white/20 bg-black/40 px-[min(0.75rem,8%)] py-3 text-[clamp(1rem,2.8vw,1.5rem)] leading-snug font-bold [overflow-wrap:anywhere] break-words hyphens-auto whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] xl:mt-6 xl:p-6 xl:text-[clamp(1.25rem,2vw,1.875rem)] xl:leading-relaxed"
             >
               “{getValueDisplayDefinition(value)}”
             </p>
