@@ -310,15 +310,31 @@ for (const viewport of [
       "The dismiss mark stays vertically centered in its target",
     ).toBeLessThanOrEqual(1)
     const overlayBounds = await banner.boundingBox()
-    const arenaBounds = await battle
-      .locator('[data-battle-arena-side="first"]')
+    const controlsBounds = await battle
+      .getByRole("navigation", { name: "Battle actions" })
       .boundingBox()
-    expect(overlayBounds!.y).toBeGreaterThanOrEqual(arenaBounds!.y)
-    expect(overlayBounds!.y + overlayBounds!.height).toBeLessThanOrEqual(
-      arenaBounds!.y + arenaBounds!.height,
+    const headingBounds = await Promise.all(
+      (await choices.getByRole("heading").all()).map((heading) =>
+        heading.boundingBox(),
+      ),
     )
+    const gapTop = controlsBounds!.y + controlsBounds!.height
+    const gapBottom = Math.min(...headingBounds.map((bounds) => bounds!.y))
+    if (gapBottom - gapTop >= overlayBounds!.height) {
+      expect(
+        Math.abs(
+          overlayBounds!.y +
+            overlayBounds!.height / 2 -
+            (gapTop + gapBottom) / 2,
+        ),
+      ).toBeLessThanOrEqual(1)
+    } else {
+      expect(
+        Math.abs(overlayBounds!.y - controlsBounds!.y),
+      ).toBeLessThanOrEqual(1)
+    }
     for (const choice of await choices.all()) {
-      const bounds = await choice.boundingBox()
+      const bounds = await choice.getByRole("heading").boundingBox()
       expect(
         overlayBounds!.x < bounds!.x + bounds!.width &&
           overlayBounds!.x + overlayBounds!.width > bounds!.x &&
