@@ -313,13 +313,13 @@ for (const viewport of [
     const controlsBounds = await battle
       .getByRole("navigation", { name: "Battle actions" })
       .boundingBox()
-    const headingBounds = await Promise.all(
+    const metadataBounds = await Promise.all(
       (await choices.getByRole("heading").all()).map((heading) =>
-        heading.boundingBox(),
+        heading.locator("..").boundingBox(),
       ),
     )
     const gapTop = controlsBounds!.y + controlsBounds!.height
-    const gapBottom = Math.min(...headingBounds.map((bounds) => bounds!.y))
+    const gapBottom = Math.min(...metadataBounds.map((bounds) => bounds!.y))
     if (gapBottom - gapTop >= overlayBounds!.height) {
       expect(
         Math.abs(
@@ -334,13 +334,16 @@ for (const viewport of [
       ).toBeLessThanOrEqual(1)
     }
     for (const choice of await choices.all()) {
-      const bounds = await choice.getByRole("heading").boundingBox()
+      const bounds = await choice
+        .getByRole("heading")
+        .locator("..")
+        .boundingBox()
       expect(
         overlayBounds!.x < bounds!.x + bounds!.width &&
           overlayBounds!.x + overlayBounds!.width > bounds!.x &&
           overlayBounds!.y < bounds!.y + bounds!.height &&
           overlayBounds!.y + overlayBounds!.height > bounds!.y,
-        "The achievement overlay must not obscure value text",
+        "The achievement overlay must not obscure value names, levels, or hints",
       ).toBe(false)
     }
     expect(

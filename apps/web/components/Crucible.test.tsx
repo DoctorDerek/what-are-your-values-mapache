@@ -308,7 +308,7 @@ describe("Crucible Component Integration", () => {
     expect(secondControlHint).toBeVisible()
   })
 
-  it("changes Auto hints only after intentional keyboard or pointer input without moving the identity rail", async () => {
+  it("changes Auto hints only after intentional keyboard or pointer input", async () => {
     vi.spyOn(navigator, "maxTouchPoints", "get").mockReturnValue(1)
     const { battleCycle, battle } = createBattleProps("auto-hint-modality-seed")
     const firstDefinition = battleCycle.activeDeck.values.find(
@@ -335,20 +335,20 @@ describe("Crucible Component Integration", () => {
         level: 1,
       }),
     })
-    const hint = within(choice).getByText("[1 / A]")
-    await waitFor(() => expect(hint).toHaveClass("invisible"))
+    expect(within(choice).queryByText("[1 / A]")).not.toBeInTheDocument()
     fireEvent.mouseMove(window)
     fireEvent.keyDown(window, { key: "Shift" })
-    expect(hint).toHaveClass("invisible")
+    expect(within(choice).queryByText("[1 / A]")).not.toBeInTheDocument()
 
     fireEvent.keyDown(window, { key: "ArrowRight" })
-    await waitFor(() => expect(hint).not.toHaveClass("invisible"))
-    expect(hint).toHaveClass("w-16", "xl:w-28")
+    expect(await within(choice).findByText("[1 / A]")).toBeVisible()
     act(() => window.dispatchEvent(new Event("pointerdown")))
-    await waitFor(() => expect(hint).toHaveClass("invisible"))
+    await waitFor(() =>
+      expect(within(choice).queryByText("[1 / A]")).not.toBeInTheDocument(),
+    )
   })
 
-  it("shows the applicable fixed-width Tap hint for Always and reserves that rail for Off", async () => {
+  it("shows the applicable Tap hint for Always and removes hints for Off", async () => {
     vi.spyOn(navigator, "maxTouchPoints", "get").mockReturnValue(1)
     const { battleCycle, battle } = createBattleProps("explicit-hint-seed")
     const firstDefinition = battleCycle.activeDeck.values.find(
@@ -376,12 +376,12 @@ describe("Crucible Component Integration", () => {
       }),
     })
     const tapHint = within(choice).getByText("Tap")
-    expect(tapHint).not.toHaveClass("invisible")
-    expect(tapHint).toHaveClass("w-16", "xl:w-28")
+    expect(tapHint).toBeVisible()
 
     rerender(<Crucible {...baseProps} controlHintPreference="off" />)
-    const reservedHint = within(choice).getByText("[1 / A]")
-    expect(reservedHint).toHaveClass("invisible", "w-16", "xl:w-28")
+    expect(within(choice).queryByText("Tap")).not.toBeInTheDocument()
+    expect(within(choice).queryByText("[1 / A]")).not.toBeInTheDocument()
+    expect(within(choice).getByText("Level 1")).toBeVisible()
   })
 
   it("renders semantic canonical values and commits a keyboard selection once", async () => {
