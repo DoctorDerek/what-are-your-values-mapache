@@ -18,8 +18,8 @@ import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import type { StaticImageData } from "next/image"
 import { useState, type Ref } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
-import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
 import { useSeethingSwarmAssetStatus } from "@/components/SeethingSwarmAssetPreparation"
+import SeethingSwarmHubAnimal from "@/components/SeethingSwarmHubAnimal"
 import { Button } from "@/components/ui/button"
 import ValueLevelProgress from "@/components/ValueLevelProgress"
 
@@ -28,11 +28,15 @@ export const HUB_MENU_BUTTON_ID = "hub-menu-button"
 function ValueRankPresentation({
   rank,
   showRank,
+  catalog,
+  isAttended,
   valuePresentation,
   shouldReduceMotion,
 }: {
   rank: number
   showRank: boolean
+  catalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
+  isAttended: boolean
   valuePresentation: ValueAnimalPresentation<StaticImageData> | undefined
   shouldReduceMotion: boolean
 }) {
@@ -71,8 +75,10 @@ function ValueRankPresentation({
         className="relative flex h-[72px] w-[72px] flex-none items-center justify-center overflow-hidden bg-white shadow-[inset_0_0_0_4px_#000000]"
       >
         {valuePresentation.kind === "animal" && !hasImageFailed ? (
-          <SeethingSwarmAnimal
-            clip={valuePresentation.clip}
+          <SeethingSwarmHubAnimal
+            calmClip={valuePresentation.clip}
+            catalog={catalog}
+            isAttended={isAttended}
             onLoadError={() => setFailedImagePath(imagePath)}
             shouldReduceMotion={shouldReduceMotion}
           />
@@ -105,6 +111,7 @@ function ValueRow({
   shouldReduceMotion,
   onOpenValue,
   showDivider,
+  catalog,
 }: {
   rankedValue: RankedValue
   hasComparisons: boolean
@@ -112,7 +119,10 @@ function ValueRow({
   shouldReduceMotion: boolean
   onOpenValue: (valueId: ValueId, focusTargetId: string) => void
   showDivider: boolean
+  catalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
 }) {
+  const [isHovered, setIsHovered] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
   const { definition, progress, rank } = rankedValue
   const displayName = getValueDisplayName(definition)
   const rowId = `hub-value-${definition.id}`
@@ -133,6 +143,13 @@ function ValueRow({
         id={`${rowId}-button`}
         type="button"
         onClick={(event) => onOpenValue(definition.id, event.currentTarget.id)}
+        onPointerEnter={(event) => {
+          if (event.pointerType !== "touch") setIsHovered(true)
+        }}
+        onPointerLeave={() => setIsHovered(false)}
+        onPointerCancel={() => setIsHovered(false)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         className="hover:bg-mapache-vivid-primary-cyan/10 flex w-full min-w-0 cursor-pointer items-center gap-2 p-2 text-left focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-black xl:gap-3"
         aria-label={`Open ${displayName} in All Values`}
         aria-describedby={hasComparisons ? `${rowId}-rank` : undefined}
@@ -140,6 +157,8 @@ function ValueRow({
         <ValueRankPresentation
           rank={rank}
           showRank={hasComparisons}
+          catalog={catalog}
+          isAttended={isHovered || isFocused}
           valuePresentation={valuePresentation}
           shouldReduceMotion={shouldReduceMotion}
         />
@@ -313,6 +332,7 @@ export default function Hub({
             {visibleValues.map((rankedValue, index) => (
               <ValueRow
                 key={rankedValue.definition.id}
+                catalog={runtimeClipCatalog}
                 rankedValue={rankedValue}
                 hasComparisons={hasComparisons}
                 valuePresentation={resolveValueAnimalPresentation(
