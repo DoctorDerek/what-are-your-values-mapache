@@ -8,6 +8,7 @@ import {
   validateCustomValueDraft,
 } from "@game/data/src/CustomValueValidation"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
+import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import {
   getValueDisplayDefinition,
   getValueDisplayName,
@@ -15,10 +16,11 @@ import {
   type ValueId,
 } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
-import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { findRankedValueNameMatches } from "@game/data/src/ValueSearch"
+import type { StaticImageData } from "next/image"
 import type { FormEvent } from "react"
 import { useEffect, useMemo, useRef, useState } from "react"
+import AllValuesValueRow from "@/components/AllValuesValueRow"
 import CustomValueFieldFeedback from "@/components/CustomValueFieldFeedback"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
@@ -28,6 +30,8 @@ import ValueLevelProgress from "@/components/ValueLevelProgress"
 
 export default function AllValues({
   rankedValues,
+  runtimeClipCatalog,
+  shouldReduceMotion,
   initialValueId,
   openCustomValueBuilder,
   isPersistencePending = false,
@@ -40,6 +44,8 @@ export default function AllValues({
   onDeleteCustomValue,
 }: {
   rankedValues: readonly RankedValue[]
+  runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
+  shouldReduceMotion: boolean
   initialValueId?: ValueId | null
   openCustomValueBuilder?: boolean
   isPersistencePending?: boolean
@@ -220,70 +226,64 @@ export default function AllValues({
   }
 
   const renderRows = (values: readonly RankedValue[]) =>
-    values.map(({ rank, definition, progress }) => {
+    values.map((rankedValue) => {
+      const { definition, progress } = rankedValue
       const displayName = getValueDisplayName(definition)
       const isEditing = definition.id === editingValueId
       const isDeleting = definition.id === deletingValueId
       const customValueId = definition.kind === "custom" ? definition.id : null
-      const { medal, accessibleLabel } = getValueRankPresentation(rank)
 
       return (
-        <li
+        <AllValuesValueRow
           key={definition.id}
-          id={`all-values-row-${definition.id}`}
-          tabIndex={-1}
-          data-value-row="true"
-          className={`text-mapache-vivid-dark overflow-x-auto overflow-y-auto border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] outline-none sm:p-7 ${highlightedValueId === definition.id ? "ring-mapache-vivid-primary-cyan ring-8" : ""}`}
-        >
-          <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-5">
-            {hasComparisons ? (
-              <span className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-2xl font-black text-white uppercase">
-                <span aria-hidden="true" className="flex items-center gap-2">
-                  <span>#{rank}</span>
-                  {medal ? <span>{medal.emoji}</span> : null}
+          rankedValue={rankedValue}
+          hasComparisons={hasComparisons}
+          isHighlighted={highlightedValueId === definition.id}
+          runtimeClipCatalog={runtimeClipCatalog}
+          shouldReduceMotion={shouldReduceMotion}
+          heading={
+            <>
+              <h3 className="min-w-0 flex-1 text-3xl font-black [overflow-wrap:anywhere] break-words uppercase sm:text-4xl">
+                {displayName}
+              </h3>
+              {customValueId ? (
+                <span className="bg-mapache-vivid-primary-cyan border-4 border-black px-3 py-2 text-lg font-black text-black uppercase">
+                  Yours
                 </span>
-                <span className="sr-only">{accessibleLabel}</span>
-              </span>
-            ) : null}
-            <h3 className="min-w-0 flex-1 text-3xl font-black [overflow-wrap:anywhere] break-words uppercase sm:text-4xl">
-              {displayName}
-            </h3>
-            {customValueId ? (
-              <span className="bg-mapache-vivid-primary-cyan border-4 border-black px-3 py-2 text-lg font-black text-black uppercase">
-                Yours
-              </span>
-            ) : null}
-            <ValueLevelProgress totalXp={progress.totalXp} />
-            {definition.kind === "custom" ? (
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  disabled={isPersistencePending}
-                  onClick={() =>
-                    startEdit(
-                      definition.id,
-                      definition.name,
-                      definition.definition,
-                    )
-                  }
-                  className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-lg font-black text-white uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  disabled={isPersistencePending}
-                  onClick={() => {
-                    setDeletingValueId(definition.id)
-                    setEditingValueId(null)
-                  }}
-                  className="bg-mapache-vivid-secondary-red border-4 border-black px-3 py-2 text-lg font-black text-black uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
-                >
-                  Delete
-                </button>
-              </div>
-            ) : null}
-          </div>
+              ) : null}
+              <ValueLevelProgress totalXp={progress.totalXp} />
+              {definition.kind === "custom" ? (
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    disabled={isPersistencePending}
+                    onClick={() =>
+                      startEdit(
+                        definition.id,
+                        definition.name,
+                        definition.definition,
+                      )
+                    }
+                    className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-lg font-black text-white uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isPersistencePending}
+                    onClick={() => {
+                      setDeletingValueId(definition.id)
+                      setEditingValueId(null)
+                    }}
+                    className="bg-mapache-vivid-secondary-red border-4 border-black px-3 py-2 text-lg font-black text-black uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
+                  >
+                    Delete
+                  </button>
+                </div>
+              ) : null}
+            </>
+          }
+        >
           {isDeleting && customValueId ? (
             <div
               role="alertdialog"
@@ -437,7 +437,7 @@ export default function AllValues({
               “{getValueDisplayDefinition(definition)}”
             </p>
           )}
-        </li>
+        </AllValuesValueRow>
       )
     })
 

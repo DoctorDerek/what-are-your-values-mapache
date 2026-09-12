@@ -847,6 +847,8 @@ function WritableGameClient({
     return (
       <>
         <AllValues
+          runtimeClipCatalog={SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG}
+          shouldReduceMotion={shouldReduceMotion}
           key={`${battleProfile.scheduler.deckRevision}:${customValueBuilderRequestId}`}
           rankedValues={rankedValues}
           initialValueId={pendingAllValuesValueId}
