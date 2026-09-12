@@ -19,13 +19,11 @@ export function getHubPreparationClips<Asset>(
   rankedValues: readonly RankedValue[],
   catalog: SeethingSwarmRuntimeClipCatalog<Asset>,
 ) {
-  const { hasComparisons, topFive } = projectHubValues(rankedValues)
-  return hasComparisons
-    ? topFive.flatMap(({ definition }) => {
-        const presentation = resolveValueAnimalPresentation(definition, catalog)
-        return presentation.kind === "animal" ? [presentation.clip] : []
-      })
-    : []
+  const { visibleValues } = projectHubValues(rankedValues)
+  return visibleValues.flatMap(({ definition }) => {
+    const presentation = resolveValueAnimalPresentation(definition, catalog)
+    return presentation.kind === "animal" ? [presentation.clip] : []
+  })
 }
 
 export function getChoreographyPreparationClips<Asset>(
