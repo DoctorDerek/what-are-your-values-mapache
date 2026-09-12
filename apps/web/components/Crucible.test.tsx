@@ -342,7 +342,17 @@ describe("Crucible Component Integration", () => {
 
     fireEvent.keyDown(window, { key: "ArrowRight" })
     expect(await within(choice).findByText("[1 / A]")).toBeVisible()
-    act(() => window.dispatchEvent(new Event("pointerdown")))
+    act(() =>
+      window.dispatchEvent(
+        new PointerEvent("pointerdown", { pointerType: "mouse" }),
+      ),
+    )
+    expect(within(choice).getByText("[1 / A]")).toBeVisible()
+    act(() =>
+      window.dispatchEvent(
+        new PointerEvent("pointerdown", { pointerType: "touch" }),
+      ),
+    )
     await waitFor(() =>
       expect(within(choice).queryByText("[1 / A]")).not.toBeInTheDocument(),
     )
@@ -380,6 +390,12 @@ describe("Crucible Component Integration", () => {
 
     rerender(<Crucible {...baseProps} controlHintPreference="off" />)
     expect(within(choice).queryByText("Tap")).not.toBeInTheDocument()
+    expect(within(choice).queryByText("[1 / A]")).not.toBeInTheDocument()
+    act(() =>
+      window.dispatchEvent(
+        new PointerEvent("pointerdown", { pointerType: "mouse" }),
+      ),
+    )
     expect(within(choice).queryByText("[1 / A]")).not.toBeInTheDocument()
     expect(within(choice).getByText("Level 1")).toBeVisible()
   })
