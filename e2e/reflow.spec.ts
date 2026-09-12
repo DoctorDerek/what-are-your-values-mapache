@@ -39,6 +39,10 @@ for (const width of [390, 1440]) {
     await page.getByRole("button", { name: "Menu", exact: true }).focus()
     await expect(active.locator("img")).toHaveAttribute("src", source!)
     await page.emulateMedia({ reducedMotion: "reduce" })
+    await page.reload()
+    await page
+      .getByRole("button", { name: "Browse All Values", exact: true })
+      .click()
     await row.focus()
     await expect(active.locator('[data-playback-mode="static"]')).toHaveCount(1)
     await page.addStyleTag({ content: "html { font-size: 200%; }" })
