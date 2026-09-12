@@ -520,7 +520,21 @@ for (const viewport of [
     const originalChoiceLabels = await choices.evaluateAll((buttons) =>
       buttons.map((button) => button.getAttribute("aria-label")!),
     )
-    await choices.last().click()
+    await choices.last().hover()
+    const readChoiceGeometry = () =>
+      choices.evaluateAll((buttons) =>
+        buttons.map((button) => {
+          const surface = button.closest("main")!
+          const { x, y, width, height } = button.getBoundingClientRect()
+          return { x, y: y + surface.scrollTop + window.scrollY, width, height }
+        }),
+      )
+    const beforeMousePress = await readChoiceGeometry()
+    await page.mouse.down()
+    for (const choice of await choices.all())
+      await expect(choice.getByText(/^\[\d \/ [A-Z]\]$/)).toBeVisible()
+    expect(await readChoiceGeometry()).toEqual(beforeMousePress)
+    await page.mouse.up()
     await expect(
       battle.locator("[data-choreography-identity]"),
     ).not.toHaveAttribute("data-choreography-identity", identity!)

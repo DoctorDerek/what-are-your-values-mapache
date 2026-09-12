@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import useWebControlHintInputModality from "./useWebControlHintInputModality"
+import useWebControlHintInputModality from "@/lib/useWebControlHintInputModality"
 
 describe("useWebControlHintInputModality", () => {
   afterEach(() => vi.restoreAllMocks())
@@ -28,7 +28,32 @@ describe("useWebControlHintInputModality", () => {
 
     act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "a" })))
     expect(result.current).toBe("keyboard")
-    act(() => window.dispatchEvent(new Event("pointerdown")))
+    act(() =>
+      window.dispatchEvent(
+        new PointerEvent("pointerdown", { pointerType: "mouse" }),
+      ),
+    )
+    expect(result.current).toBe("keyboard")
+    act(() => window.dispatchEvent(new PointerEvent("pointerdown")))
+    expect(result.current).toBe("keyboard")
+    act(() =>
+      window.dispatchEvent(
+        new PointerEvent("pointerdown", { pointerType: "touch" }),
+      ),
+    )
+    expect(result.current).toBe("touch-pointer")
+
+    act(() =>
+      window.dispatchEvent(
+        new PointerEvent("pointerdown", { pointerType: "mouse" }),
+      ),
+    )
+    expect(result.current).toBe("keyboard")
+    act(() =>
+      window.dispatchEvent(
+        new PointerEvent("pointerdown", { pointerType: "pen" }),
+      ),
+    )
     expect(result.current).toBe("touch-pointer")
 
     unmount()
