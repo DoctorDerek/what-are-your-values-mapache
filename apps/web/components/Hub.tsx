@@ -8,7 +8,11 @@ import {
   type ValueAnimalPresentation,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
-import { getValueDisplayName, type ValueId } from "@game/data/src/Value"
+import {
+  getValueDisplayDefinition,
+  getValueDisplayName,
+  type ValueId,
+} from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import type { StaticImageData } from "next/image"
@@ -23,10 +27,12 @@ export const HUB_MENU_BUTTON_ID = "hub-menu-button"
 
 function ValueRankPresentation({
   rank,
+  showRank,
   valuePresentation,
   shouldReduceMotion,
 }: {
   rank: number
+  showRank: boolean
   valuePresentation: ValueAnimalPresentation<StaticImageData> | undefined
   shouldReduceMotion: boolean
 }) {
@@ -40,6 +46,11 @@ function ValueRankPresentation({
     imagePath !== null &&
     (preparedStatus === "failed" || failedImagePath === imagePath)
   const { medal } = getValueRankPresentation(rank)
+  if (
+    !showRank &&
+    (!valuePresentation || valuePresentation.kind === "typography-only")
+  )
+    return null
   if (!valuePresentation || valuePresentation.kind === "typography-only")
     return (
       <span
@@ -47,8 +58,8 @@ function ValueRankPresentation({
         data-value-presentation="typography-only"
         className="bg-mapache-vivid-secondary-purple flex flex-none items-center gap-2 border-4 border-black px-3 py-2 text-2xl font-black text-white uppercase"
       >
-        <span>#{rank}</span>
-        {medal ? <span>{medal.emoji}</span> : null}
+        {showRank ? <span>#{rank}</span> : null}
+        {showRank && medal ? <span>{medal.emoji}</span> : null}
       </span>
     )
 
@@ -69,16 +80,20 @@ function ValueRankPresentation({
           <span className="text-mapache-vivid-secondary-purple text-4xl font-black uppercase">
             {valuePresentation.kind === "custom-initial"
               ? valuePresentation.initial
-              : `#${rank}`}
+              : showRank
+                ? `#${rank}`
+                : null}
           </span>
         )}
-        {!hasImageFailed ? (
+        {showRank && !hasImageFailed ? (
           <span className="bg-mapache-vivid-secondary-purple absolute top-0 left-0 z-10 border-r-4 border-b-4 border-black px-1.5 py-1 text-sm leading-none font-black text-white uppercase">
             #{rank}
           </span>
         ) : null}
       </span>
-      {medal ? <span className="text-2xl">{medal.emoji}</span> : null}
+      {showRank && medal ? (
+        <span className="text-2xl">{medal.emoji}</span>
+      ) : null}
     </span>
   )
 }
@@ -89,12 +104,14 @@ function ValueRow({
   valuePresentation,
   shouldReduceMotion,
   onOpenValue,
+  showDivider,
 }: {
   rankedValue: RankedValue
   hasComparisons: boolean
   valuePresentation?: ValueAnimalPresentation<StaticImageData>
   shouldReduceMotion: boolean
   onOpenValue: (valueId: ValueId, focusTargetId: string) => void
+  showDivider: boolean
 }) {
   const { definition, progress, rank } = rankedValue
   const displayName = getValueDisplayName(definition)
@@ -105,32 +122,43 @@ function ValueRow({
     <li
       id={rowId}
       data-value-row="true"
-      className="text-mapache-vivid-dark border-4 border-black bg-white shadow-[6px_6px_0px_0px_#000000]"
+      className={`text-mapache-vivid-dark border-2 border-black ${hasComparisons && rank <= 5 ? "bg-mapache-vivid-primary-cyan/10" : "bg-white"}`}
     >
+      {showDivider ? (
+        <h3 className="bg-mapache-vivid-primary-cyan border-b-4 border-black p-3 text-center text-xl font-black uppercase">
+          All Other Values
+        </h3>
+      ) : null}
       <button
         id={`${rowId}-button`}
         type="button"
         onClick={(event) => onOpenValue(definition.id, event.currentTarget.id)}
-        className="flex w-full min-w-0 cursor-pointer flex-wrap items-center gap-4 p-4 text-left hover:-translate-y-1 hover:shadow-[0_6px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black sm:gap-6 sm:p-5"
+        className="hover:bg-mapache-vivid-primary-cyan/10 flex w-full min-w-0 cursor-pointer items-center gap-2 p-2 text-left focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-black xl:gap-3"
         aria-label={`Open ${displayName} in All Values`}
         aria-describedby={hasComparisons ? `${rowId}-rank` : undefined}
       >
+        <ValueRankPresentation
+          rank={rank}
+          showRank={hasComparisons}
+          valuePresentation={valuePresentation}
+          shouldReduceMotion={shouldReduceMotion}
+        />
         {hasComparisons ? (
-          <>
-            <ValueRankPresentation
-              rank={rank}
-              valuePresentation={valuePresentation}
-              shouldReduceMotion={shouldReduceMotion}
-            />
-            <span id={`${rowId}-rank`} className="sr-only">
-              {accessibleLabel}
-            </span>
-          </>
+          <span id={`${rowId}-rank`} className="sr-only">
+            {accessibleLabel}
+          </span>
         ) : null}
-        <span className="min-w-0 flex-1 text-2xl font-black [overflow-wrap:anywhere] break-words uppercase sm:text-3xl">
-          {displayName}
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="flex flex-wrap items-center justify-between gap-2">
+            <span className="min-w-0 text-base font-black [overflow-wrap:anywhere] uppercase xl:text-lg">
+              {displayName}
+            </span>
+            <ValueLevelProgress totalXp={progress.totalXp} compact />
+          </span>
+          <span className="text-sm [overflow-wrap:anywhere]">
+            {getValueDisplayDefinition(definition)}
+          </span>
         </span>
-        <ValueLevelProgress totalXp={progress.totalXp} />
       </button>
     </li>
   )
@@ -152,7 +180,7 @@ function ValueActionRail({
   return (
     <nav
       aria-label="Value actions"
-      className="mt-6 grid w-full grid-cols-1 gap-4 xl:grid-cols-3"
+      className="mt-4 grid w-full grid-cols-1 gap-3 xl:grid-cols-3"
     >
       <button
         type="button"
@@ -220,16 +248,21 @@ export default function Hub({
   onOpenValue: (valueId: ValueId, focusTargetId: string) => void
   onStartBattle: () => void
 }) {
-  const { hasComparisons, visibleValues, topFive, remainingValues } =
-    projectHubValues(rankedValues)
+  const { hasComparisons, visibleValues } = projectHubValues(rankedValues)
 
   return (
     <MapacheScreen
-      spacing="standard"
+      spacing="standard-xl"
       viewport="scrollable"
-      className="flex flex-col items-center"
+      className="flex min-w-0 flex-col items-center [overflow-wrap:anywhere]"
     >
-      <div className="flex w-full max-w-7xl justify-end">
+      <div className="mb-3 flex w-full max-w-7xl flex-wrap items-center justify-between gap-3">
+        <h1
+          id="your-values-heading"
+          className="text-mapache-vivid-primary-cyan text-3xl font-black uppercase xl:text-4xl"
+        >
+          Your Values
+        </h1>
         <Button
           id={HUB_MENU_BUTTON_ID}
           type="button"
@@ -241,24 +274,14 @@ export default function Hub({
         </Button>
       </div>
 
-      <h1 className="text-mapache-vivid-primary-cyan mt-8 mb-8 text-center text-5xl font-black uppercase drop-shadow-[6px_6px_0px_#000000] lg:text-7xl">
-        Your Values
-      </h1>
-
       <section
         aria-labelledby="your-values-heading"
-        className="flex min-h-0 w-full max-w-7xl flex-1 flex-col border-4 border-black bg-white p-4 shadow-[12px_12px_0px_0px_#000000] sm:p-8"
+        className="flex min-h-0 w-full max-w-7xl min-w-0 flex-col border-4 border-black bg-white p-3 shadow-[6px_6px_0px_0px_#000000] xl:p-4"
       >
-        <h2
-          id="your-values-heading"
-          className="text-mapache-vivid-dark border-b-8 border-black pb-5 text-4xl font-black uppercase sm:text-5xl"
-        >
+        <h2 className="text-mapache-vivid-dark text-xl font-black uppercase">
           {hasComparisons ? "Your Values" : "Included Values"}
         </h2>
-        <p
-          role="status"
-          className="text-mapache-vivid-dark py-5 text-xl font-black uppercase sm:text-2xl"
-        >
+        <p role="status" className="text-mapache-vivid-dark pt-1 pb-3 text-sm">
           {hasComparisons
             ? "Your ranking is based on your committed battles."
             : "Not ranked yet. Browse the included values, then battle when you are ready."}
@@ -272,80 +295,44 @@ export default function Hub({
           </p>
         ) : null}
 
-        {hasComparisons ? (
-          <div className="min-h-0 flex-1 overflow-y-auto pr-2">
-            <section aria-labelledby="top-five-heading">
-              <h3
-                id="top-five-heading"
-                className="text-mapache-vivid-dark border-b-4 border-black py-4 text-3xl font-black uppercase"
-              >
-                Top Five
-              </h3>
-              <ol className="flex flex-col gap-4 py-4">
-                {topFive.map((rankedValue) => (
-                  <ValueRow
-                    key={rankedValue.definition.id}
-                    rankedValue={rankedValue}
-                    hasComparisons
-                    valuePresentation={resolveValueAnimalPresentation(
-                      rankedValue.definition,
-                      runtimeClipCatalog,
-                    )}
-                    shouldReduceMotion={shouldReduceMotion}
-                    onOpenValue={onOpenValue}
-                  />
-                ))}
-              </ol>
-            </section>
-            <ValueActionRail
-              isBattlePending={isBattlePending}
-              browseAllValuesButtonRef={browseAllValuesButtonRef}
-              onBrowseAllValues={onBrowseAllValues}
-              onAddCustomValue={onAddCustomValue}
-              onStartBattle={onStartBattle}
-            />
-            <div className="bg-mapache-vivid-primary-cyan border-y-8 border-black px-4 py-3 text-center text-2xl font-black text-black uppercase">
-              All Other Values
-            </div>
-            <section aria-labelledby="all-other-values-heading">
-              <h3 id="all-other-values-heading" className="sr-only">
-                All Other Values
-              </h3>
-              <ol className="flex flex-col gap-4 py-4">
-                {remainingValues.map((rankedValue) => (
-                  <ValueRow
-                    key={rankedValue.definition.id}
-                    rankedValue={rankedValue}
-                    hasComparisons
-                    shouldReduceMotion={shouldReduceMotion}
-                    onOpenValue={onOpenValue}
-                  />
-                ))}
-              </ol>
-            </section>
-          </div>
-        ) : (
-          <>
-            <ValueActionRail
-              isBattlePending={isBattlePending}
-              browseAllValuesButtonRef={browseAllValuesButtonRef}
-              onBrowseAllValues={onBrowseAllValues}
-              onAddCustomValue={onAddCustomValue}
-              onStartBattle={onStartBattle}
-            />
-            <ol className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-2">
-              {visibleValues.map((rankedValue) => (
-                <ValueRow
-                  key={rankedValue.definition.id}
-                  rankedValue={rankedValue}
-                  hasComparisons={false}
-                  shouldReduceMotion={shouldReduceMotion}
-                  onOpenValue={onOpenValue}
-                />
-              ))}
-            </ol>
-          </>
-        )}
+        <div
+          className="h-120 max-h-[55dvh] min-h-48 overflow-y-auto px-1 pb-2"
+          tabIndex={0}
+          role="region"
+          aria-label="Value roster"
+        >
+          {hasComparisons ? (
+            <h3
+              id="top-five-heading"
+              className="text-mapache-vivid-dark py-3 text-2xl font-black uppercase"
+            >
+              Top Five
+            </h3>
+          ) : null}
+          <ol className="flex flex-col gap-3">
+            {visibleValues.map((rankedValue, index) => (
+              <ValueRow
+                key={rankedValue.definition.id}
+                rankedValue={rankedValue}
+                hasComparisons={hasComparisons}
+                valuePresentation={resolveValueAnimalPresentation(
+                  rankedValue.definition,
+                  runtimeClipCatalog,
+                )}
+                shouldReduceMotion={shouldReduceMotion}
+                onOpenValue={onOpenValue}
+                showDivider={hasComparisons && index === 5}
+              />
+            ))}
+          </ol>
+        </div>
+        <ValueActionRail
+          isBattlePending={isBattlePending}
+          browseAllValuesButtonRef={browseAllValuesButtonRef}
+          onBrowseAllValues={onBrowseAllValues}
+          onAddCustomValue={onAddCustomValue}
+          onStartBattle={onStartBattle}
+        />
       </section>
     </MapacheScreen>
   )
