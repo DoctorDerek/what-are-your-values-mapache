@@ -1,6 +1,10 @@
 import { createActiveDeck, type ActiveDeck } from "@game/data/src/ActiveDeck"
 import { CANONICAL_VALUES } from "@game/data/src/CanonicalValues"
 import {
+  createSeethingSwarmTypographyOnlyRuntimeClipCatalog,
+  type SeethingSwarmRuntimeClipCatalog,
+} from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import {
   createCustomValueId,
   getValueDisplayDefinition,
   getValueDisplayName,
@@ -8,7 +12,15 @@ import {
 } from "@game/data/src/Value"
 import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues } from "@game/data/src/ValueRanking"
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { ZOO_ANIMALS } from "@game/data/src/ZooAnimals"
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react"
+import type { StaticImageData } from "next/image"
 import type { ComponentProps } from "react"
 import { describe, expect, it, vi } from "vitest"
 import AllValues from "./AllValues"
@@ -37,6 +49,8 @@ function renderAllValues(
 ) {
   return render(
     <AllValues
+      runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+      shouldReduceMotion={false}
       rankedValues={rankedValues}
       isMenuOpen={false}
       onClose={vi.fn()}
@@ -50,6 +64,63 @@ function renderAllValues(
 }
 
 describe("All Values Component Integration", () => {
+  it("retains calm art until attention is ready and preserves focus while the pointer leaves", async () => {
+    const runtimeClipCatalog = {
+      mode: "licensed",
+      evidenceSnapshotId: "all-values-attention-test",
+      animals: ZOO_ANIMALS.map(({ id }) => ({
+        animalId: id,
+        characterClips: ["idle", "alerted", "dance"].map((animationId) => ({
+          kind: "character",
+          animalId: id,
+          animationId,
+          relativePath: `${id}/${animationId}.png`,
+          frameWidth: 1,
+          frameHeight: 1,
+          frameCount: 1,
+          visibleBounds: { left: 0, top: 0, width: 1, height: 1 },
+          asset: {
+            src: `/test-animals/${id}-${animationId}.png`,
+            width: 1,
+            height: 1,
+          },
+        })),
+        auxiliaryEffectClips: [],
+      })),
+      characterClipCount: ZOO_ANIMALS.length * 3,
+      auxiliaryEffectClipCount: 0,
+    } satisfies SeethingSwarmRuntimeClipCatalog<StaticImageData>
+    renderAllValues(undefined, { runtimeClipCatalog })
+    const row = screen.getAllByRole("listitem")[0]
+    const idle = row.querySelector<HTMLImageElement>('img[src$="-idle.png"]')!
+    const alerted = row.querySelector<HTMLImageElement>(
+      'img[src$="-alerted.png"]',
+    )!
+    const dance = row.querySelector<HTMLImageElement>('img[src$="-dance.png"]')!
+    const active = () => row.querySelector('[data-hub-active-clip="true"] img')
+    fireEvent.load(idle)
+    fireEvent.pointerEnter(row, { pointerType: "mouse" })
+    expect(active()).toBe(idle)
+    fireEvent.load(alerted)
+    await waitFor(() => expect(active()).toBe(alerted))
+    fireEvent.focus(row)
+    fireEvent.pointerLeave(row)
+    expect(active()).toBe(alerted)
+    fireEvent.blur(row, { relatedTarget: within(row).getByRole("heading") })
+    expect(active()).toBe(alerted)
+    fireEvent.load(dance)
+    fireEvent.animationEnd(alerted)
+    await waitFor(() => expect(active()).toBe(dance))
+    fireEvent.animationEnd(dance)
+    await waitFor(() => expect(active()).toBe(idle))
+    fireEvent.blur(row)
+    fireEvent.pointerEnter(row, { pointerType: "touch" })
+    expect(active()).toBe(idle)
+    fireEvent.pointerEnter(row, { pointerType: "mouse" })
+    await waitFor(() => expect(active()).toBe(alerted))
+    fireEvent.pointerCancel(row)
+    await waitFor(() => expect(active()).toBe(idle))
+  })
   it("shows every fresh value alphabetically with definitions visible and no fabricated Top Five", () => {
     const rankedValues = createRankedValues(createActiveDeck([]))
 
