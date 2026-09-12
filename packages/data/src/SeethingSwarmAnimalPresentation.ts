@@ -122,6 +122,28 @@ export function createSeethingSwarmAnimalPresentationGeometry(
   }) satisfies SeethingSwarmAnimalPresentationGeometry
 }
 
+export function createSeethingSwarmBattlePresentationGeometry<PlatformAsset>(
+  clips: readonly SeethingSwarmRuntimeCharacterClip<PlatformAsset>[],
+) {
+  const maximumIntegerScale = Math.min(
+    ...clips.map(
+      (clip) =>
+        createSeethingSwarmAnimalPresentationGeometry(
+          clip.frameWidth,
+          clip.frameHeight,
+          clip.visibleBounds,
+          SEETHING_SWARM_BATTLE_TILE_SIZE,
+        ).integerScale,
+    ),
+  )
+  return Object.freeze({
+    maximumIntegerScale,
+    maximumVisibleHeight: Math.max(
+      ...clips.map((clip) => clip.visibleBounds.height * maximumIntegerScale),
+    ),
+  })
+}
+
 function resolveCalmAnimalClip<PlatformAsset>(
   animal: SeethingSwarmRuntimeAnimalClips<PlatformAsset>,
 ) {

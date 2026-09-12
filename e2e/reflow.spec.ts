@@ -100,6 +100,66 @@ async function openMenuDestination(page: Page, destinationName: string) {
   await menu.getByRole("button", { name: destinationName, exact: true }).click()
 }
 
+for (const width of [390, 1440]) {
+  test(`battlefield follows definitions and preserves full-column choice at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 1000 })
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await startAtHub(page)
+    await page.getByRole("button", { name: "Battle", exact: true }).click()
+    const battle = page.getByRole("main", { name: "Value battle" })
+    const choices = battle.getByRole("button", { name: /^Choose / })
+    await expect(choices).toHaveCount(2)
+    const definitions = await choices.locator("p").all()
+    const definitionBottoms = await Promise.all(
+      definitions.map(async (definition) => {
+        const bounds = await definition.boundingBox()
+        return bounds!.y + bounds!.height
+      }),
+    )
+    const combatants = battle.locator("[data-combatant-side]")
+    const first = await combatants.first().boundingBox()
+    const second = await combatants.last().boundingBox()
+    expect(first!.y).toBeGreaterThanOrEqual(Math.max(...definitionBottoms))
+    expect(first!.y - Math.max(...definitionBottoms)).toBeLessThan(20)
+    expect(
+      Math.abs(first!.y + first!.height - second!.y - second!.height),
+    ).toBeLessThan(1)
+    if (width === 1440) {
+      await page.keyboard.press("Tab")
+      await page.addStyleTag({ content: "html { font-size: 200%; }" })
+      for (const heading of await choices.getByRole("heading").all()) {
+        const header = await heading.evaluate((element) => {
+          const bounds = element.getBoundingClientRect()
+          const parent = element.parentElement!.getBoundingClientRect()
+          const metadata = [...element.parentElement!.children]
+            .filter((child) => child !== element)
+            .map((child) => child.getBoundingClientRect())
+          return {
+            top: bounds.top,
+            metadataTop: Math.min(...metadata.map((item) => item.top)),
+            metadataBottom: Math.max(...metadata.map((item) => item.bottom)),
+            centerOffset: Math.abs(
+              bounds.left + bounds.width / 2 - parent.left - parent.width / 2,
+            ),
+          }
+        })
+        if (header.top > header.metadataTop + 1) {
+          expect(header.top).toBeGreaterThanOrEqual(header.metadataBottom)
+          expect(header.centerOffset).toBeLessThan(1)
+        }
+      }
+    }
+    const arena = battle.locator('[data-battle-arena-side="first"]')
+    const arenaBounds = await arena.boundingBox()
+    await arena.click({ position: { x: 20, y: arenaBounds!.height - 10 } })
+    await expect(
+      battle.getByRole("button", { name: "Undo", exact: true }),
+    ).toBeEnabled()
+  })
+}
+
 for (const textScale of [200, 400]) {
   test(`battle value text remains complete and reachable at ${textScale}% text`, async ({
     page,

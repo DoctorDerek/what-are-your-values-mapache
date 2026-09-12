@@ -8,6 +8,28 @@ import { describe, expect, it, vi } from "vitest"
 import { ValueChoiceCard } from "@/components/ValueChoiceCard"
 
 describe("animal card attention", () => {
+  it("removes absent input hints while retaining one value heading and level", () => {
+    const props = {
+      position: "first" as const,
+      value: CANONICAL_VALUES[0],
+      level: 12,
+      winnerId: null,
+      isEnabled: true,
+      isAnimating: false,
+      onActivate: vi.fn(),
+      onFocus: vi.fn(),
+    }
+    const { rerender } = render(
+      <ValueChoiceCard {...props} controlHint="[1 / A]" />,
+    )
+    expect(screen.getByText("[1 / A]")).toBeVisible()
+    rerender(<ValueChoiceCard {...props} controlHint={null} />)
+    expect(screen.queryByText("[1 / A]")).not.toBeInTheDocument()
+    expect(screen.getAllByRole("heading")).toHaveLength(1)
+    expect(screen.getByText("Level 12")).toBeVisible()
+    fireEvent.click(screen.getByRole("button"))
+    expect(props.onActivate).toHaveBeenCalledExactlyOnceWith(props.value.id)
+  })
   it("preserves long value copy and selection without inserting text break markers", () => {
     const value = CANONICAL_VALUES.find(
       (value) => value.englishName === "Diligence",

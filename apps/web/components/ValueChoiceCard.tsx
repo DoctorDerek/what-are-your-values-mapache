@@ -62,7 +62,6 @@ export const ValueChoiceCard = forwardRef<
   const controlHintContrastClasses = isFirst
     ? "text-black drop-shadow-[1px_1px_0px_#ffffff]"
     : "text-white drop-shadow-[1px_1px_0px_#000000]"
-  const reservedControlHint = isFirst ? "[1 / A]" : "[2 / D]"
   const accessibleDefinitionId = useId()
   const choiceId = useId()
   const rewardStyle: CSSProperties & { "--reward-progress": string } = {
@@ -107,24 +106,30 @@ export const ValueChoiceCard = forwardRef<
           aria-describedby={accessibleDefinitionId}
           disabled={!isEnabled}
           onClick={() => onActivate(value.id)}
-          className="flex w-full min-w-0 flex-1 cursor-pointer flex-col justify-center px-[min(0.75rem,8%)] py-3 text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8 xl:py-8"
+          className="flex w-full min-w-0 flex-1 cursor-pointer flex-col justify-start px-[min(0.75rem,8%)] pt-[clamp(2rem,10vh,6rem)] text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8"
         >
-          <div className="my-auto w-full">
-            <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 xl:gap-5">
+          <div className="w-full">
+            <div
+              className={`flow-root w-full min-w-0 ${isFirst ? "[anchor-name:--battle-first-value]" : "[anchor-name:--battle-second-value]"}`}
+            >
+              {controlHint ? (
+                <span
+                  aria-hidden="true"
+                  className={`float-left max-w-[45%] min-w-0 border-2 border-transparent py-1 pr-2 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:border-4 xl:py-2 xl:pr-5 xl:text-2xl ${controlHintContrastClasses}`}
+                >
+                  {controlHint}
+                </span>
+              ) : null}
               <span
-                aria-hidden="true"
-                className={`w-16 max-w-full min-w-0 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:w-28 xl:text-2xl ${controlHintContrastClasses} ${controlHint ? "" : "invisible"}`}
+                className={`block w-fit min-w-0 border-2 border-black bg-white px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000] ${controlHint ? "float-right ml-2 max-w-[55%] xl:ml-5" : "mx-auto max-w-full"}`}
               >
-                {controlHint ?? reservedControlHint}
+                Level {level}
               </span>
               <h2
-                className={`order-first mx-auto w-full max-w-4xl min-w-0 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words hyphens-auto text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000] ${isFirst ? "[anchor-name:--battle-first-value]" : "[anchor-name:--battle-second-value]"}`}
+                className={`clear-both mx-auto flow-root w-max max-w-full min-w-0 pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words hyphens-auto text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000] ${controlHint ? "xl:clear-none xl:pt-0" : ""}`}
               >
                 {displayName}
               </h2>
-              <span className="inline-block max-w-full min-w-0 border-2 border-black bg-white px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000]">
-                Level {level}
-              </span>
             </div>
             <p
               id={accessibleDefinitionId}
@@ -140,7 +145,7 @@ export const ValueChoiceCard = forwardRef<
           data-battle-arena-side={position}
           htmlFor={choiceId}
           aria-hidden="true"
-          className={`@container relative row-start-2 flex h-(--battle-arena-height) min-w-0 items-end justify-center pb-2 ${isEnabled ? "cursor-pointer" : "cursor-default"} ${isWinner ? "z-30" : "z-20"} ${isFirst ? "bg-mapache-vivid-primary-cyan col-start-1 after:absolute after:inset-y-0 after:right-0 after:w-2 after:bg-black" : "bg-mapache-vivid-primary-raspberry col-start-2"}`}
+          className={`@container relative row-start-2 flex min-w-0 items-start justify-center pt-2 pb-12 ${isEnabled ? "cursor-pointer" : "cursor-default"} ${isWinner ? "z-30" : "z-20"} ${isFirst ? "bg-mapache-vivid-primary-cyan col-start-1 after:absolute after:inset-y-0 after:right-0 after:w-2 after:bg-black" : "bg-mapache-vivid-primary-raspberry col-start-2"}`}
         >
           <span
             aria-hidden="true"
@@ -148,7 +153,6 @@ export const ValueChoiceCard = forwardRef<
             className="pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-b-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block"
           />
           <span className="flex w-(--battle-combatant-size) flex-col items-center">
-            <span aria-hidden="true" className="block h-6 w-full xl:h-10" />
             {combatant(
               isEnabled && (isHovered || isFocused),
               reward ? (

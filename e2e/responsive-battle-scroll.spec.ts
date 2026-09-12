@@ -500,7 +500,9 @@ for (const viewport of [
         ),
       )
       .toBe(true)
-    await expect(menuAction).not.toBeInViewport()
+    expect((await actionBar.boundingBox())!.y).toBeLessThan(
+      beforeWheel.controlsTop,
+    )
     await choices.last().hover()
     const beforeValueWheel = await battle.evaluate(
       (surface) => surface.scrollTop,
