@@ -7,6 +7,7 @@ import type {
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { assign, setup } from "xstate"
 import type { SeethingSwarmBattleChoreography } from "./SeethingSwarmBattleChoreography"
+import { createSeethingSwarmHubAttentionSelections } from "./SeethingSwarmBattleChoreography"
 import { getSeethingSwarmBattleClips } from "./SeethingSwarmBattlePlayback"
 
 export type PreparedSeethingSwarmAsset<Asset> = Readonly<{
@@ -22,7 +23,11 @@ export function getHubPreparationClips<Asset>(
   const { visibleValues } = projectHubValues(rankedValues)
   return visibleValues.flatMap(({ definition }) => {
     const presentation = resolveValueAnimalPresentation(definition, catalog)
-    return presentation.kind === "animal" ? [presentation.clip] : []
+    return presentation.kind === "animal"
+      ? Object.values(
+          createSeethingSwarmHubAttentionSelections(presentation.clip, catalog),
+        ).flatMap(({ sequence }) => sequence)
+      : []
   })
 }
 

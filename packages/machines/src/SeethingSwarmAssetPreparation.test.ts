@@ -113,7 +113,7 @@ describe("scoped animal preparation", () => {
       auxiliaryEffectClipCount: 0,
     } satisfies SeethingSwarmRuntimeClipCatalog<number>
     const prepared = getHubPreparationClips(ranking, catalog)
-    expect(prepared).toHaveLength(ranking.length)
+    expect(prepared).toHaveLength(ranking.length * 3)
     expect(
       new Set(prepared.map(({ animalId }) => animalId)).size,
     ).toBeGreaterThan(5)

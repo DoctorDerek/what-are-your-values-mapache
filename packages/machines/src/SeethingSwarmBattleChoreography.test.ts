@@ -19,6 +19,7 @@ import type { PresentedBattle } from "./CombatMachine"
 import { createSchedulerRestorePoint } from "./PairScheduler"
 import {
   createSeethingSwarmBattleChoreography,
+  createSeethingSwarmHubAttentionSelections,
   resolveSeethingSwarmBattleResult,
   SEETHING_SWARM_BATTLE_CHOREOGRAPHY_VERSION,
   SEETHING_SWARM_BATTLE_CLIP_ROLE_POLICIES,
@@ -26,6 +27,25 @@ import {
 } from "./SeethingSwarmBattleChoreography"
 
 const RACCOON_VALUE_ID = createCanonicalValueId("pvcs-2011:mastery")
+
+it("selects stable Hub attention without a scheduler or catalog-order dependence", () => {
+  const catalog = createTestLicensedCatalog([
+    ["raccoonpack", COMPLETE_ROLE_ANIMATION_IDS],
+  ])
+  const calm = catalog.animals[0].characterClips.find(
+    (clip) => clip.animationId === "idle",
+  )!
+  const selections = createSeethingSwarmHubAttentionSelections(calm, catalog)
+  expect(selections).toEqual(
+    createSeethingSwarmHubAttentionSelections(
+      calm,
+      reverseTestCatalogClips(catalog),
+    ),
+  )
+  expect(selections.rest.clip).toBe(calm)
+  expect(selections.anticipation.semanticFamily).toBe("anticipation")
+  expect(selections.flourish.semanticFamily).toBe("celebration")
+})
 const WOLF_VALUE_ID = createCanonicalValueId("pvcs-2011:courage")
 const FIRST_BAT_VALUE_ID = createCanonicalValueId("pvcs-2011:non-conformity")
 const SECOND_BAT_VALUE_ID = createCanonicalValueId("pvcs-2011:solitude")

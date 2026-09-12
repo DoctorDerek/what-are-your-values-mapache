@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest"
 import { createSchedulerRestorePoint } from "./PairScheduler"
 import { createSeethingSwarmBattleChoreography } from "./SeethingSwarmBattleChoreography"
 import {
+  createSeethingSwarmAttentionPlayback,
   createSeethingSwarmBattlePlayback,
   getSeethingSwarmBattleClips,
 } from "./SeethingSwarmBattlePlayback"
@@ -55,6 +56,15 @@ if (choreography.mode !== "licensed")
 const combatant = choreography.combatants[0]
 
 describe("SeethingSwarm battle playback", () => {
+  it("shares attention steps without requiring a battle result", () => {
+    expect(createSeethingSwarmAttentionPlayback(combatant.clips)).toEqual(
+      createSeethingSwarmBattlePlayback({
+        combatant,
+        winnerId: null,
+        cue: "attention",
+      }),
+    )
+  })
   it("acknowledges attention with anticipation and expression without blocking a choice", () => {
     const steps = createSeethingSwarmBattlePlayback({
       combatant,

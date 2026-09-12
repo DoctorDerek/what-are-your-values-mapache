@@ -22,7 +22,13 @@ import {
   createInitialBattleCycle,
 } from "@game/machines/src/BattleCycle"
 import { projectScheduledPair } from "@game/machines/src/PairScheduler"
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react"
 import type { StaticImageData } from "next/image"
 import { describe, expect, it, vi } from "vitest"
 import Hub from "./Hub"
@@ -104,6 +110,101 @@ function createCustomRankedValues() {
 }
 
 describe("Hub Component Integration", () => {
+  it("retains the loaded animal while focus attention loads, then returns to calm on blur", async () => {
+    const runtimeClipCatalog = {
+      ...licensedRuntimeClipCatalog,
+      animals: licensedRuntimeClipCatalog.animals.map((animal) => ({
+        ...animal,
+        characterClips: ["idle", "alerted", "dance"].map((animationId) => ({
+          ...animal.characterClips[0],
+          animationId,
+          relativePath: `${animal.animalId}/${animationId}.png`,
+          asset: {
+            ...animal.characterClips[0].asset,
+            src: `/test-animals/${animal.animalId}-${animationId}.png`,
+          },
+        })),
+      })),
+      characterClipCount: ZOO_ANIMALS.length * 3,
+    } satisfies SeethingSwarmRuntimeClipCatalog<StaticImageData>
+    const cycle = createInitialBattleCycle("hub-attention")
+    render(
+      <Hub
+        runtimeClipCatalog={runtimeClipCatalog}
+        rankedValues={rankValues(cycle.activeDeck, cycle.progressById)}
+        dataNotice={null}
+        shouldReduceMotion={false}
+        onBrowseAllValues={vi.fn()}
+        onAddCustomValue={vi.fn()}
+        onOpenMenu={vi.fn()}
+        onOpenValue={vi.fn()}
+        onStartBattle={vi.fn()}
+      />,
+    )
+    const row = screen.getAllByRole("listitem")[0]
+    const button = within(row).getByRole("button")
+    const images = row.querySelectorAll("img")
+    const idle = [...images].find((image) =>
+      image.getAttribute("src")?.includes("-idle.png"),
+    )!
+    const alerted = [...images].find((image) =>
+      image.getAttribute("src")?.includes("-alerted.png"),
+    )!
+    fireEvent.load(idle)
+    fireEvent.focus(button)
+    expect(idle.closest("[data-hub-active-clip]")).toHaveAttribute(
+      "data-hub-active-clip",
+      "true",
+    )
+    expect(alerted.closest("[data-hub-active-clip]")).toHaveAttribute(
+      "data-hub-active-clip",
+      "false",
+    )
+    fireEvent.load(alerted)
+    await waitFor(() =>
+      expect(alerted.closest("[data-hub-active-clip]")).toHaveAttribute(
+        "data-hub-active-clip",
+        "true",
+      ),
+    )
+    fireEvent.pointerEnter(button, { pointerType: "mouse" })
+    fireEvent.pointerLeave(button)
+    expect(alerted.closest("[data-hub-active-clip]")).toHaveAttribute(
+      "data-hub-active-clip",
+      "true",
+    )
+    const dance = [...images].find((image) =>
+      image.getAttribute("src")?.includes("-dance.png"),
+    )!
+    fireEvent.load(dance)
+    fireEvent.animationEnd(alerted)
+    await waitFor(() =>
+      expect(dance.closest("[data-hub-active-clip]")).toHaveAttribute(
+        "data-hub-active-clip",
+        "true",
+      ),
+    )
+    fireEvent.animationEnd(dance)
+    await waitFor(() =>
+      expect(idle.closest("[data-hub-active-clip]")).toHaveAttribute(
+        "data-hub-active-clip",
+        "true",
+      ),
+    )
+    fireEvent.pointerCancel(button)
+    fireEvent.blur(button)
+    expect(idle.closest("[data-hub-active-clip]")).toHaveAttribute(
+      "data-hub-active-clip",
+      "true",
+    )
+    fireEvent.error(alerted)
+    fireEvent.focus(button)
+    expect(alerted.closest("[data-hub-active-clip]")).toHaveAttribute(
+      "data-hub-active-clip",
+      "false",
+    )
+    expect(row.querySelector('[data-hub-active-clip="true"] img')).toBeVisible()
+  })
   it("shows every included value alphabetically before the first comparison", () => {
     const battleCycle = createInitialBattleCycle("empty-hub-seed")
     const onBrowseAllValues = vi.fn()
