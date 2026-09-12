@@ -26,7 +26,11 @@ export default function useWebControlHintInputModality() {
       if (!CONTROL_HINT_IGNORED_KEYS.includes(event.key))
         setInputModality("keyboard")
     }
-    const handlePointerDown = () => setInputModality("touch-pointer")
+    const handlePointerDown = (event: PointerEvent) => {
+      if (event.pointerType === "mouse") setInputModality("keyboard")
+      else if (event.pointerType === "touch" || event.pointerType === "pen")
+        setInputModality("touch-pointer")
+    }
 
     window.addEventListener("keydown", handleKeyDown)
     window.addEventListener("pointerdown", handlePointerDown)
