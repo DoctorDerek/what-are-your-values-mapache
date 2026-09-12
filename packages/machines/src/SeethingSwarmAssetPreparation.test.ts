@@ -1,5 +1,12 @@
-import type { SeethingSwarmRuntimeCharacterClip } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import { createActiveDeck } from "@game/data/src/ActiveDeck"
+import type {
+  SeethingSwarmRuntimeCharacterClip,
+  SeethingSwarmRuntimeClipCatalog,
+} from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import { createInitialValueProgress } from "@game/data/src/ValueProgress"
+import { rankValues } from "@game/data/src/ValueRanking"
+import { ZOO_ANIMALS } from "@game/data/src/ZooAnimals"
 import { describe, expect, it } from "vitest"
 import { createActor } from "xstate"
 import {
@@ -89,7 +96,33 @@ describe("scoped animal preparation", () => {
     actor.stop()
   })
 
-  it("does not prepare a speculative unranked Hub catalog", () => {
+  it("prepares roster animals before the first battle and beyond the Top Five", () => {
+    const deck = createActiveDeck([])
+    const ranking = rankValues(deck, createInitialValueProgress(deck))
+    const catalog = {
+      mode: "licensed",
+      evidenceSnapshotId: "hub-preparation-test",
+      animals: ZOO_ANIMALS.map(({ id }) => ({
+        animalId: id,
+        characterClips: [
+          { ...clip, animalId: id, relativePath: `${id}/idle.png` },
+        ],
+        auxiliaryEffectClips: [],
+      })),
+      characterClipCount: ZOO_ANIMALS.length,
+      auxiliaryEffectClipCount: 0,
+    } satisfies SeethingSwarmRuntimeClipCatalog<number>
+    const prepared = getHubPreparationClips(ranking, catalog)
+    expect(prepared).toHaveLength(ranking.length)
+    expect(
+      new Set(prepared.map(({ animalId }) => animalId)).size,
+    ).toBeGreaterThan(5)
+    expect(prepared.every(({ animationId }) => animationId === "idle")).toBe(
+      true,
+    )
+  })
+
+  it("does not invent assets for an empty typography-only catalog", () => {
     expect(
       getHubPreparationClips(
         [],

@@ -3,6 +3,46 @@ import { test } from "./fixtures"
 
 test.use({ viewport: { width: 320, height: 720 } })
 
+for (const width of [390, 1440]) {
+  test(`Hub roster scrolls independently with readable enlarged text at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 })
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await startAtHub(page)
+    const roster = page.getByRole("region", { name: "Value roster" })
+    const actions = page.getByRole("navigation", { name: "Value actions" })
+    await expect(roster.getByRole("listitem")).toHaveCount(100)
+    await roster.hover()
+    const actionsBefore = await actions.boundingBox()
+    await page.mouse.wheel(0, 500)
+    await expect
+      .poll(() => roster.evaluate((element) => element.scrollTop))
+      .toBeGreaterThan(0)
+    expect(await actions.boundingBox()).toEqual(actionsBefore)
+    await roster.evaluate((element) => {
+      element.scrollTop = element.scrollHeight
+    })
+    await expect(roster.getByRole("button").last()).toBeInViewport()
+    await page.addStyleTag({ content: "html { font-size: 200%; }" })
+    const hubBounds = await page.getByRole("main").evaluate((element) => ({
+      width: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+    }))
+    expect(hubBounds.scrollWidth).toBeLessThanOrEqual(hubBounds.width)
+    await actions
+      .getByRole("button", { name: "Battle", exact: true })
+      .scrollIntoViewIfNeeded()
+    await expect(
+      actions.getByRole("button", { name: "Battle", exact: true }),
+    ).toBeInViewport()
+    await page.screenshot({
+      path: test.info().outputPath(`hub-${width}-large.png`),
+      fullPage: false,
+    })
+  })
+}
+
 async function expectNoDocumentHorizontalOverflow(
   page: Page,
   productState: string,

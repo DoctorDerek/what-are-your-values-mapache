@@ -5,6 +5,7 @@ import {
 } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import {
   createCustomValueId,
+  getValueDisplayDefinition,
   getValueDisplayName,
   type CustomValueDefinition,
   type ValueId,
@@ -133,7 +134,7 @@ describe("Hub Component Integration", () => {
     expect(screen.getByRole("main")).toHaveClass(
       "min-h-[100dvh]",
       "[--mapache-screen-spacing:1rem]",
-      "sm:[--mapache-screen-spacing:2rem]",
+      "xl:[--mapache-screen-spacing:2rem]",
     )
     expect(
       screen.getByRole("heading", { name: "Your Values", level: 1 }),
@@ -175,6 +176,7 @@ describe("Hub Component Integration", () => {
     const { container } = render(
       <Hub
         {...animalPresentationProps}
+        runtimeClipCatalog={licensedRuntimeClipCatalog}
         rankedValues={rankValues(
           battleCycle.activeDeck,
           battleCycle.progressById,
@@ -188,7 +190,15 @@ describe("Hub Component Integration", () => {
       />,
     )
 
-    expect(screen.getAllByRole("listitem")).toHaveLength(100)
+    const roster = screen.getByRole("region", { name: "Value roster" })
+    expect(within(roster).getAllByRole("listitem")).toHaveLength(100)
+    expect(container.querySelectorAll("[data-animal-id]")).toHaveLength(100)
+    expect(within(roster).queryByRole("button", { name: "Battle" })).toBeNull()
+    for (const definition of battleCycle.activeDeck.values) {
+      expect(
+        within(roster).getByText(getValueDisplayDefinition(definition)),
+      ).toBeVisible()
+    }
     expect(screen.queryByText("#1")).not.toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: "Browse All Values" }),
@@ -255,7 +265,9 @@ describe("Hub Component Integration", () => {
     )
 
     expect(screen.getByRole("heading", { name: "Top Five" })).toBeVisible()
-    expect(screen.getAllByText("All Other Values")).toHaveLength(2)
+    expect(
+      screen.getByRole("heading", { name: "All Other Values" }),
+    ).toBeVisible()
     expect(screen.getAllByRole("listitem")).toHaveLength(100)
     expect(
       screen.getByRole("button", {
@@ -277,7 +289,7 @@ describe("Hub Component Integration", () => {
     expect(container.querySelector("[data-animal-id]")).toBeNull()
   })
 
-  it("renders exactly five mapped canonical animals and propagates Reduced Motion", () => {
+  it("renders mapped animals throughout the roster and propagates Reduced Motion", () => {
     const initialBattleCycle = createInitialBattleCycle("animal-hub-seed")
     const [winnerId] = projectScheduledPair(
       initialBattleCycle.activeDeck,
@@ -309,7 +321,7 @@ describe("Hub Component Integration", () => {
     const animalPresentations = [
       ...container.querySelectorAll('[data-value-presentation="animal"]'),
     ]
-    expect(animalPresentations).toHaveLength(5)
+    expect(animalPresentations).toHaveLength(100)
     for (const animalPresentation of animalPresentations) {
       expect(animalPresentation).toHaveAttribute("aria-hidden", "true")
       expect(animalPresentation).not.toHaveAttribute("tabindex")
@@ -319,13 +331,11 @@ describe("Hub Component Integration", () => {
         element.getAttribute("data-animal-id"),
       ),
     ).toEqual(
-      rankedValues
-        .slice(0, 5)
-        .map(({ definition }) => getMappedAnimalId(definition.id)),
+      rankedValues.map(({ definition }) => getMappedAnimalId(definition.id)),
     )
     expect(
       container.querySelectorAll('[data-reduced-motion="true"]'),
-    ).toHaveLength(5)
+    ).toHaveLength(100)
     expect(screen.getAllByText(/^Rank \d+(, \w+ medal)?$/)).toHaveLength(100)
     const sixthValue = rankedValues[5]
     const sixthValueButton = screen.getByRole("button", {
@@ -333,7 +343,7 @@ describe("Hub Component Integration", () => {
     })
     expect(sixthValueButton).toHaveAccessibleDescription("Rank 6, silver medal")
     expect(within(sixthValueButton).getByText("🥈")).toBeVisible()
-    expect(sixthValueButton.querySelector("[data-animal-id]")).toBeNull()
+    expect(sixthValueButton.querySelector("[data-animal-id]")).not.toBeNull()
     const failedPresentation = animalPresentations[0]
     const failedImage = failedPresentation.querySelector("img")
     if (!failedImage) throw new Error("Expected the first ranked animal image")
@@ -376,7 +386,7 @@ describe("Hub Component Integration", () => {
     expect(customValueTile.querySelector("[data-animal-id]")).toBeNull()
     expect(
       container.querySelectorAll('[data-value-presentation="animal"]'),
-    ).toHaveLength(4)
+    ).toHaveLength(100)
 
     fireEvent.click(customValueButton)
     expect(onOpenValue).toHaveBeenCalledWith(
