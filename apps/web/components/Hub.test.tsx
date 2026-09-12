@@ -167,6 +167,31 @@ describe("Hub Component Integration", () => {
         "true",
       ),
     )
+    fireEvent.pointerEnter(button, { pointerType: "mouse" })
+    fireEvent.pointerLeave(button)
+    expect(alerted.closest("[data-hub-active-clip]")).toHaveAttribute(
+      "data-hub-active-clip",
+      "true",
+    )
+    const dance = [...images].find((image) =>
+      image.getAttribute("src")?.includes("-dance.png"),
+    )!
+    fireEvent.load(dance)
+    fireEvent.animationEnd(alerted)
+    await waitFor(() =>
+      expect(dance.closest("[data-hub-active-clip]")).toHaveAttribute(
+        "data-hub-active-clip",
+        "true",
+      ),
+    )
+    fireEvent.animationEnd(dance)
+    await waitFor(() =>
+      expect(idle.closest("[data-hub-active-clip]")).toHaveAttribute(
+        "data-hub-active-clip",
+        "true",
+      ),
+    )
+    fireEvent.pointerCancel(button)
     fireEvent.blur(button)
     expect(idle.closest("[data-hub-active-clip]")).toHaveAttribute(
       "data-hub-active-clip",
