@@ -3,6 +3,57 @@ import { test } from "./fixtures"
 
 test.use({ viewport: { width: 320, height: 720 } })
 
+for (const width of [390, 1440]) {
+  test(`All Values animals retain identity and respond without shifting at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 })
+    await page.emulateMedia({ reducedMotion: "no-preference" })
+    await startAtHub(page)
+    const hubRow = page
+      .getByRole("region", { name: "Value roster" })
+      .getByRole("button")
+      .first()
+    const hubAnimal = hubRow.locator('[data-hub-active-clip="true"] img')
+    await expect(hubAnimal).toBeVisible()
+    const source = await hubAnimal.getAttribute("src")
+    await page
+      .getByRole("button", { name: "Browse All Values", exact: true })
+      .click()
+    const row = page.getByRole("main").getByRole("listitem").first()
+    const active = row.locator('[data-hub-active-clip="true"]')
+    await expect(active.locator("img")).toHaveAttribute("src", source!)
+    await expect(active.locator('[data-playback-ready="true"]')).toHaveCount(1)
+    await row.scrollIntoViewIfNeeded()
+    const bounds = await row.boundingBox()
+    await row.hover()
+    await expect
+      .poll(() => active.locator("img").getAttribute("src"))
+      .not.toBe(source)
+    await expect(active.locator("img")).toBeVisible()
+    expect(await row.boundingBox()).toEqual(bounds)
+    await row.focus()
+    await page.mouse.move(0, 0)
+    await expect(row).toBeFocused()
+    await expect(active.locator("img")).toBeVisible()
+    await page.getByRole("button", { name: "Menu", exact: true }).focus()
+    await expect(active.locator("img")).toHaveAttribute("src", source!)
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await page.reload()
+    await page
+      .getByRole("button", { name: "Browse All Values", exact: true })
+      .click()
+    await row.focus()
+    await expect(active.locator('[data-playback-mode="static"]')).toHaveCount(1)
+    await page.addStyleTag({ content: "html { font-size: 200%; }" })
+    const size = await row.evaluate((element) => ({
+      width: element.clientWidth,
+      content: element.scrollWidth,
+    }))
+    expect(size.content).toBeLessThanOrEqual(size.width)
+  })
+}
+
 test("Hub attention responds to hover and focus without shifting the row", async ({
   page,
 }) => {
