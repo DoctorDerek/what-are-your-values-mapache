@@ -8,6 +8,7 @@ import type { ValueId } from "@game/data/src/Value"
 import type {
   SeethingSwarmBattleClipRole,
   SeethingSwarmBattleClipSelection,
+  SeethingSwarmBattleClipSelections,
   SeethingSwarmLicensedBattleCombatant,
 } from "./SeethingSwarmBattleChoreography"
 import type { SeethingSwarmBattleExchangeCue } from "./SeethingSwarmBattleExchange"
@@ -69,9 +70,31 @@ export function createSeethingSwarmBattlePlayback<PlatformAsset>({
               : ["reaction"]
             : ["rest"]
 
+  return createPlaybackSteps(combatant.clips, roles, cue)
+}
+
+export function createSeethingSwarmAttentionPlayback<PlatformAsset>(
+  selections: Pick<
+    SeethingSwarmBattleClipSelections<PlatformAsset>,
+    "anticipation" | "flourish" | "rest"
+  >,
+) {
+  return createPlaybackSteps(selections, BATTLE_ATTENTION_ROLES, "attention")
+}
+
+function createPlaybackSteps<
+  PlatformAsset,
+  Role extends SeethingSwarmBattleClipRole,
+>(
+  selections: Readonly<
+    Record<Role, SeethingSwarmBattleClipSelection<PlatformAsset>>
+  >,
+  roles: readonly Role[],
+  cue: SeethingSwarmBattleExchangeCue,
+) {
   const steps: SeethingSwarmBattlePlaybackStep<PlatformAsset>[] = []
   for (const role of roles) {
-    const selection = combatant.clips[role]
+    const selection = selections[role]
     const contactIndex = selection.sequence.findIndex(
       (clip) => clip.animationId === selection.clip.animationId,
     )

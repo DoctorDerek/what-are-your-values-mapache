@@ -206,16 +206,14 @@ function createStableSelectionOffset({
 function selectBattleClip<PlatformAsset>({
   battleEligibleClips,
   availableClips,
-  combatant,
-  scheduler,
-  side,
+  animalId,
+  selectionOffsets,
   role,
 }: {
   readonly battleEligibleClips: readonly ClassifiedBattleEligibleClip<PlatformAsset>[]
   readonly availableClips: readonly SeethingSwarmRuntimeCharacterClip<PlatformAsset>[]
-  readonly combatant: SeethingSwarmBattleCombatant
-  readonly scheduler: BattleSchedulerRestorePoint
-  readonly side: SeethingSwarmBattleCombatantSide
+  readonly animalId: ZooAnimalId
+  readonly selectionOffsets: readonly number[]
   readonly role: SeethingSwarmBattleClipRole
 }) {
   const rolePolicy = resolveRolePolicy(role)
@@ -235,17 +233,11 @@ function selectBattleClip<PlatformAsset>({
       )
     if (candidates.length === 0) continue
 
-    const stableOffset = createStableSelectionOffset({
-      scheduler,
-      combatant,
-      side,
-      role,
-    })
     const selectedIndex =
-      ((stableOffset % candidates.length) +
-        (scheduler.cycleIndex % candidates.length) +
-        (scheduler.cursor % candidates.length)) %
-      candidates.length
+      selectionOffsets.reduce(
+        (sum, offset) => sum + (offset % candidates.length),
+        0,
+      ) % candidates.length
 
     return Object.freeze({
       role,
@@ -256,7 +248,7 @@ function selectBattleClip<PlatformAsset>({
   }
 
   throw new Error(
-    `Missing battle-eligible ${role} animation for animal: ${combatant.animalId}`,
+    `Missing battle-eligible ${role} animation for animal: ${animalId}`,
   )
 }
 
@@ -277,9 +269,12 @@ function createLicensedBattleCombatant<PlatformAsset>({
     selectBattleClip({
       battleEligibleClips,
       availableClips: animal.characterClips,
-      combatant,
-      scheduler,
-      side,
+      animalId: combatant.animalId,
+      selectionOffsets: [
+        createStableSelectionOffset({ scheduler, combatant, side, role }),
+        scheduler.cycleIndex,
+        scheduler.cursor,
+      ],
       role,
     })
 
@@ -295,6 +290,37 @@ function createLicensedBattleCombatant<PlatformAsset>({
       flourish: selectClip("flourish"),
     }),
   }) satisfies SeethingSwarmLicensedBattleCombatant<PlatformAsset>
+}
+
+export function createSeethingSwarmHubAttentionSelections<PlatformAsset>(
+  calmClip: SeethingSwarmRuntimeCharacterClip<PlatformAsset>,
+  catalog: SeethingSwarmRuntimeClipCatalog<PlatformAsset>,
+) {
+  if (catalog.mode !== "licensed")
+    throw new Error("Hub animal requires licensed clips")
+  const animal = resolveRuntimeAnimalClips(catalog, calmClip.animalId)
+  const battleEligibleClips = classifyBattleEligibleClips(animal)
+  const selectClip = (role: "anticipation" | "flourish") =>
+    selectBattleClip({
+      battleEligibleClips,
+      availableClips: animal.characterClips,
+      animalId: animal.animalId,
+      selectionOffsets: [hashText(`hub-attention:${animal.animalId}:${role}`)],
+      role,
+    })
+  return Object.freeze({
+    anticipation: selectClip("anticipation"),
+    flourish: selectClip("flourish"),
+    rest: Object.freeze({
+      role: "rest",
+      semanticFamily: "rest",
+      clip: calmClip,
+      sequence: [calmClip],
+    }),
+  }) satisfies Pick<
+    SeethingSwarmBattleClipSelections<PlatformAsset>,
+    "anticipation" | "flourish" | "rest"
+  >
 }
 
 function createPlaceholderBattleCombatant(
