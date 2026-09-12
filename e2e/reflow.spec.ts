@@ -3,6 +3,38 @@ import { test } from "./fixtures"
 
 test.use({ viewport: { width: 320, height: 720 } })
 
+test("Hub attention responds to hover and focus without shifting the row", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.emulateMedia({ reducedMotion: "no-preference" })
+  await startAtHub(page)
+  const row = page
+    .getByRole("region", { name: "Value roster" })
+    .getByRole("button")
+    .first()
+  const active = row.locator('[data-hub-active-clip="true"]')
+  await expect(active.locator('[data-playback-ready="true"]')).toHaveCount(1)
+  const calmSource = await active.locator("img").getAttribute("src")
+  const bounds = await row.boundingBox()
+  await row.hover()
+  await expect
+    .poll(() => active.locator("img").getAttribute("src"))
+    .not.toBe(calmSource)
+  await expect(active.locator("img")).toBeVisible()
+  expect(await row.boundingBox()).toEqual(bounds)
+  await row.focus()
+  await page.mouse.move(0, 0)
+  await expect(row).toBeFocused()
+  await expect(active.locator("img")).toBeVisible()
+  await page.getByRole("button", { name: "Menu", exact: true }).focus()
+  await expect(active.locator("img")).toHaveAttribute("src", calmSource!)
+  await page.emulateMedia({ reducedMotion: "reduce" })
+  await page.reload()
+  await row.focus()
+  await expect(active.locator('[data-playback-mode="static"]')).toHaveCount(1)
+})
+
 for (const width of [390, 1440]) {
   test(`Hub roster scrolls independently with readable enlarged text at ${width}px`, async ({
     page,
