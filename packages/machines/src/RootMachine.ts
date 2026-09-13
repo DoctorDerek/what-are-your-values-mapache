@@ -1,3 +1,5 @@
+import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
+import { CUSTOM_VALUE_INVITATION_COPY } from "@game/data/src/CustomValueInvitationCopy"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { assign, setup } from "xstate"
@@ -29,6 +31,7 @@ import {
   projectBattlePair,
   type BattleSchedulerRestorePoint,
 } from "./BattleScheduler"
+import { commitCustomValueBatchActor } from "./CustomValueBatchActor"
 import {
   createCustomValueAddCommit,
   createCustomValueDeleteCommit,
@@ -90,6 +93,7 @@ type RootMachineContext = {
   playerData: PlayerData | null
   battleProfileStoreState: BattleProfileStoreState | null
   pendingBattleProfileCommit: BattleProfileCommit | null
+  pendingCustomValueDrafts: readonly CustomValueDraft[]
   pendingAchievementPresentationId: AchievementId | null
   achievementPresentationReturnTarget: AchievementPresentationReturnTarget | null
   backgroundCheckpointReturnTarget: BackgroundCheckpointReturnTarget | null
@@ -124,6 +128,10 @@ type RootMachineEvent =
   | { type: "SETTINGS.UPDATE_REQUESTED"; settings: PlayerSettings }
   | { type: "ALL_VALUES.OPEN_REQUESTED" }
   | { type: "ALL_VALUES.CLOSE_REQUESTED" }
+  | {
+      type: "HUB.CUSTOM_VALUES_APPLY_REQUESTED"
+      drafts: readonly CustomValueDraft[]
+    }
   | {
       type: "ALL_VALUES.ADD_REQUESTED"
       name: string
@@ -378,6 +386,7 @@ export const rootMachine = setup({
     hydrateBattleProfile: hydrateBattleProfileActor,
     initializeBattleProfile: initializeBattleProfileActor,
     commitBattleProfileEvent: commitBattleProfileEventActor,
+    commitCustomValueBatch: commitCustomValueBatchActor,
     checkpointBattleProfile: checkpointBattleProfileActor,
     recordAchievementPresentation: recordAchievementPresentationActor,
     createWayvmExport: createWayvmExportActor,
@@ -544,6 +553,7 @@ export const rootMachine = setup({
     playerData: null,
     battleProfileStoreState: null,
     pendingBattleProfileCommit: null,
+    pendingCustomValueDrafts: [],
     pendingAchievementPresentationId: null,
     achievementPresentationReturnTarget: null,
     backgroundCheckpointReturnTarget: null,
@@ -696,6 +706,13 @@ export const rootMachine = setup({
     },
     Hub: {
       on: {
+        "HUB.CUSTOM_VALUES_APPLY_REQUESTED": {
+          target: "AddingCustomValues",
+          actions: assign({
+            pendingCustomValueDrafts: ({ event }) => event.drafts,
+            persistenceIssue: null,
+          }),
+        },
         "APP.BACKGROUND_CHECKPOINT_REQUESTED": {
           target: "BackgroundCheckpointing",
           actions: assign({
@@ -732,6 +749,35 @@ export const rootMachine = setup({
           actions: assign({
             ...CLEARED_SETTINGS_TRANSIENT_CONTEXT,
             settingsReturnTarget: "hub",
+          }),
+        },
+      },
+    },
+    AddingCustomValues: {
+      invoke: {
+        src: "commitCustomValueBatch",
+        input: ({ context }) => ({
+          drafts: context.pendingCustomValueDrafts,
+          state: requireBattleProfileStoreState(context),
+          store: context.durableStore,
+          now: context.now,
+          randomUuid: context.randomUuid,
+        }),
+        onDone: {
+          target: "Hub",
+          actions: assign({
+            playerData: ({ event }) => event.output.head.playerData,
+            battleProfileStoreState: ({ event }) => event.output,
+            pendingCustomValueDrafts: [],
+            persistenceIssue: null,
+            portabilityNotice: CUSTOM_VALUE_INVITATION_COPY.saved,
+          }),
+        },
+        onError: {
+          target: "Hub",
+          actions: assign({
+            pendingCustomValueDrafts: [],
+            persistenceIssue: ({ event }) => getErrorMessage(event.error),
           }),
         },
       },
