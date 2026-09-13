@@ -221,9 +221,12 @@ function WritableGameClient({
   )
   usePreparedSeethingSwarmClips(hubClips)
   const [isBattleRequested, setIsBattleRequested] = useState(false)
+  const [isCustomValueDraftActive, setIsCustomValueDraftActive] =
+    useState(false)
   const isHubReady = state.matches("Hub")
   const canAwaitBattle =
     isHubReady &&
+    !isCustomValueDraftActive &&
     !isProductMenuOpen &&
     activeInformationPanelId === null &&
     !isControlsOpen
@@ -701,6 +704,7 @@ function WritableGameClient({
     isProductMenuOpen || activeInformationPanelId !== null || isControlsOpen
   const isHubSurface =
     state.matches("Hub") ||
+    state.matches("AddingCustomValues") ||
     (isRecordingAchievementPresentation &&
       achievementPresentationReturnTarget === "hub")
   const isAchievementsSurface =
@@ -716,6 +720,31 @@ function WritableGameClient({
     return (
       <>
         <Hub
+          customValueInvitation={
+            state.context.playerData
+              ? {
+                  deckRevision:
+                    state.context.playerData.profile.scheduler.deckRevision,
+                  isSaving: state.matches("AddingCustomValues"),
+                  onNavigationBlockedChange: setIsCustomValueDraftActive,
+                  saveIssue: state.context.persistenceIssue,
+                  onApply: (drafts) =>
+                    send({ type: "HUB.CUSTOM_VALUES_APPLY_REQUESTED", drafts }),
+                  onExport: async () => {
+                    const playerData = state.context.playerData
+                    if (!playerData)
+                      throw new Error("Expected a loaded player profile")
+                    const preparedDownload = await prepareWayvmDownload({
+                      exportedAt: new Date().toISOString(),
+                      sourceAppVersion: SOURCE_APP_VERSION,
+                      sourceBuild: SOURCE_BUILD,
+                      playerData,
+                    })
+                    downloadPlayerDataFile(preparedDownload)
+                  },
+                }
+              : undefined
+          }
           rankedValues={rankedValues}
           runtimeClipCatalog={SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG}
           browseAllValuesButtonRef={browseAllValuesButtonRef}
