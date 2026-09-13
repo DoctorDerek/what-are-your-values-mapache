@@ -204,7 +204,7 @@ jobs:
         if: always()
         run: |
           set +e
-          pnpm vitest run --coverage --passWithNoTests 2>&1 | tee "$RUNNER_TEMP/vitest-output.txt"
+          pnpm vitest run --coverage --coverage.reportOnFailure --passWithNoTests 2>&1 | tee "$RUNNER_TEMP/vitest-output.txt"
           VITEST_EXIT_CODE=${PIPESTATUS[0]}
           set -e
 
