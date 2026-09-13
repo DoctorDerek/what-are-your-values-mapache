@@ -934,6 +934,16 @@ describe("GameClient Integration", () => {
   })
 
   it("keeps Hub drafts through a failed batch save and clears them only after a successful retry", async () => {
+    const downloadedBlobs: Blob[] = []
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(
+      () => undefined,
+    )
+    vi.spyOn(URL, "createObjectURL").mockImplementation((source) => {
+      if (!(source instanceof Blob)) throw new Error("Expected a backup Blob")
+      downloadedBlobs.push(source)
+      return "blob:custom-value-backup"
+    })
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined)
     render(<GameClient />)
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     fireEvent.click(await screen.findByRole("button", { name: "Write my own" }))
@@ -945,6 +955,14 @@ describe("GameClient Integration", () => {
     })
     fireEvent.click(screen.getByRole("button", { name: "Add to draft" }))
     fireEvent.click(screen.getByRole("button", { name: "Review changes" }))
+    fireEvent.click(screen.getByRole("button", { name: "Export Data" }))
+    await waitFor(() => expect(downloadedBlobs).toHaveLength(1))
+    const backup = downloadedBlobs[0]
+    if (!backup) throw new Error("Expected the pre-change backup")
+    const decodedBackup = await decodeWayvmExport(await backup.text())
+    expect(
+      decodedBackup.playerData.profile.activeDeck.customValues,
+    ).toHaveLength(0)
     durableStoreFailure.writeEnabled = true
     fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }))
     expect(await screen.findByRole("alert")).toHaveTextContent(

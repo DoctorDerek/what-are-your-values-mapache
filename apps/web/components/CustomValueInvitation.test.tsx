@@ -27,6 +27,83 @@ function selectExamples() {
 }
 
 describe("Hub custom-value invitation", () => {
+  it("supports individual selection, deselection, and discarding the draft batch", () => {
+    const { props } = setup()
+    fireEvent.click(
+      screen.getByText(
+        "Missing a value? Start with Ingenuity, Destiny, or Pets.",
+      ),
+    )
+    fireEvent.click(screen.getByRole("checkbox", { name: /Ingenuity/ }))
+    expect(screen.getByRole("button", { name: "Edit Ingenuity" })).toBeVisible()
+    fireEvent.click(screen.getByRole("checkbox", { name: /Ingenuity/ }))
+    expect(
+      screen.queryByRole("button", { name: "Review changes" }),
+    ).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole("checkbox", { name: /Destiny/ }))
+    fireEvent.click(screen.getByRole("button", { name: "Discard drafts" }))
+    expect(props.onNavigationBlockedChange).toHaveBeenLastCalledWith(false)
+    expect(props.onApply).not.toHaveBeenCalled()
+  })
+
+  it("keeps the review after a backup failure and lets the player return to selection", async () => {
+    const { props } = setup()
+    props.onExport.mockRejectedValueOnce(new Error("Backup download failed"))
+    selectExamples()
+    fireEvent.click(screen.getByRole("button", { name: "Review changes" }))
+    fireEvent.click(screen.getByRole("button", { name: "Export Data" }))
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Backup download failed",
+    )
+    expect(screen.getByRole("button", { name: "Apply Changes" })).toBeEnabled()
+    fireEvent.click(screen.getByRole("button", { name: "Back to selection" }))
+    expect(screen.getByRole("button", { name: "Edit Pets" })).toBeVisible()
+    expect(props.onApply).not.toHaveBeenCalled()
+  })
+  it("does not select an example that duplicates a player-written draft", () => {
+    const { props } = setup()
+    fireEvent.click(screen.getByRole("button", { name: "Write my own" }))
+    fireEvent.change(screen.getByLabelText("Value name"), {
+      target: { value: "ｉｎｇｅｎｕｉｔｙ" },
+    })
+    fireEvent.change(screen.getByLabelText("What does it mean to you?"), {
+      target: { value: "My own meaning." },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Add to draft" }))
+    selectExamples()
+    expect(screen.getByRole("checkbox", { name: /Ingenuity/ })).toBeDisabled()
+    expect(screen.getByText("Already in your drafts")).toBeVisible()
+    fireEvent.click(screen.getByRole("button", { name: "Review changes" }))
+    fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }))
+    expect(props.onApply).toHaveBeenCalledWith([
+      { name: "ｉｎｇｅｎｕｉｔｙ", definition: "My own meaning." },
+      ...CUSTOM_VALUE_STARTER_EXAMPLES.slice(1).map(({ name, definition }) => ({
+        name,
+        definition,
+      })),
+    ])
+  })
+
+  it("keeps an emptied edit unfinished until explicitly discarded", () => {
+    setup()
+    selectExamples()
+    fireEvent.click(screen.getByRole("button", { name: "Edit Pets" }))
+    fireEvent.change(screen.getByLabelText("Value name"), {
+      target: { value: "" },
+    })
+    fireEvent.change(screen.getByLabelText("What does it mean to you?"), {
+      target: { value: "" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Back to selection" }))
+    expect(
+      screen.getByRole("button", { name: "Review changes" }),
+    ).toBeDisabled()
+    fireEvent.click(
+      screen.getByRole("button", { name: "Discard unfinished edit" }),
+    )
+    expect(screen.getByRole("button", { name: "Review changes" })).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Edit Pets" })).toBeEnabled()
+  })
   it("keeps examples unsaved until one reviewed application and offers a backup", async () => {
     const { props } = setup()
     selectExamples()
