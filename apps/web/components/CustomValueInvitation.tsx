@@ -8,7 +8,10 @@ import { CUSTOM_VALUE_INVITATION_COPY as copy } from "@game/data/src/CustomValue
 import { CUSTOM_VALUE_STARTER_EXAMPLES } from "@game/data/src/CustomValueStarterExamples"
 import { validateCustomValueDraft } from "@game/data/src/CustomValueValidation"
 import { customValueValidationMessages } from "@game/data/src/CustomValueValidationMessages"
-import type { CustomValueDefinition } from "@game/data/src/Value"
+import {
+  normalizeValueNameForComparison,
+  type CustomValueDefinition,
+} from "@game/data/src/Value"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { useEffect, useRef, useState } from "react"
 import CustomValueDraftEditor from "@/components/CustomValueDraftEditor"
@@ -70,10 +73,22 @@ export default function CustomValueInvitation({
   if (!editorValidation)
     throw new Error("Expected validation for the current value draft")
   const hasUnfinishedDraft =
-    editorDraft.name.length > 0 || editorDraft.definition.length > 0
+    editingKey !== null ||
+    editorDraft.name.length > 0 ||
+    editorDraft.definition.length > 0
+  const examplesAlreadyDrafted = CUSTOM_VALUE_STARTER_EXAMPLES.filter(
+    (example) =>
+      drafts.some(
+        (draft) =>
+          draft.exampleName !== example.name &&
+          normalizeValueNameForComparison(draft.name) ===
+            normalizeValueNameForComparison(example.name),
+      ),
+  )
   const availableExamples = CUSTOM_VALUE_STARTER_EXAMPLES.filter(
     (example) =>
-      validateCustomValueDraft({ ...example, existingCustomValues }).isValid,
+      validateCustomValueDraft({ ...example, existingCustomValues }).isValid &&
+      !examplesAlreadyDrafted.includes(example),
   )
   const canApply =
     drafts.length > 0 && validations.every((validation) => validation.isValid)
@@ -117,7 +132,7 @@ export default function CustomValueInvitation({
   return (
     <aside
       aria-label="Add your own values"
-      className="text-mapache-vivid-dark mb-4 w-full max-w-7xl border-2 border-black bg-white p-4"
+      className="text-mapache-vivid-dark mb-4 w-full max-w-7xl min-w-0 border-2 border-black bg-white p-4 [&_button]:max-w-full [&_button]:whitespace-normal"
     >
       <fieldset
         disabled={isSaving || isExporting}
@@ -228,7 +243,9 @@ export default function CustomValueInvitation({
                       )}
                       {!available && (
                         <span className="block font-bold">
-                          {copy.alreadyIncluded}
+                          {examplesAlreadyDrafted.includes(example)
+                            ? copy.alreadyDrafted
+                            : copy.alreadyIncluded}
                         </span>
                       )}
                     </span>

@@ -29,6 +29,7 @@ export const CUSTOM_VALUE_INVITATION_COPY = Object.freeze({
     "Drafts are not saved. Apply or discard them before leaving this flow.",
   invalid: "Resolve the highlighted draft errors before applying changes.",
   alreadyIncluded: "Already in your deck",
+  alreadyDrafted: "Already in your drafts",
   edit: "Edit",
   remove: "Remove",
 })
