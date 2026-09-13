@@ -759,49 +759,35 @@ describe("GameClient Integration", () => {
     ).not.toBeInTheDocument()
   })
 
-  it("preserves a Custom Value draft after a failed write and commits it on retry", async () => {
-    vi.spyOn(crypto, "randomUUID").mockReturnValue(
-      "00000000-0000-4000-8000-000000000047",
-    )
-
+  it("preserves a Custom Value review after failed saving and commits on retry", async () => {
     render(<GameClient />)
-
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     fireEvent.click(
       await screen.findByRole("button", { name: "Add Custom Value" }),
     )
-    fireEvent.change(await screen.findByLabelText("Value Name"), {
+    fireEvent.change(await screen.findByLabelText("Value name"), {
       target: { value: "Ingenuity" },
     })
-    fireEvent.change(screen.getByLabelText("What This Value Means to Me"), {
+    fireEvent.change(screen.getByLabelText("Definition"), {
       target: { value: "To make original solutions." },
     })
-
+    fireEvent.click(screen.getByRole("button", { name: "Review & save" }))
     durableStoreFailure.writeEnabled = true
-    fireEvent.click(screen.getByRole("button", { name: "Save Value" }))
-
-    expect(
-      await screen.findByRole("alert", {
-        name: "Custom Value save failed",
-      }),
-    ).toBeVisible()
-    expect(screen.getByText("100 Active Values")).toBeVisible()
-    expect(screen.getByLabelText("Value Name")).toHaveValue("Ingenuity")
-    expect(screen.getByLabelText("What This Value Means to Me")).toHaveValue(
-      "To make original solutions.",
+    fireEvent.click(screen.getByRole("button", { name: "Save values" }))
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "IndexedDB write failed",
     )
-    expect(screen.getByRole("button", { name: "Save Value" })).toBeEnabled()
-
+    expect(screen.getByText("To make original solutions.")).toBeVisible()
+    expect(screen.getByRole("button", { name: "Save values" })).toBeEnabled()
     durableStoreFailure.writeEnabled = false
-    fireEvent.click(screen.getByRole("button", { name: "Save Value" }))
-
+    fireEvent.click(screen.getByRole("button", { name: "Save values" }))
+    expect(
+      await screen.findByText(
+        "Your Custom Values are saved and ready to battle.",
+      ),
+    ).toBeVisible()
+    fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
     expect(await screen.findByText("101 Active Values")).toBeVisible()
-    expect(
-      screen.queryByRole("alert", { name: "Custom Value save failed" }),
-    ).not.toBeInTheDocument()
-    expect(
-      screen.queryByRole("form", { name: "Add Custom Value" }),
-    ).not.toBeInTheDocument()
   })
 
   it("carries one canonical battle result back to the earned Hub ranking", async () => {
@@ -946,15 +932,16 @@ describe("GameClient Integration", () => {
     vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined)
     render(<GameClient />)
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
-    fireEvent.click(await screen.findByRole("button", { name: "Write my own" }))
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Add Custom Value" }),
+    )
     fireEvent.change(screen.getByLabelText("Value name"), {
       target: { value: "Ingenuity" },
     })
-    fireEvent.change(screen.getByLabelText("What does it mean to you?"), {
+    fireEvent.change(screen.getByLabelText("Definition"), {
       target: { value: "To solve problems in my own way." },
     })
-    fireEvent.click(screen.getByRole("button", { name: "Add to draft" }))
-    fireEvent.click(screen.getByRole("button", { name: "Review changes" }))
+    fireEvent.click(screen.getByRole("button", { name: "Review & save" }))
     fireEvent.click(screen.getByRole("button", { name: "Export Data" }))
     await waitFor(() => expect(downloadedBlobs).toHaveLength(1))
     const backup = downloadedBlobs[0]
@@ -964,14 +951,14 @@ describe("GameClient Integration", () => {
       decodedBackup.playerData.profile.activeDeck.customValues,
     ).toHaveLength(0)
     durableStoreFailure.writeEnabled = true
-    fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }))
+    fireEvent.click(screen.getByRole("button", { name: "Save values" }))
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "IndexedDB write failed",
     )
-    expect(screen.getByRole("button", { name: "Edit Ingenuity" })).toBeVisible()
+    expect(screen.getByText("To solve problems in my own way.")).toBeVisible()
     expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
     durableStoreFailure.writeEnabled = false
-    fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }))
+    fireEvent.click(screen.getByRole("button", { name: "Save values" }))
     expect(
       await screen.findByText(
         "Your Custom Values are saved and ready to battle.",
@@ -980,7 +967,9 @@ describe("GameClient Integration", () => {
     expect(
       screen.queryByRole("button", { name: "Edit Ingenuity" }),
     ).not.toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Write my own" })).toHaveFocus()
+    expect(
+      screen.getByRole("button", { name: "Add Custom Value" }),
+    ).toHaveFocus()
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
     expect(await screen.findByText("101 Active Values")).toBeVisible()
   })
@@ -1248,6 +1237,28 @@ describe("GameClient Integration", () => {
     ).toBeVisible()
   })
 
+  it("returns an unmatched All Values search to the single Hub editor", async () => {
+    render(<GameClient />)
+    fireEvent.click(await screen.findByRole("button", { name: "Start" }))
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Browse All Values" }),
+    )
+    fireEvent.change(screen.getByLabelText("Search All Values"), {
+      target: { value: "My ingenuity" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
+    expect(await screen.findByLabelText("Value name")).toHaveValue(
+      "My ingenuity",
+    )
+    expect(
+      screen.getAllByRole("form", { name: "Add Custom Value" }),
+    ).toHaveLength(1)
+    expect(
+      screen.getByRole("heading", { name: "Your Values", level: 1 }),
+    ).toBeVisible()
+    expect(screen.getByRole("button", { name: "Battle" })).toBeDisabled()
+  })
+
   it("opens the complete live achievement catalog and restores focus to its Hub action", async () => {
     vi.spyOn(crypto, "randomUUID").mockReturnValue(
       "00000000-0000-4000-8000-000000000054",
@@ -1452,13 +1463,17 @@ describe("GameClient Integration", () => {
       await screen.findByRole("button", { name: "Add Custom Value" }),
     )
 
-    fireEvent.change(await screen.findByLabelText("Value Name"), {
+    fireEvent.change(await screen.findByLabelText("Value name"), {
       target: { value: "Ingenuity" },
     })
-    fireEvent.change(screen.getByLabelText("What This Value Means to Me"), {
+    fireEvent.change(screen.getByLabelText("Definition"), {
       target: { value: "To make original solutions." },
     })
-    fireEvent.click(screen.getByRole("button", { name: "Save Value" }))
+    fireEvent.click(screen.getByRole("button", { name: "Review & save" }))
+    fireEvent.click(screen.getByRole("button", { name: "Save values" }))
+    await screen.findByText("Your Custom Values are saved and ready to battle.")
+    fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
+    await screen.findByText("101 Active Values")
 
     const customValueRow = await waitFor(() => {
       const valueText = screen
@@ -1698,13 +1713,17 @@ describe("GameClient Integration", () => {
     fireEvent.click(
       await screen.findByRole("button", { name: "Add Custom Value" }),
     )
-    fireEvent.change(await screen.findByLabelText("Value Name"), {
+    fireEvent.change(await screen.findByLabelText("Value name"), {
       target: { value: "Ingenuity" },
     })
-    fireEvent.change(screen.getByLabelText("What This Value Means to Me"), {
+    fireEvent.change(screen.getByLabelText("Definition"), {
       target: { value: "To make original solutions." },
     })
-    fireEvent.click(screen.getByRole("button", { name: "Save Value" }))
+    fireEvent.click(screen.getByRole("button", { name: "Review & save" }))
+    fireEvent.click(screen.getByRole("button", { name: "Save values" }))
+    await screen.findByText("Your Custom Values are saved and ready to battle.")
+    fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
+    await screen.findByText("101 Active Values")
     expect(await screen.findByText("101 Active Values")).toBeVisible()
     fireEvent.click(screen.getByRole("button", { name: "Close" }))
     await openProductMenuDestination("Import & Export")

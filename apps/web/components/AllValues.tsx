@@ -1,7 +1,6 @@
 "use client"
 
 import { projectAllValues } from "@game/data/src/AllValuesProjection"
-import { CUSTOM_VALUE_STARTER_EXAMPLES } from "@game/data/src/CustomValueStarterExamples"
 import {
   CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES,
   CUSTOM_VALUE_NAME_MAX_GRAPHEMES,
@@ -16,10 +15,9 @@ import {
   type ValueId,
 } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
-import { findRankedValueNameMatches } from "@game/data/src/ValueSearch"
 import type { StaticImageData } from "next/image"
 import type { FormEvent } from "react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import AllValuesValueRow from "@/components/AllValuesValueRow"
 import CustomValueFieldFeedback from "@/components/CustomValueFieldFeedback"
 import MapacheScreen from "@/components/MapacheScreen"
@@ -33,7 +31,6 @@ export default function AllValues({
   runtimeClipCatalog,
   shouldReduceMotion,
   initialValueId,
-  openCustomValueBuilder,
   isPersistencePending = false,
   isMenuOpen,
   persistenceIssue = null,
@@ -47,13 +44,12 @@ export default function AllValues({
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   shouldReduceMotion: boolean
   initialValueId?: ValueId | null
-  openCustomValueBuilder?: boolean
   isPersistencePending?: boolean
   isMenuOpen: boolean
   persistenceIssue?: string | null
   onClose: () => void
   onOpenMenu: () => void
-  onAddCustomValue: (name: string, definition: string) => void
+  onAddCustomValue: (name: string) => void
   onUpdateCustomValue: (
     valueId: CustomValueId,
     name: string,
@@ -62,10 +58,6 @@ export default function AllValues({
   onDeleteCustomValue: (valueId: CustomValueId) => void
 }) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [addName, setAddName] = useState("")
-  const [addDefinition, setAddDefinition] = useState("")
-  const [isAddNameTouched, setIsAddNameTouched] = useState(false)
-  const [isAddDefinitionTouched, setIsAddDefinitionTouched] = useState(false)
   const [editingValueId, setEditingValueId] = useState<CustomValueId | null>(
     null,
   )
@@ -77,34 +69,14 @@ export default function AllValues({
   const [deletingValueId, setDeletingValueId] = useState<CustomValueId | null>(
     null,
   )
-  const [isAddingCustomValue, setIsAddingCustomValue] = useState(
-    openCustomValueBuilder === true,
-  )
   const [highlightedValueId, setHighlightedValueId] = useState<ValueId | null>(
     initialValueId ?? null,
   )
-  const addDefinitionRef = useRef<HTMLTextAreaElement>(null)
 
   const { existingCustomValues, hasComparisons, visibleValues } = useMemo(
     () => projectAllValues({ rankedValues, searchQuery }),
     [rankedValues, searchQuery],
   )
-  const addValidation = useMemo(
-    () =>
-      validateCustomValueDraft({
-        name: addName,
-        definition: addDefinition,
-        existingCustomValues,
-      }),
-    [addDefinition, addName, existingCustomValues],
-  )
-  const matchingAddValues = useMemo(
-    () => findRankedValueNameMatches(rankedValues, addValidation.name.value),
-    [addValidation.name.value, rankedValues],
-  )
-  const hasDuplicateAddName =
-    addValidation.name.validationCode === "duplicate_name"
-  const canSubmitAdd = addValidation.isValid
   const editableCustomValue = rankedValues.find(
     ({ definition }) => definition.id === editingValueId,
   )?.definition
@@ -124,18 +96,7 @@ export default function AllValues({
     (editValidation.name.value !== editableCustomValue.name ||
       editValidation.definition.value !== editableCustomValue.definition)
   const isNavigationBlocked =
-    isPersistencePending ||
-    isAddingCustomValue ||
-    editingValueId !== null ||
-    deletingValueId !== null
-
-  useEffect(() => {
-    if (!isAddingCustomValue) {
-      return
-    }
-
-    addDefinitionRef.current?.focus()
-  }, [isAddingCustomValue])
+    isPersistencePending || editingValueId !== null || deletingValueId !== null
 
   useEffect(() => {
     if (!highlightedValueId) {
@@ -161,19 +122,6 @@ export default function AllValues({
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [isMenuOpen, isNavigationBlocked, onClose])
-
-  const handleAddCustomValue = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!canSubmitAdd || isPersistencePending) {
-      return
-    }
-
-    const draft = Object.freeze({
-      name: addValidation.name.value,
-      definition: addValidation.definition.value,
-    })
-    onAddCustomValue(draft.name, draft.definition)
-  }
 
   const startEdit = (
     valueId: CustomValueId,
@@ -217,12 +165,6 @@ export default function AllValues({
       definition: editValidation.definition.value,
     })
     onUpdateCustomValue(draft.valueId, draft.name, draft.definition)
-  }
-
-  const openMatchingValue = (valueId: ValueId) => {
-    setIsAddingCustomValue(false)
-    setSearchQuery("")
-    setHighlightedValueId(valueId)
   }
 
   const renderRows = (values: readonly RankedValue[]) =>
@@ -524,172 +466,17 @@ export default function AllValues({
           </div>
         ) : null}
 
-        <section className="mt-8">
-          <h2 className="text-2xl font-black uppercase">
-            Custom Value Builder
-          </h2>
-          <p className="mt-3 max-w-3xl text-lg leading-relaxed font-bold">
-            Start with an example or add your own. Each example fills an unsaved
-            draft that you can edit before saving.
-          </p>
-          <div className="mt-5 border-4 border-black bg-white p-5 text-black shadow-[8px_8px_0px_0px_#000000]">
-            <h3 className="text-xl font-black uppercase">
-              Examples—not recommendations
-            </h3>
-            <div className="mt-4 flex flex-wrap gap-3">
-              {CUSTOM_VALUE_STARTER_EXAMPLES.map(
-                ({ name, label, definition }) => (
-                  <button
-                    key={name}
-                    type="button"
-                    disabled={isPersistencePending}
-                    onClick={() => {
-                      setAddName(name)
-                      setAddDefinition(definition)
-                      setIsAddNameTouched(false)
-                      setIsAddDefinitionTouched(false)
-                      setIsAddingCustomValue(true)
-                    }}
-                    className="bg-mapache-vivid-primary-cyan border-4 border-black px-4 py-3 text-lg font-black uppercase shadow-[5px_5px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
-                  >
-                    + Start with {name}
-                    {label ? <span className="sr-only"> — {label}</span> : null}
-                  </button>
-                ),
-              )}
-            </div>
-          </div>
-          <button
-            type="button"
-            disabled={isPersistencePending}
-            onClick={() => setIsAddingCustomValue((value) => !value)}
-            className="bg-mapache-vivid-primary-orange mt-5 border-4 border-black px-5 py-3 text-xl font-black uppercase shadow-[6px_6px_0px_0px_#000000] hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-x-[6px] active:translate-y-[6px] active:shadow-none"
-          >
-            {isAddingCustomValue
-              ? "Close Custom Value Form"
-              : "Add Custom Value"}
-          </button>
-
-          {isAddingCustomValue ? (
-            <form
-              aria-label="Add Custom Value"
-              onSubmit={handleAddCustomValue}
-              className="mt-5 flex flex-col gap-4 border-4 border-black bg-white p-6 text-black shadow-[8px_8px_0px_0px_#000000]"
-            >
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="custom-value-name"
-                  className="text-xl font-black uppercase"
-                >
-                  Value Name
-                </label>
-                <Input
-                  id="custom-value-name"
-                  type="text"
-                  value={addName}
-                  disabled={isPersistencePending}
-                  onChange={(event) => setAddName(event.target.value)}
-                  onBlur={() => setIsAddNameTouched(true)}
-                  aria-invalid={
-                    isAddNameTouched &&
-                    addValidation.name.validationCode !== null
-                  }
-                  aria-describedby="custom-value-name-feedback"
-                  className="text-2xl focus-visible:ring-8"
-                />
-                <CustomValueFieldFeedback
-                  id="custom-value-name-feedback"
-                  field="name"
-                  validation={addValidation.name}
-                  maximumGraphemeCount={CUSTOM_VALUE_NAME_MAX_GRAPHEMES}
-                  showValidationMessage={
-                    isAddNameTouched || hasDuplicateAddName
-                  }
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="custom-value-definition"
-                  className="text-xl font-black uppercase"
-                >
-                  What This Value Means to Me
-                </label>
-                <Textarea
-                  ref={addDefinitionRef}
-                  id="custom-value-definition"
-                  value={addDefinition}
-                  disabled={isPersistencePending}
-                  onChange={(event) => setAddDefinition(event.target.value)}
-                  onBlur={() => setIsAddDefinitionTouched(true)}
-                  aria-invalid={
-                    isAddDefinitionTouched &&
-                    addValidation.definition.validationCode !== null
-                  }
-                  aria-describedby="custom-value-definition-feedback"
-                  rows={4}
-                  className="text-xl focus-visible:ring-8"
-                />
-                <CustomValueFieldFeedback
-                  id="custom-value-definition-feedback"
-                  field="definition"
-                  validation={addValidation.definition}
-                  maximumGraphemeCount={CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES}
-                  showValidationMessage={isAddDefinitionTouched}
-                />
-              </div>
-              {matchingAddValues.length > 0 ? (
-                <div className="bg-mapache-vivid-primary-cyan/20 border-4 border-black p-4">
-                  {hasDuplicateAddName ? (
-                    <p className="text-lg font-black uppercase">
-                      Matching value
-                    </p>
-                  ) : (
-                    <p className="text-lg font-black uppercase">
-                      Matching values
-                    </p>
-                  )}
-                  <ul className="mt-3 flex flex-col gap-2">
-                    {matchingAddValues.map(({ definition }) => (
-                      <li key={definition.id}>
-                        <button
-                          type="button"
-                          disabled={isPersistencePending}
-                          onClick={() => openMatchingValue(definition.id)}
-                          className="hover:text-mapache-vivid-secondary-purple border-b-4 border-black text-left text-lg font-black uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
-                        >
-                          Open {getValueDisplayName(definition)}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="submit"
-                  disabled={!canSubmitAdd || isPersistencePending}
-                  className="bg-mapache-vivid-secondary-green border-4 border-black px-5 py-3 text-xl font-black uppercase disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {isPersistencePending ? "Saving…" : "Save Value"}
-                </button>
-                <button
-                  type="button"
-                  disabled={isPersistencePending}
-                  onClick={() => {
-                    setAddName("")
-                    setAddDefinition("")
-                    setIsAddNameTouched(false)
-                    setIsAddDefinitionTouched(false)
-                    setIsAddingCustomValue(false)
-                  }}
-                  className="bg-mapache-vivid-secondary-red border-4 border-black px-5 py-3 text-xl font-black text-white uppercase"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          ) : null}
-        </section>
+        <Button
+          className="mt-5"
+          disabled={isNavigationBlocked}
+          onClick={() =>
+            onAddCustomValue(
+              visibleValues.length === 0 ? searchQuery.trim() : "",
+            )
+          }
+        >
+          Add Custom Value
+        </Button>
 
         {hasComparisons && visibleValues.some(({ rank }) => rank <= 5) ? (
           <section

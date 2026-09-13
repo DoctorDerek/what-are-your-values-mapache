@@ -143,8 +143,7 @@ function WritableGameClient({
   const returnFocusTargetIdRef = useRef("hub-browse-all-values-button")
   const [pendingAllValuesValueId, setPendingAllValuesValueId] =
     useState<ValueId | null>(null)
-  const [shouldOpenCustomValueBuilder, setShouldOpenCustomValueBuilder] =
-    useState(false)
+  const [customValueInitialName, setCustomValueInitialName] = useState("")
   const [customValueBuilderRequestId, setCustomValueBuilderRequestId] =
     useState(0)
   const shouldRestoreHubFocusRef = useRef(false)
@@ -257,30 +256,23 @@ function WritableGameClient({
     ({
       focusTargetId,
       valueId,
-      openCustomValueBuilder,
     }: {
       focusTargetId: string
       valueId?: ValueId | null
-      openCustomValueBuilder?: boolean
     }) => {
       returnFocusTargetIdRef.current = focusTargetId
       setPendingAllValuesValueId(valueId ?? null)
-      setShouldOpenCustomValueBuilder(openCustomValueBuilder === true)
-      if (openCustomValueBuilder)
-        setCustomValueBuilderRequestId((requestId) => requestId + 1)
       shouldRestoreHubFocusRef.current = true
       send({ type: "ALL_VALUES.OPEN_REQUESTED" })
     },
     [send],
   )
   const handleAddCustomValue = useCallback(
-    (name: string, definition: string) => {
-      setShouldOpenCustomValueBuilder(false)
-      send({
-        type: "ALL_VALUES.ADD_REQUESTED",
-        name,
-        definition,
-      })
+    (name = "") => {
+      setCustomValueInitialName(name)
+      setCustomValueBuilderRequestId((requestId) => requestId + 1)
+      returnFocusTargetIdRef.current = "hub-add-custom-value-button"
+      send({ type: "ALL_VALUES.CLOSE_REQUESTED" })
     },
     [send],
   )
@@ -361,11 +353,7 @@ function WritableGameClient({
       const destinationActions = {
         "browse-all-values": () =>
           openAllValues({ focusTargetId: HUB_MENU_BUTTON_ID }),
-        "custom-values": () =>
-          openAllValues({
-            focusTargetId: HUB_MENU_BUTTON_ID,
-            openCustomValueBuilder: true,
-          }),
+        "custom-values": () => handleAddCustomValue(),
         achievements: () => openAchievements(HUB_MENU_BUTTON_ID),
         "import-export": () => openDataManagement(HUB_MENU_BUTTON_ID),
       } satisfies Record<
@@ -375,7 +363,14 @@ function WritableGameClient({
 
       destinationActions[destination.id]()
     },
-    [openAchievements, openAllValues, openDataManagement, send, state],
+    [
+      handleAddCustomValue,
+      openAchievements,
+      openAllValues,
+      openDataManagement,
+      send,
+      state,
+    ],
   )
   const handleAchievementPresented = useCallback(
     (achievementId: AchievementPresentation["id"]) => {
@@ -723,13 +718,17 @@ function WritableGameClient({
           customValueInvitation={
             state.context.playerData
               ? {
+                  editorRequestId: customValueBuilderRequestId,
+                  initialName: customValueInitialName,
                   deckRevision:
                     state.context.playerData.profile.scheduler.deckRevision,
                   isSaving: state.matches("AddingCustomValues"),
                   onNavigationBlockedChange: setIsCustomValueDraftActive,
                   saveIssue: state.context.persistenceIssue,
-                  onApply: (drafts) =>
-                    send({ type: "HUB.CUSTOM_VALUES_APPLY_REQUESTED", drafts }),
+                  onApply: (drafts) => {
+                    setCustomValueBuilderRequestId(0)
+                    send({ type: "HUB.CUSTOM_VALUES_APPLY_REQUESTED", drafts })
+                  },
                   onExport: async () => {
                     const playerData = state.context.playerData
                     if (!playerData)
@@ -753,9 +752,7 @@ function WritableGameClient({
           onBrowseAllValues={(focusTargetId) =>
             openAllValues({ focusTargetId })
           }
-          onAddCustomValue={(focusTargetId) =>
-            openAllValues({ focusTargetId, openCustomValueBuilder: true })
-          }
+          onAddCustomValue={() => handleAddCustomValue()}
           onOpenMenu={handleProductMenuOpen}
           onOpenValue={(valueId, focusTargetId) =>
             openAllValues({ focusTargetId, valueId })
@@ -878,10 +875,9 @@ function WritableGameClient({
         <AllValues
           runtimeClipCatalog={SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG}
           shouldReduceMotion={shouldReduceMotion}
-          key={`${battleProfile.scheduler.deckRevision}:${customValueBuilderRequestId}`}
+          key={battleProfile.scheduler.deckRevision}
           rankedValues={rankedValues}
           initialValueId={pendingAllValuesValueId}
-          openCustomValueBuilder={shouldOpenCustomValueBuilder}
           isMenuOpen={isProductOverlayOpen}
           isPersistencePending={state.matches({ AllValues: "Persisting" })}
           persistenceIssue={state.context.persistenceIssue}

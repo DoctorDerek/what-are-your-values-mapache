@@ -163,228 +163,33 @@ describe("All Values Component Integration", () => {
     ).not.toBeInTheDocument()
   })
 
-  it("prefills each canonical starter example as an unsaved editable draft", () => {
-    renderAllValues()
-
-    fireEvent.click(
-      screen.getByRole("button", { name: /Start with Ingenuity/ }),
-    )
-
-    expect(screen.getByRole("form", { name: "Add Custom Value" })).toBeVisible()
-    expect(screen.getByLabelText("Value Name")).toHaveAttribute(
-      "data-slot",
-      "input",
-    )
-    expect(screen.getByLabelText("Value Name")).toHaveValue("Ingenuity")
-    expect(
-      screen.getByLabelText("What This Value Means to Me"),
-    ).toHaveAttribute("data-slot", "textarea")
-    expect(screen.getByLabelText("What This Value Means to Me")).toHaveValue(
-      "To solve problems in original, resourceful, and practical ways.",
-    )
-    expect(screen.getByRole("button", { name: "Save Value" })).toBeEnabled()
-    expect(
-      screen.getByRole("button", { name: /Mapachito’s example/ }),
-    ).toBeVisible()
-  })
-
-  it("opens and closes the builder when Hub requests the custom-value action", () => {
-    renderAllValues(undefined, { openCustomValueBuilder: true })
-
-    expect(screen.getByRole("form", { name: "Add Custom Value" })).toBeVisible()
-    fireEvent.click(
-      screen.getByRole("button", { name: "Close Custom Value Form" }),
-    )
+  it("hands creation to the Hub instead of rendering a second builder", () => {
+    const onAddCustomValue = vi.fn()
+    renderAllValues(undefined, { onAddCustomValue })
+    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
+    expect(onAddCustomValue).toHaveBeenCalledExactlyOnceWith("")
     expect(
       screen.queryByRole("form", { name: "Add Custom Value" }),
     ).not.toBeInTheDocument()
   })
 
-  it("adds a custom value with the private definition payload", () => {
+  it("carries an unmatched search name to the Hub editor", () => {
     const onAddCustomValue = vi.fn()
-
     renderAllValues(undefined, { onAddCustomValue })
-
-    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
-    fireEvent.change(screen.getByLabelText("Value Name"), {
-      target: { value: "   Ingenuity   " },
-    })
-    fireEvent.change(screen.getByLabelText("What This Value Means to Me"), {
-      target: { value: "  Inventions and original ideas matter. " },
-    })
-    fireEvent.click(screen.getByRole("button", { name: "Save Value" }))
-
-    expect(onAddCustomValue).toHaveBeenCalledWith(
-      "Ingenuity",
-      "Inventions and original ideas matter.",
-    )
-    expect(screen.getByRole("form", { name: "Add Custom Value" })).toBeVisible()
-    expect(screen.getByLabelText("Value Name")).toHaveValue("   Ingenuity   ")
-    expect(screen.getByLabelText("What This Value Means to Me")).toHaveValue(
-      "  Inventions and original ideas matter. ",
-    )
-  })
-
-  it("locks navigation and mutation controls while persistence is pending", () => {
-    renderAllValues(undefined, {
-      openCustomValueBuilder: true,
-      isPersistencePending: true,
-    })
-
-    expect(screen.getByRole("button", { name: "Close" })).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
-    expect(
-      screen.getByRole("button", { name: "Close Custom Value Form" }),
-    ).toBeDisabled()
-    expect(screen.getByLabelText("Value Name")).toBeDisabled()
-    expect(screen.getByLabelText("What This Value Means to Me")).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Saving…" })).toBeDisabled()
-    expect(
-      screen.getByRole("button", { name: /Start with Ingenuity/ }),
-    ).toBeDisabled()
-  })
-
-  it("keeps an incomplete add draft open without submitting it", () => {
-    const onAddCustomValue = vi.fn()
-    const onClose = vi.fn()
-
-    renderAllValues(undefined, { onAddCustomValue, onClose })
-
-    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
-    fireEvent.submit(screen.getByRole("form", { name: "Add Custom Value" }))
-    fireEvent.keyDown(window, { key: "Escape" })
-
-    expect(onAddCustomValue).not.toHaveBeenCalled()
-    expect(onClose).not.toHaveBeenCalled()
-    expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Close" })).toBeDisabled()
-    expect(screen.getByRole("form", { name: "Add Custom Value" })).toBeVisible()
-  })
-
-  it("explains required fields after interaction and counts grapheme clusters", () => {
-    renderAllValues()
-
-    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
-    const nameInput = screen.getByLabelText("Value Name")
-    const definitionInput = screen.getByLabelText("What This Value Means to Me")
-
-    expect(screen.getByText("0 / 60 characters")).toBeVisible()
-    expect(screen.getByText("0 / 280 characters")).toBeVisible()
-    expect(
-      screen.queryByText("Enter a name for this value."),
-    ).not.toBeInTheDocument()
-
-    fireEvent.blur(nameInput)
-    fireEvent.blur(definitionInput)
-
-    expect(screen.getByText("Enter a name for this value.")).toBeVisible()
-    expect(
-      screen.getByText("Enter a short personal definition for this value."),
-    ).toBeVisible()
-    expect(nameInput).toHaveAttribute("aria-invalid", "true")
-    expect(definitionInput).toHaveAttribute("aria-invalid", "true")
-
-    fireEvent.change(nameInput, { target: { value: "👨‍👩‍👧‍👦" } })
-    fireEvent.change(definitionInput, {
-      target: { value: "Caring for family with intention." },
-    })
-
-    expect(screen.getByText("1 / 60 characters")).toBeVisible()
-    expect(screen.getByRole("button", { name: "Save Value" })).toBeEnabled()
-  })
-
-  it("keeps overlong or controlled Custom Value drafts visible and unsaved", () => {
-    const onAddCustomValue = vi.fn()
-
-    renderAllValues(undefined, { onAddCustomValue })
-
-    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
-    const nameInput = screen.getByLabelText("Value Name")
-    const definitionInput = screen.getByLabelText("What This Value Means to Me")
-    fireEvent.change(nameInput, { target: { value: "🦝".repeat(61) } })
-    fireEvent.change(definitionInput, {
-      target: { value: "Purpose\u202e" },
-    })
-    fireEvent.blur(nameInput)
-    fireEvent.blur(definitionInput)
-
-    expect(
-      screen.getByText("Use 60 or fewer characters for the value name."),
-    ).toBeVisible()
-    expect(
-      screen.getByText(
-        "Remove invisible or control characters from the personal definition.",
-      ),
-    ).toBeVisible()
-    expect(screen.getByText("61 / 60 characters")).toBeVisible()
-    expect(screen.getByRole("button", { name: "Save Value" })).toBeDisabled()
-    expect(onAddCustomValue).not.toHaveBeenCalled()
-    expect(nameInput).toHaveValue("🦝".repeat(61))
-    expect(definitionInput).toHaveValue("Purpose\u202e")
-  })
-
-  it("cancels an unsaved custom value draft", () => {
-    renderAllValues()
-
-    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
-    fireEvent.change(screen.getByLabelText("Value Name"), {
+    fireEvent.change(screen.getByLabelText("Search All Values"), {
       target: { value: "Ingenuity" },
     })
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
-
-    expect(
-      screen.queryByRole("form", { name: "Add Custom Value" }),
-    ).not.toBeInTheDocument()
-    expect(screen.queryByText("Ingenuity")).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
+    expect(onAddCustomValue).toHaveBeenCalledExactlyOnceWith("Ingenuity")
   })
 
-  it("shows exact collisions with an open-existing-value path", () => {
-    const rankedValues = createRankedValues(createActiveDeckWithIngenuity())
-    const onAddCustomValue = vi.fn()
-
-    renderAllValues(rankedValues, { onAddCustomValue })
-
-    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
-    fireEvent.change(screen.getByLabelText("Value Name"), {
-      target: { value: "  INGENUITY  " },
-    })
-    fireEvent.change(screen.getByLabelText("What This Value Means to Me"), {
-      target: { value: "Another form of creativity." },
-    })
-
+  it("locks navigation and creation while persistence is pending", () => {
+    renderAllValues(undefined, { isPersistencePending: true })
+    expect(screen.getByRole("button", { name: "Close" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
     expect(
-      screen.getByText("This value already exists. Open it instead."),
-    ).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Save Value" })).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Open Ingenuity" })).toBeVisible()
-    expect(onAddCustomValue).not.toHaveBeenCalled()
-
-    fireEvent.click(screen.getByRole("button", { name: "Open Ingenuity" }))
-    expect(
-      screen.queryByRole("form", { name: "Add Custom Value" }),
-    ).not.toBeInTheDocument()
-    const openedValueRow = screen.getByText("Ingenuity").closest("li")
-    if (!openedValueRow) {
-      throw new Error("Expected the existing value row to remain open")
-    }
-    expect(openedValueRow).toHaveClass("ring-8")
-  })
-
-  it("shows partial literal matches without semantic or synonym inference", () => {
-    const rankedValues = createRankedValues(createActiveDeckWithIngenuity())
-
-    renderAllValues(rankedValues)
-
-    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
-    fireEvent.change(screen.getByLabelText("Value Name"), {
-      target: { value: "ingen" },
-    })
-
-    expect(screen.getByText("Matching values")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Open Ingenuity" })).toBeVisible()
-    expect(
-      screen.queryByText("This value already exists. Open it instead."),
-    ).not.toBeInTheDocument()
+      screen.getByRole("button", { name: "Add Custom Value" }),
+    ).toBeDisabled()
   })
 
   it("edits a Custom Value only after an explicit review step", () => {

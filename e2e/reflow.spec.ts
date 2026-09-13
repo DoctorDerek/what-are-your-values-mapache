@@ -4,6 +4,74 @@ import { test } from "./fixtures"
 test.use({ viewport: { width: 320, height: 720 } })
 
 for (const width of [390, 1440]) {
+  test(`Hub inline creation remains usable with enlarged text at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 })
+    await startAtHub(page)
+    await page
+      .getByRole("button", { name: "Browse All Values", exact: true })
+      .click()
+    await page
+      .getByLabel("Search All Values", { exact: true })
+      .fill("Resourceful experimentation")
+    await expect(
+      page.getByText("0 Values Shown", { exact: true }),
+    ).toBeVisible()
+    await page
+      .getByRole("button", { name: "Add Custom Value", exact: true })
+      .click()
+    await expect(page.getByLabel("Value name", { exact: true })).toHaveValue(
+      "Resourceful experimentation",
+    )
+    await page.addStyleTag({ content: "html { font-size: 200%; }" })
+    await page
+      .getByLabel("Definition", { exact: true })
+      .fill("to explore practical solutions through experiments")
+    await page
+      .getByRole("button", { name: "Close editor", exact: true })
+      .click()
+    await page
+      .getByRole("button", { name: "Add Custom Value", exact: true })
+      .click()
+    await expect(page.getByLabel("Definition", { exact: true })).toHaveValue(
+      "to explore practical solutions through experiments",
+    )
+    const editor = page.getByRole("form", {
+      name: "Add Custom Value",
+      exact: true,
+    })
+    const dimensions = await editor.evaluate((element) => ({
+      width: element.clientWidth,
+      content: element.scrollWidth,
+    }))
+    expect(dimensions.content).toBeLessThanOrEqual(dimensions.width)
+    await page
+      .getByRole("button", { name: "Review & save", exact: true })
+      .click()
+    await expect(editor).toHaveCount(0)
+    await expect(page.getByText(/clears Undo and Redo/).first()).toBeVisible()
+    await page.getByRole("button", { name: "Save values", exact: true }).click()
+    await expect(
+      page.getByText("Your Custom Values are saved and ready to battle.", {
+        exact: true,
+      }),
+    ).toBeVisible()
+    await page.reload()
+    await page
+      .getByRole("button", { name: "Browse All Values", exact: true })
+      .click()
+    await page
+      .getByLabel("Search All Values", { exact: true })
+      .fill("Resourceful experimentation")
+    await expect(page.getByText("1 Value Shown", { exact: true })).toBeVisible()
+    await expect(
+      page.getByRole("heading", { name: "Custom Value Builder", exact: true }),
+    ).toHaveCount(0)
+  })
+}
+
+for (const width of [390, 1440]) {
   test(`All Values animals retain identity and respond without shifting at ${width}px`, async ({
     page,
   }) => {

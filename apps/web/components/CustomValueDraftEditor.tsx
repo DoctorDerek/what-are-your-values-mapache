@@ -19,6 +19,7 @@ export default function CustomValueDraftEditor({
   editing,
   onChange,
   onSubmit,
+  onAnother,
   onBack,
 }: {
   draft: CustomValueDraft
@@ -26,6 +27,7 @@ export default function CustomValueDraftEditor({
   editing: boolean
   onChange: (draft: CustomValueDraft) => void
   onSubmit: () => void
+  onAnother: () => void
   onBack: () => void
 }) {
   const nameRef = useRef<HTMLInputElement>(null)
@@ -34,18 +36,30 @@ export default function CustomValueDraftEditor({
   }, [])
   return (
     <form
-      className="space-y-4"
+      aria-label={copy.editorTitle}
+      className="grid grid-cols-1 gap-3 xl:grid-cols-[1fr_2fr]"
       onSubmit={(event) => {
         event.preventDefault()
         if (validation.isValid) onSubmit()
       }}
     >
-      <h2 className="text-xl font-black uppercase">{copy.editorTitle}</h2>
+      <div className="flex flex-wrap items-center justify-between gap-2 xl:col-span-2">
+        <h2 className="text-xl font-black uppercase">{copy.editorTitle}</h2>
+        <Button
+          type="button"
+          variant="link"
+          className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
+          onClick={onBack}
+        >
+          {copy.back}
+        </Button>
+      </div>
       <div className="space-y-2">
         <label htmlFor="hub-custom-value-name" className="font-bold">
           {copy.name}
         </label>
         <Input
+          className="border-2 px-3 py-2 text-base font-normal"
           ref={nameRef}
           id="hub-custom-value-name"
           value={draft.name}
@@ -68,6 +82,8 @@ export default function CustomValueDraftEditor({
           {copy.definition}
         </label>
         <Textarea
+          rows={2}
+          className="min-h-16 border-2 px-3 py-2 text-base font-normal"
           id="hub-custom-value-definition"
           value={draft.definition}
           onChange={(event) =>
@@ -87,12 +103,18 @@ export default function CustomValueDraftEditor({
           showValidationMessage={draft.definition.length > 0}
         />
       </div>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3 xl:col-span-2">
         <Button type="submit" disabled={!validation.isValid}>
           {editing ? copy.updateDraft : copy.addDraft}
         </Button>
-        <Button type="button" variant="outline" onClick={onBack}>
-          {copy.back}
+        <Button
+          type="button"
+          variant="link"
+          className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
+          disabled={!validation.isValid}
+          onClick={onAnother}
+        >
+          {copy.another}
         </Button>
       </div>
     </form>
