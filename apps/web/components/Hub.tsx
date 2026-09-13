@@ -106,12 +106,16 @@ function ValueRow({
 }
 
 function ValueActionRail({
+  isNavigationBlocked,
+  isSaving,
   isBattlePending,
   browseAllValuesButtonRef,
   onBrowseAllValues,
   onAddCustomValue,
   onStartBattle,
 }: {
+  isNavigationBlocked: boolean
+  isSaving: boolean
   isBattlePending: boolean
   browseAllValuesButtonRef?: Ref<HTMLButtonElement>
   onBrowseAllValues: (focusTargetId: string) => void
@@ -121,10 +125,10 @@ function ValueActionRail({
   return (
     <nav
       aria-label="Value actions"
-      className="mt-4 grid w-full grid-cols-1 gap-3 xl:grid-cols-3"
+      className="mb-5 grid w-full grid-cols-1 gap-3 xl:grid-cols-3 [&_button]:min-w-0 [&_button]:whitespace-normal"
     >
-      <button
-        type="button"
+      <Button
+        disabled={isNavigationBlocked}
         onClick={onStartBattle}
         aria-busy={isBattlePending}
         aria-label={
@@ -132,34 +136,35 @@ function ValueActionRail({
             ? presentationLoadingCopy.cancelBattlePreparation
             : undefined
         }
-        className="bg-mapache-vivid-primary-orange relative min-h-16 flex-1 cursor-pointer border-4 border-black px-5 py-5 text-4xl font-black text-white uppercase shadow-[10px_10px_0px_0px_#000000] transition-transform hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-x-[10px] active:translate-y-[10px] active:shadow-none"
+        className="bg-mapache-vivid-primary-orange relative min-h-16 text-3xl text-white"
       >
         <span className={isBattlePending ? "invisible" : undefined}>
           Battle
         </span>
-        {isBattlePending ? (
+        {isBattlePending && (
           <span className="absolute inset-0 flex items-center justify-center text-lg">
             {presentationLoadingCopy.preparing}
           </span>
-        ) : null}
-      </button>
-      <button
+        )}
+      </Button>
+      <Button
+        disabled={isNavigationBlocked}
         ref={browseAllValuesButtonRef}
         id="hub-browse-all-values-button"
-        type="button"
+        variant="secondary"
+        className="min-h-14"
         onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
-        className="bg-mapache-vivid-primary-cyan text-mapache-vivid-dark min-h-16 flex-1 cursor-pointer border-4 border-black px-5 py-5 text-2xl font-black uppercase shadow-[8px_8px_0px_0px_#000000] transition-transform hover:-translate-y-1 hover:shadow-[10px_10px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-x-[8px] active:translate-y-[8px] active:shadow-none"
       >
         Browse All Values
-      </button>
-      <button
+      </Button>
+      <Button
+        disabled={isSaving}
         id="hub-add-custom-value-button"
-        type="button"
+        className="bg-mapache-vivid-secondary-purple min-h-14 text-white"
         onClick={(event) => onAddCustomValue(event.currentTarget.id)}
-        className="bg-mapache-vivid-secondary-purple min-h-16 flex-1 cursor-pointer border-4 border-black px-5 py-5 text-2xl font-black text-white uppercase shadow-[8px_8px_0px_0px_#000000] transition-transform hover:-translate-y-1 hover:shadow-[10px_10px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-x-[8px] active:translate-y-[8px] active:shadow-none"
       >
         Add Custom Value
-      </button>
+      </Button>
     </nav>
   )
 }
@@ -179,6 +184,8 @@ export default function Hub({
   onStartBattle,
 }: {
   customValueInvitation?: {
+    editorRequestId?: number
+    initialName?: string
     deckRevision: number
     isSaving: boolean
     saveIssue: string | null
@@ -216,7 +223,7 @@ export default function Hub({
   useEffect(() => {
     if (previousDeckRevision.current !== customValueInvitation?.deckRevision) {
       previousDeckRevision.current = customValueInvitation?.deckRevision
-      document.getElementById("hub-write-custom-values")?.focus()
+      document.getElementById("hub-add-custom-value-button")?.focus()
     }
   }, [customValueInvitation?.deckRevision])
 
@@ -237,7 +244,6 @@ export default function Hub({
           id={HUB_MENU_BUTTON_ID}
           type="button"
           variant="secondary"
-          size="lg"
           onClick={onOpenMenu}
           disabled={isNavigationBlocked}
         >
@@ -245,9 +251,22 @@ export default function Hub({
         </Button>
       </div>
 
+      <div className="w-full max-w-7xl">
+        <ValueActionRail
+          isNavigationBlocked={Boolean(isNavigationBlocked)}
+          isSaving={customValueInvitation?.isSaving === true}
+          isBattlePending={isBattlePending}
+          browseAllValuesButtonRef={browseAllValuesButtonRef}
+          onBrowseAllValues={onBrowseAllValues}
+          onAddCustomValue={onAddCustomValue}
+          onStartBattle={onStartBattle}
+        />
+      </div>
       {customValueInvitation && (
         <CustomValueInvitation
           key={customValueInvitation.deckRevision}
+          editorRequestId={customValueInvitation.editorRequestId}
+          initialName={customValueInvitation.initialName}
           existingCustomValues={rankedValues.flatMap(({ definition }) =>
             definition.kind === "custom" ? [definition] : [],
           )}
@@ -312,13 +331,6 @@ export default function Hub({
             ))}
           </ol>
         </div>
-        <ValueActionRail
-          isBattlePending={isBattlePending}
-          browseAllValuesButtonRef={browseAllValuesButtonRef}
-          onBrowseAllValues={onBrowseAllValues}
-          onAddCustomValue={onAddCustomValue}
-          onStartBattle={onStartBattle}
-        />
       </section>
     </MapacheScreen>
   )
