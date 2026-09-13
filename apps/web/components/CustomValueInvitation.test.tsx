@@ -31,6 +31,35 @@ function selectExamples() {
   click("Add all three")
 }
 describe("Hub custom-value invitation", () => {
+  it("expands examples on request and saves pending entries with an empty editor", () => {
+    const { props } = setup(1)
+    expect(
+      screen.getByText("Missing a value? Try an example").closest("details"),
+    ).toHaveAttribute("open")
+    fill("My direction", "to explore my own path")
+    click("Add another")
+    expect(screen.getByRole("heading", { name: "Values to add" })).toBeVisible()
+    expect(screen.getByText("to explore my own path")).toBeVisible()
+    expect(screen.getByLabelText("Value name")).toHaveValue("")
+    click("Save")
+    expect(props.onApply).toHaveBeenCalledExactlyOnceWith([
+      { name: "My direction", definition: "to explore my own path" },
+    ])
+  })
+  it("never omits a partially entered value when saving a pending list", () => {
+    const { props } = setup(1)
+    fill("First direction", "to take one path")
+    click("Add another")
+    fill("Another direction", "")
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
+    expect(props.onApply).not.toHaveBeenCalled()
+    fill("Another direction", "to explore another path")
+    click("Save")
+    expect(props.onApply).toHaveBeenCalledExactlyOnceWith([
+      { name: "First direction", definition: "to take one path" },
+      { name: "Another direction", definition: "to explore another path" },
+    ])
+  })
   it("prefills an individual example without saving it", () => {
     const { props } = setup()
     fireEvent.click(screen.getByText("Missing a value? Try an example"))
@@ -39,10 +68,9 @@ describe("Hub custom-value invitation", () => {
       CUSTOM_VALUE_STARTER_EXAMPLES[0].definition,
     )
     expect(props.onApply).not.toHaveBeenCalled()
-    click("Review & save")
-    expect(screen.queryByLabelText("Definition")).not.toBeInTheDocument()
+    expect(screen.getByLabelText("Definition")).toBeVisible()
     expect(screen.getByText(/clears Undo and Redo/)).toBeVisible()
-    click("Save values")
+    click("Save")
     expect(props.onApply).toHaveBeenCalledExactlyOnceWith([
       {
         name: "Ingenuity",
@@ -79,7 +107,7 @@ describe("Hub custom-value invitation", () => {
       />,
     )
     expect(screen.getByLabelText("Value name")).toHaveValue("Ingenuity")
-    expect(screen.getByRole("button", { name: "Review & save" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
   })
   it("queues another value using one editor and preserves both definitions", () => {
     const { props } = setup(1)
@@ -88,8 +116,7 @@ describe("Hub custom-value invitation", () => {
     expect(screen.getAllByLabelText("Definition")).toHaveLength(1)
     expect(screen.getByLabelText("Value name")).toHaveValue("")
     fill("Another direction", "My punctuation stays.")
-    click("Review & save")
-    click("Save values")
+    click("Save")
     expect(props.onApply).toHaveBeenCalledExactlyOnceWith([
       { name: "One direction", definition: "to take one path" },
       { name: "Another direction", definition: "My punctuation stays." },
@@ -102,8 +129,7 @@ describe("Hub custom-value invitation", () => {
     click("Close editor")
     selectExamples()
     expect(screen.getByRole("button", { name: /Ingenuity —/ })).toBeDisabled()
-    click("Review & save")
-    click("Save values")
+    click("Save")
     expect(props.onApply).toHaveBeenCalledWith([
       { name: "ｉｎｇｅｎｕｉｔｙ", definition: "My own meaning." },
       ...CUSTOM_VALUE_STARTER_EXAMPLES.slice(1).map(({ name, definition }) => ({
@@ -118,9 +144,9 @@ describe("Hub custom-value invitation", () => {
     click("Edit Pets")
     fill("", "")
     click("Close editor")
-    expect(screen.getByRole("button", { name: "Review & save" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
     click("Discard unfinished edit")
-    expect(screen.getByRole("button", { name: "Review & save" })).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Save" })).toBeEnabled()
   })
   it("allows editing and removal before saving the batch", () => {
     const { props } = setup()
@@ -128,8 +154,7 @@ describe("Hub custom-value invitation", () => {
     click("Remove Destiny")
     click("Edit Pets")
     fill("Pets", "My companions.")
-    click("Review & save")
-    click("Save values")
+    click("Save")
     expect(props.onApply).toHaveBeenCalledWith([
       {
         name: "Ingenuity",
@@ -142,28 +167,25 @@ describe("Hub custom-value invitation", () => {
     const { props } = setup()
     props.onExport.mockRejectedValueOnce(new Error("Backup download failed"))
     selectExamples()
-    click("Review & save")
     click("Export Data")
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Backup download failed",
     )
-    expect(screen.getByRole("button", { name: "Save values" })).toBeEnabled()
-    click("Keep editing")
+    expect(screen.getByRole("button", { name: "Save" })).toBeEnabled()
     expect(screen.getByRole("button", { name: "Edit Pets" })).toBeVisible()
     expect(props.onApply).not.toHaveBeenCalled()
   })
   it("locks all mutations while saving and retains review for retry", () => {
     const { props, rerender } = setup()
     selectExamples()
-    click("Review & save")
     rerender(<CustomValueInvitation {...props} isSaving />)
-    expect(screen.getByRole("button", { name: "Save values" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
     expect(
       screen.getByRole("button", { name: "Discard pending values" }),
     ).toBeDisabled()
     rerender(<CustomValueInvitation {...props} saveIssue="Storage is full" />)
     expect(screen.getByRole("alert")).toHaveTextContent("Storage is full")
-    click("Save values")
+    click("Save")
     expect(props.onApply).toHaveBeenCalledOnce()
   })
   it("rejects canonical and pending duplicates without erasing the input", () => {
@@ -172,9 +194,7 @@ describe("Hub custom-value invitation", () => {
     click("Add another")
     for (const name of ["ＦＵＮ", " ingenuity "]) {
       fill(name, "My meaning.")
-      expect(
-        screen.getByRole("button", { name: "Review & save" }),
-      ).toBeDisabled()
+      expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
       expect(screen.getByLabelText("Value name")).toHaveValue(name)
     }
   })
@@ -182,13 +202,11 @@ describe("Hub custom-value invitation", () => {
     const { props } = setup(1)
     for (const name of ["x".repeat(61), "Bad\u0001name"]) {
       fill(name, "My meaning.")
-      expect(
-        screen.getByRole("button", { name: "Review & save" }),
-      ).toBeDisabled()
+      expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
       expect(screen.getByLabelText("Value name")).toHaveValue(name)
     }
     fill("Original name", "x".repeat(281))
-    expect(screen.getByRole("button", { name: "Review & save" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
     expect(props.onApply).not.toHaveBeenCalled()
   })
   it("counts graphemes and discards pending additions without a write", () => {
