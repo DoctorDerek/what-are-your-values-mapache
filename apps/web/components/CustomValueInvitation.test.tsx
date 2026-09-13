@@ -3,8 +3,9 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
 
-function setup() {
+function setup(editorRequestId = 0) {
   const props = {
+    editorRequestId,
     existingCustomValues: [],
     isSaving: false,
     saveIssue: null,
@@ -14,67 +15,95 @@ function setup() {
   }
   return { ...render(<CustomValueInvitation {...props} />), props }
 }
-
-function selectExamples() {
-  fireEvent.click(
-    screen.getByText(
-      "Missing a value? Start with Ingenuity, Destiny, or Pets.",
-    ),
-  )
-  fireEvent.click(
-    screen.getByRole("button", { name: "Select all available examples" }),
-  )
+function click(name: string) {
+  fireEvent.click(screen.getByRole("button", { name }))
 }
-
+function fill(name: string, definition: string) {
+  fireEvent.change(screen.getByLabelText("Value name"), {
+    target: { value: name },
+  })
+  fireEvent.change(screen.getByLabelText("Definition"), {
+    target: { value: definition },
+  })
+}
+function selectExamples() {
+  fireEvent.click(screen.getByText("Missing a value? Try an example"))
+  click("Add all three")
+}
 describe("Hub custom-value invitation", () => {
-  it("supports individual selection, deselection, and discarding the draft batch", () => {
+  it("prefills an individual example without saving it", () => {
     const { props } = setup()
-    fireEvent.click(
-      screen.getByText(
-        "Missing a value? Start with Ingenuity, Destiny, or Pets.",
-      ),
+    fireEvent.click(screen.getByText("Missing a value? Try an example"))
+    click("Ingenuity — Mapachito’s example")
+    expect(screen.getByLabelText("Definition")).toHaveValue(
+      CUSTOM_VALUE_STARTER_EXAMPLES[0].definition,
     )
-    fireEvent.click(screen.getByRole("checkbox", { name: /Ingenuity/ }))
-    expect(screen.getByRole("button", { name: "Edit Ingenuity" })).toBeVisible()
-    fireEvent.click(screen.getByRole("checkbox", { name: /Ingenuity/ }))
-    expect(
-      screen.queryByRole("button", { name: "Review changes" }),
-    ).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole("checkbox", { name: /Destiny/ }))
-    fireEvent.click(screen.getByRole("button", { name: "Discard drafts" }))
-    expect(props.onNavigationBlockedChange).toHaveBeenLastCalledWith(false)
     expect(props.onApply).not.toHaveBeenCalled()
+    click("Review & save")
+    expect(screen.queryByLabelText("Definition")).not.toBeInTheDocument()
+    expect(screen.getByText(/clears Undo and Redo/)).toBeVisible()
+    click("Save values")
+    expect(props.onApply).toHaveBeenCalledExactlyOnceWith([
+      {
+        name: "Ingenuity",
+        definition: CUSTOM_VALUE_STARTER_EXAMPLES[0].definition,
+      },
+    ])
   })
-
-  it("keeps the review after a backup failure and lets the player return to selection", async () => {
-    const { props } = setup()
-    props.onExport.mockRejectedValueOnce(new Error("Backup download failed"))
-    selectExamples()
-    fireEvent.click(screen.getByRole("button", { name: "Review changes" }))
-    fireEvent.click(screen.getByRole("button", { name: "Export Data" }))
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Backup download failed",
+  it("retains unfinished text when closed and reopened through a new request", () => {
+    const { props, rerender } = setup(1)
+    fill("My direction", "My own meaning.")
+    click("Close editor")
+    expect(props.onNavigationBlockedChange).toHaveBeenLastCalledWith(true)
+    rerender(
+      <CustomValueInvitation
+        {...props}
+        editorRequestId={2}
+        initialName="Other"
+      />,
     )
-    expect(screen.getByRole("button", { name: "Apply Changes" })).toBeEnabled()
-    fireEvent.click(screen.getByRole("button", { name: "Back to selection" }))
-    expect(screen.getByRole("button", { name: "Edit Pets" })).toBeVisible()
-    expect(props.onApply).not.toHaveBeenCalled()
+    expect(screen.getByLabelText("Value name")).toHaveValue("My direction")
+    expect(screen.getByLabelText("Definition")).toHaveValue("My own meaning.")
   })
-  it("does not select an example that duplicates a player-written draft", () => {
-    const { props } = setup()
-    fireEvent.click(screen.getByRole("button", { name: "Write my own" }))
-    fireEvent.change(screen.getByLabelText("Value name"), {
-      target: { value: "ｉｎｇｅｎｕｉｔｙ" },
-    })
-    fireEvent.change(screen.getByLabelText("What does it mean to you?"), {
-      target: { value: "My own meaning." },
-    })
-    fireEvent.click(screen.getByRole("button", { name: "Add to draft" }))
+  it("starts a requested original value with the unmatched search name", () => {
+    render(
+      <CustomValueInvitation
+        existingCustomValues={[]}
+        isSaving={false}
+        saveIssue={null}
+        editorRequestId={1}
+        initialName="Ingenuity"
+        onApply={vi.fn()}
+        onExport={vi.fn()}
+        onNavigationBlockedChange={vi.fn()}
+      />,
+    )
+    expect(screen.getByLabelText("Value name")).toHaveValue("Ingenuity")
+    expect(screen.getByRole("button", { name: "Review & save" })).toBeDisabled()
+  })
+  it("queues another value using one editor and preserves both definitions", () => {
+    const { props } = setup(1)
+    fill("One direction", "  to take one path  ")
+    click("Add another")
+    expect(screen.getAllByLabelText("Definition")).toHaveLength(1)
+    expect(screen.getByLabelText("Value name")).toHaveValue("")
+    fill("Another direction", "My punctuation stays.")
+    click("Review & save")
+    click("Save values")
+    expect(props.onApply).toHaveBeenCalledExactlyOnceWith([
+      { name: "One direction", definition: "to take one path" },
+      { name: "Another direction", definition: "My punctuation stays." },
+    ])
+  })
+  it("avoids normalized example duplicates in an original pending value", () => {
+    const { props } = setup(1)
+    fill("ｉｎｇｅｎｕｉｔｙ", "My own meaning.")
+    click("Add another")
+    click("Close editor")
     selectExamples()
-    expect(screen.getByRole("checkbox", { name: /Ingenuity/ })).toBeDisabled()
-    expect(screen.getByText("Already in your drafts")).toBeVisible()
-    fireEvent.click(screen.getByRole("button", { name: "Review changes" }))
-    fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }))
+    expect(screen.getByRole("button", { name: /Ingenuity —/ })).toBeDisabled()
+    click("Review & save")
+    click("Save values")
     expect(props.onApply).toHaveBeenCalledWith([
       { name: "ｉｎｇｅｎｕｉｔｙ", definition: "My own meaning." },
       ...CUSTOM_VALUE_STARTER_EXAMPLES.slice(1).map(({ name, definition }) => ({
@@ -83,113 +112,92 @@ describe("Hub custom-value invitation", () => {
       })),
     ])
   })
-
   it("keeps an emptied edit unfinished until explicitly discarded", () => {
     setup()
     selectExamples()
-    fireEvent.click(screen.getByRole("button", { name: "Edit Pets" }))
-    fireEvent.change(screen.getByLabelText("Value name"), {
-      target: { value: "" },
-    })
-    fireEvent.change(screen.getByLabelText("What does it mean to you?"), {
-      target: { value: "" },
-    })
-    fireEvent.click(screen.getByRole("button", { name: "Back to selection" }))
-    expect(
-      screen.getByRole("button", { name: "Review changes" }),
-    ).toBeDisabled()
-    fireEvent.click(
-      screen.getByRole("button", { name: "Discard unfinished edit" }),
-    )
-    expect(screen.getByRole("button", { name: "Review changes" })).toBeEnabled()
-    expect(screen.getByRole("button", { name: "Edit Pets" })).toBeEnabled()
+    click("Edit Pets")
+    fill("", "")
+    click("Close editor")
+    expect(screen.getByRole("button", { name: "Review & save" })).toBeDisabled()
+    click("Discard unfinished edit")
+    expect(screen.getByRole("button", { name: "Review & save" })).toBeEnabled()
   })
-  it("keeps examples unsaved until one reviewed application and offers a backup", async () => {
+  it("allows editing and removal before saving the batch", () => {
     const { props } = setup()
     selectExamples()
-    expect(props.onApply).not.toHaveBeenCalled()
-    fireEvent.click(screen.getByRole("button", { name: "Review changes" }))
-    expect(screen.getByText(/clears Undo and Redo/)).toBeVisible()
-    fireEvent.click(screen.getByRole("button", { name: "Export Data" }))
-    expect(props.onExport).toHaveBeenCalledOnce()
-    await screen.findByRole("button", { name: "Export Data" })
-    fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }))
-    expect(props.onApply).toHaveBeenCalledExactlyOnceWith(
-      CUSTOM_VALUE_STARTER_EXAMPLES.map(({ name, definition }) => ({
-        name,
-        definition,
-      })),
-    )
-  })
-
-  it("preserves an unfinished original draft when returning to selection", () => {
-    const { props } = setup()
-    selectExamples()
-    fireEvent.click(screen.getByRole("button", { name: "Add another" }))
-    fireEvent.change(screen.getByLabelText("Value name"), {
-      target: { value: "My direction" },
-    })
-    fireEvent.change(screen.getByLabelText("What does it mean to you?"), {
-      target: { value: "To live by my own priorities." },
-    })
-    fireEvent.click(screen.getByRole("button", { name: "Back to selection" }))
-    expect(
-      screen.getByRole("button", { name: "Review changes" }),
-    ).toBeDisabled()
-    fireEvent.click(
-      screen.getByRole("button", { name: "Continue unfinished draft" }),
-    )
-    expect(screen.getByLabelText("Value name")).toHaveValue("My direction")
-    fireEvent.click(screen.getByRole("button", { name: "Add to draft" }))
-    fireEvent.click(screen.getByRole("button", { name: "Remove Destiny" }))
-    fireEvent.click(screen.getByRole("button", { name: "Edit Pets" }))
-    fireEvent.change(screen.getByLabelText("What does it mean to you?"), {
-      target: { value: "To care for my companions." },
-    })
-    fireEvent.click(screen.getByRole("button", { name: "Update draft" }))
-    fireEvent.click(screen.getByRole("button", { name: "Review changes" }))
-    fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }))
+    click("Remove Destiny")
+    click("Edit Pets")
+    fill("Pets", "My companions.")
+    click("Review & save")
+    click("Save values")
     expect(props.onApply).toHaveBeenCalledWith([
       {
         name: "Ingenuity",
         definition: CUSTOM_VALUE_STARTER_EXAMPLES[0].definition,
       },
-      { name: "Pets", definition: "To care for my companions." },
-      { name: "My direction", definition: "To live by my own priorities." },
+      { name: "Pets", definition: "My companions." },
     ])
   })
-
-  it("blocks a canonical or draft duplicate while retaining the typed text", () => {
+  it("preserves the review after export failure", async () => {
+    const { props } = setup()
+    props.onExport.mockRejectedValueOnce(new Error("Backup download failed"))
+    selectExamples()
+    click("Review & save")
+    click("Export Data")
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Backup download failed",
+    )
+    expect(screen.getByRole("button", { name: "Save values" })).toBeEnabled()
+    click("Keep editing")
+    expect(screen.getByRole("button", { name: "Edit Pets" })).toBeVisible()
+    expect(props.onApply).not.toHaveBeenCalled()
+  })
+  it("locks all mutations while saving and retains review for retry", () => {
+    const { props, rerender } = setup()
+    selectExamples()
+    click("Review & save")
+    rerender(<CustomValueInvitation {...props} isSaving />)
+    expect(screen.getByRole("button", { name: "Save values" })).toBeDisabled()
+    expect(
+      screen.getByRole("button", { name: "Discard pending values" }),
+    ).toBeDisabled()
+    rerender(<CustomValueInvitation {...props} saveIssue="Storage is full" />)
+    expect(screen.getByRole("alert")).toHaveTextContent("Storage is full")
+    click("Save values")
+    expect(props.onApply).toHaveBeenCalledOnce()
+  })
+  it("rejects canonical and pending duplicates without erasing the input", () => {
     setup()
     selectExamples()
-    fireEvent.click(screen.getByRole("button", { name: "Add another" }))
-    fireEvent.change(screen.getByLabelText("What does it mean to you?"), {
-      target: { value: "My meaning." },
-    })
+    click("Add another")
     for (const name of ["ＦＵＮ", " ingenuity "]) {
-      fireEvent.change(screen.getByLabelText("Value name"), {
-        target: { value: name },
-      })
+      fill(name, "My meaning.")
       expect(
-        screen.getByRole("button", { name: "Add to draft" }),
+        screen.getByRole("button", { name: "Review & save" }),
       ).toBeDisabled()
       expect(screen.getByLabelText("Value name")).toHaveValue(name)
     }
   })
-
-  it("disables changes during save and retains the review after failure for retry", () => {
-    const { props, rerender } = setup()
-    selectExamples()
-    fireEvent.click(screen.getByRole("button", { name: "Review changes" }))
-    rerender(<CustomValueInvitation {...props} isSaving />)
-    expect(screen.getByRole("button", { name: "Apply Changes" })).toBeDisabled()
-    expect(
-      screen.getByRole("button", { name: "Discard drafts" }),
-    ).toBeDisabled()
-    rerender(<CustomValueInvitation {...props} saveIssue="Storage is full" />)
-    expect(screen.getByRole("alert")).toHaveTextContent("Storage is full")
-    expect(screen.getByRole("button", { name: "Edit Ingenuity" })).toBeEnabled()
-    fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }))
-    expect(props.onApply).toHaveBeenCalledOnce()
+  it("retains invalid overlong and controlled inputs without saving", () => {
+    const { props } = setup(1)
+    for (const name of ["x".repeat(61), "Bad\u0001name"]) {
+      fill(name, "My meaning.")
+      expect(
+        screen.getByRole("button", { name: "Review & save" }),
+      ).toBeDisabled()
+      expect(screen.getByLabelText("Value name")).toHaveValue(name)
+    }
+    fill("Original name", "x".repeat(281))
+    expect(screen.getByRole("button", { name: "Review & save" })).toBeDisabled()
+    expect(props.onApply).not.toHaveBeenCalled()
+  })
+  it("counts graphemes and discards pending additions without a write", () => {
+    const { props } = setup(1)
+    fill("👨‍👩‍👧‍👦", "Family on my terms.")
+    expect(screen.getByText("1 / 60 characters")).toBeVisible()
+    click("Add another")
+    click("Discard pending values")
+    expect(props.onNavigationBlockedChange).toHaveBeenLastCalledWith(false)
+    expect(props.onApply).not.toHaveBeenCalled()
   })
 })
