@@ -41,6 +41,87 @@ import {
 
 const TEST_TIMESTAMP = "2026-07-21T00:00:00.000Z"
 
+describe("Hub atomic Custom Value batches", () => {
+  const drafts = [
+    { name: "Ingenuity", definition: "To solve problems resourcefully." },
+    { name: "Destiny", definition: "To pursue my own path." },
+    { name: "Pets", definition: "To care for companion animals." },
+  ]
+
+  it("commits one revision, ignores competing navigation and rehydrates every added value", async () => {
+    const { actor, durableStore } = await bootRootActor()
+    const before = actor.getSnapshot().context.playerData
+    if (!before) throw new Error("Expected player data")
+    actor.send({ type: "HUB.CUSTOM_VALUES_APPLY_REQUESTED", drafts })
+    expect(actor.getSnapshot().matches("AddingCustomValues")).toBe(true)
+    actor.send({ type: "ALL_VALUES.OPEN_REQUESTED" })
+    actor.send({ type: "HUB.CUSTOM_VALUES_APPLY_REQUESTED", drafts })
+    const saved = await waitFor(actor, (snapshot) => snapshot.matches("Hub"))
+    expect(saved.context.playerData?.profile.scheduler.deckRevision).toBe(
+      before.profile.scheduler.deckRevision + 1,
+    )
+    expect(
+      saved.context.playerData?.profile.activeDeck.customValues,
+    ).toMatchObject(drafts)
+    expect(saved.context.playerData?.settings).toEqual(before.settings)
+    actor.stop()
+    const restored = await bootRootActor({ durableStore })
+    expect(restored.actor.getSnapshot().context.playerData).toEqual(
+      saved.context.playerData,
+    )
+    restored.actor.stop()
+  })
+
+  it("preserves the old deck on a rejected write and can retry the complete batch", async () => {
+    const { durableStore, setWriteIssue } = createToggleableWriteFailureStore()
+    const { actor } = await bootRootActor({ durableStore })
+    const before = actor.getSnapshot().context.playerData
+    const storedBefore = await durableStore.readAll()
+    setWriteIssue("Batch save failed")
+    actor.send({ type: "HUB.CUSTOM_VALUES_APPLY_REQUESTED", drafts })
+    await waitFor(
+      actor,
+      (snapshot) =>
+        snapshot.matches("Hub") &&
+        snapshot.context.persistenceIssue === "Batch save failed",
+    )
+    expect(actor.getSnapshot().context.playerData).toBe(before)
+    expect(await durableStore.readAll()).toEqual(storedBefore)
+    setWriteIssue(null)
+    actor.send({ type: "HUB.CUSTOM_VALUES_APPLY_REQUESTED", drafts })
+    const saved = await waitFor(
+      actor,
+      (snapshot) =>
+        snapshot.matches("Hub") && snapshot.context.persistenceIssue === null,
+    )
+    expect(
+      saved.context.playerData?.profile.activeDeck.customValues,
+    ).toMatchObject(drafts)
+    actor.stop()
+  })
+
+  it("rejects the whole batch when a later draft duplicates an earlier one", async () => {
+    const { actor, durableStore } = await bootRootActor()
+    const before = actor.getSnapshot().context.playerData
+    const storedBefore = await durableStore.readAll()
+    actor.send({
+      type: "HUB.CUSTOM_VALUES_APPLY_REQUESTED",
+      drafts: [
+        ...drafts,
+        { name: "ｉｎｇｅｎｕｉｔｙ", definition: "A duplicate." },
+      ],
+    })
+    await waitFor(
+      actor,
+      (snapshot) =>
+        snapshot.matches("Hub") && snapshot.context.persistenceIssue !== null,
+    )
+    expect(actor.getSnapshot().context.playerData).toBe(before)
+    expect(await durableStore.readAll()).toEqual(storedBefore)
+    actor.stop()
+  })
+})
+
 function createRootActor({
   durableStore = createInMemoryDurableStore(),
   randomUuid = () => crypto.randomUUID(),

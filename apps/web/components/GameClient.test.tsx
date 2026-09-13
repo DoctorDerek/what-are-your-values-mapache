@@ -933,6 +933,40 @@ describe("GameClient Integration", () => {
     ).toHaveFocus()
   })
 
+  it("keeps Hub drafts through a failed batch save and clears them only after a successful retry", async () => {
+    render(<GameClient />)
+    fireEvent.click(await screen.findByRole("button", { name: "Start" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Write my own" }))
+    fireEvent.change(screen.getByLabelText("Value name"), {
+      target: { value: "Ingenuity" },
+    })
+    fireEvent.change(screen.getByLabelText("What does it mean to you?"), {
+      target: { value: "To solve problems in my own way." },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Add to draft" }))
+    fireEvent.click(screen.getByRole("button", { name: "Review changes" }))
+    durableStoreFailure.writeEnabled = true
+    fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }))
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "IndexedDB write failed",
+    )
+    expect(screen.getByRole("button", { name: "Edit Ingenuity" })).toBeVisible()
+    expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
+    durableStoreFailure.writeEnabled = false
+    fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }))
+    expect(
+      await screen.findByText(
+        "Your Custom Values are saved and ready to battle.",
+      ),
+    ).toBeVisible()
+    expect(
+      screen.queryByRole("button", { name: "Edit Ingenuity" }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Write my own" })).toHaveFocus()
+    fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
+    expect(await screen.findByText("101 Active Values")).toBeVisible()
+  })
+
   it("preserves the active pair while Menu resumes or routes through Browse All Values", async () => {
     vi.spyOn(crypto, "randomUUID").mockReturnValue(
       "00000000-0000-4000-8000-000000000065",
