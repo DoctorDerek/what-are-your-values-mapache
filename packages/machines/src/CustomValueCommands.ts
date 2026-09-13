@@ -1,3 +1,4 @@
+import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import {
   CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES,
   CUSTOM_VALUE_NAME_MAX_GRAPHEMES,
@@ -115,23 +116,46 @@ export function createCustomValueAddCommit({
   readonly now: () => string
   readonly randomUuid: () => string
 }) {
-  const validatedDraft = requireValidCustomValueDraft({
-    existingCustomValues: profile.activeDeck.customValues,
-    name,
-    definition,
+  return createCustomValueBatchAddCommit({
+    profile,
+    drafts: [{ name, definition }],
+    now,
+    randomUuid,
   })
-  const revisedCustomValues = Object.freeze([
-    ...profile.activeDeck.customValues,
-    createNextCustomValue({
-      existingCustomValues: profile.activeDeck.customValues,
-      name: validatedDraft.name,
-      definition: validatedDraft.definition,
-      now,
-      randomUuid,
-    }),
-  ])
+}
 
-  return createDeckRevisionCommit({ profile, revisedCustomValues })
+export function createCustomValueBatchAddCommit({
+  profile,
+  drafts,
+  now,
+  randomUuid,
+}: {
+  readonly profile: BattleProfile
+  readonly drafts: readonly CustomValueDraft[]
+  readonly now: () => string
+  readonly randomUuid: () => string
+}) {
+  if (drafts.length === 0) throw new Error("Choose at least one Custom Value")
+  const revisedCustomValues = [...profile.activeDeck.customValues]
+  for (const draft of drafts) {
+    const validatedDraft = requireValidCustomValueDraft({
+      existingCustomValues: revisedCustomValues,
+      ...draft,
+    })
+    revisedCustomValues.push(
+      createNextCustomValue({
+        existingCustomValues: revisedCustomValues,
+        ...validatedDraft,
+        now,
+        randomUuid,
+      }),
+    )
+  }
+
+  return createDeckRevisionCommit({
+    profile,
+    revisedCustomValues: Object.freeze(revisedCustomValues),
+  })
 }
 
 export function createCustomValueUpdateCommit({

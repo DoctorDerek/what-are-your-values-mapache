@@ -65,7 +65,8 @@ for (const width of [390, 1440]) {
       else await expect(shortcut).toBeHidden()
       const keyboardAlignment = await readActionAlignment(actions)
       await actions.click({ position: { x: 4, y: 4 } })
-      await expect(shortcut).toBeHidden()
+      if (width >= 1280) await expect(shortcut).toBeVisible()
+      else await expect(shortcut).toBeHidden()
       const pointerAlignment = await readActionAlignment(actions)
       for (const alignment of [...keyboardAlignment, ...pointerAlignment]) {
         expect(

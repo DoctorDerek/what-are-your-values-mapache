@@ -1,5 +1,6 @@
 "use client"
 
+import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import { projectHubValues } from "@game/data/src/HubValueProjection"
 import { presentationLoadingCopy } from "@game/data/src/PresentationLoadingCopy"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
@@ -16,7 +17,8 @@ import {
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import type { StaticImageData } from "next/image"
-import { useState, type Ref } from "react"
+import { useCallback, useEffect, useRef, useState, type Ref } from "react"
+import CustomValueInvitation from "@/components/CustomValueInvitation"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import ValueAnimalPresentationTile from "@/components/ValueAnimalPresentation"
@@ -163,6 +165,7 @@ function ValueActionRail({
 }
 
 export default function Hub({
+  customValueInvitation,
   isBattlePending = false,
   rankedValues,
   runtimeClipCatalog,
@@ -175,6 +178,14 @@ export default function Hub({
   onOpenValue,
   onStartBattle,
 }: {
+  customValueInvitation?: {
+    deckRevision: number
+    isSaving: boolean
+    saveIssue: string | null
+    onApply: (drafts: readonly CustomValueDraft[]) => void
+    onExport: () => Promise<void>
+    onNavigationBlockedChange: (blocked: boolean) => void
+  }
   isBattlePending?: boolean
   rankedValues: readonly RankedValue[]
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
@@ -188,6 +199,26 @@ export default function Hub({
   onStartBattle: () => void
 }) {
   const { hasComparisons, visibleValues } = projectHubValues(rankedValues)
+  const [isDraftNavigationBlocked, setIsDraftNavigationBlocked] =
+    useState(false)
+  const isNavigationBlocked =
+    isDraftNavigationBlocked || customValueInvitation?.isSaving
+  const onNavigationBlockedChange =
+    customValueInvitation?.onNavigationBlockedChange
+  const handleDraftNavigationBlockedChange = useCallback(
+    (blocked: boolean) => {
+      setIsDraftNavigationBlocked(blocked)
+      onNavigationBlockedChange?.(blocked)
+    },
+    [onNavigationBlockedChange],
+  )
+  const previousDeckRevision = useRef(customValueInvitation?.deckRevision)
+  useEffect(() => {
+    if (previousDeckRevision.current !== customValueInvitation?.deckRevision) {
+      previousDeckRevision.current = customValueInvitation?.deckRevision
+      document.getElementById("hub-write-custom-values")?.focus()
+    }
+  }, [customValueInvitation?.deckRevision])
 
   return (
     <MapacheScreen
@@ -208,14 +239,29 @@ export default function Hub({
           variant="secondary"
           size="lg"
           onClick={onOpenMenu}
+          disabled={isNavigationBlocked}
         >
           {PRODUCT_MENU_COPY.openAction}
         </Button>
       </div>
 
+      {customValueInvitation && (
+        <CustomValueInvitation
+          key={customValueInvitation.deckRevision}
+          existingCustomValues={rankedValues.flatMap(({ definition }) =>
+            definition.kind === "custom" ? [definition] : [],
+          )}
+          isSaving={customValueInvitation.isSaving}
+          saveIssue={customValueInvitation.saveIssue}
+          onApply={customValueInvitation.onApply}
+          onExport={customValueInvitation.onExport}
+          onNavigationBlockedChange={handleDraftNavigationBlockedChange}
+        />
+      )}
       <section
+        inert={isNavigationBlocked}
         aria-labelledby="your-values-heading"
-        className="flex min-h-0 w-full max-w-7xl min-w-0 flex-col border-4 border-black bg-white p-3 shadow-[6px_6px_0px_0px_#000000] xl:p-4"
+        className="flex min-h-0 w-full max-w-7xl min-w-0 flex-col border-4 border-black bg-white p-3 shadow-[6px_6px_0px_0px_#000000] inert:opacity-50 xl:p-4"
       >
         <h2 className="text-mapache-vivid-dark text-xl font-black uppercase">
           {hasComparisons ? "Your Values" : "Included Values"}
