@@ -22,6 +22,8 @@ for (const width of [390, 1440]) {
       .click()
     const row = page.getByRole("main").getByRole("listitem").first()
     const active = row.locator('[data-hub-active-clip="true"]')
+    await page.mouse.move(0, 0)
+    await page.getByRole("button", { name: "Menu", exact: true }).focus()
     await expect(active.locator("img")).toHaveAttribute("src", source!)
     await expect(active.locator('[data-playback-ready="true"]')).toHaveCount(1)
     await row.scrollIntoViewIfNeeded()

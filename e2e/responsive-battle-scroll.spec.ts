@@ -101,6 +101,7 @@ for (const width of [390, 1100, 1440]) {
     await page.goto("/")
     await page.getByRole("button", { name: "Start", exact: true }).click()
     for (const hasComparisons of [false, true]) {
+      const roster = page.getByRole("region", { name: "Value roster" })
       const rows = page.getByRole("button", { name: /^Open .+ in All Values$/ })
       await expect(rows).toHaveCount(100)
       await rows.first().scrollIntoViewIfNeeded()
@@ -109,15 +110,19 @@ for (const width of [390, 1100, 1440]) {
         scrollY,
         height: document.documentElement.scrollHeight,
       }))
+      const initialRosterScroll = await roster.evaluate(
+        (element) => element.scrollTop,
+      )
       await page.mouse.wheel(0, 500)
       await expect
-        .poll(() => page.evaluate(() => scrollY))
-        .toBeGreaterThan(before.scrollY + 100)
-      const after = await page.evaluate(() => scrollY)
+        .poll(() => roster.evaluate((element) => element.scrollTop))
+        .toBeGreaterThan(initialRosterScroll + 100)
+      const after = await roster.evaluate((element) => element.scrollTop)
       await page.mouse.wheel(0, -250)
       await expect
-        .poll(() => page.evaluate(() => scrollY))
+        .poll(() => roster.evaluate((element) => element.scrollTop))
         .toBeLessThan(after - 50)
+      expect(await page.evaluate(() => scrollY)).toBe(before.scrollY)
       expect(
         await page.evaluate(() => document.documentElement.scrollHeight),
       ).toBe(before.height)
@@ -141,7 +146,7 @@ for (const width of [390, 1100, 1440]) {
         )
         await page.getByRole("button", { name: "Stop", exact: true }).click()
         await expect(
-          page.getByRole("heading", { name: "Top Five", exact: true }),
+          page.getByRole("heading", { name: "Your Values", level: 1 }),
         ).toBeVisible()
       }
     }
