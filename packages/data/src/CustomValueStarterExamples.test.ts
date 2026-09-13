@@ -7,18 +7,18 @@ describe("Custom Value Starter Examples", () => {
       {
         name: "Ingenuity",
         definition:
-          "To solve problems in original, resourceful, and practical ways.",
+          "to solve problems in original, resourceful, and practical ways",
         label: "Mapachito’s example",
       },
       {
         name: "Destiny",
-        definition: "To pursue the path I believe I am meant to fulfill.",
+        definition: "to pursue the path I believe I am meant to fulfill",
         label: null,
       },
       {
         name: "Pets",
         definition:
-          "To care for, protect, and share life with companion animals.",
+          "to care for, protect, and share life with companion animals",
         label: null,
       },
     ])
