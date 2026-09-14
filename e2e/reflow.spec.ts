@@ -46,12 +46,9 @@ for (const width of [390, 1440]) {
       content: element.scrollWidth,
     }))
     expect(dimensions.content).toBeLessThanOrEqual(dimensions.width)
-    await page
-      .getByRole("button", { name: "Review & save", exact: true })
-      .click()
-    await expect(editor).toHaveCount(0)
+    await expect(editor).toBeVisible()
     await expect(page.getByText(/clears Undo and Redo/).first()).toBeVisible()
-    await page.getByRole("button", { name: "Save values", exact: true }).click()
+    await page.getByRole("button", { name: "Save", exact: true }).click()
     await expect(
       page.getByText("Your Custom Values are saved and ready to battle.", {
         exact: true,

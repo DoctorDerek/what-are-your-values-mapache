@@ -771,16 +771,15 @@ describe("GameClient Integration", () => {
     fireEvent.change(screen.getByLabelText("Definition"), {
       target: { value: "To make original solutions." },
     })
-    fireEvent.click(screen.getByRole("button", { name: "Review & save" }))
     durableStoreFailure.writeEnabled = true
-    fireEvent.click(screen.getByRole("button", { name: "Save values" }))
+    fireEvent.click(screen.getByRole("button", { name: "Save" }))
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "IndexedDB write failed",
     )
     expect(screen.getByText("To make original solutions.")).toBeVisible()
-    expect(screen.getByRole("button", { name: "Save values" })).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Save" })).toBeEnabled()
     durableStoreFailure.writeEnabled = false
-    fireEvent.click(screen.getByRole("button", { name: "Save values" }))
+    fireEvent.click(screen.getByRole("button", { name: "Save" }))
     expect(
       await screen.findByText(
         "Your Custom Values are saved and ready to battle.",
@@ -941,7 +940,6 @@ describe("GameClient Integration", () => {
     fireEvent.change(screen.getByLabelText("Definition"), {
       target: { value: "To solve problems in my own way." },
     })
-    fireEvent.click(screen.getByRole("button", { name: "Review & save" }))
     fireEvent.click(screen.getByRole("button", { name: "Export Data" }))
     await waitFor(() => expect(downloadedBlobs).toHaveLength(1))
     const backup = downloadedBlobs[0]
@@ -951,14 +949,16 @@ describe("GameClient Integration", () => {
       decodedBackup.playerData.profile.activeDeck.customValues,
     ).toHaveLength(0)
     durableStoreFailure.writeEnabled = true
-    fireEvent.click(screen.getByRole("button", { name: "Save values" }))
+    fireEvent.click(screen.getByRole("button", { name: "Save" }))
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "IndexedDB write failed",
     )
-    expect(screen.getByText("To solve problems in my own way.")).toBeVisible()
+    expect(screen.getByLabelText("Definition")).toHaveValue(
+      "To solve problems in my own way.",
+    )
     expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
     durableStoreFailure.writeEnabled = false
-    fireEvent.click(screen.getByRole("button", { name: "Save values" }))
+    fireEvent.click(screen.getByRole("button", { name: "Save" }))
     expect(
       await screen.findByText(
         "Your Custom Values are saved and ready to battle.",
@@ -1469,8 +1469,7 @@ describe("GameClient Integration", () => {
     fireEvent.change(screen.getByLabelText("Definition"), {
       target: { value: "To make original solutions." },
     })
-    fireEvent.click(screen.getByRole("button", { name: "Review & save" }))
-    fireEvent.click(screen.getByRole("button", { name: "Save values" }))
+    fireEvent.click(screen.getByRole("button", { name: "Save" }))
     await screen.findByText("Your Custom Values are saved and ready to battle.")
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
     await screen.findByText("101 Active Values")
@@ -1719,8 +1718,7 @@ describe("GameClient Integration", () => {
     fireEvent.change(screen.getByLabelText("Definition"), {
       target: { value: "To make original solutions." },
     })
-    fireEvent.click(screen.getByRole("button", { name: "Review & save" }))
-    fireEvent.click(screen.getByRole("button", { name: "Save values" }))
+    fireEvent.click(screen.getByRole("button", { name: "Save" }))
     await screen.findByText("Your Custom Values are saved and ready to battle.")
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
     await screen.findByText("101 Active Values")
