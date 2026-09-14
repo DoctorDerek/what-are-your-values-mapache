@@ -140,7 +140,8 @@ test("values and player-data surfaces meet automated accessibility rules", async
   })
   await expect(customValueForm).toBeVisible()
   await expectNoAccessibilityViolations(page, "Custom Value builder")
-  await customValueForm.getByRole("button", { name: "Cancel" }).click()
+  await customValueForm.getByRole("button", { name: "Close editor" }).click()
+  await expect(customValueForm).toBeHidden()
 
   await openMenuDestination(page, "Achievements")
   await expect(
