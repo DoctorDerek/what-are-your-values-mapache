@@ -30,9 +30,9 @@ describe("All Values Projection", () => {
     })
 
     expect(projection.hasComparisons).toBe(false)
-    expect(projection.orderedValues[0]?.definition.englishName).toBe(
-      "Acceptance",
-    )
+    expect(projection.orderedValues[0]?.definition).toMatchObject({
+      englishName: "Acceptance",
+    })
     expect(projection.existingCustomValues).toEqual([INGENUITY])
   })
 

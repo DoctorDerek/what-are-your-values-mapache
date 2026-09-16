@@ -24,19 +24,16 @@ import {
   replaceBattleProfileStorePlayerDataForLocalMutation,
   replaceUnrecoverableBattleProfileStorePlayerData,
 } from "./BattleProfileStore"
+import { projectBattlePair } from "./BattleScheduler"
 import { DurableStoreConflictError } from "./DurableStoreAdapter"
 import { createInMemoryDurableStore } from "./InMemoryDurableStore"
-import { projectScheduledPair } from "./PairScheduler"
 import { createInitialPlayerData, type PlayerData } from "./PlayerData"
 import { createWayvmExport, serializeWayvmExport } from "./WayvmExport"
 
 function createChoiceEvent(
   profile: ReturnType<typeof createInitialBattleProfile>,
 ) {
-  const [winnerId] = projectScheduledPair(
-    profile.activeDeck,
-    profile.scheduler,
-  ).pair
+  const [winnerId] = projectBattlePair(profile.activeDeck, profile.scheduler)
 
   return createBattleChoiceEvent(
     applyBattleChoice({

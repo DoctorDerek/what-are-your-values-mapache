@@ -18,6 +18,7 @@ import {
   validateBattleDelta,
 } from "./BattleDeltaTransition"
 import { createCycleCompleteEventId } from "./BattleIdentity"
+import { projectBattlePair } from "./BattleScheduler"
 import {
   createSchedulerRestorePoint,
   projectScheduledPair,
@@ -280,9 +281,9 @@ describe("Battle Delta transitions", () => {
     expect(boundary.resultingCyclePayoutTierSnapshot.get(winnerId)).toBe(
       retainedResultingWinnerPayoutTier,
     )
-    expect(
-      projectScheduledPair(undone.activeDeck, undone.scheduler).pair,
-    ).toEqual(candidate.delta.pair)
+    expect(projectBattlePair(undone.activeDeck, undone.scheduler)).toEqual(
+      candidate.delta.pair,
+    )
   })
 
   it("rejects unsupported versions and incomplete boundary evidence", () => {

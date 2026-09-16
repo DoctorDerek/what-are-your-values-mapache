@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest"
 import { resolveSeethingSwarmBattleSequence } from "./SeethingSwarmBattleSequencePolicy"
 import type { SeethingSwarmRuntimeCharacterClip } from "./SeethingSwarmRuntimeClipCatalog"
 
-function createClips(...animationIds: string[]) {
+function createClips(
+  ...animationIds: string[]
+): SeethingSwarmRuntimeCharacterClip<string>[] {
   return animationIds.map((animationId) =>
     Object.freeze({
       kind: "character",

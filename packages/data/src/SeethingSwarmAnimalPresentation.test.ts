@@ -149,7 +149,13 @@ describe("SeethingSwarm animal presentation", () => {
     [32, 32, { left: 0, top: 0, width: 1, height: 1 }, "tile size", 0],
   ] as const)(
     "rejects invalid presentation geometry %#",
-    (frameWidth, frameHeight, bounds, expectedMessage, tileSize) => {
+    (
+      frameWidth,
+      frameHeight,
+      bounds,
+      expectedMessage,
+      tileSize = undefined,
+    ) => {
       expect(() =>
         createSeethingSwarmAnimalPresentationGeometry(
           frameWidth,
