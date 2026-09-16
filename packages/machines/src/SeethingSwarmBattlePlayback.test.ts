@@ -80,6 +80,7 @@ describe("SeethingSwarm battle playback", () => {
     )
     expect(steps[0].clip).toBe(combatant.clips.anticipation.clip)
     expect(steps.every((step) => !step.blocksResult)).toBe(true)
+    expect(steps.every((step) => step.frameDurationMs === 100)).toBe(true)
   })
   it("plays every introductory role before resting without mutating its source", () => {
     const steps = createSeethingSwarmBattlePlayback({
@@ -97,6 +98,7 @@ describe("SeethingSwarm battle playback", () => {
     expect(steps[0].clip).toBe(combatant.clips.entry.clip)
     expect(Object.isFrozen(steps)).toBe(true)
     expect(steps.every(Object.isFrozen)).toBe(true)
+    expect(steps.every((step) => step.frameDurationMs === 100)).toBe(true)
   })
 
   it.each([
@@ -133,15 +135,15 @@ describe("SeethingSwarm battle playback", () => {
     for (const steps of [winnerSteps, loserSteps]) {
       const required = steps.filter((step) => step.blocksResult)
       expect(required).toHaveLength(1)
-      expect(required[0].frameDurationMs).toBe(60)
+      expect(required[0].frameDurationMs).toBe(100)
       expect(required[0].clip.frameCount * required[0].frameDurationMs).toBe(
-        240,
+        400,
       )
     }
     expect(winnerSteps.at(-1)).toMatchObject({
       role: "flourish",
       blocksResult: false,
-      frameDurationMs: 160,
+      frameDurationMs: 100,
     })
   })
 
@@ -181,10 +183,15 @@ describe("SeethingSwarm battle playback", () => {
     ])
     expect(
       [...strike, impact[0]].every(
-        (step) => step.blocksResult && step.frameDurationMs === 60,
+        (step) => step.blocksResult && step.frameDurationMs === 100,
       ),
     ).toBe(true)
     expect(impact[1].blocksResult).toBe(false)
+    expect(
+      [...strike, ...impact].map(
+        (step) => step.clip.frameCount * step.frameDurationMs,
+      ),
+    ).toEqual([800, 1200, 600, 400])
     const resources = getSeethingSwarmBattleClips(airborne)
     expect(resources.map((clip) => clip.animationId)).toEqual(
       expect.arrayContaining(["takeoff", "attack_air", "land"]),
