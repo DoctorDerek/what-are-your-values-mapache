@@ -149,7 +149,7 @@ function NativeGameClientContent() {
   )
   const hubClips = useMemo(
     () =>
-      getHubPreparationClips(
+      getHubPreparationClips<number>(
         rankedValues,
         SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG,
       ),

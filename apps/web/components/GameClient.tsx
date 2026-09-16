@@ -39,6 +39,7 @@ import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPre
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { useMachine } from "@xstate/react"
 import { useReducedMotion } from "motion/react"
+import type { StaticImageData } from "next/image"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Controls from "@/components/Controls"
 import { ReopenedInformationPanel } from "@/components/InformationPanel"
@@ -212,7 +213,7 @@ function WritableGameClient({
   )
   const hubClips = useMemo(
     () =>
-      getHubPreparationClips(
+      getHubPreparationClips<StaticImageData>(
         rankedValues,
         SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
       ),
