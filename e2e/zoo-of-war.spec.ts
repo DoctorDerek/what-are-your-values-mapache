@@ -14,9 +14,11 @@ test("prepares before Battle and retains real animals while the next pair loads"
   await page.setViewportSize({ width: 390, height: 844 })
   await page.emulateMedia({ reducedMotion: "reduce" })
   const heldRoutes: Route[] = []
+  const allowedImageUrls = new Set<string>()
   let releaseAll = false
   await page.route(/\.png(?:\?|$)/, (route) => {
-    if (releaseAll) return route.continue()
+    if (releaseAll || allowedImageUrls.has(route.request().url()))
+      return route.continue()
     heldRoutes.push(route)
   })
   try {
@@ -41,6 +43,17 @@ test("prepares before Battle and retains real animals while the next pair loads"
       battle.locator('[data-battle-active-clip="true"]'),
     ).toHaveCount(2)
     await expect(battle.locator("[data-placeholder-playback]")).toHaveCount(0)
+    for (const source of await battle
+      .locator("img")
+      .evaluateAll((images) => images.map((image) => image.src)))
+      allowedImageUrls.add(source)
+    releaseAll = false
+    await page.reload({ waitUntil: "domcontentloaded" })
+    await page.getByRole("button", { name: "Battle", exact: true }).click()
+    await expect(stage).toHaveAttribute("data-battle-stage-mode", "licensed")
+    await expect(
+      battle.locator('[data-battle-active-clip="true"]'),
+    ).toHaveCount(2)
     const identity = await stage.getAttribute("data-choreography-identity")
     const initialImageCount = await battle.locator("img").count()
     const retainedImage = await battle
