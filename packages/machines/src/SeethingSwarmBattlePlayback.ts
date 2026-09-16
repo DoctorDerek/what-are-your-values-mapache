@@ -1,6 +1,5 @@
 import {
-  SEETHING_SWARM_BATTLE_FRAME_DURATION_MS,
-  SEETHING_SWARM_HUB_FRAME_DURATION_MS,
+  SEETHING_SWARM_FRAME_DURATION_MS,
   type SeethingSwarmAnimalPlaybackMode,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeCharacterClip } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
@@ -122,9 +121,7 @@ function createPlaybackSteps<
           semanticFamily: selection.semanticFamily,
           clip,
           playbackMode,
-          frameDurationMs: blocksResult
-            ? SEETHING_SWARM_BATTLE_FRAME_DURATION_MS
-            : SEETHING_SWARM_HUB_FRAME_DURATION_MS,
+          frameDurationMs: SEETHING_SWARM_FRAME_DURATION_MS,
           blocksResult,
         }),
       )
