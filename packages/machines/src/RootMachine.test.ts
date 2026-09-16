@@ -19,7 +19,6 @@ import {
   type DurableStoreAdapter,
 } from "./DurableStoreAdapter"
 import { createInMemoryDurableStore } from "./InMemoryDurableStore"
-import { projectScheduledPair } from "./PairScheduler"
 import { createInitialPlayerData } from "./PlayerData"
 import {
   createWayvmExportActor,
@@ -1101,20 +1100,15 @@ describe("Root Machine", () => {
   it("serializes milestone acknowledgement behind an in-flight battle write", async () => {
     const memoryStore = createInMemoryDurableStore()
     let pauseNextWrite = false
-    let releasePendingWrite: (() => void) | null = null
-    let reportPendingWriteStarted: (() => void) | null = null
-    const pendingWriteStarted = new Promise<void>((resolve) => {
-      reportPendingWriteStarted = resolve
-    })
+    const pendingWrite = Promise.withResolvers<void>()
+    const pendingWriteStarted = Promise.withResolvers<void>()
     const durableStore = Object.freeze({
       readAll: memoryStore.readAll,
       compareAndSwapVerified: async (transaction) => {
         if (pauseNextWrite) {
           pauseNextWrite = false
-          reportPendingWriteStarted?.()
-          await new Promise<void>((resolve) => {
-            releasePendingWrite = resolve
-          })
+          pendingWriteStarted.resolve()
+          await pendingWrite.promise
         }
 
         return memoryStore.compareAndSwapVerified(transaction)
@@ -1146,12 +1140,12 @@ describe("Root Machine", () => {
       winnerId: secondWinnerId,
       expectedScheduler: secondProfile.scheduler,
     })
-    await pendingWriteStarted
+    await pendingWriteStarted.promise
     actor.send({
       type: "ACHIEVEMENT.PRESENTED",
       achievementId: firstPendingUnlock.id,
     })
-    releasePendingWrite?.()
+    pendingWrite.resolve()
 
     const serializedSnapshot = await waitFor(
       actor,
@@ -1716,10 +1710,10 @@ describe("Root Machine", () => {
       throw new Error("Battle profile did not initialize")
     }
 
-    const [winnerId, loserId] = projectScheduledPair(
+    const [winnerId, loserId] = projectBattlePair(
       awaitingBattleProfile.activeDeck,
       awaitingBattleProfile.scheduler,
-    ).pair
+    )
     const selectionEvent = {
       type: "BATTLE.WINNER_SELECTED" as const,
       winnerId,
@@ -1783,10 +1777,10 @@ describe("Root Machine", () => {
     if (!initialProfile) {
       throw new Error("Battle profile did not initialize")
     }
-    const [winnerId] = projectScheduledPair(
+    const [winnerId] = projectBattlePair(
       initialProfile.activeDeck,
       initialProfile.scheduler,
-    ).pair
+    )
 
     actor.send({
       type: "BATTLE.WINNER_SELECTED",
@@ -1815,10 +1809,10 @@ describe("Root Machine", () => {
       throw new Error("Battle profile did not initialize")
     }
 
-    const [firstValueId, secondValueId] = projectScheduledPair(
+    const [firstValueId, secondValueId] = projectBattlePair(
       initialProfile.activeDeck,
       initialProfile.scheduler,
-    ).pair
+    )
     actor.send({
       type: "BATTLE.WINNER_SELECTED",
       winnerId: firstValueId,
@@ -2096,10 +2090,10 @@ describe("Root Machine", () => {
       throw new Error("Battle profile did not initialize")
     }
 
-    const [winnerId] = projectScheduledPair(
+    const [winnerId] = projectBattlePair(
       priorProfile.activeDeck,
       priorProfile.scheduler,
-    ).pair
+    )
     shouldFail = true
     actor.send({
       type: "BATTLE.WINNER_SELECTED",
@@ -2237,10 +2231,7 @@ describe("Root Machine", () => {
       throw new Error("Battle profile did not initialize")
     }
 
-    const pair = projectScheduledPair(
-      profile.activeDeck,
-      profile.scheduler,
-    ).pair
+    const pair = projectBattlePair(profile.activeDeck, profile.scheduler)
     const invalidWinnerId = profile.activeDeck.valueIds.find(
       (valueId) => !pair.includes(valueId),
     )
@@ -3276,10 +3267,10 @@ describe("Root Machine", () => {
     if (priorScheduler.scheduleKind !== "full-cycle") {
       throw new Error("Battle retry fixture expected a full-cycle scheduler")
     }
-    const [winnerId] = projectScheduledPair(
+    const [winnerId] = projectBattlePair(
       priorProfile.activeDeck,
       priorScheduler,
-    ).pair
+    )
 
     shouldFail = true
     actor.send({
@@ -3297,7 +3288,7 @@ describe("Root Machine", () => {
 
     expect(retrySnapshot.context.playerData?.profile).toBe(priorProfile)
     expect(
-      projectScheduledPair(priorProfile.activeDeck, priorScheduler).pair,
+      projectBattlePair(priorProfile.activeDeck, priorScheduler),
     ).toContain(winnerId)
 
     actor.send({
@@ -3689,10 +3680,10 @@ describe("Root Machine", () => {
         "Current-data export fixture expected a full-cycle scheduler",
       )
     }
-    const [winnerId] = projectScheduledPair(
+    const [winnerId] = projectBattlePair(
       committedProfile.activeDeck,
       committedScheduler,
-    ).pair
+    )
 
     shouldFailCommit = true
     actor.send({

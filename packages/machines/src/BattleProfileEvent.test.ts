@@ -19,17 +19,13 @@ import {
   decodeBattleProfileEvent,
   encodeBattleProfileEvent,
   replayBattleProfileEvent,
-  type BattleProfileEvent,
 } from "./BattleProfileEvent"
-import { projectScheduledPair } from "./PairScheduler"
+import { projectBattlePair } from "./BattleScheduler"
 
 function chooseFirstValue(
   profile: ReturnType<typeof createInitialBattleProfile>,
 ) {
-  const [winnerId] = projectScheduledPair(
-    profile.activeDeck,
-    profile.scheduler,
-  ).pair
+  const [winnerId] = projectBattlePair(profile.activeDeck, profile.scheduler)
 
   return applyBattleChoice({
     profile,
@@ -201,10 +197,8 @@ describe("Battle Profile Event", () => {
       decodeBattleProfileEvent(initial.activeDeck, [event.version, event.type]),
     ).toThrow("Invalid Battle Profile event")
 
-    const unsupportedVersion = {
-      ...event,
-      version: 2,
-    } as BattleProfileEvent
+    const unsupportedVersion = { ...event }
+    Reflect.set(unsupportedVersion, "version", 2)
     expect(() => replayBattleProfileEvent(initial, unsupportedVersion)).toThrow(
       "Unsupported Battle Profile event version",
     )

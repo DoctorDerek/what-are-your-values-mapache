@@ -11,7 +11,7 @@ import {
   replayBattleProfileJournalToGeneration,
 } from "./BattleProfileJournalReplay"
 import { getBattleProfileJournalKey } from "./BattleProfileStore"
-import { projectScheduledPair } from "./PairScheduler"
+import { projectBattlePair } from "./BattleScheduler"
 import { createInitialPlayerData } from "./PlayerData"
 
 async function createReplayFixture() {
@@ -20,10 +20,10 @@ async function createReplayFixture() {
     createdAt: "2026-07-21T00:00:00.000Z",
   })
   const initialProfile = initialPlayerData.profile
-  const [winnerId] = projectScheduledPair(
+  const [winnerId] = projectBattlePair(
     initialProfile.activeDeck,
     initialProfile.scheduler,
-  ).pair
+  )
   const transition = applyBattleChoice({
     profile: initialProfile,
     winnerId,
@@ -98,8 +98,8 @@ describe("Battle Profile Journal Replay", () => {
       [
         getBattleProfileJournalKey(1),
         entries
-          .get(getBattleProfileJournalKey(1))
-          ?.replace("2026-07-21T00:01:00.000Z", "2026-07-21T00:01:01.000Z"),
+          .get(getBattleProfileJournalKey(1))!
+          .replace("2026-07-21T00:01:00.000Z", "2026-07-21T00:01:01.000Z"),
       ],
     ])
 
@@ -120,10 +120,10 @@ describe("Battle Profile Journal Replay", () => {
 
   it("rejects an exact replay when the journal key disagrees with its record", async () => {
     const { checkpoint, commit } = await createReplayFixture()
-    const secondPair = projectScheduledPair(
+    const secondPair = projectBattlePair(
       commit.head.playerData.profile.activeDeck,
       commit.head.playerData.profile.scheduler,
-    ).pair
+    )
     const secondTransition = applyBattleChoice({
       profile: commit.head.playerData.profile,
       winnerId: secondPair[0],

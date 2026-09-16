@@ -10,7 +10,7 @@ import {
   decodeBattleProfileJournalRecord,
   serializeBattleProfileJournalRecord,
 } from "./BattleProfileJournal"
-import { projectScheduledPair } from "./PairScheduler"
+import { projectBattlePair } from "./BattleScheduler"
 import { serializePersistedJson } from "./PersistedJson"
 import { createInitialPlayerData } from "./PlayerData"
 
@@ -20,10 +20,7 @@ function createChoiceTransition() {
     createdAt: "2026-07-21T00:00:00.000Z",
   })
   const profile = playerData.profile
-  const [winnerId] = projectScheduledPair(
-    profile.activeDeck,
-    profile.scheduler,
-  ).pair
+  const [winnerId] = projectBattlePair(profile.activeDeck, profile.scheduler)
 
   return {
     playerData,

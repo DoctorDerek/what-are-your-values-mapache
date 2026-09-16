@@ -6,13 +6,13 @@ import {
   createInitialBattleProfile,
   validateBattleProfile,
 } from "./BattleProfile"
-import { projectScheduledPair } from "./PairScheduler"
+import { projectBattlePair } from "./BattleScheduler"
 
 function chooseValue(
   profile: ReturnType<typeof createInitialBattleProfile>,
   pairIndex: 0 | 1,
 ) {
-  const pair = projectScheduledPair(profile.activeDeck, profile.scheduler).pair
+  const pair = projectBattlePair(profile.activeDeck, profile.scheduler)
 
   return applyBattleChoice({
     profile,

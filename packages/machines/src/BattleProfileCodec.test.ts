@@ -13,17 +13,12 @@ import {
   type BattleProfile,
 } from "./BattleProfile"
 import { decodeBattleProfile, encodeBattleProfile } from "./BattleProfileCodec"
+import { projectBattlePair } from "./BattleScheduler"
 import { createCyclePayoutTierSnapshot } from "./CyclePayoutTierSnapshot"
-import {
-  createSchedulerRestorePoint,
-  projectScheduledPair,
-} from "./PairScheduler"
+import { createSchedulerRestorePoint } from "./PairScheduler"
 
 function chooseFirstValue(profile: BattleProfile) {
-  const [winnerId] = projectScheduledPair(
-    profile.activeDeck,
-    profile.scheduler,
-  ).pair
+  const [winnerId] = projectBattlePair(profile.activeDeck, profile.scheduler)
 
   return applyBattleChoice({
     profile,

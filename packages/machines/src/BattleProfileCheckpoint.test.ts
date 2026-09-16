@@ -7,7 +7,7 @@ import {
   serializeBattleProfileCheckpoint,
 } from "./BattleProfileCheckpoint"
 import { createBattleChoiceEvent } from "./BattleProfileEvent"
-import { projectScheduledPair } from "./PairScheduler"
+import { projectBattlePair } from "./BattleScheduler"
 import { parsePersistedJson, serializePersistedJson } from "./PersistedJson"
 import { createInitialPlayerData, createPlayerData } from "./PlayerData"
 
@@ -16,10 +16,10 @@ async function createCheckpoint() {
     schedulerSeed: "checkpoint-seed",
     createdAt: "2026-07-21T00:00:00.000Z",
   })
-  const [winnerId] = projectScheduledPair(
+  const [winnerId] = projectBattlePair(
     initial.profile.activeDeck,
     initial.profile.scheduler,
-  ).pair
+  )
   const transition = applyBattleChoice({
     profile: initial.profile,
     winnerId,
