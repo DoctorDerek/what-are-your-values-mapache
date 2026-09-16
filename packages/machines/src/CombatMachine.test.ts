@@ -3,16 +3,14 @@ import { createActor } from "xstate"
 import {
   createBattleCycleCandidate,
   createInitialBattleCycle,
+  type BattleCycleState,
 } from "./BattleCycle"
+import { projectBattlePair } from "./BattleScheduler"
 import { combatMachine, type PresentedBattle } from "./CombatMachine"
-import { projectScheduledPair } from "./PairScheduler"
 
-function projectBattle(
-  battleCycle: ReturnType<typeof createInitialBattleCycle>,
-): PresentedBattle {
+function projectBattle(battleCycle: BattleCycleState): PresentedBattle {
   return Object.freeze({
-    pair: projectScheduledPair(battleCycle.activeDeck, battleCycle.scheduler)
-      .pair,
+    pair: projectBattlePair(battleCycle.activeDeck, battleCycle.scheduler),
     scheduler: battleCycle.scheduler,
   })
 }

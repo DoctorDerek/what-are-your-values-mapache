@@ -4,7 +4,6 @@ import {
   SEETHING_SWARM_BATTLE_ANIMATION_POLICIES,
   SEETHING_SWARM_BATTLE_CLIP_USAGE_KINDS,
   SEETHING_SWARM_BATTLE_SEMANTIC_FAMILIES,
-  type SeethingSwarmBattleEligibleAnimationPolicy,
 } from "./SeethingSwarmBattleAnimationPolicy"
 import { SEETHING_SWARM_SOURCE_SNAPSHOT } from "./SeethingSwarmSourceEvidence"
 
@@ -124,8 +123,7 @@ const EXPECTED_ENVIRONMENT_GATED_ANIMATION_IDS = Object.freeze([
 
 function getBattleEligiblePolicies() {
   return SEETHING_SWARM_BATTLE_ANIMATION_POLICIES.filter(
-    (policy): policy is SeethingSwarmBattleEligibleAnimationPolicy =>
-      policy.usageKind === "battle-eligible",
+    (policy) => policy.usageKind === "battle-eligible",
   )
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { applyBattleChoice, createInitialBattleProfile } from "./BattleProfile"
-import { projectScheduledPair } from "./PairScheduler"
+import { projectBattlePair } from "./BattleScheduler"
 import {
   decodeValueProgressById,
   encodeValueProgressEntries,
@@ -8,10 +8,7 @@ import {
 
 function createPlayedProfile() {
   const profile = createInitialBattleProfile("value-progress-codec-seed")
-  const [winnerId] = projectScheduledPair(
-    profile.activeDeck,
-    profile.scheduler,
-  ).pair
+  const [winnerId] = projectBattlePair(profile.activeDeck, profile.scheduler)
 
   return applyBattleChoice({
     profile,

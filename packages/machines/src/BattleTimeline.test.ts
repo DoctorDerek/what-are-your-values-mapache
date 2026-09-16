@@ -5,6 +5,7 @@ import {
   type BattleCycleState,
 } from "./BattleCycle"
 import { encodeBattleDelta } from "./BattleDeltaCodec"
+import { projectBattlePair } from "./BattleScheduler"
 import {
   appendBattleTimelineDelta,
   BATTLE_TIMELINE_COMBINED_DELTA_LIMIT,
@@ -17,15 +18,14 @@ import {
   type BattleTimeline,
   type BattleTimelineLimits,
 } from "./BattleTimeline"
-import { projectScheduledPair } from "./PairScheduler"
 
 const generousByteBudget = Number.MAX_SAFE_INTEGER
 
 function commitFirstValue(battleCycle: BattleCycleState) {
-  const [winnerId] = projectScheduledPair(
+  const [winnerId] = projectBattlePair(
     battleCycle.activeDeck,
     battleCycle.scheduler,
-  ).pair
+  )
 
   return createBattleCycleCandidate({
     battleCycle,

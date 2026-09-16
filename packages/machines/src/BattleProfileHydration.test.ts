@@ -19,8 +19,8 @@ import {
   getBattleProfileJournalKey,
   initializeBattleProfileStore,
 } from "./BattleProfileStore"
+import { projectBattlePair } from "./BattleScheduler"
 import { createInMemoryDurableStore } from "./InMemoryDurableStore"
-import { projectScheduledPair } from "./PairScheduler"
 import { MAX_PERSISTED_JSON_BYTES } from "./PersistedJson"
 import { createInitialPlayerData } from "./PlayerData"
 
@@ -34,10 +34,7 @@ function createTestPlayerData(schedulerSeed: string) {
 function createChoiceEvent(
   profile: ReturnType<typeof createInitialBattleProfile>,
 ) {
-  const [winnerId] = projectScheduledPair(
-    profile.activeDeck,
-    profile.scheduler,
-  ).pair
+  const [winnerId] = projectBattlePair(profile.activeDeck, profile.scheduler)
 
   return createBattleChoiceEvent(
     applyBattleChoice({

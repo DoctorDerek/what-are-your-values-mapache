@@ -4,7 +4,6 @@ import {
   INFORMATION_PANEL_IDS,
   INFORMATION_PANELS,
   INTRODUCTION_INFORMATION_PANEL,
-  type InformationPanelResourceBlock,
 } from "./InformationPanels"
 import { introductionCopy } from "./IntroductionCopy"
 
@@ -66,8 +65,7 @@ describe("Information Panel Catalog", () => {
 
   it("exposes exactly seven unique HTTPS resources without future copy", () => {
     const resourceBlocks = FREE_RESOURCES_INFORMATION_PANEL.blocks.filter(
-      (block): block is InformationPanelResourceBlock =>
-        block.kind === "resource",
+      (block) => block.kind === "resource",
     )
 
     expect(resourceBlocks).toHaveLength(7)
@@ -80,7 +78,10 @@ describe("Information Panel Catalog", () => {
 
     expect(
       INFORMATION_PANELS["credits-privacy"].blocks.some(
-        (block) => "text" in block && block.text.includes("PNG export"),
+        (block) =>
+          "text" in block &&
+          typeof block.text === "string" &&
+          block.text.includes("PNG export"),
       ),
     ).toBe(false)
   })

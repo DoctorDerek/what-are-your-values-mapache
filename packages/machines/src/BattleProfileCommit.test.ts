@@ -6,15 +6,15 @@ import {
   createBattleUndoCommit,
 } from "./BattleProfileCommit"
 import { replayBattleProfileEvent } from "./BattleProfileEvent"
-import { projectScheduledPair } from "./PairScheduler"
+import { projectBattlePair } from "./BattleScheduler"
 
 describe("Battle Profile Commit", () => {
   it("couples Choice, Undo, and Redo profiles to their exact replayable events", () => {
     const initialProfile = createInitialBattleProfile("commit-event-seed")
-    const [winnerId] = projectScheduledPair(
+    const [winnerId] = projectBattlePair(
       initialProfile.activeDeck,
       initialProfile.scheduler,
-    ).pair
+    )
     const choice = createBattleChoiceCommit({
       profile: initialProfile,
       winnerId,
