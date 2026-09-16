@@ -83,6 +83,10 @@ describe("Hub custom-value invitation", () => {
     fill("My direction", "My own meaning.")
     click("Close editor")
     expect(props.onNavigationBlockedChange).toHaveBeenLastCalledWith(true)
+    click("Continue editing")
+    expect(screen.getByLabelText("Value name")).toHaveValue("My direction")
+    expect(screen.getByLabelText("Definition")).toHaveValue("My own meaning.")
+    click("Close editor")
     rerender(
       <CustomValueInvitation
         {...props}
@@ -175,6 +179,29 @@ describe("Hub custom-value invitation", () => {
     expect(screen.getByRole("button", { name: "Edit Pets" })).toBeVisible()
     expect(props.onApply).not.toHaveBeenCalled()
   })
+  it("retains an edited pending value when adding another before saving", () => {
+    const { props } = setup()
+    selectExamples()
+    click("Edit Pets")
+    fill("Companions", "to care for my companions")
+    click("Add another")
+    expect(screen.getByText("to care for my companions")).toBeVisible()
+    expect(screen.getByLabelText("Value name")).toHaveValue("")
+    fill("Exploration", "to discover new possibilities")
+    click("Save")
+    expect(props.onApply).toHaveBeenCalledExactlyOnceWith([
+      {
+        name: "Ingenuity",
+        definition: CUSTOM_VALUE_STARTER_EXAMPLES[0].definition,
+      },
+      {
+        name: "Destiny",
+        definition: CUSTOM_VALUE_STARTER_EXAMPLES[1].definition,
+      },
+      { name: "Companions", definition: "to care for my companions" },
+      { name: "Exploration", definition: "to discover new possibilities" },
+    ])
+  })
   it("locks all mutations while saving and retains review for retry", () => {
     const { props, rerender } = setup()
     selectExamples()
@@ -207,6 +234,7 @@ describe("Hub custom-value invitation", () => {
     }
     fill("Original name", "x".repeat(281))
     expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
+    fireEvent.submit(screen.getByRole("form", { name: "Add Custom Value" }))
     expect(props.onApply).not.toHaveBeenCalled()
   })
   it("counts graphemes and discards pending additions without a write", () => {
