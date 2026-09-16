@@ -13,7 +13,7 @@ import {
   type CustomValueDefinition,
 } from "@game/data/src/Value"
 import { getErrorMessage } from "@game/utils/src/Errors"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import CustomValueDraftEditor from "@/components/CustomValueDraftEditor"
 import { Button } from "@/components/ui/button"
 
@@ -47,7 +47,7 @@ export default function CustomValueInvitation({
   const [editorDraft, setEditorDraft] = useState<CustomValueDraft>(EMPTY_DRAFT)
   const [editingKey, setEditingKey] = useState<string | null>(null)
   const [writing, setWriting] = useState(false)
-  const [reviewing, setReviewing] = useState(false)
+  const [examplesExpanded, setExamplesExpanded] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [exportIssue, setExportIssue] = useState<string | null>(null)
   const [handledEditorRequestId, setHandledEditorRequestId] = useState(0)
@@ -55,7 +55,7 @@ export default function CustomValueInvitation({
     setHandledEditorRequestId(editorRequestId)
     if (editorRequestId !== 0) {
       setWriting(true)
-      setReviewing(false)
+      setExamplesExpanded(true)
       if (!editorDraft.name && !editorDraft.definition) {
         setEditorDraft({ name: initialName, definition: "" })
       }
@@ -65,7 +65,6 @@ export default function CustomValueInvitation({
     if (editorRequestId === 0) return
     document.getElementById("hub-custom-value-name")?.focus()
   }, [editorRequestId])
-  const reviewHeadingRef = useRef<HTMLHeadingElement>(null)
   const isNavigationBlocked =
     isSaving ||
     isExporting ||
@@ -80,9 +79,6 @@ export default function CustomValueInvitation({
     () => () => onNavigationBlockedChange(false),
     [onNavigationBlockedChange],
   )
-  useEffect(() => {
-    if (reviewing) reviewHeadingRef.current?.focus()
-  }, [reviewing])
   const validations = validateCustomValueBatch(drafts, existingCustomValues)
   const editorValidation = validateCustomValueBatch(
     [editorDraft, ...drafts.filter((draft) => draft.key !== editingKey)],
@@ -108,15 +104,32 @@ export default function CustomValueInvitation({
       validateCustomValueDraft({ ...example, existingCustomValues }).isValid &&
       !examplesAlreadyDrafted.includes(example),
   )
+  const additions = hasUnfinishedDraft
+    ? editingKey
+      ? drafts.map((draft) => (draft.key === editingKey ? editorDraft : draft))
+      : [...drafts, editorDraft]
+    : drafts
   const canApply =
-    drafts.length > 0 && validations.every((validation) => validation.isValid)
+    additions.length > 0 &&
+    validateCustomValueBatch(additions, existingCustomValues).every(
+      (validation) => validation.isValid,
+    )
+  function saveAdditions() {
+    if (canApply)
+      onApply(
+        additions.map(({ name, definition }) => ({
+          name: name.trim(),
+          definition: definition.trim(),
+        })),
+      )
+  }
 
   function backToSelection() {
     setWriting(false)
-    setReviewing(false)
+    setExamplesExpanded(true)
     document.getElementById("hub-add-custom-value-button")?.focus()
   }
-  function queueDraft(review = true) {
+  function queueDraft() {
     const nextDraft = {
       name: editorValidation.name.value,
       definition: editorValidation.definition.value,
@@ -133,8 +146,8 @@ export default function CustomValueInvitation({
     )
     setEditorDraft(EMPTY_DRAFT)
     setEditingKey(null)
-    setWriting(!review)
-    setReviewing(review)
+    setWriting(true)
+    document.getElementById("hub-custom-value-name")?.focus()
   }
   async function exportData() {
     setIsExporting(true)
@@ -157,14 +170,12 @@ export default function CustomValueInvitation({
         disabled={isSaving || isExporting}
         className="min-w-0 space-y-3"
       >
-        {writing && !reviewing ? (
+        {writing ? (
           <CustomValueDraftEditor
             draft={editorDraft}
             validation={editorValidation}
-            editing={editingKey !== null}
             onChange={setEditorDraft}
-            onSubmit={() => queueDraft()}
-            onAnother={() => queueDraft(false)}
+            onSubmit={saveAdditions}
             onBack={backToSelection}
           />
         ) : hasUnfinishedDraft && drafts.length === 0 ? (
@@ -176,7 +187,10 @@ export default function CustomValueInvitation({
             {copy.continueDraft}
           </Button>
         ) : null}
-        <details hidden={reviewing}>
+        <details
+          open={examplesExpanded}
+          onToggle={(event) => setExamplesExpanded(event.currentTarget.open)}
+        >
           <summary className="min-h-11 cursor-pointer py-2 font-bold focus-visible:outline-4 focus-visible:outline-offset-4">
             {copy.invitation}
           </summary>
@@ -243,58 +257,47 @@ export default function CustomValueInvitation({
             className="space-y-3 border-t-2 border-black pt-3"
             aria-labelledby="custom-drafts-heading"
           >
-            <h2
-              id="custom-drafts-heading"
-              ref={reviewHeadingRef}
-              tabIndex={-1}
-              className="font-bold"
-            >
-              {reviewing
-                ? copy.reviewTitle
-                : `${drafts.length} ${copy.draftCount}`}
+            <h2 id="custom-drafts-heading" tabIndex={-1} className="font-bold">
+              {copy.drafts}
             </h2>
             <ul className="divide-y divide-black/20">
               {drafts.map((draft, index) => (
                 <li key={draft.key} className="py-2">
                   <div className="flex flex-wrap items-center gap-3">
                     <h3 className="min-w-0 flex-1 font-bold">{draft.name}</h3>
-                    {!reviewing && (
-                      <>
-                        <Button
-                          variant="link"
-                          className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
-                          disabled={hasUnfinishedDraft}
-                          aria-label={`${copy.edit} ${draft.name}`}
-                          onClick={() => {
-                            setEditingKey(draft.key)
-                            setEditorDraft({
-                              name: draft.name,
-                              definition: draft.definition,
-                            })
-                            setWriting(true)
-                            setReviewing(false)
-                          }}
-                        >
-                          {copy.edit}
-                        </Button>
-                        <Button
-                          variant="link"
-                          className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
-                          disabled={editingKey === draft.key}
-                          aria-label={`${copy.remove} ${draft.name}`}
-                          onClick={() => {
-                            setDrafts(
-                              drafts.filter((item) => item.key !== draft.key),
-                            )
-                            setReviewing(false)
-                          }}
-                        >
-                          {copy.remove}
-                        </Button>
-                      </>
-                    )}
+                    <Button
+                      variant="link"
+                      className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
+                      disabled={hasUnfinishedDraft}
+                      aria-label={`${copy.edit} ${draft.name}`}
+                      onClick={() => {
+                        setEditingKey(draft.key)
+                        setEditorDraft({
+                          name: draft.name,
+                          definition: draft.definition,
+                        })
+                        setWriting(true)
+                        setExamplesExpanded(true)
+                      }}
+                    >
+                      {copy.edit}
+                    </Button>
+                    <Button
+                      variant="link"
+                      className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
+                      disabled={editingKey === draft.key}
+                      aria-label={`${copy.remove} ${draft.name}`}
+                      onClick={() => {
+                        setDrafts(
+                          drafts.filter((item) => item.key !== draft.key),
+                        )
+                        setExamplesExpanded(true)
+                      }}
+                    >
+                      {copy.remove}
+                    </Button>
                   </div>
-                  {reviewing && <p>{draft.definition}</p>}
+                  <p className="wrap-anywhere">{draft.definition}</p>
                   {validations[index]?.name.validationCode && (
                     <p role="alert">
                       {
@@ -307,54 +310,35 @@ export default function CustomValueInvitation({
                 </li>
               ))}
             </ul>
-            {reviewing ? (
-              <>
-                <p className="text-sm">{copy.consequences}</p>
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    disabled={!canApply}
-                    onClick={() =>
-                      onApply(
-                        drafts.map(({ name, definition }) => ({
-                          name,
-                          definition,
-                        })),
-                      )
-                    }
-                  >
-                    {copy.apply}
-                  </Button>
-                  <Button variant="outline" onClick={() => setReviewing(false)}>
-                    Keep editing
-                  </Button>
-                  <Button
-                    variant="link"
-                    className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
-                    onClick={exportData}
-                  >
-                    {isExporting ? copy.exporting : copy.export}
-                  </Button>
-                </div>
-              </>
-            ) : (
-              !writing && (
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    disabled={!canApply || hasUnfinishedDraft}
-                    onClick={() => setReviewing(true)}
-                  >
-                    {copy.review}
-                  </Button>
-                  <Button
-                    variant="link"
-                    className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
-                    onClick={() => setWriting(true)}
-                  >
-                    {hasUnfinishedDraft ? copy.continueDraft : copy.another}
-                  </Button>
-                </div>
-              )
-            )}
+          </section>
+        )}
+        {(writing || hasUnfinishedDraft || drafts.length > 0) && (
+          <section
+            className="space-y-3 border-t-2 border-black pt-3"
+            aria-label="Save Custom Values"
+          >
+            <p className="text-sm">{copy.consequences}</p>
+            <div className="flex flex-wrap gap-3">
+              <Button disabled={!canApply} onClick={saveAdditions}>
+                {copy.apply}
+              </Button>
+              <Button
+                variant="outline"
+                disabled={hasUnfinishedDraft && !editorValidation.isValid}
+                onClick={() =>
+                  hasUnfinishedDraft ? queueDraft() : setWriting(true)
+                }
+              >
+                {copy.another}
+              </Button>
+              <Button
+                variant="link"
+                className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
+                onClick={exportData}
+              >
+                {isExporting ? copy.exporting : copy.export}
+              </Button>
+            </div>
           </section>
         )}
         {hasUnfinishedDraft && (

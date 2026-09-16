@@ -16,18 +16,14 @@ import { Textarea } from "@/components/ui/textarea"
 export default function CustomValueDraftEditor({
   draft,
   validation,
-  editing,
   onChange,
   onSubmit,
-  onAnother,
   onBack,
 }: {
   draft: CustomValueDraft
   validation: CustomValueDraftValidation
-  editing: boolean
   onChange: (draft: CustomValueDraft) => void
   onSubmit: () => void
-  onAnother: () => void
   onBack: () => void
 }) {
   const nameRef = useRef<HTMLInputElement>(null)
@@ -36,6 +32,7 @@ export default function CustomValueDraftEditor({
   }, [])
   return (
     <form
+      id="hub-custom-value-editor"
       aria-label={copy.editorTitle}
       className="grid grid-cols-1 gap-3 xl:grid-cols-[1fr_2fr]"
       onSubmit={(event) => {
@@ -102,20 +99,6 @@ export default function CustomValueDraftEditor({
           maximumGraphemeCount={CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES}
           showValidationMessage={draft.definition.length > 0}
         />
-      </div>
-      <div className="flex flex-wrap items-center gap-3 xl:col-span-2">
-        <Button type="submit" disabled={!validation.isValid}>
-          {editing ? copy.updateDraft : copy.addDraft}
-        </Button>
-        <Button
-          type="button"
-          variant="link"
-          className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
-          disabled={!validation.isValid}
-          onClick={onAnother}
-        >
-          {copy.another}
-        </Button>
       </div>
     </form>
   )
