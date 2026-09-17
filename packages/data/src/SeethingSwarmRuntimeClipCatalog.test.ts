@@ -13,6 +13,69 @@ import {
 } from "./SeethingSwarmRuntimeClipCatalog.test-fixture"
 
 describe("SeethingSwarm runtime clip catalog", () => {
+  it("preserves the inspected rest frame separately from animation extents", () => {
+    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    for (const animal of catalog.animals) {
+      expect(animal.referencePose).toEqual({
+        animationId: animal.animalId === "bat" ? "idle_upright" : "idle",
+        frameIndex: 0,
+        bounds: { left: 4, top: 5, width: 20, height: 23 },
+        anchor: { x: 14, y: 28 },
+      })
+      const rest = animal.characterClips.find(
+        (clip) => clip.animationId === animal.referencePose.animationId,
+      )!
+      expect(rest.visibleBounds).toEqual({
+        left: 2,
+        top: 3,
+        width: 24,
+        height: 25,
+      })
+      expect(Object.isFrozen(animal.referencePose)).toBe(true)
+      expect(Object.isFrozen(animal.referencePose.bounds)).toBe(true)
+      expect(Object.isFrozen(animal.referencePose.anchor)).toBe(true)
+    }
+  })
+
+  it("rejects a missing reference animation instead of choosing an arbitrary pose", () => {
+    const { registry, sources } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const animal = registry.animals[0]
+    const animations = { ...animal.animations }
+    delete animations.idle_upright
+    expect(() =>
+      createSeethingSwarmLicensedRuntimeClipCatalog(
+        {
+          ...registry,
+          animals: [{ ...animal, animations }, ...registry.animals.slice(1)],
+        },
+        sources.filter(
+          (source) =>
+            source.relativePath !== animal.animations.idle_upright.relativePath,
+        ),
+      ),
+    ).toThrow("Missing SeethingSwarm reference pose for bat")
+  })
+
+  it("rejects reference-frame pixels outside the clip extent", () => {
+    const { registry, sources } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const referencePath =
+      registry.animals[0].animations.idle_upright.relativePath
+    expect(() =>
+      createSeethingSwarmLicensedRuntimeClipCatalog(
+        registry,
+        sources.map((source) =>
+          source.relativePath === referencePath
+            ? {
+                ...source,
+                firstFrameBounds: { left: 0, top: 0, width: 1, height: 1 },
+              }
+            : source,
+        ),
+      ),
+    ).toThrow("SeethingSwarm reference pose exceeds clip bounds for bat")
+  })
   it("resolves all 774 canonical character clips and the Frog effect", () => {
     const { registry, catalog } =
       createCompleteSeethingSwarmRuntimeClipTestFixture()
