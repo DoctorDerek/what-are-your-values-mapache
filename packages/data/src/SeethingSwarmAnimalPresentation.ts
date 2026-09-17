@@ -1,3 +1,4 @@
+import { splitGraphemes } from "unicode-segmenter/grapheme"
 import {
   createSeethingSwarmVisibleContentBounds,
   SeethingSwarmRuntimeAnimalClips,
@@ -8,7 +9,6 @@ import {
 import type { ActiveValueDefinition } from "./Value"
 import { VALUE_TO_ANIMAL_MAP } from "./ValueToAnimalMap"
 import type { ZooAnimalId } from "./ZooAnimals"
-import { splitGraphemes } from "unicode-segmenter/grapheme"
 
 export const SEETHING_SWARM_HUB_ANIMATION_CANDIDATES = Object.freeze([
   "idle",
