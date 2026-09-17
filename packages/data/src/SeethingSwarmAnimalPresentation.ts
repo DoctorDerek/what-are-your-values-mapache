@@ -1,4 +1,3 @@
-import { splitGraphemes } from "unicode-segmenter/grapheme"
 import {
   createSeethingSwarmVisibleContentBounds,
   SeethingSwarmRuntimeAnimalClips,
@@ -9,13 +8,16 @@ import {
 import type { ActiveValueDefinition } from "./Value"
 import { VALUE_TO_ANIMAL_MAP } from "./ValueToAnimalMap"
 import type { ZooAnimalId } from "./ZooAnimals"
+import { splitGraphemes } from "unicode-segmenter/grapheme"
 
 export const SEETHING_SWARM_HUB_ANIMATION_CANDIDATES = Object.freeze([
   "idle",
   "idle_upright",
 ] as const)
 export const SEETHING_SWARM_HUB_TILE_SIZE = 72
-export const SEETHING_SWARM_FRAME_DURATION_MS = 100
+export const SEETHING_SWARM_CALM_FRAME_DURATION_MS = 160
+export const SEETHING_SWARM_ATTENTION_FRAME_DURATION_MS = 100
+export const SEETHING_SWARM_BATTLE_FRAME_DURATION_MS = 100
 export const SEETHING_SWARM_BATTLE_RESULT_DURATION_MS = 480
 export const SEETHING_SWARM_BATTLE_TILE_SIZE = 112
 

@@ -1,6 +1,6 @@
 import {
   createSeethingSwarmAnimalPresentationGeometry,
-  SEETHING_SWARM_FRAME_DURATION_MS,
+  SEETHING_SWARM_CALM_FRAME_DURATION_MS,
   SEETHING_SWARM_HUB_TILE_SIZE,
   type SeethingSwarmAnimalFacingDirection,
   type SeethingSwarmAnimalPlaybackMode,
@@ -34,7 +34,7 @@ type SeethingSwarmAnimalTileStyle = CSSProperties & {
 export default function SeethingSwarmAnimal({
   clip,
   facing = "right",
-  frameDurationMs = SEETHING_SWARM_FRAME_DURATION_MS,
+  frameDurationMs = SEETHING_SWARM_CALM_FRAME_DURATION_MS,
   maximumIntegerScale,
   preload = false,
   playbackMode = "loop",
