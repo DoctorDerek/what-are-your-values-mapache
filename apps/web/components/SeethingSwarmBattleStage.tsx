@@ -1,7 +1,6 @@
 import {
-  createSeethingSwarmBattlePresentationGeometry,
+  createSeethingSwarmStageGeometry,
   SEETHING_SWARM_BATTLE_RESULT_DURATION_MS,
-  SEETHING_SWARM_BATTLE_TILE_SIZE,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
@@ -16,7 +15,6 @@ import {
   SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS,
   type SeethingSwarmBattleExchangeCue,
 } from "@game/machines/src/SeethingSwarmBattleExchange"
-import { getSeethingSwarmBattleClips } from "@game/machines/src/SeethingSwarmBattlePlayback"
 import type { StaticImageData } from "next/image"
 import {
   useCallback,
@@ -38,6 +36,7 @@ type SeethingSwarmBattleStageStyle = CSSProperties & {
   "--battle-approach-duration": string
   "--battle-tile-size": string
   "--battle-visible-height": string
+  "--battle-below-anchor": string
 }
 
 function subscribeToDocumentVisibility(onChange: () => void) {
@@ -122,6 +121,11 @@ function BattlePlayback({
   const combatants = choreography.combatants.map(
     (combatant) =>
       function renderCardCombatant(isAttended: boolean, reward?: ReactNode) {
+        const combatantStyle: CSSProperties & {
+          "--combatant-below-anchor": string
+        } = {
+          "--combatant-below-anchor": `${"geometry" in combatant ? combatant.geometry.height - combatant.geometry.anchorY : 0}px`,
+        }
         return (
           <div
             aria-hidden="true"
@@ -151,7 +155,10 @@ function BattlePlayback({
                   {reward}
                 </span>
               ) : null}
-              <span className="relative flex size-(--battle-tile-size) shrink-0 origin-bottom scale-(--battle-combatant-scale) items-end justify-center [--spacing:calc(var(--battle-tile-size)/28)]">
+              <span
+                className="relative flex shrink-0 items-end justify-center pb-[calc(var(--battle-below-anchor)-var(--combatant-below-anchor))]"
+                style={combatantStyle}
+              >
                 {"clips" in combatant ? (
                   <SeethingSwarmCombatant
                     combatant={combatant}
@@ -227,24 +234,22 @@ export default function SeethingSwarmBattleStage({
   )
   usePreparedSeethingSwarmBattle(battle, runtimeClipCatalog)
   usePreparedSeethingSwarmBattle(pendingBattle, runtimeClipCatalog)
+  const stageGeometry = createSeethingSwarmStageGeometry(
+    choreography.combatants.map((combatant) =>
+      "geometry" in combatant ? combatant.geometry : null,
+    ),
+  )
   const stageStyle: SeethingSwarmBattleStageStyle = {
     "--battle-result-duration": `${SEETHING_SWARM_BATTLE_RESULT_DURATION_MS}ms`,
     "--battle-approach-duration": `${SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS}ms`,
-    "--battle-tile-size": `${SEETHING_SWARM_BATTLE_TILE_SIZE}px`,
-    "--battle-visible-height": `${Math.max(
-      ...choreography.combatants.map((combatant) =>
-        "clips" in combatant
-          ? createSeethingSwarmBattlePresentationGeometry(
-              getSeethingSwarmBattleClips(combatant),
-            ).maximumVisibleHeight
-          : SEETHING_SWARM_BATTLE_TILE_SIZE,
-      ),
-    )}px`,
+    "--battle-tile-size": `${stageGeometry.width}px`,
+    "--battle-below-anchor": `${stageGeometry.belowAnchor}px`,
+    "--battle-visible-height": `${stageGeometry.height}px`,
   }
 
   return (
     <div
-      className="relative grid min-h-min min-w-0 flex-1 grid-cols-2 grid-rows-[max-content_minmax(max-content,1fr)] [--battle-combatant-scale:1] [--battle-combatant-size:calc(var(--battle-tile-size)*var(--battle-combatant-scale))] [--battle-visible-size:calc(var(--battle-visible-height)*var(--battle-combatant-scale))] xl:[--battle-combatant-scale:2]"
+      className="relative grid min-h-min min-w-0 flex-1 grid-cols-2 grid-rows-[max-content_minmax(max-content,1fr)] [--battle-combatant-size:var(--battle-tile-size)] [--battle-visible-size:var(--battle-visible-height)]"
       data-battle-stage-mode={choreography.mode}
       data-battle-stage-state={winnerId ? "resolving" : "awaiting-input"}
       data-choreography-identity={choreography.choreographyIdentity}
