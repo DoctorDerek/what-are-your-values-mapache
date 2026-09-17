@@ -1,9 +1,8 @@
 import {
-  createSeethingSwarmAnimalPresentationGeometry,
   SEETHING_SWARM_CALM_FRAME_DURATION_MS,
-  SEETHING_SWARM_HUB_TILE_SIZE,
   type SeethingSwarmAnimalFacingDirection,
   type SeethingSwarmAnimalPlaybackMode,
+  type SeethingSwarmAnimalPresentationGeometry,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeCharacterClip } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import { useEffect, useRef, useState } from "react"
@@ -24,11 +23,10 @@ export default function NativeSeethingSwarmAnimal({
   clip,
   facing = "right",
   frameDurationMs = SEETHING_SWARM_CALM_FRAME_DURATION_MS,
-  maximumIntegerScale,
+  geometry,
   playbackMode = "loop",
   playbackIdentity,
   shouldReduceMotion,
-  tileSize = SEETHING_SWARM_HUB_TILE_SIZE,
   onPlaybackComplete,
   onLoadError,
   onReady,
@@ -36,11 +34,10 @@ export default function NativeSeethingSwarmAnimal({
   clip: SeethingSwarmRuntimeCharacterClip<number>
   facing?: SeethingSwarmAnimalFacingDirection
   frameDurationMs?: number
-  maximumIntegerScale?: number
+  geometry: SeethingSwarmAnimalPresentationGeometry
   playbackMode?: SeethingSwarmAnimalPlaybackMode
   playbackIdentity?: string
   shouldReduceMotion: boolean
-  tileSize?: number
   onPlaybackComplete?: () => void
   onLoadError?: () => void
   onReady?: () => void
@@ -53,24 +50,15 @@ export default function NativeSeethingSwarmAnimal({
   useEffect(() => {
     playbackCompleteRef.current = onPlaybackComplete
   }, [onPlaybackComplete])
-  const geometry = createSeethingSwarmAnimalPresentationGeometry(
-    clip.frameWidth,
-    clip.frameHeight,
-    clip.visibleBounds,
-    tileSize,
-    maximumIntegerScale,
-  )
   const scaledFrameWidth = clip.frameWidth * geometry.integerScale
   const scaledFrameHeight = clip.frameHeight * geometry.integerScale
   const scaledStripWidth = scaledFrameWidth * clip.frameCount
   const tileStyle: ViewStyle = {
-    width: tileSize,
-    height: tileSize,
+    width: geometry.width,
+    height: geometry.height,
     transform: [{ scaleX: facing === "left" ? -1 : 1 }],
   }
   const stripStyle: ViewStyle = {
-    left: geometry.frameOffsetX,
-    top: geometry.frameOffsetY,
     width: scaledStripWidth,
     height: scaledFrameHeight,
   }
@@ -145,30 +133,40 @@ export default function NativeSeethingSwarmAnimal({
       accessible={false}
       importantForAccessibility="no-hide-descendants"
       pointerEvents="none"
-      className="shrink-0 overflow-hidden"
+      className="shrink-0"
       style={tileStyle}
       testID={testId}
     >
-      <Animated.View
-        className="absolute"
-        style={[stripStyle, animatedStyle]}
-        testID={`${testId}-strip`}
+      <View
+        className="absolute overflow-hidden"
+        style={{
+          left: geometry.frameOffsetX,
+          top: geometry.frameOffsetY,
+          width: scaledFrameWidth,
+          height: scaledFrameHeight,
+        }}
       >
-        <Image
-          accessible={false}
-          alt=""
-          fadeDuration={0}
-          onLoad={() => {
-            setLoadedAsset(clip.asset)
-            onReady?.()
-          }}
-          onError={onLoadError}
-          resizeMode="stretch"
-          source={clip.asset}
-          style={imageStyle}
-          testID={`${testId}-image`}
-        />
-      </Animated.View>
+        <Animated.View
+          className="absolute"
+          style={[stripStyle, animatedStyle]}
+          testID={`${testId}-strip`}
+        >
+          <Image
+            accessible={false}
+            alt=""
+            fadeDuration={0}
+            onLoad={() => {
+              setLoadedAsset(clip.asset)
+              onReady?.()
+            }}
+            onError={onLoadError}
+            resizeMode="stretch"
+            source={clip.asset}
+            style={imageStyle}
+            testID={`${testId}-image`}
+          />
+        </Animated.View>
+      </View>
     </View>
   )
 }

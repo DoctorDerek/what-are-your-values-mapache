@@ -5,6 +5,7 @@ import {
 import { getValueDisplayName } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
+import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { useState } from "react"
 import { Pressable, View } from "react-native"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
@@ -32,6 +33,10 @@ function NativeValueRankPresentation({
     imagePath !== null &&
     (preparedStatus === "failed" || failedImagePath === imagePath)
   const { medal } = getValueRankPresentation(rank)
+  const geometry =
+    valuePresentation?.kind === "animal"
+      ? createSeethingSwarmSurfaceGeometry(valuePresentation.animal, "portrait")
+      : null
   if (!valuePresentation || valuePresentation.kind === "typography-only")
     return (
       <Text
@@ -54,31 +59,39 @@ function NativeValueRankPresentation({
       className="flex-row items-center gap-2"
     >
       <View
-        className="relative flex-none items-center justify-center overflow-hidden bg-white"
-        style={{
-          width: SEETHING_SWARM_HUB_TILE_SIZE,
-          height: SEETHING_SWARM_HUB_TILE_SIZE,
-        }}
+        className="relative flex-none items-center justify-center bg-white"
         testID={`hub-top-five-rank-${rank}-presentation`}
       >
-        {valuePresentation.kind === "animal" && !hasImageFailed ? (
-          <NativeSeethingSwarmAnimal
-            clip={valuePresentation.clip}
-            onLoadError={() => setFailedImagePath(imagePath)}
-            shouldReduceMotion={shouldReduceMotion}
-          />
-        ) : (
-          <Text className="text-mapache-vivid-secondary-purple text-4xl font-black uppercase">
-            {valuePresentation.kind === "custom-initial"
-              ? valuePresentation.initial
-              : `#${rank}`}
-          </Text>
-        )}
-        {!hasImageFailed ? (
-          <Text className="bg-mapache-vivid-secondary-purple absolute top-0 left-0 z-10 border-r-4 border-b-4 border-black px-1.5 py-1 text-sm leading-none font-black text-white uppercase">
-            #{rank}
-          </Text>
-        ) : null}
+        <Text className="bg-mapache-vivid-secondary-purple self-start border-r-4 border-b-4 border-black px-1.5 py-1 text-sm leading-none font-black text-white uppercase">
+          #{rank}
+        </Text>
+        <View
+          className="m-1 items-center justify-center"
+          style={{
+            width: Math.max(SEETHING_SWARM_HUB_TILE_SIZE, geometry?.width ?? 0),
+            height: Math.max(
+              SEETHING_SWARM_HUB_TILE_SIZE,
+              geometry?.height ?? 0,
+            ),
+          }}
+        >
+          {valuePresentation.kind === "animal" &&
+          geometry &&
+          !hasImageFailed ? (
+            <NativeSeethingSwarmAnimal
+              clip={valuePresentation.clip}
+              geometry={geometry}
+              onLoadError={() => setFailedImagePath(imagePath)}
+              shouldReduceMotion={shouldReduceMotion}
+            />
+          ) : (
+            <Text className="text-mapache-vivid-secondary-purple text-4xl font-black uppercase">
+              {valuePresentation.kind === "custom-initial"
+                ? valuePresentation.initial
+                : null}
+            </Text>
+          )}
+        </View>
       </View>
       {medal ? <Text className="text-2xl">{medal.emoji}</Text> : null}
     </View>

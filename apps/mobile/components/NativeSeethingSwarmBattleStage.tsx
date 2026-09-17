@@ -1,3 +1,4 @@
+import { createSeethingSwarmStageGeometry } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type { PresentedBattle } from "@game/machines/src/CombatMachine"
@@ -124,6 +125,11 @@ function NativeBattlePlayback({
     )
   }
 
+  const stageGeometry = createSeethingSwarmStageGeometry(
+    choreography.combatants.map((combatant) =>
+      "geometry" in combatant ? combatant.geometry : null,
+    ),
+  )
   const combatants = choreography.combatants.map(
     (combatant) =>
       function renderCardCombatant(isAttended: boolean, reward?: ReactNode) {
@@ -137,7 +143,16 @@ function NativeBattlePlayback({
             pointerEvents="none"
             collapsable={false}
             testID={`battle-combatant-${combatant.side}`}
-            className="size-28 items-center justify-end xl:size-56"
+            className="items-center justify-end"
+            style={{
+              width: stageGeometry.width,
+              height: stageGeometry.height,
+              paddingBottom:
+                stageGeometry.belowAnchor -
+                ("geometry" in combatant
+                  ? combatant.geometry.height - combatant.geometry.anchorY
+                  : 0),
+            }}
           >
             <NativeSeethingSwarmBattleTraveler
               cue={cue}
