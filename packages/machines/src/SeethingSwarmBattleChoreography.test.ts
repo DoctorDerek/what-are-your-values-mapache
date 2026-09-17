@@ -20,6 +20,7 @@ import { createSchedulerRestorePoint } from "./PairScheduler"
 import {
   createSeethingSwarmBattleChoreography,
   createSeethingSwarmHubAttentionSelections,
+  createSeethingSwarmSurfaceGeometry,
   resolveSeethingSwarmBattleResult,
   SEETHING_SWARM_BATTLE_CHOREOGRAPHY_VERSION,
   SEETHING_SWARM_BATTLE_CLIP_ROLE_POLICIES,
@@ -27,6 +28,42 @@ import {
 } from "./SeethingSwarmBattleChoreography"
 
 const RACCOON_VALUE_ID = createCanonicalValueId("pvcs-2011:mastery")
+
+it("reserves unselected eligible motion while excluding terminal and environment-only poses", () => {
+  const animal = createTestAnimalClips("raccoonpack", [
+    "idle",
+    "crouch",
+    "attack",
+    "die",
+    "wallgrab",
+  ])
+  const expanded = {
+    ...animal,
+    characterClips: animal.characterClips.map((clip) => ({
+      ...clip,
+      visibleBounds:
+        clip.animationId === "attack"
+          ? { left: 0, top: 0, width: 30, height: 30 }
+          : clip.animationId === "die" || clip.animationId === "wallgrab"
+            ? { left: 0, top: 0, width: 32, height: 32 }
+            : clip.visibleBounds,
+    })),
+  }
+  expect(createSeethingSwarmSurfaceGeometry(expanded, "battle")).toMatchObject({
+    integerScale: 3,
+    width: 90,
+    height: 90,
+  })
+  expect(
+    createSeethingSwarmSurfaceGeometry(expanded, "portrait"),
+  ).toMatchObject({ integerScale: 3, width: 72, height: 75 })
+  expect(
+    createSeethingSwarmSurfaceGeometry(
+      { ...expanded, characterClips: expanded.characterClips.toReversed() },
+      "battle",
+    ),
+  ).toEqual(createSeethingSwarmSurfaceGeometry(expanded, "battle"))
+})
 
 it("selects stable Hub attention without a scheduler or catalog-order dependence", () => {
   const catalog = createTestLicensedCatalog([

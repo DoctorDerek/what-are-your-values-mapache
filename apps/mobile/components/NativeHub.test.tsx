@@ -323,7 +323,10 @@ describe("NativeHub", () => {
         includeHiddenElements: true,
       }),
     ).toBeOnTheScreen()
-    expect(animalPresentations[0]).toHaveStyle({ width: 72, height: 72 })
+    expect(animalPresentations[0].children[1]).toHaveStyle({
+      width: 72,
+      height: 72,
+    })
   })
 
   it("renders an equal Custom Value initial tile without inferring an animal", async () => {
@@ -344,7 +347,7 @@ describe("NativeHub", () => {
       "hub-top-five-rank-1-presentation",
       { includeHiddenElements: true },
     )
-    expect(customValueTile).toHaveStyle({ width: 72, height: 72 })
+    expect(customValueTile.children[1]).toHaveStyle({ width: 72, height: 72 })
     expect(screen.queryByTestId("hub-top-five-rank-1-presentation")).toBeNull()
     expect(
       screen.getByText("🧠", { includeHiddenElements: true }),

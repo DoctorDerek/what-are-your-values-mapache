@@ -1,3 +1,4 @@
+import { createSeethingSwarmAnimalPresentationGeometry } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeCharacterClip } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import {
   afterEach,
@@ -22,6 +23,15 @@ const clip = Object.freeze({
   visibleBounds: Object.freeze({ left: 1, top: 1, width: 2, height: 2 }),
   asset: 7,
 }) satisfies SeethingSwarmRuntimeCharacterClip<number>
+const geometry = createSeethingSwarmAnimalPresentationGeometry(
+  {
+    animationId: "idle_upright",
+    frameIndex: 0,
+    bounds: clip.visibleBounds,
+    anchor: { x: 2, y: 3 },
+  },
+  [clip],
+)
 const hidden = { includeHiddenElements: true }
 const getStrip = () =>
   screen.getByTestId("seething-swarm-animal-bat-strip", hidden)
@@ -50,13 +60,21 @@ describe("NativeSeethingSwarmAnimal", () => {
       onPlaybackComplete: complete,
     }
     const { rerender } = await render(
-      <NativeSeethingSwarmAnimal {...props} playbackIdentity="attention:0" />,
+      <NativeSeethingSwarmAnimal
+        geometry={geometry}
+        {...props}
+        playbackIdentity="attention:0"
+      />,
     )
     await fireEvent(getImage(), "load")
     const residentImage = getImage()
     await advance(360)
     await rerender(
-      <NativeSeethingSwarmAnimal {...props} playbackIdentity="strike:0" />,
+      <NativeSeethingSwarmAnimal
+        geometry={geometry}
+        {...props}
+        playbackIdentity="strike:0"
+      />,
     )
     expect(getImage()).toBe(residentImage)
     expect(getAnimatedStyle(getStrip())).toMatchObject({
@@ -70,6 +88,7 @@ describe("NativeSeethingSwarmAnimal", () => {
   it("preserves integer geometry, facing, asset pixels, and decorative semantics", async () => {
     await render(
       <NativeSeethingSwarmAnimal
+        geometry={geometry}
         clip={clip}
         shouldReduceMotion
         facing="left"
@@ -82,27 +101,26 @@ describe("NativeSeethingSwarmAnimal", () => {
     expect(tile).toHaveProp("importantForAccessibility", "no-hide-descendants")
     expect(tile).toHaveProp("pointerEvents", "none")
     expect(tile).toHaveStyle({
-      width: 72,
-      height: 72,
+      width: 6,
+      height: 6,
       transform: [{ scaleX: -1 }],
     })
     expect(getStrip()).toHaveStyle({
-      left: -36,
-      top: -36,
-      width: 576,
-      height: 144,
+      width: 48,
+      height: 12,
       transform: [{ translateX: -0 }],
     })
     expect(getImage()).toHaveProp("source", 7)
     expect(getImage()).toHaveProp("fadeDuration", 0)
     expect(getImage()).toHaveProp("alt", "")
-    expect(getImage()).toHaveStyle({ width: 576, height: 144 })
+    expect(getImage()).toHaveStyle({ width: 48, height: 12 })
   })
 
   it("waits for load and advances discrete frames through a complete one-shot", async () => {
     const complete = jest.fn()
     await render(
       <NativeSeethingSwarmAnimal
+        geometry={geometry}
         clip={clip}
         shouldReduceMotion={false}
         playbackMode="one-shot"
@@ -117,12 +135,12 @@ describe("NativeSeethingSwarmAnimal", () => {
     await fireEvent(getImage(), "load")
     await advance(360)
     expect(getAnimatedStyle(getStrip())).toMatchObject({
-      transform: [{ translateX: -288 }],
+      transform: [{ translateX: -24 }],
     })
     expect(complete).not.toHaveBeenCalled()
     await advance(400)
     expect(getAnimatedStyle(getStrip())).toMatchObject({
-      transform: [{ translateX: -432 }],
+      transform: [{ translateX: -36 }],
     })
     expect(complete).toHaveBeenCalledTimes(1)
   })
@@ -131,6 +149,7 @@ describe("NativeSeethingSwarmAnimal", () => {
     const complete = jest.fn()
     const { unmount } = await render(
       <NativeSeethingSwarmAnimal
+        geometry={geometry}
         clip={clip}
         shouldReduceMotion={false}
         onPlaybackComplete={complete}
@@ -139,7 +158,7 @@ describe("NativeSeethingSwarmAnimal", () => {
     await fireEvent(getImage(), "load")
     await advance(520)
     expect(getAnimatedStyle(getStrip())).toMatchObject({
-      transform: [{ translateX: -432 }],
+      transform: [{ translateX: -36 }],
     })
     await advance(160)
     expect(getAnimatedStyle(getStrip())).toMatchObject({
@@ -155,25 +174,29 @@ describe("NativeSeethingSwarmAnimal", () => {
     const props = {
       clip,
       shouldReduceMotion: false,
-      tileSize: 112,
-      maximumIntegerScale: 20,
     }
     const { rerender } = await render(
-      <NativeSeethingSwarmAnimal {...props} playbackMode="hold-final-frame" />,
+      <NativeSeethingSwarmAnimal
+        geometry={geometry}
+        {...props}
+        playbackMode="hold-final-frame"
+      />,
     )
     await fireEvent(getImage(), "load")
     await advance(1000)
     expect(getStrip()).toHaveStyle({
-      left: 16,
-      top: 52,
-      width: 320,
-      height: 80,
+      width: 48,
+      height: 12,
     })
     expect(getAnimatedStyle(getStrip())).toMatchObject({
-      transform: [{ translateX: -240 }],
+      transform: [{ translateX: -36 }],
     })
     await rerender(
-      <NativeSeethingSwarmAnimal {...props} playbackMode="static" />,
+      <NativeSeethingSwarmAnimal
+        geometry={geometry}
+        {...props}
+        playbackMode="static"
+      />,
     )
     expect(getAnimatedStyle(getStrip())).toMatchObject({
       transform: [{ translateX: -0 }],
@@ -188,6 +211,7 @@ describe("NativeSeethingSwarmAnimal", () => {
       const complete = jest.fn()
       const { unmount } = await render(
         <NativeSeethingSwarmAnimal
+          geometry={geometry}
           {...scenario}
           playbackMode="one-shot"
           onPlaybackComplete={complete}
@@ -209,18 +233,27 @@ describe("NativeSeethingSwarmAnimal", () => {
       playbackMode: "one-shot" as const,
     }
     const { rerender, unmount } = await render(
-      <NativeSeethingSwarmAnimal {...props} onPlaybackComplete={prior} />,
+      <NativeSeethingSwarmAnimal
+        geometry={geometry}
+        {...props}
+        onPlaybackComplete={prior}
+      />,
     )
     await fireEvent(getImage(), "load")
     await advance(350)
     await rerender(
-      <NativeSeethingSwarmAnimal {...props} onPlaybackComplete={latest} />,
+      <NativeSeethingSwarmAnimal
+        geometry={geometry}
+        {...props}
+        onPlaybackComplete={latest}
+      />,
     )
     await advance(400)
     expect(prior).not.toHaveBeenCalled()
     expect(latest).toHaveBeenCalledTimes(1)
     await rerender(
       <NativeSeethingSwarmAnimal
+        geometry={geometry}
         {...props}
         clip={{ ...clip, asset: 8 }}
         onPlaybackComplete={prior}
@@ -237,6 +270,7 @@ describe("NativeSeethingSwarmAnimal", () => {
     const onLoadError = jest.fn()
     await render(
       <NativeSeethingSwarmAnimal
+        geometry={geometry}
         clip={clip}
         shouldReduceMotion
         onLoadError={onLoadError}

@@ -488,7 +488,10 @@ describe("Hub Component Integration", () => {
       '[data-value-presentation="custom-initial"]',
     )
     if (!customValueTile) throw new Error("Custom Value tile is missing")
-    expect(customValueTile).toHaveClass("h-[72px]", "w-[72px]")
+    expect(customValueTile.querySelector("[style]")).toHaveStyle({
+      "--portrait-width": "72px",
+      "--portrait-height": "72px",
+    })
     expect(customValueTile).toHaveAttribute("aria-hidden", "true")
     expect(within(customValueTile).getByText("🧠")).toBeVisible()
     expect(customValueButton).toHaveAccessibleDescription("Rank 1, gold medal")

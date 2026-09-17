@@ -208,13 +208,24 @@ describe("SeethingSwarm battle playback", () => {
     expect(Object.isFrozen(resources)).toBe(true)
   })
 
-  it("caps integer geometry consistently and rejects an invalid scale", () => {
-    const bounds = { left: 1, top: 1, width: 2, height: 2 }
+  it("keeps a single 3x geometry across the complete combatant repertoire", () => {
+    const animal = animals[0]
+    const geometry = createSeethingSwarmAnimalPresentationGeometry(
+      animal.referencePose,
+      animal.characterClips,
+    )
+    expect(geometry).toMatchObject({
+      integerScale: 3,
+      width: 96,
+      height: 96,
+      frameOffsetX: -0,
+      frameOffsetY: -0,
+    })
     expect(
-      createSeethingSwarmAnimalPresentationGeometry(4, 4, bounds, 112, 20),
-    ).toMatchObject({ integerScale: 20, frameOffsetX: 16, frameOffsetY: 52 })
-    expect(() =>
-      createSeethingSwarmAnimalPresentationGeometry(4, 4, bounds, 112, 0),
-    ).toThrow("maximum scale")
+      createSeethingSwarmAnimalPresentationGeometry(
+        animal.referencePose,
+        [...animal.characterClips].reverse(),
+      ),
+    ).toEqual(geometry)
   })
 })

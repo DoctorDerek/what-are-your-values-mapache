@@ -238,7 +238,7 @@ describe("NativeSeethingSwarmBattleStage", () => {
           screen.getByTestId("battle-clip-first-idle", hidden),
         ).getByTestId("seething-swarm-animal-raccoonpack-strip", hidden),
       ),
-    ).toMatchObject({ transform: [{ translateX: -256 }] })
+    ).toMatchObject({ transform: [{ translateX: -192 }] })
     expect(initial.onResultComplete).not.toHaveBeenCalled()
   })
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import { CANONICAL_VALUES } from "./CanonicalValues"
 import {
   createSeethingSwarmAnimalPresentationGeometry,
-  createSeethingSwarmBattlePresentationGeometry,
+  createSeethingSwarmStageGeometry,
   resolveValueAnimalPresentation,
   SEETHING_SWARM_ATTENTION_FRAME_DURATION_MS,
   SEETHING_SWARM_BATTLE_FRAME_DURATION_MS,
@@ -51,45 +51,108 @@ function isCalmAnimation(animationId: string) {
 }
 
 describe("SeethingSwarm animal presentation", () => {
-  it("reserves the tallest resident animation at one shared integer scale", () => {
+  it("preserves 3x source pixels and the rest anchor across complete motion bounds", () => {
     const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
-    const original = catalog.animals[0].characterClips[0]
+    const animal = catalog.animals[0]
+    const original = animal.characterClips[0]
     const clips = [
       {
         ...original,
         frameWidth: 64,
         frameHeight: 64,
-        visibleBounds: { left: 0, top: 0, width: 48, height: 20 },
+        visibleBounds: { left: 2, top: 3, width: 48, height: 20 },
       },
       {
         ...original,
         frameWidth: 64,
         frameHeight: 64,
-        visibleBounds: { left: 0, top: 0, width: 24, height: 50 },
+        visibleBounds: { left: 4, top: 1, width: 24, height: 50 },
       },
     ]
-    const geometry = createSeethingSwarmBattlePresentationGeometry(clips)
-    expect(geometry).toEqual({
-      maximumIntegerScale: 2,
-      maximumVisibleHeight: 100,
+    const geometry = createSeethingSwarmAnimalPresentationGeometry(
+      animal.referencePose,
+      clips,
+    )
+    expect(geometry).toMatchObject({
+      integerScale: 3,
+      width: 144,
+      height: 150,
+      frameOffsetX: -6,
+      frameOffsetY: -3,
     })
+    expect(geometry.anchorX).toBe((animal.referencePose.anchor.x - 2) * 3)
+    expect(geometry.anchorY).toBe((animal.referencePose.anchor.y - 1) * 3)
+    expect(
+      createSeethingSwarmAnimalPresentationGeometry(
+        animal.referencePose,
+        [...clips].reverse(),
+      ),
+    ).toEqual(geometry)
     for (const clip of clips) {
-      const frame = createSeethingSwarmAnimalPresentationGeometry(
-        clip.frameWidth,
-        clip.frameHeight,
-        clip.visibleBounds,
-        112,
-        geometry.maximumIntegerScale,
-      )
       expect(
-        clip.visibleBounds.height * frame.integerScale,
-      ).toBeLessThanOrEqual(geometry.maximumVisibleHeight)
+        clip.visibleBounds.left * 3 + geometry.frameOffsetX,
+      ).toBeGreaterThanOrEqual(0)
+      expect(
+        (clip.visibleBounds.left + clip.visibleBounds.width) * 3 +
+          geometry.frameOffsetX,
+      ).toBeLessThanOrEqual(geometry.width)
+      expect(
+        clip.visibleBounds.top * 3 + geometry.frameOffsetY,
+      ).toBeGreaterThanOrEqual(0)
+      expect(
+        (clip.visibleBounds.top + clip.visibleBounds.height) * 3 +
+          geometry.frameOffsetY,
+      ).toBeLessThanOrEqual(geometry.height)
+    }
+    expect(Object.isFrozen(geometry)).toBe(true)
+    expect(Object.isFrozen(geometry.visibleBounds)).toBe(true)
+  })
+  it("reserves a common ground line with clearance below flying reference poses", () => {
+    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const animal = catalog.animals[0]
+    const geometry = createSeethingSwarmAnimalPresentationGeometry(
+      animal.referencePose,
+      animal.characterClips,
+    )
+    expect(
+      createSeethingSwarmStageGeometry([
+        { ...geometry, width: 144, height: 90, anchorY: 60 },
+        { ...geometry, width: 96, height: 100, anchorY: 95 },
+      ]),
+    ).toEqual({ width: 144, height: 142, belowAnchor: 30 })
+    expect(createSeethingSwarmStageGeometry([null, null])).toEqual({
+      width: 112,
+      height: 112,
+      belowAnchor: 0,
+    })
+  })
+  it("rejects empty clearance and invalid source bounds without fitting valid large art", () => {
+    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const animal = catalog.animals[0]
+    expect(() =>
+      createSeethingSwarmAnimalPresentationGeometry(animal.referencePose, []),
+    ).toThrow("clip count")
+    expect(() =>
+      createSeethingSwarmAnimalPresentationGeometry(animal.referencePose, [
+        {
+          ...animal.characterClips[0],
+          visibleBounds: { left: -1, top: 0, width: 1, height: 1 },
+        },
+      ]),
+    ).toThrow("left edge")
+    const large = {
+      ...animal.characterClips[0],
+      frameWidth: 80,
+      frameHeight: 80,
+      visibleBounds: { left: 0, top: 0, width: 80, height: 80 },
     }
     expect(
-      createSeethingSwarmBattlePresentationGeometry([...clips].reverse()),
-    ).toEqual(geometry)
+      createSeethingSwarmAnimalPresentationGeometry(animal.referencePose, [
+        large,
+      ]),
+    ).toMatchObject({ integerScale: 3, width: 240, height: 240 })
   })
-  it("defines the immutable calm animation and fixed Hub geometry policy", () => {
+  it("retains calm animation and semantic timing policies", () => {
     expect(SEETHING_SWARM_HUB_ANIMATION_CANDIDATES).toEqual([
       "idle",
       "idle_upright",
@@ -100,76 +163,6 @@ describe("SeethingSwarm animal presentation", () => {
     expect(SEETHING_SWARM_ATTENTION_FRAME_DURATION_MS).toBe(100)
     expect(SEETHING_SWARM_BATTLE_FRAME_DURATION_MS).toBe(100)
   })
-
-  it("derives a frozen integer-scaled bottom-center geometry", () => {
-    const geometry = createSeethingSwarmAnimalPresentationGeometry(32, 32, {
-      left: 2,
-      top: 4,
-      width: 20,
-      height: 24,
-    })
-
-    expect(geometry).toEqual({
-      visibleBounds: { left: 2, top: 4, width: 20, height: 24 },
-      integerScale: 3,
-      frameOffsetX: 0,
-      frameOffsetY: -12,
-    })
-    expect(Object.isFrozen(geometry)).toBe(true)
-    expect(Object.isFrozen(geometry.visibleBounds)).toBe(true)
-  })
-
-  it("preserves bottom-center geometry inside a larger requested tile", () => {
-    expect(
-      createSeethingSwarmAnimalPresentationGeometry(
-        32,
-        32,
-        {
-          left: 2,
-          top: 4,
-          width: 20,
-          height: 24,
-        },
-        120,
-      ),
-    ).toEqual({
-      visibleBounds: { left: 2, top: 4, width: 20, height: 24 },
-      integerScale: 5,
-      frameOffsetX: 0,
-      frameOffsetY: -20,
-    })
-  })
-
-  it.each([
-    [0, 32, { left: 0, top: 0, width: 1, height: 1 }, "frame width"],
-    [32, 0, { left: 0, top: 0, width: 1, height: 1 }, "frame height"],
-    [32, 32, { left: -1, top: 0, width: 1, height: 1 }, "left edge"],
-    [32, 32, { left: 0, top: -1, width: 1, height: 1 }, "top edge"],
-    [32, 32, { left: 0, top: 0, width: 0, height: 1 }, "content width"],
-    [32, 32, { left: 0, top: 0, width: 1, height: 0 }, "content height"],
-    [32, 32, { left: 31, top: 0, width: 2, height: 1 }, "exceeds"],
-    [32, 32, { left: 0, top: 31, width: 1, height: 2 }, "exceeds"],
-    [80, 80, { left: 0, top: 0, width: 80, height: 80 }, "cannot fit"],
-    [32, 32, { left: 0, top: 0, width: 1, height: 1 }, "tile size", 0],
-  ] as const)(
-    "rejects invalid presentation geometry %#",
-    (
-      frameWidth,
-      frameHeight,
-      bounds,
-      expectedMessage,
-      tileSize = undefined,
-    ) => {
-      expect(() =>
-        createSeethingSwarmAnimalPresentationGeometry(
-          frameWidth,
-          frameHeight,
-          bounds,
-          tileSize,
-        ),
-      ).toThrow(expectedMessage)
-    },
-  )
 
   it("resolves all 100 canonical values through calm catalog clips", () => {
     const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
