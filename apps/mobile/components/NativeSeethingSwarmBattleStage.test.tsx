@@ -225,7 +225,7 @@ describe("NativeSeethingSwarmBattleStage", () => {
     expect(image("raccoonpack")).toHaveProp("source", 3)
     expect(image("wolfpack")).toHaveProp("source", 103)
     await loadImages()
-    await advance(240)
+    await advance(360)
     expect(
       getAnimatedStyle(
         within(

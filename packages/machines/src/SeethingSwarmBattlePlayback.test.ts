@@ -80,7 +80,7 @@ describe("SeethingSwarm battle playback", () => {
     )
     expect(steps[0].clip).toBe(combatant.clips.anticipation.clip)
     expect(steps.every((step) => !step.blocksResult)).toBe(true)
-    expect(steps.every((step) => step.frameDurationMs === 100)).toBe(true)
+    expect(steps.map((step) => step.frameDurationMs)).toEqual([100, 100, 160])
   })
   it("plays every introductory role before resting without mutating its source", () => {
     const steps = createSeethingSwarmBattlePlayback({
@@ -98,7 +98,7 @@ describe("SeethingSwarm battle playback", () => {
     expect(steps[0].clip).toBe(combatant.clips.entry.clip)
     expect(Object.isFrozen(steps)).toBe(true)
     expect(steps.every(Object.isFrozen)).toBe(true)
-    expect(steps.every((step) => step.frameDurationMs === 100)).toBe(true)
+    expect(steps.map((step) => step.frameDurationMs)).toEqual([160, 100, 160])
   })
 
   it.each([

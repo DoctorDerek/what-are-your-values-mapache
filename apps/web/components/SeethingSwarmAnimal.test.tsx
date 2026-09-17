@@ -110,7 +110,7 @@ describe("SeethingSwarmAnimal", () => {
     expect(image).toHaveAttribute("width", "576")
     expect(image).toHaveAttribute("height", "144")
     expect(image).toHaveStyle({
-      "--animal-animation-duration": "400ms",
+      "--animal-animation-duration": "640ms",
       "--animal-frame-count": "4",
       "--animal-strip-height": "144px",
       "--animal-strip-left": "-36px",

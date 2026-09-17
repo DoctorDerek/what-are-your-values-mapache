@@ -115,7 +115,7 @@ describe("NativeSeethingSwarmAnimal", () => {
       transform: [{ translateX: -0 }],
     })
     await fireEvent(getImage(), "load")
-    await advance(240)
+    await advance(360)
     expect(getAnimatedStyle(getStrip())).toMatchObject({
       transform: [{ translateX: -288 }],
     })
@@ -137,11 +137,11 @@ describe("NativeSeethingSwarmAnimal", () => {
       />,
     )
     await fireEvent(getImage(), "load")
-    await advance(340)
+    await advance(520)
     expect(getAnimatedStyle(getStrip())).toMatchObject({
       transform: [{ translateX: -432 }],
     })
-    await advance(120)
+    await advance(160)
     expect(getAnimatedStyle(getStrip())).toMatchObject({
       transform: [{ translateX: -0 }],
     })
