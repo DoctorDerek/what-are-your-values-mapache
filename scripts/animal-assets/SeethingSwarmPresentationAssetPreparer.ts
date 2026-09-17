@@ -545,6 +545,7 @@ async function createLicensedRuntimeClipCatalog(
       Object.freeze({
         relativePath: selection.relativePath,
         visibleBounds: analysis.unionVisibleBounds,
+        firstFrameBounds: analysis.frameBounds[0],
         asset: selection.relativePath,
       }),
     )

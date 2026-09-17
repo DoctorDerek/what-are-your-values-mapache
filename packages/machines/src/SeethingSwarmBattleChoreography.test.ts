@@ -103,6 +103,12 @@ function createTestAnimalClips(
       ),
     ),
     auxiliaryEffectClips: Object.freeze([]),
+    referencePose: Object.freeze({
+      animationId: "idle",
+      frameIndex: 0,
+      bounds: Object.freeze({ left: 2, top: 3, width: 24, height: 25 }),
+      anchor: Object.freeze({ x: 14, y: 28 }),
+    }),
   }) satisfies SeethingSwarmRuntimeAnimalClips<string>
 }
 

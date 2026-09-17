@@ -133,6 +133,12 @@ describe("NativeGameClient Menu navigation", () => {
         },
       ],
       auxiliaryEffectClips: [],
+      referencePose: Object.freeze({
+        animationId: "idle",
+        frameIndex: 0,
+        bounds: Object.freeze({ left: 0, top: 0, width: 32, height: 32 }),
+        anchor: Object.freeze({ x: 16, y: 32 }),
+      }),
     }))
     runtimeCatalogModule.SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG = {
       mode: "licensed",
