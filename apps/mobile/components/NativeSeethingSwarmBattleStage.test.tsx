@@ -225,7 +225,7 @@ describe("NativeSeethingSwarmBattleStage", () => {
     expect(image("raccoonpack")).toHaveProp("source", 3)
     expect(image("wolfpack")).toHaveProp("source", 103)
     await loadImages()
-    await advance(350)
+    await advance(360)
     expect(
       getAnimatedStyle(
         within(
@@ -264,6 +264,12 @@ describe("NativeSeethingSwarmBattleStage", () => {
       const winnerAnimal = winnerIndex === 0 ? "raccoonpack" : "wolfpack"
       expect(image(winnerAnimal)).toHaveProp(
         "source",
+        winnerIndex === 0 ? 4 : 104,
+      )
+      expect(initial.onResultComplete).not.toHaveBeenCalled()
+      await advance(200)
+      expect(image(winnerAnimal)).toHaveProp(
+        "source",
         winnerIndex === 0 ? 6 : 106,
       )
       expect(initial.onResultComplete).not.toHaveBeenCalled()
@@ -298,7 +304,7 @@ describe("NativeSeethingSwarmBattleStage", () => {
     await loadRole("second", "idle")
     await advance(200)
     await loadRole("first", "attack")
-    await advance(300)
+    await advance(500)
     expect(initial.onResultComplete).not.toHaveBeenCalled()
     await loadRole("second", "hurt")
     await advance(500)
@@ -417,13 +423,16 @@ describe("NativeSeethingSwarmBattleStage", () => {
     await advance(200)
     expect(image("raccoonpack")).toHaveProp("source", 201)
     await advance(300)
+    expect(image("raccoonpack")).toHaveProp("source", 201)
+    expect(initial.onResultComplete).not.toHaveBeenCalled()
+    await advance(200)
     expect(image("raccoonpack")).toHaveProp("source", 202)
-    await advance(300)
+    await advance(500)
     expect(image("raccoonpack")).toHaveProp("source", 203)
     expect(image("wolfpack")).toHaveProp("source", 105)
-    await advance(300)
+    await advance(500)
     expect(initial.onResultComplete).not.toHaveBeenCalled()
-    await advance(300)
+    await advance(400)
     expect(initial.onResultComplete).toHaveBeenCalledTimes(1)
   })
 

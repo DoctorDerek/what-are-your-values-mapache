@@ -1,4 +1,7 @@
-import { createSeethingSwarmAnimalPresentationGeometry } from "@game/data/src/SeethingSwarmAnimalPresentation"
+import {
+  createSeethingSwarmAnimalPresentationGeometry,
+  SEETHING_SWARM_CALM_FRAME_DURATION_MS,
+} from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type {
   SeethingSwarmRuntimeCharacterClip,
   SeethingSwarmRuntimeClipCatalog,
@@ -105,6 +108,11 @@ export default function SeethingSwarmHubAnimal({
               clip={clip}
               maximumIntegerScale={maximumIntegerScale}
               preload
+              frameDurationMs={
+                attended
+                  ? step.frameDurationMs
+                  : SEETHING_SWARM_CALM_FRAME_DURATION_MS
+              }
               playbackIdentity={`${playback.generation}:${index}:${attended}`}
               playbackMode={
                 !visible || shouldReduceMotion

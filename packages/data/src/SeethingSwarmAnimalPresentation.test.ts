@@ -4,8 +4,10 @@ import {
   createSeethingSwarmAnimalPresentationGeometry,
   createSeethingSwarmBattlePresentationGeometry,
   resolveValueAnimalPresentation,
+  SEETHING_SWARM_ATTENTION_FRAME_DURATION_MS,
+  SEETHING_SWARM_BATTLE_FRAME_DURATION_MS,
+  SEETHING_SWARM_CALM_FRAME_DURATION_MS,
   SEETHING_SWARM_HUB_ANIMATION_CANDIDATES,
-  SEETHING_SWARM_HUB_FRAME_DURATION_MS,
   SEETHING_SWARM_HUB_TILE_SIZE,
 } from "./SeethingSwarmAnimalPresentation"
 import {
@@ -94,7 +96,9 @@ describe("SeethingSwarm animal presentation", () => {
     ])
     expect(Object.isFrozen(SEETHING_SWARM_HUB_ANIMATION_CANDIDATES)).toBe(true)
     expect(SEETHING_SWARM_HUB_TILE_SIZE).toBe(72)
-    expect(SEETHING_SWARM_HUB_FRAME_DURATION_MS).toBe(160)
+    expect(SEETHING_SWARM_CALM_FRAME_DURATION_MS).toBe(160)
+    expect(SEETHING_SWARM_ATTENTION_FRAME_DURATION_MS).toBe(100)
+    expect(SEETHING_SWARM_BATTLE_FRAME_DURATION_MS).toBe(100)
   })
 
   it("derives a frozen integer-scaled bottom-center geometry", () => {

@@ -151,6 +151,7 @@ describe("Hub Component Integration", () => {
       image.getAttribute("src")?.includes("-alerted.png"),
     )!
     fireEvent.load(idle)
+    expect(idle).toHaveStyle({ "--animal-animation-duration": "160ms" })
     fireEvent.focus(button)
     expect(idle.closest("[data-hub-active-clip]")).toHaveAttribute(
       "data-hub-active-clip",
@@ -161,6 +162,7 @@ describe("Hub Component Integration", () => {
       "false",
     )
     fireEvent.load(alerted)
+    expect(alerted).toHaveStyle({ "--animal-animation-duration": "100ms" })
     await waitFor(() =>
       expect(alerted.closest("[data-hub-active-clip]")).toHaveAttribute(
         "data-hub-active-clip",
@@ -192,6 +194,7 @@ describe("Hub Component Integration", () => {
       ),
     )
     fireEvent.pointerCancel(button)
+    expect(idle).toHaveStyle({ "--animal-animation-duration": "160ms" })
     fireEvent.blur(button)
     expect(idle.closest("[data-hub-active-clip]")).toHaveAttribute(
       "data-hub-active-clip",

@@ -1,6 +1,6 @@
 import {
   createSeethingSwarmAnimalPresentationGeometry,
-  SEETHING_SWARM_HUB_FRAME_DURATION_MS,
+  SEETHING_SWARM_CALM_FRAME_DURATION_MS,
   SEETHING_SWARM_HUB_TILE_SIZE,
   type SeethingSwarmAnimalFacingDirection,
   type SeethingSwarmAnimalPlaybackMode,
@@ -23,7 +23,7 @@ import { useNativeSeethingSwarmAssetStatus } from "@/components/NativeSeethingSw
 export default function NativeSeethingSwarmAnimal({
   clip,
   facing = "right",
-  frameDurationMs = SEETHING_SWARM_HUB_FRAME_DURATION_MS,
+  frameDurationMs = SEETHING_SWARM_CALM_FRAME_DURATION_MS,
   maximumIntegerScale,
   playbackMode = "loop",
   playbackIdentity,
