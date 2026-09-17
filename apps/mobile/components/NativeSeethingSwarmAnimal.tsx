@@ -133,7 +133,7 @@ export default function NativeSeethingSwarmAnimal({
       accessible={false}
       importantForAccessibility="no-hide-descendants"
       pointerEvents="none"
-      className="shrink-0"
+      className="shrink-0 overflow-hidden"
       style={tileStyle}
       testID={testId}
     >

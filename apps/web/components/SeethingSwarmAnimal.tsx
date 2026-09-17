@@ -121,7 +121,7 @@ export default function SeethingSwarmAnimal({
   return (
     <span
       aria-hidden="true"
-      className={`pointer-events-none relative block h-(--animal-clearance-height) w-(--animal-clearance-width) shrink-0 select-none ${facing === "left" ? "-scale-x-100" : ""}`}
+      className={`pointer-events-none relative block h-(--animal-clearance-height) w-(--animal-clearance-width) shrink-0 overflow-hidden select-none ${facing === "left" ? "-scale-x-100" : ""}`}
       data-animal-id={clip.animalId}
       data-facing={facing}
       data-frame-count={clip.frameCount}
