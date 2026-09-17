@@ -530,6 +530,43 @@ describe("SeethingSwarmBattleStage", () => {
     expect(props.onResultAnimationComplete).toHaveBeenCalledTimes(1)
   })
 
+  it.each([false, true])(
+    "preserves resting fallback clearance with attention %s after all images fail",
+    async (attended) => {
+      const props = createStageProps("all-images-failed-before-choice")
+      const { container } = render(
+        <SeethingSwarmBattleStage {...props}>
+          {({ first, second }) => (
+            <>
+              {first(attended)}
+              {second(false)}
+            </>
+          )}
+        </SeethingSwarmBattleStage>,
+      )
+      const stage = container.querySelector<HTMLElement>(
+        "[data-battle-stage-state]",
+      )!
+      const reservedHeight = stage.style.getPropertyValue(
+        "--battle-visible-height",
+      )
+      for (const image of container.querySelectorAll("img"))
+        fireEvent.error(image)
+      const fallbacks = container.querySelectorAll(
+        "[data-placeholder-playback]",
+      )
+      expect(fallbacks).toHaveLength(2)
+      for (const fallback of fallbacks) {
+        expect(fallback).toBeVisible()
+        expect(fallback).toHaveAttribute("data-battle-role", "rest")
+      }
+      expect(stage.style.getPropertyValue("--battle-visible-height")).toBe(
+        reservedHeight,
+      )
+      expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
+    },
+  )
+
   it("keeps genuine all-image failures playable through the fallback", async () => {
     const props = createStageProps("all-result-images-failed")
     const { container } = render(
