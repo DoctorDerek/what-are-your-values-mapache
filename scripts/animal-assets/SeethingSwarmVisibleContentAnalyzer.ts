@@ -1,4 +1,3 @@
-import { createSeethingSwarmAnimalPresentationGeometry } from "#game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmVisibleContentBounds } from "#game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ZooAnimalId } from "#game/data/src/ZooAnimals"
 import sharp from "sharp"
@@ -21,9 +20,6 @@ export type SeethingSwarmRawRgbaImage = Readonly<{
 export type SeethingSwarmVisibleContentAnalysis = Readonly<{
   frameBounds: readonly SeethingSwarmVisibleContentBounds[]
   unionVisibleBounds: SeethingSwarmVisibleContentBounds
-  integerScale: number
-  frameOffsetX: number
-  frameOffsetY: number
 }>
 
 function assertPositiveSafeInteger(value: number, label: string) {
@@ -130,18 +126,10 @@ export function analyzeSeethingSwarmVisibleContent(
     ),
   )
   const unionVisibleBounds = createUnionBounds(frameBounds)
-  const geometry = createSeethingSwarmAnimalPresentationGeometry(
-    selection.frameWidth,
-    selection.frameHeight,
-    unionVisibleBounds,
-  )
 
   return Object.freeze({
     frameBounds,
     unionVisibleBounds,
-    integerScale: geometry.integerScale,
-    frameOffsetX: geometry.frameOffsetX,
-    frameOffsetY: geometry.frameOffsetY,
   }) satisfies SeethingSwarmVisibleContentAnalysis
 }
 
