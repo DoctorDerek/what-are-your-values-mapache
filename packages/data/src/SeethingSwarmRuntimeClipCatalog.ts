@@ -19,7 +19,15 @@ export type SeethingSwarmVisibleContentBounds = Readonly<{
 export type SeethingSwarmRuntimeAssetSource<PlatformAsset> = Readonly<{
   relativePath: string
   visibleBounds: SeethingSwarmVisibleContentBounds
+  firstFrameBounds: SeethingSwarmVisibleContentBounds
   asset: PlatformAsset
+}>
+
+export type SeethingSwarmReferencePose = Readonly<{
+  animationId: "idle" | "idle_upright"
+  frameIndex: 0
+  bounds: SeethingSwarmVisibleContentBounds
+  anchor: Readonly<{ x: number; y: number }>
 }>
 
 export type SeethingSwarmRuntimeCharacterClip<PlatformAsset> = Readonly<{
@@ -48,6 +56,7 @@ export type SeethingSwarmRuntimeAuxiliaryEffectClip<PlatformAsset> = Readonly<{
 
 export type SeethingSwarmRuntimeAnimalClips<PlatformAsset> = Readonly<{
   animalId: ZooAnimalId
+  referencePose: SeethingSwarmReferencePose
   characterClips: readonly SeethingSwarmRuntimeCharacterClip<PlatformAsset>[]
   auxiliaryEffectClips: readonly SeethingSwarmRuntimeAuxiliaryEffectClip<PlatformAsset>[]
 }>
@@ -166,6 +175,46 @@ function createCharacterClips<PlatformAsset>(
   )
 }
 
+function createReferencePose<PlatformAsset>(
+  animal: SeethingSwarmAnimalManifest,
+  sources: ReadonlyMap<string, SeethingSwarmRuntimeAssetSource<PlatformAsset>>,
+) {
+  const animationId = animal.animalId === "bat" ? "idle_upright" : "idle"
+  const animation = animal.animations[animationId]
+  if (!animation) {
+    throw new Error(
+      `Missing SeethingSwarm reference pose for ${animal.animalId}`,
+    )
+  }
+  const source = resolveRuntimeAssetSource(sources, animation.relativePath)
+  const bounds = createSeethingSwarmVisibleContentBounds(
+    animal.frameWidth,
+    animal.frameHeight,
+    source.firstFrameBounds,
+  )
+  if (
+    bounds.left < source.visibleBounds.left ||
+    bounds.top < source.visibleBounds.top ||
+    bounds.left + bounds.width >
+      source.visibleBounds.left + source.visibleBounds.width ||
+    bounds.top + bounds.height >
+      source.visibleBounds.top + source.visibleBounds.height
+  ) {
+    throw new Error(
+      `SeethingSwarm reference pose exceeds clip bounds for ${animal.animalId}`,
+    )
+  }
+  return Object.freeze({
+    animationId,
+    frameIndex: 0,
+    bounds,
+    anchor: Object.freeze({
+      x: bounds.left + bounds.width / 2,
+      y: bounds.top + bounds.height,
+    }),
+  }) satisfies SeethingSwarmReferencePose
+}
+
 function createAuxiliaryEffectClips<PlatformAsset>(
   animal: SeethingSwarmAnimalManifest,
   sources: ReadonlyMap<string, SeethingSwarmRuntimeAssetSource<PlatformAsset>>,
@@ -205,6 +254,7 @@ export function createSeethingSwarmLicensedRuntimeClipCatalog<PlatformAsset>(
     registry.animals.map((animal) =>
       Object.freeze({
         animalId: animal.animalId,
+        referencePose: createReferencePose(animal, sourcesByRelativePath),
         characterClips: createCharacterClips(animal, sourcesByRelativePath),
         auxiliaryEffectClips: createAuxiliaryEffectClips(
           animal,

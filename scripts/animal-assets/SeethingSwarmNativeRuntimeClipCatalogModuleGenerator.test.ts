@@ -1,3 +1,4 @@
+import { runInNewContext } from "node:vm"
 import { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } from "#game/data/src/SeethingSwarmRuntimeClipCatalog"
 import { createCompleteSeethingSwarmRuntimeClipTestFixture } from "#game/data/src/SeethingSwarmRuntimeClipCatalog.test-fixture"
 import ts from "typescript"
@@ -6,6 +7,23 @@ import { generateSeethingSwarmNativeRuntimeClipCatalogModule } from "./SeethingS
 import { listSeethingSwarmRuntimeClips } from "./SeethingSwarmRuntimeClipCatalogModuleGenerator"
 
 describe("SeethingSwarm native runtime clip catalog module generator", () => {
+  it("retains every reference pose in the executable generated catalog", () => {
+    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { outputText } = ts.transpileModule(
+      generateSeethingSwarmNativeRuntimeClipCatalogModule(catalog),
+      {
+        compilerOptions: {
+          module: ts.ModuleKind.CommonJS,
+          target: ts.ScriptTarget.ESNext,
+        },
+      },
+    )
+    const exports: Record<string, unknown> = {}
+    runInNewContext(outputText, { exports, require: () => 0 })
+    expect(exports.SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG).toMatchObject({
+      animals: catalog.animals.map(({ referencePose }) => ({ referencePose })),
+    })
+  })
   it("statically binds all licensed clips through Metro-analyzable requires", () => {
     const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
     const clips = listSeethingSwarmRuntimeClips(catalog)

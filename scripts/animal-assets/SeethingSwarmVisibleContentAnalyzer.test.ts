@@ -76,7 +76,7 @@ function fillEveryFrame(
 }
 
 describe("SeethingSwarm visible-content analyzer", () => {
-  it("measures every frame and derives the union bottom-center geometry", () => {
+  it("measures every source frame independently of display geometry", () => {
     const { selection, image } = createPopulatedImage()
     const analysis = analyzeSeethingSwarmVisibleContent(image, selection)
 
@@ -93,11 +93,7 @@ describe("SeethingSwarm visible-content analyzer", () => {
       width: 4,
       height: 4,
     })
-    expect(analysis).toMatchObject({
-      integerScale: 18,
-      frameOffsetX: 0,
-      frameOffsetY: 0,
-    })
+    expect(Object.keys(analysis)).toEqual(["frameBounds", "unionVisibleBounds"])
     expect(Object.isFrozen(analysis)).toBe(true)
     expect(Object.isFrozen(analysis.frameBounds)).toBe(true)
     expect(analysis.frameBounds.every(Object.isFrozen)).toBe(true)
@@ -180,7 +176,7 @@ describe("SeethingSwarm visible-content analyzer", () => {
     )
   })
 
-  it("rejects visible content that cannot fit the fixed presentation tile", () => {
+  it("accepts source art larger than any current presentation tile", () => {
     const selection = createSelection({
       frameWidth: 80,
       frameHeight: 80,
@@ -189,9 +185,10 @@ describe("SeethingSwarm visible-content analyzer", () => {
     const image = createTransparentImage(selection)
     image.data.fill(255)
 
-    expect(() => analyzeSeethingSwarmVisibleContent(image, selection)).toThrow(
-      "cannot fit the 72-unit tile",
-    )
+    expect(analyzeSeethingSwarmVisibleContent(image, selection)).toEqual({
+      frameBounds: [{ left: 0, top: 0, width: 80, height: 80 }],
+      unionVisibleBounds: { left: 0, top: 0, width: 80, height: 80 },
+    })
   })
 
   it("accepts opaque content at every legal frame boundary", () => {
@@ -201,9 +198,6 @@ describe("SeethingSwarm visible-content analyzer", () => {
 
     expect(analyzeSeethingSwarmVisibleContent(image, selection)).toMatchObject({
       unionVisibleBounds: { left: 0, top: 0, width: 1, height: 1 },
-      integerScale: 72,
-      frameOffsetX: 0,
-      frameOffsetY: 0,
     })
   })
 })

@@ -87,6 +87,12 @@ export function serializeSeethingSwarmLicensedRuntimeClipCatalog<PlatformAsset>(
     return [
       "    Object.freeze({",
       `      animalId: ${JSON.stringify(animal.animalId)},`,
+      "      referencePose: Object.freeze({",
+      `        animationId: ${JSON.stringify(animal.referencePose.animationId)},`,
+      `        frameIndex: ${animal.referencePose.frameIndex},`,
+      `        bounds: Object.freeze(${JSON.stringify(animal.referencePose.bounds)}),`,
+      `        anchor: Object.freeze(${JSON.stringify(animal.referencePose.anchor)}),`,
+      "      }),",
       "      characterClips: Object.freeze([",
       ...characterLines,
       "      ]),",

@@ -80,6 +80,12 @@ const licensedRuntimeClipCatalog = Object.freeze({
           }),
         ]),
         auxiliaryEffectClips: Object.freeze([]),
+        referencePose: Object.freeze({
+          animationId: "idle",
+          frameIndex: 0,
+          bounds: Object.freeze({ left: 0, top: 0, width: 1, height: 1 }),
+          anchor: Object.freeze({ x: 0.5, y: 1 }),
+        }),
       }),
     ),
   ),

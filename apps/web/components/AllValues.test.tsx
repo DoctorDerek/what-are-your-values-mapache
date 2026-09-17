@@ -86,6 +86,12 @@ describe("All Values Component Integration", () => {
           },
         })),
         auxiliaryEffectClips: [],
+        referencePose: Object.freeze({
+          animationId: "idle",
+          frameIndex: 0,
+          bounds: Object.freeze({ left: 0, top: 0, width: 1, height: 1 }),
+          anchor: Object.freeze({ x: 0.5, y: 1 }),
+        }),
       })),
       characterClipCount: ZOO_ANIMALS.length * 3,
       auxiliaryEffectClipCount: 0,

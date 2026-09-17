@@ -47,6 +47,12 @@ const catalog = {
       },
     ],
     auxiliaryEffectClips: [],
+    referencePose: Object.freeze({
+      animationId: "idle",
+      frameIndex: 0,
+      bounds: Object.freeze({ left: 0, top: 0, width: 32, height: 32 }),
+      anchor: Object.freeze({ x: 16, y: 32 }),
+    }),
   })),
   characterClipCount: 2,
   auxiliaryEffectClipCount: 0,

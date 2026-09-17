@@ -69,6 +69,12 @@ export function createCompleteSeethingSwarmRuntimeClipTestSources(
         ...Object.values(animal.animations).map(({ relativePath }) =>
           Object.freeze({
             relativePath,
+            firstFrameBounds: Object.freeze({
+              left: 4,
+              top: 5,
+              width: 20,
+              height: 23,
+            }),
             visibleBounds: Object.freeze({
               left: 2,
               top: 3,
@@ -82,6 +88,12 @@ export function createCompleteSeethingSwarmRuntimeClipTestSources(
           ({ relativePath }) =>
             Object.freeze({
               relativePath,
+              firstFrameBounds: Object.freeze({
+                left: 1,
+                top: 1,
+                width: 6,
+                height: 4,
+              }),
               visibleBounds: Object.freeze({
                 left: 1,
                 top: 1,
