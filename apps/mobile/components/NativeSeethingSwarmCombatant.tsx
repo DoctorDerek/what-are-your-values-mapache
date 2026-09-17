@@ -188,11 +188,9 @@ export default function NativeSeethingSwarmCombatant({
           <NativeSeethingSwarmPlaceholder
             side={combatant.side}
             role={role === "entry" || role === "anticipation" ? "rest" : role}
-            shouldReduceMotion={shouldReduceMotion || !hasLoadError}
-            onPlaybackComplete={() => {
-              if (hasLoadError) finishStep()
-            }}
-            onReady={hasLoadError ? onReady : undefined}
+            shouldReduceMotion={shouldReduceMotion}
+            onPlaybackComplete={finishStep}
+            onReady={onReady}
           />
         </View>
       ) : null}

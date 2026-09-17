@@ -192,11 +192,9 @@ export default function SeethingSwarmCombatant({
           <SeethingSwarmPlaceholder
             side={combatant.side}
             role={role === "entry" || role === "anticipation" ? "rest" : role}
-            shouldReduceMotion={shouldReduceMotion || !hasLoadError}
-            onPlaybackComplete={() => {
-              if (hasLoadError) finishStep()
-            }}
-            onReady={hasLoadError ? onReady : undefined}
+            shouldReduceMotion={shouldReduceMotion}
+            onPlaybackComplete={finishStep}
+            onReady={onReady}
           />
         </span>
       ) : null}
