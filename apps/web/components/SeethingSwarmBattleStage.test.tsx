@@ -84,7 +84,10 @@ async function finishClip(
   const image = getSprite(container, side)
   fireEvent.load(image)
   await waitFor(() =>
-    expect(image.parentElement).toHaveAttribute("data-playback-ready", "true"),
+    expect(image.closest("[data-playback-ready]")).toHaveAttribute(
+      "data-playback-ready",
+      "true",
+    ),
   )
   fireEvent.animationEnd(image)
 }
@@ -103,10 +106,9 @@ async function beginStrike(
   for (const image of container.querySelectorAll("img")) fireEvent.load(image)
   await waitFor(() => {
     for (const side of ["first", "second"] as const)
-      expect(getSprite(container, side).parentElement).toHaveAttribute(
-        "data-playback-ready",
-        "true",
-      )
+      expect(
+        getSprite(container, side).closest("[data-playback-ready]"),
+      ).toHaveAttribute("data-playback-ready", "true")
   })
   finishApproach(container, winnerSide)
   await waitFor(() =>
@@ -173,7 +175,7 @@ describe("SeethingSwarmBattleStage", () => {
     const entry = getSprite(container, "first")
     fireEvent.load(entry)
     await waitFor(() =>
-      expect(entry.parentElement).toHaveAttribute(
+      expect(entry.closest("[data-playback-ready]")).toHaveAttribute(
         "data-playback-ready",
         "true",
       ),
@@ -200,7 +202,10 @@ describe("SeethingSwarmBattleStage", () => {
       ),
     )
     expect(entry).toBeInTheDocument()
-    expect(entry.parentElement).toHaveAttribute("data-playback-mode", "static")
+    expect(entry.closest("[data-playback-ready]")).toHaveAttribute(
+      "data-playback-mode",
+      "static",
+    )
     expect(container.querySelectorAll("img[loading='eager']")).toHaveLength(12)
     expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
   })
@@ -270,10 +275,10 @@ describe("SeethingSwarmBattleStage", () => {
         new URL(combatant.clips.rest.clip.asset.src, window.location.href).href,
       )
       expect(
-        getSprite(container, combatant.side).parentElement,
+        getSprite(container, combatant.side).closest("[data-playback-ready]"),
       ).toHaveAttribute("data-playback-mode", "loop")
       expect(
-        getSprite(container, combatant.side).parentElement,
+        getSprite(container, combatant.side).closest("[data-playback-ready]"),
       ).toHaveAttribute(
         "data-facing",
         combatant.side === "first" ? "right" : "left",
@@ -314,10 +319,9 @@ describe("SeethingSwarmBattleStage", () => {
         "flourish",
       )
       await finishClip(container, loserSide)
-      expect(getSprite(container, loserSide).parentElement).toHaveAttribute(
-        "data-playback-mode",
-        "hold-final-frame",
-      )
+      expect(
+        getSprite(container, loserSide).closest("[data-playback-ready]"),
+      ).toHaveAttribute("data-playback-mode", "hold-final-frame")
       expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
       await finishClip(container, winnerSide)
       expect(
@@ -348,10 +352,9 @@ describe("SeethingSwarmBattleStage", () => {
     expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
     await finishClip(container, "second")
     expect(props.onResultAnimationComplete).toHaveBeenCalledTimes(1)
-    expect(getSprite(container, "first").parentElement).toHaveAttribute(
-      "data-playback-mode",
-      "one-shot",
-    )
+    expect(
+      getSprite(container, "first").closest("[data-playback-ready]"),
+    ).toHaveAttribute("data-playback-mode", "one-shot")
     await finishClip(container, "first")
     expect(props.onResultAnimationComplete).toHaveBeenCalledTimes(1)
   })
@@ -526,6 +529,43 @@ describe("SeethingSwarmBattleStage", () => {
     await finishClip(container, "second")
     expect(props.onResultAnimationComplete).toHaveBeenCalledTimes(1)
   })
+
+  it.each([false, true])(
+    "preserves resting fallback clearance with attention %s after all images fail",
+    async (attended) => {
+      const props = createStageProps("all-images-failed-before-choice")
+      const { container } = render(
+        <SeethingSwarmBattleStage {...props}>
+          {({ first, second }) => (
+            <>
+              {first(attended)}
+              {second(false)}
+            </>
+          )}
+        </SeethingSwarmBattleStage>,
+      )
+      const stage = container.querySelector<HTMLElement>(
+        "[data-battle-stage-state]",
+      )!
+      const reservedHeight = stage.style.getPropertyValue(
+        "--battle-visible-height",
+      )
+      for (const image of container.querySelectorAll("img"))
+        fireEvent.error(image)
+      const fallbacks = container.querySelectorAll(
+        "[data-placeholder-playback]",
+      )
+      expect(fallbacks).toHaveLength(2)
+      for (const fallback of fallbacks) {
+        expect(fallback).toBeVisible()
+        expect(fallback).toHaveAttribute("data-battle-role", "rest")
+      }
+      expect(stage.style.getPropertyValue("--battle-visible-height")).toBe(
+        reservedHeight,
+      )
+      expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
+    },
+  )
 
   it("keeps genuine all-image failures playable through the fallback", async () => {
     const props = createStageProps("all-result-images-failed")

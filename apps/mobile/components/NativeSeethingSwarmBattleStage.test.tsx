@@ -149,6 +149,35 @@ afterEach(() => {
 })
 
 describe("NativeSeethingSwarmBattleStage", () => {
+  it("preserves attended fallback clearance when every licensed source fails", async () => {
+    const initial = props()
+    await render(
+      <NativeSeethingSwarmBattleStage {...initial}>
+        {({ first, second }) => (
+          <>
+            {first(true)}
+            {second(false)}
+          </>
+        )}
+      </NativeSeethingSwarmBattleStage>,
+    )
+    for (const node of screen.getAllByTestId(
+      /^seething-swarm-animal-.+-image$/,
+      hidden,
+    ))
+      await fireEvent(node, "error")
+    for (const side of ["first", "second"]) {
+      expect(
+        screen.getByTestId(`battle-placeholder-${side}`, hidden),
+      ).toBeOnTheScreen()
+      expect(
+        screen.getByTestId(`battle-combatant-${side}`, hidden),
+      ).toHaveStyle({ width: 112, height: 112 })
+    }
+    await advance(700)
+    expect(initial.onResultComplete).not.toHaveBeenCalled()
+  })
+
   it.each(["load", "error"] as const)(
     "uses prepared %s outcomes across entry and a committed result",
     async (outcome) => {
@@ -238,7 +267,7 @@ describe("NativeSeethingSwarmBattleStage", () => {
           screen.getByTestId("battle-clip-first-idle", hidden),
         ).getByTestId("seething-swarm-animal-raccoonpack-strip", hidden),
       ),
-    ).toMatchObject({ transform: [{ translateX: -256 }] })
+    ).toMatchObject({ transform: [{ translateX: -192 }] })
     expect(initial.onResultComplete).not.toHaveBeenCalled()
   })
 

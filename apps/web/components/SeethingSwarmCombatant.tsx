@@ -1,7 +1,3 @@
-import {
-  createSeethingSwarmBattlePresentationGeometry,
-  SEETHING_SWARM_BATTLE_TILE_SIZE,
-} from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { ValueId } from "@game/data/src/Value"
 import type { SeethingSwarmLicensedBattleCombatant } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import type { SeethingSwarmBattleExchangeCue } from "@game/machines/src/SeethingSwarmBattleExchange"
@@ -10,7 +6,7 @@ import {
   getSeethingSwarmBattleClips,
 } from "@game/machines/src/SeethingSwarmBattlePlayback"
 import type { StaticImageData } from "next/image"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, type CSSProperties } from "react"
 import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
 import { useSeethingSwarmPreparedAssets } from "@/components/SeethingSwarmAssetPreparation"
 import SeethingSwarmPlaceholder from "@/components/SeethingSwarmPlaceholder"
@@ -80,10 +76,6 @@ export default function SeethingSwarmCombatant({
   const hasNoUsableImage = residentClips.every((clip) =>
     failedClips.has(clip.animationId),
   )
-  const { maximumIntegerScale } = useMemo(
-    () => createSeethingSwarmBattlePresentationGeometry(residentClips),
-    [residentClips],
-  )
   const retainedClipId =
     loadedClips.has(displayedClipId) && !failedClips.has(displayedClipId)
       ? displayedClipId
@@ -140,9 +132,19 @@ export default function SeethingSwarmCombatant({
       onPlaybackComplete()
   }, [cue, hasBlockingSteps, onPlaybackComplete, winnerId])
 
+  const combatantStyle: CSSProperties & {
+    "--combatant-width": string
+    "--combatant-height": string
+    "--combatant-below-anchor": string
+  } = {
+    "--combatant-width": `${combatant.geometry.width}px`,
+    "--combatant-height": `${combatant.geometry.height}px`,
+    "--combatant-below-anchor": `${combatant.geometry.height - combatant.geometry.anchorY}px`,
+  }
   return (
     <span
-      className="relative block size-28 shrink-0"
+      className="relative block h-(--combatant-height) w-(--combatant-width) shrink-0"
+      style={combatantStyle}
       data-battle-role={role}
       data-battle-requested-clip={requestedClipId}
     >
@@ -160,7 +162,7 @@ export default function SeethingSwarmCombatant({
               playbackIdentity={`${cue}:${stepIndex}`}
               facing={combatant.side === "first" ? "right" : "left"}
               frameDurationMs={step.frameDurationMs}
-              maximumIntegerScale={maximumIntegerScale}
+              geometry={combatant.geometry}
               preload
               playbackMode={
                 !isVisible || shouldReduceMotion
@@ -170,7 +172,6 @@ export default function SeethingSwarmCombatant({
                     : step.playbackMode
               }
               shouldReduceMotion={shouldReduceMotion}
-              tileSize={SEETHING_SWARM_BATTLE_TILE_SIZE}
               onLoadError={() =>
                 setFailedClips(
                   (previous) => new Set([...previous, clip.animationId]),
@@ -187,15 +188,15 @@ export default function SeethingSwarmCombatant({
         )
       })}
       {!hasVisibleImage && hasNoUsableImage ? (
-        <SeethingSwarmPlaceholder
-          side={combatant.side}
-          role={role === "entry" || role === "anticipation" ? "rest" : role}
-          shouldReduceMotion={shouldReduceMotion || !hasLoadError}
-          onPlaybackComplete={() => {
-            if (hasLoadError) finishStep()
-          }}
-          onReady={hasLoadError ? onReady : undefined}
-        />
+        <span className="absolute bottom-(--combatant-below-anchor) left-1/2 -translate-x-1/2">
+          <SeethingSwarmPlaceholder
+            side={combatant.side}
+            role={role === "entry" || role === "anticipation" ? "rest" : role}
+            shouldReduceMotion={shouldReduceMotion}
+            onPlaybackComplete={finishStep}
+            onReady={onReady}
+          />
+        </span>
       ) : null}
     </span>
   )

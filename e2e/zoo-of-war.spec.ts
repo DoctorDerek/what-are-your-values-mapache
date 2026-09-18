@@ -266,11 +266,7 @@ async function expectRenderedCombatant(
   await expect(animatedElement).toBeVisible()
   if (mode === "licensed") {
     await expect(animatedElement).toHaveCSS("image-rendering", "pixelated")
-    await expect(
-      combatant.locator(
-        '[data-battle-active-clip="true"] [data-playback-mode]',
-      ),
-    ).toHaveCSS("overflow", "hidden")
+    await expect(animatedElement.locator("..")).toHaveCSS("overflow", "hidden")
     await expect
       .poll(() =>
         animatedElement.evaluate(
@@ -278,6 +274,16 @@ async function expectRenderedCombatant(
         ),
       )
       .toBe(true)
+    await expect
+      .poll(() =>
+        animatedElement.evaluate((image: HTMLImageElement) => ({
+          horizontalScale:
+            image.getBoundingClientRect().width / image.naturalWidth,
+          verticalScale:
+            image.getBoundingClientRect().height / image.naturalHeight,
+        })),
+      )
+      .toEqual({ horizontalScale: 3, verticalScale: 3 })
   }
 
   if (shouldReduceMotion) {

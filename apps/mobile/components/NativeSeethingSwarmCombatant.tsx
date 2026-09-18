@@ -1,7 +1,3 @@
-import {
-  createSeethingSwarmAnimalPresentationGeometry,
-  SEETHING_SWARM_BATTLE_TILE_SIZE,
-} from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { ValueId } from "@game/data/src/Value"
 import type { SeethingSwarmLicensedBattleCombatant } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import type { SeethingSwarmBattleExchangeCue } from "@game/machines/src/SeethingSwarmBattleExchange"
@@ -80,21 +76,6 @@ export default function NativeSeethingSwarmCombatant({
   const hasNoUsableImage = residentClips.every((clip) =>
     failedClips.has(clip.animationId),
   )
-  const maximumIntegerScale = useMemo(
-    () =>
-      Math.min(
-        ...residentClips.map(
-          (clip) =>
-            createSeethingSwarmAnimalPresentationGeometry(
-              clip.frameWidth,
-              clip.frameHeight,
-              clip.visibleBounds,
-              SEETHING_SWARM_BATTLE_TILE_SIZE,
-            ).integerScale,
-        ),
-      ),
-    [residentClips],
-  )
   const retainedClipId =
     loadedClips.has(displayedClipId) && !failedClips.has(displayedClipId)
       ? displayedClipId
@@ -152,7 +133,13 @@ export default function NativeSeethingSwarmCombatant({
   }, [cue, hasBlockingSteps, onPlaybackComplete, winnerId])
 
   return (
-    <View className="relative size-28 origin-bottom xl:scale-200">
+    <View
+      className="relative"
+      style={{
+        width: combatant.geometry.width,
+        height: combatant.geometry.height,
+      }}
+    >
       {residentClips.map((clip) => {
         const isVisible = clip.animationId === visibleClipId && hasVisibleImage
         return (
@@ -166,7 +153,7 @@ export default function NativeSeethingSwarmCombatant({
               playbackIdentity={`${cue}:${stepIndex}`}
               facing={combatant.side === "first" ? "right" : "left"}
               frameDurationMs={step.frameDurationMs}
-              maximumIntegerScale={maximumIntegerScale}
+              geometry={combatant.geometry}
               playbackMode={
                 !isVisible || shouldReduceMotion
                   ? "static"
@@ -175,7 +162,6 @@ export default function NativeSeethingSwarmCombatant({
                     : step.playbackMode
               }
               shouldReduceMotion={shouldReduceMotion}
-              tileSize={SEETHING_SWARM_BATTLE_TILE_SIZE}
               onLoadError={() =>
                 setFailedClips(
                   (previous) => new Set([...previous, clip.animationId]),
@@ -192,15 +178,21 @@ export default function NativeSeethingSwarmCombatant({
         )
       })}
       {!hasVisibleImage && hasNoUsableImage ? (
-        <NativeSeethingSwarmPlaceholder
-          side={combatant.side}
-          role={role === "entry" || role === "anticipation" ? "rest" : role}
-          shouldReduceMotion={shouldReduceMotion || !hasLoadError}
-          onPlaybackComplete={() => {
-            if (hasLoadError) finishStep()
+        <View
+          className="absolute items-center"
+          style={{
+            bottom: combatant.geometry.height - combatant.geometry.anchorY,
+            width: combatant.geometry.width,
           }}
-          onReady={hasLoadError ? onReady : undefined}
-        />
+        >
+          <NativeSeethingSwarmPlaceholder
+            side={combatant.side}
+            role={role === "entry" || role === "anticipation" ? "rest" : role}
+            shouldReduceMotion={shouldReduceMotion}
+            onPlaybackComplete={finishStep}
+            onReady={onReady}
+          />
+        </View>
       ) : null}
     </View>
   )

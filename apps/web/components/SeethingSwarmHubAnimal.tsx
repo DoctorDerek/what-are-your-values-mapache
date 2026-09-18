@@ -1,6 +1,6 @@
 import {
-  createSeethingSwarmAnimalPresentationGeometry,
   SEETHING_SWARM_CALM_FRAME_DURATION_MS,
+  type SeethingSwarmAnimalPresentationGeometry,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type {
   SeethingSwarmRuntimeCharacterClip,
@@ -15,12 +15,14 @@ import { useSeethingSwarmPreparedAssets } from "@/components/SeethingSwarmAssetP
 
 export default function SeethingSwarmHubAnimal({
   calmClip,
+  geometry,
   catalog,
   isAttended,
   shouldReduceMotion,
   onLoadError,
 }: {
   calmClip: SeethingSwarmRuntimeCharacterClip<StaticImageData>
+  geometry: SeethingSwarmAnimalPresentationGeometry
   catalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   isAttended: boolean
   shouldReduceMotion: boolean
@@ -43,20 +45,6 @@ export default function SeethingSwarmHubAnimal({
       ).values(),
     ],
     [calmClip, steps],
-  )
-  const maximumIntegerScale = useMemo(
-    () =>
-      Math.min(
-        ...clips.map(
-          (clip) =>
-            createSeethingSwarmAnimalPresentationGeometry(
-              clip.frameWidth,
-              clip.frameHeight,
-              clip.visibleBounds,
-            ).integerScale,
-        ),
-      ),
-    [clips],
   )
   const preparedAssets = useSeethingSwarmPreparedAssets()
   const [loadedPaths, setLoadedPaths] = useState<ReadonlySet<string>>(
@@ -106,7 +94,7 @@ export default function SeethingSwarmHubAnimal({
           >
             <SeethingSwarmAnimal
               clip={clip}
-              maximumIntegerScale={maximumIntegerScale}
+              geometry={geometry}
               preload
               frameDurationMs={
                 attended

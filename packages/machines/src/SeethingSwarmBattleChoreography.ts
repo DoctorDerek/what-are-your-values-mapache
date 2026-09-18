@@ -1,4 +1,8 @@
 import {
+  createSeethingSwarmAnimalPresentationGeometry,
+  type SeethingSwarmAnimalPresentationGeometry,
+} from "@game/data/src/SeethingSwarmAnimalPresentation"
+import {
   resolveSeethingSwarmBattleAnimationPolicy,
   type SeethingSwarmBattleEligibleAnimationPolicy,
   type SeethingSwarmBattleSemanticFamily,
@@ -79,6 +83,7 @@ export type SeethingSwarmLicensedBattleCombatant<PlatformAsset> =
     Readonly<{
       side: SeethingSwarmBattleCombatantSide
       clips: SeethingSwarmBattleClipSelections<PlatformAsset>
+      geometry: SeethingSwarmAnimalPresentationGeometry
     }>
 
 export type SeethingSwarmPlaceholderBattleCombatant =
@@ -162,6 +167,33 @@ function classifyBattleEligibleClips<PlatformAsset>(
   }
 
   return Object.freeze(battleEligibleClips)
+}
+
+export function createSeethingSwarmSurfaceGeometry<PlatformAsset>(
+  animal: SeethingSwarmRuntimeAnimalClips<PlatformAsset>,
+  surface: "battle" | "portrait",
+): SeethingSwarmAnimalPresentationGeometry {
+  const eligible = classifyBattleEligibleClips(animal)
+  const clips = eligible.flatMap(({ clip, policy }) => {
+    if (
+      surface === "portrait" &&
+      !policy.semanticFamilies.some(
+        (family) =>
+          family === "rest" ||
+          family === "anticipation" ||
+          family === "celebration",
+      )
+    )
+      return []
+    return (
+      resolveSeethingSwarmBattleSequence(clip, animal.characterClips, false) ??
+      []
+    )
+  })
+  return createSeethingSwarmAnimalPresentationGeometry(
+    animal.referencePose,
+    clips,
+  )
 }
 
 function resolveRolePolicy(role: SeethingSwarmBattleClipRole) {
@@ -289,6 +321,7 @@ function createLicensedBattleCombatant<PlatformAsset>({
       reaction: selectClip("reaction"),
       flourish: selectClip("flourish"),
     }),
+    geometry: createSeethingSwarmSurfaceGeometry(animal, "battle"),
   }) satisfies SeethingSwarmLicensedBattleCombatant<PlatformAsset>
 }
 

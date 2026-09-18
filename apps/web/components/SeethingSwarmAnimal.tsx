@@ -1,9 +1,8 @@
 import {
-  createSeethingSwarmAnimalPresentationGeometry,
   SEETHING_SWARM_CALM_FRAME_DURATION_MS,
-  SEETHING_SWARM_HUB_TILE_SIZE,
   type SeethingSwarmAnimalFacingDirection,
   type SeethingSwarmAnimalPlaybackMode,
+  type SeethingSwarmAnimalPresentationGeometry,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeCharacterClip } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import Image, { type StaticImageData } from "next/image"
@@ -25,22 +24,23 @@ type SeethingSwarmAnimalStyle = CSSProperties & {
   "--animal-strip-top": string
   "--animal-strip-travel": string
   "--animal-strip-width": string
+  "--animal-frame-width": string
 }
 
 type SeethingSwarmAnimalTileStyle = CSSProperties & {
-  "--animal-tile-size": string
+  "--animal-clearance-width": string
+  "--animal-clearance-height": string
 }
 
 export default function SeethingSwarmAnimal({
   clip,
   facing = "right",
   frameDurationMs = SEETHING_SWARM_CALM_FRAME_DURATION_MS,
-  maximumIntegerScale,
+  geometry,
   preload = false,
   playbackMode = "loop",
   playbackIdentity,
   shouldReduceMotion,
-  tileSize = SEETHING_SWARM_HUB_TILE_SIZE,
   onLoadError,
   onReady,
   onPlaybackComplete,
@@ -48,12 +48,11 @@ export default function SeethingSwarmAnimal({
   clip: SeethingSwarmRuntimeCharacterClip<StaticImageData>
   facing?: SeethingSwarmAnimalFacingDirection
   frameDurationMs?: number
-  maximumIntegerScale?: number
+  geometry: SeethingSwarmAnimalPresentationGeometry
   preload?: boolean
   playbackMode?: SeethingSwarmAnimalPlaybackMode
   playbackIdentity?: string
   shouldReduceMotion: boolean
-  tileSize?: number
   onLoadError?: () => void
   onReady?: () => void
   onPlaybackComplete?: () => void
@@ -92,13 +91,6 @@ export default function SeethingSwarmAnimal({
       animation.play()
     }
   }, [effectivePlaybackMode, frameDurationMs, isImageLoaded, playbackIdentity])
-  const geometry = createSeethingSwarmAnimalPresentationGeometry(
-    clip.frameWidth,
-    clip.frameHeight,
-    clip.visibleBounds,
-    tileSize,
-    maximumIntegerScale,
-  )
   const scaledFrameWidth = clip.frameWidth * geometry.integerScale
   const scaledFrameHeight = clip.frameHeight * geometry.integerScale
   const scaledStripWidth = scaledFrameWidth * clip.frameCount
@@ -111,9 +103,11 @@ export default function SeethingSwarmAnimal({
     "--animal-strip-top": `${geometry.frameOffsetY}px`,
     "--animal-strip-travel": `${-scaledStripWidth}px`,
     "--animal-strip-width": `${scaledStripWidth}px`,
+    "--animal-frame-width": `${scaledFrameWidth}px`,
   }
   const tileStyle: SeethingSwarmAnimalTileStyle = {
-    "--animal-tile-size": `${tileSize}px`,
+    "--animal-clearance-width": `${geometry.width}px`,
+    "--animal-clearance-height": `${geometry.height}px`,
   }
   const playbackClassName =
     effectivePlaybackMode === "loop"
@@ -127,7 +121,7 @@ export default function SeethingSwarmAnimal({
   return (
     <span
       aria-hidden="true"
-      className={`pointer-events-none relative block size-(--animal-tile-size) flex-[0_0_var(--animal-tile-size)] overflow-hidden select-none ${facing === "left" ? "-scale-x-100" : ""}`}
+      className={`pointer-events-none relative block h-(--animal-clearance-height) w-(--animal-clearance-width) shrink-0 overflow-hidden select-none ${facing === "left" ? "-scale-x-100" : ""}`}
       data-animal-id={clip.animalId}
       data-facing={facing}
       data-frame-count={clip.frameCount}
@@ -136,26 +130,31 @@ export default function SeethingSwarmAnimal({
       data-reduced-motion={shouldReduceMotion}
       style={tileStyle}
     >
-      <Image
-        ref={imageRef}
-        alt=""
-        className={`absolute top-(--animal-strip-top) left-(--animal-strip-left) h-(--animal-strip-height) w-(--animal-strip-width) max-w-none [image-rendering:pixelated] ${playbackClassName} ${isImageLoaded ? "" : "[animation-play-state:paused]"}`}
-        draggable={false}
-        decoding="sync"
-        height={scaledFrameHeight}
-        loading={preload || playbackMode === "one-shot" ? "eager" : undefined}
-        onAnimationEnd={
-          effectivePlaybackMode === "one-shot" && isImageLoaded
-            ? onPlaybackComplete
-            : undefined
-        }
-        onError={onLoadError}
-        onLoad={handleImageReady}
-        src={clip.asset}
+      <span
+        className="absolute top-(--animal-strip-top) left-(--animal-strip-left) h-(--animal-strip-height) w-(--animal-frame-width) overflow-hidden"
         style={stripStyle}
-        unoptimized
-        width={scaledStripWidth}
-      />
+      >
+        <Image
+          ref={imageRef}
+          alt=""
+          className={`absolute top-0 left-0 h-(--animal-strip-height) w-(--animal-strip-width) max-w-none [image-rendering:pixelated] ${playbackClassName} ${isImageLoaded ? "" : "[animation-play-state:paused]"}`}
+          draggable={false}
+          decoding="sync"
+          height={scaledFrameHeight}
+          loading={preload || playbackMode === "one-shot" ? "eager" : undefined}
+          onAnimationEnd={
+            effectivePlaybackMode === "one-shot" && isImageLoaded
+              ? onPlaybackComplete
+              : undefined
+          }
+          onError={onLoadError}
+          onLoad={handleImageReady}
+          src={clip.asset}
+          style={stripStyle}
+          unoptimized
+          width={scaledStripWidth}
+        />
+      </span>
     </span>
   )
 }

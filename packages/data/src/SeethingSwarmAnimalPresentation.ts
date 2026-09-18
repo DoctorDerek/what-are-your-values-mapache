@@ -1,6 +1,7 @@
 import { splitGraphemes } from "unicode-segmenter/grapheme"
 import {
   createSeethingSwarmVisibleContentBounds,
+  SeethingSwarmReferencePose,
   SeethingSwarmRuntimeAnimalClips,
   SeethingSwarmRuntimeCharacterClip,
   SeethingSwarmRuntimeClipCatalog,
@@ -15,6 +16,7 @@ export const SEETHING_SWARM_HUB_ANIMATION_CANDIDATES = Object.freeze([
   "idle_upright",
 ] as const)
 export const SEETHING_SWARM_HUB_TILE_SIZE = 72
+export const SEETHING_SWARM_STANDALONE_SCALE = 3
 export const SEETHING_SWARM_CALM_FRAME_DURATION_MS = 160
 export const SEETHING_SWARM_ATTENTION_FRAME_DURATION_MS = 100
 export const SEETHING_SWARM_BATTLE_FRAME_DURATION_MS = 100
@@ -47,12 +49,17 @@ export type SeethingSwarmAnimalPresentationGeometry = Readonly<{
   integerScale: number
   frameOffsetX: number
   frameOffsetY: number
+  width: number
+  height: number
+  anchorX: number
+  anchorY: number
 }>
 
 export type ValueAnimalPresentation<PlatformAsset> =
   | Readonly<{
       kind: "animal"
       clip: SeethingSwarmRuntimeCharacterClip<PlatformAsset>
+      animal: SeethingSwarmRuntimeAnimalClips<PlatformAsset>
     }>
   | Readonly<{
       kind: "custom-initial"
@@ -72,77 +79,38 @@ function assertPositiveSafeInteger(value: number, label: string) {
   }
 }
 
-export function createSeethingSwarmAnimalPresentationGeometry(
-  frameWidth: number,
-  frameHeight: number,
-  visibleBounds: SeethingSwarmVisibleContentBounds,
-  tileSize = SEETHING_SWARM_HUB_TILE_SIZE,
-  maximumIntegerScale?: number,
-) {
-  assertPositiveSafeInteger(frameWidth, "SeethingSwarm frame width")
-  assertPositiveSafeInteger(frameHeight, "SeethingSwarm frame height")
-  assertPositiveSafeInteger(tileSize, "SeethingSwarm tile size")
-  const frozenVisibleBounds = createSeethingSwarmVisibleContentBounds(
-    frameWidth,
-    frameHeight,
-    visibleBounds,
-  )
-  if (maximumIntegerScale !== undefined)
-    assertPositiveSafeInteger(
-      maximumIntegerScale,
-      "SeethingSwarm maximum scale",
-    )
-  const integerScale = Math.min(
-    maximumIntegerScale ?? Infinity,
-    Math.floor(
-      Math.min(
-        tileSize / frozenVisibleBounds.width,
-        tileSize / frozenVisibleBounds.height,
-      ),
-    ),
-  )
-  if (integerScale < 1) {
-    throw new Error(
-      `Visible SeethingSwarm content cannot fit the ${tileSize}-unit tile`,
-    )
-  }
-
-  const scaledVisibleWidth = frozenVisibleBounds.width * integerScale
-  const frameOffsetX =
-    Math.floor((tileSize - scaledVisibleWidth) / 2) -
-    frozenVisibleBounds.left * integerScale
-  const frameOffsetY =
-    tileSize -
-    (frozenVisibleBounds.top + frozenVisibleBounds.height) * integerScale
-
-  return Object.freeze({
-    visibleBounds: frozenVisibleBounds,
-    integerScale,
-    frameOffsetX,
-    frameOffsetY,
-  }) satisfies SeethingSwarmAnimalPresentationGeometry
-}
-
-export function createSeethingSwarmBattlePresentationGeometry<PlatformAsset>(
+export function createSeethingSwarmAnimalPresentationGeometry<PlatformAsset>(
+  referencePose: SeethingSwarmReferencePose,
   clips: readonly SeethingSwarmRuntimeCharacterClip<PlatformAsset>[],
-) {
-  const maximumIntegerScale = Math.min(
-    ...clips.map(
-      (clip) =>
-        createSeethingSwarmAnimalPresentationGeometry(
-          clip.frameWidth,
-          clip.frameHeight,
-          clip.visibleBounds,
-          SEETHING_SWARM_BATTLE_TILE_SIZE,
-        ).integerScale,
+): SeethingSwarmAnimalPresentationGeometry {
+  assertPositiveSafeInteger(clips.length, "SeethingSwarm clearance clip count")
+  const bounds = clips.map((clip) =>
+    createSeethingSwarmVisibleContentBounds(
+      clip.frameWidth,
+      clip.frameHeight,
+      clip.visibleBounds,
     ),
   )
+  const left = Math.min(...bounds.map((bound) => bound.left))
+  const top = Math.min(...bounds.map((bound) => bound.top))
+  const right = Math.max(...bounds.map((bound) => bound.left + bound.width))
+  const bottom = Math.max(...bounds.map((bound) => bound.top + bound.height))
+  const integerScale = SEETHING_SWARM_STANDALONE_SCALE
   return Object.freeze({
-    maximumIntegerScale,
-    maximumVisibleHeight: Math.max(
-      ...clips.map((clip) => clip.visibleBounds.height * maximumIntegerScale),
-    ),
-  })
+    visibleBounds: Object.freeze({
+      left,
+      top,
+      width: right - left,
+      height: bottom - top,
+    }),
+    integerScale,
+    frameOffsetX: -left * integerScale,
+    frameOffsetY: -top * integerScale,
+    width: (right - left) * integerScale,
+    height: (bottom - top) * integerScale,
+    anchorX: (referencePose.anchor.x - left) * integerScale,
+    anchorY: (referencePose.anchor.y - top) * integerScale,
+  }) satisfies SeethingSwarmAnimalPresentationGeometry
 }
 
 function resolveCalmAnimalClip<PlatformAsset>(
@@ -158,6 +126,34 @@ function resolveCalmAnimalClip<PlatformAsset>(
   throw new Error(
     `Missing calm SeethingSwarm Hub animation for ${animal.animalId}`,
   )
+}
+
+export function createSeethingSwarmStageGeometry(
+  geometries: readonly (SeethingSwarmAnimalPresentationGeometry | null)[],
+): Readonly<{ width: number; height: number; belowAnchor: number }> {
+  const width = Math.max(
+    SEETHING_SWARM_BATTLE_TILE_SIZE,
+    ...geometries.map(
+      (geometry) => geometry?.width ?? SEETHING_SWARM_BATTLE_TILE_SIZE,
+    ),
+  )
+  const aboveAnchor = Math.max(
+    SEETHING_SWARM_BATTLE_TILE_SIZE,
+    ...geometries.map(
+      (geometry) => geometry?.anchorY ?? SEETHING_SWARM_BATTLE_TILE_SIZE,
+    ),
+  )
+  const belowAnchor = Math.max(
+    0,
+    ...geometries.map((geometry) =>
+      geometry ? geometry.height - geometry.anchorY : 0,
+    ),
+  )
+  return Object.freeze({
+    width,
+    height: aboveAnchor + belowAnchor,
+    belowAnchor,
+  })
 }
 
 function resolveAnimalClips<PlatformAsset>(
@@ -203,8 +199,10 @@ export function resolveValueAnimalPresentation<PlatformAsset>(
     throw new Error(`Missing animal mapping for canonical value: ${value.id}`)
   }
 
+  const animal = resolveAnimalClips(catalog, animalId)
   return Object.freeze({
     kind: "animal",
-    clip: resolveCalmAnimalClip(resolveAnimalClips(catalog, animalId)),
+    clip: resolveCalmAnimalClip(animal),
+    animal,
   })
 }
