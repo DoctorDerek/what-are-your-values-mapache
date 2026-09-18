@@ -22,7 +22,7 @@ import {
 } from "@testing-library/react"
 import type { StaticImageData } from "next/image"
 import type { ComponentProps } from "react"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import AllValues from "./AllValues"
 
 function createRankedValues(activeDeck: ActiveDeck) {
@@ -64,7 +64,11 @@ function renderAllValues(
 }
 
 describe("All Values Component Integration", () => {
+  afterEach(() => vi.restoreAllMocks())
   it("retains calm art until attention is ready and preserves focus while the pointer leaves", async () => {
+    vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockReturnValue(
+      false,
+    )
     const runtimeClipCatalog = {
       mode: "licensed",
       evidenceSnapshotId: "all-values-attention-test",
@@ -104,7 +108,10 @@ describe("All Values Component Integration", () => {
     )!
     const dance = row.querySelector<HTMLImageElement>('img[src$="-dance.png"]')!
     const active = () => row.querySelector('[data-hub-active-clip="true"] img')
+    expect(idle).toHaveAttribute("loading", "lazy")
+    expect(alerted).toHaveAttribute("loading", "lazy")
     fireEvent.load(idle)
+    await waitFor(() => expect(alerted).toHaveAttribute("loading", "eager"))
     fireEvent.pointerEnter(row, { pointerType: "mouse" })
     expect(active()).toBe(idle)
     fireEvent.load(alerted)

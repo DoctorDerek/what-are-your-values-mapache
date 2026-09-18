@@ -8,6 +8,46 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(installVisibleTextBounds)
 })
 
+test("defers distant roster art and prepares animals when scrolling reaches them", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  const requestedImages = new Set<string>()
+  page.on("request", (request) => {
+    if (request.resourceType() === "image") requestedImages.add(request.url())
+  })
+  await page.goto("/", { waitUntil: "networkidle" })
+  await page.getByRole("button", { name: "Start", exact: true }).click()
+  const rows = page
+    .getByRole("listitem")
+    .filter({ has: page.locator("[data-hub-active-clip]") })
+  await expect(
+    rows.first().locator('[data-hub-active-clip="true"] [data-playback-ready]'),
+  ).toHaveAttribute("data-playback-ready", "true")
+  const rosterSources = await rows
+    .locator("img")
+    .evaluateAll((images) => images.map((image) => image.src))
+  expect(rosterSources.some((source) => !requestedImages.has(source))).toBe(
+    true,
+  )
+  const lastRow = rows.last()
+  await lastRow.scrollIntoViewIfNeeded()
+  await expect(
+    lastRow.locator('[data-hub-active-clip="true"] [data-playback-ready]'),
+  ).toHaveAttribute("data-playback-ready", "true")
+  await lastRow.getByRole("button").focus()
+  await expect
+    .poll(() =>
+      lastRow
+        .locator("img")
+        .evaluateAll((images) =>
+          images.every((image) => image.complete && image.naturalWidth > 0),
+        ),
+    )
+    .toBe(true)
+  await expect(lastRow.locator('[data-hub-active-clip="true"]')).toBeVisible()
+})
+
 test("prepares before Battle and retains real animals while the next pair loads", async ({
   page,
 }) => {

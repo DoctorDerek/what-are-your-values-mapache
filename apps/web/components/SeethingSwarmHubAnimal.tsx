@@ -95,7 +95,11 @@ export default function SeethingSwarmHubAnimal({
             <SeethingSwarmAnimal
               clip={clip}
               geometry={geometry}
-              preload
+              preload={
+                isAttended ||
+                loadedPaths.has(calmClip.relativePath) ||
+                preparedAssets?.has(calmClip.relativePath) === true
+              }
               frameDurationMs={
                 attended
                   ? step.frameDurationMs
