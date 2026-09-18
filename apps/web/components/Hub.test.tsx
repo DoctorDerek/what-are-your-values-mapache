@@ -30,7 +30,7 @@ import {
   within,
 } from "@testing-library/react"
 import type { StaticImageData } from "next/image"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import Hub from "./Hub"
 
 const animalPresentationProps = Object.freeze({
@@ -116,7 +116,12 @@ function createCustomRankedValues() {
 }
 
 describe("Hub Component Integration", () => {
+  afterEach(() => vi.restoreAllMocks())
+
   it("retains the loaded animal while focus attention loads, then returns to calm on blur", async () => {
+    vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockReturnValue(
+      false,
+    )
     const runtimeClipCatalog = {
       ...licensedRuntimeClipCatalog,
       animals: licensedRuntimeClipCatalog.animals.map((animal) => ({
@@ -156,7 +161,10 @@ describe("Hub Component Integration", () => {
     const alerted = [...images].find((image) =>
       image.getAttribute("src")?.includes("-alerted.png"),
     )!
+    expect(idle).toHaveAttribute("loading", "lazy")
+    expect(alerted).toHaveAttribute("loading", "lazy")
     fireEvent.load(idle)
+    await waitFor(() => expect(alerted).toHaveAttribute("loading", "eager"))
     expect(idle).toHaveStyle({ "--animal-animation-duration": "160ms" })
     fireEvent.focus(button)
     expect(idle.closest("[data-hub-active-clip]")).toHaveAttribute(

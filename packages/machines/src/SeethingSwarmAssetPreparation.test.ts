@@ -1,4 +1,6 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
+import { projectHubValues } from "@game/data/src/HubValueProjection"
+import { resolveValueAnimalPresentation } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type {
   SeethingSwarmRuntimeCharacterClip,
   SeethingSwarmRuntimeClipCatalog,
@@ -96,7 +98,7 @@ describe("scoped animal preparation", () => {
     actor.stop()
   })
 
-  it("prepares roster animals before the first battle and beyond the Top Five", () => {
+  it("prepares only the first five Hub values before navigation", () => {
     const deck = createActiveDeck([])
     const ranking = rankValues(deck, createInitialValueProgress(deck))
     const catalog = {
@@ -119,10 +121,18 @@ describe("scoped animal preparation", () => {
       auxiliaryEffectClipCount: 0,
     } satisfies SeethingSwarmRuntimeClipCatalog<number>
     const prepared = getHubPreparationClips(ranking, catalog)
-    expect(prepared).toHaveLength(ranking.length * 3)
-    expect(
-      new Set(prepared.map(({ animalId }) => animalId)).size,
-    ).toBeGreaterThan(5)
+    const expectedAnimals = projectHubValues(ranking).topFive.flatMap(
+      ({ definition }) => {
+        const presentation = resolveValueAnimalPresentation(definition, catalog)
+        return presentation.kind === "animal"
+          ? [presentation.clip.animalId]
+          : []
+      },
+    )
+    expect(prepared).toHaveLength(expectedAnimals.length * 3)
+    expect(new Set(prepared.map(({ animalId }) => animalId))).toEqual(
+      new Set(expectedAnimals),
+    )
     expect(prepared.every(({ animationId }) => animationId === "idle")).toBe(
       true,
     )
