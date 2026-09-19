@@ -78,6 +78,7 @@ export type SeethingSwarmLicensedBattleCombatant<PlatformAsset> =
     Readonly<{
       side: SeethingSwarmBattleCombatantSide
       clips: SeethingSwarmBattleClipSelections<PlatformAsset>
+      attentionAlternatives: readonly SeethingSwarmBattleClipSelection<PlatformAsset>[]
       geometry: SeethingSwarmAnimalPresentationGeometry
     }>
 
@@ -336,6 +337,10 @@ function createLicensedBattleCombatant<PlatformAsset>({
     })
 
   const rest = selectClip("rest")
+  const attentionAlternatives = createSeethingSwarmAttentionAlternatives(
+    rest.clip,
+    catalog,
+  )
 
   return Object.freeze({
     ...combatant,
@@ -343,45 +348,57 @@ function createLicensedBattleCombatant<PlatformAsset>({
     clips: Object.freeze({
       entry: selectClip("entry", rest.clip),
       rest,
-      anticipation: selectClip("anticipation", rest.clip),
+      anticipation: attentionAlternatives[0]!,
       attack: selectClip("attack", rest.clip),
       reaction: selectClip("reaction", rest.clip),
       flourish: selectClip("flourish", rest.clip),
     }),
+    attentionAlternatives,
     geometry: createSeethingSwarmSurfaceGeometry(animal, "battle"),
   }) satisfies SeethingSwarmLicensedBattleCombatant<PlatformAsset>
 }
 
-export function createSeethingSwarmHubAttentionSelections<PlatformAsset>(
+export function createSeethingSwarmAttentionAlternatives<PlatformAsset>(
   calmClip: SeethingSwarmRuntimeCharacterClip<PlatformAsset>,
   catalog: SeethingSwarmRuntimeClipCatalog<PlatformAsset>,
-) {
+): readonly SeethingSwarmBattleClipSelection<PlatformAsset>[] {
   if (catalog.mode !== "licensed")
     throw new Error("Hub animal requires licensed clips")
   const animal = resolveRuntimeAnimalClips(catalog, calmClip.animalId)
-  const battleEligibleClips = classifyBattleEligibleClips(animal)
-  const selectClip = (role: "anticipation" | "flourish") =>
-    selectBattleClip({
-      battleEligibleClips,
-      availableClips: animal.characterClips,
-      animalId: animal.animalId,
-      selectionOffsets: [hashText(`hub-attention:${animal.animalId}:${role}`)],
-      role,
-      restClip: calmClip,
-    })
-  return Object.freeze({
-    anticipation: selectClip("anticipation"),
-    flourish: selectClip("flourish"),
-    rest: Object.freeze({
-      role: "rest",
-      semanticFamily: "rest",
-      clip: calmClip,
-      sequence: [calmClip],
-    }),
-  }) satisfies Pick<
-    SeethingSwarmBattleClipSelections<PlatformAsset>,
-    "anticipation" | "flourish" | "rest"
-  >
+  const profile = resolveSeethingSwarmFamilyPerformanceProfile(animal.animalId)
+  const alternatives = profile.attention.flatMap((animationId) => {
+    const clip = animal.characterClips.find(
+      (candidate) => candidate.animationId === animationId,
+    )
+    if (!clip) return []
+    const sequence = resolveSeethingSwarmBattleSequence(
+      clip,
+      animal.characterClips,
+      calmClip,
+    )
+    return sequence
+      ? [
+          Object.freeze({
+            role: "anticipation",
+            semanticFamily: "anticipation",
+            clip,
+            sequence,
+          }) satisfies SeethingSwarmBattleClipSelection<PlatformAsset>,
+        ]
+      : []
+  })
+  return Object.freeze(
+    alternatives.length
+      ? alternatives
+      : [
+          Object.freeze({
+            role: "anticipation",
+            semanticFamily: "rest",
+            clip: calmClip,
+            sequence: [calmClip],
+          }) satisfies SeethingSwarmBattleClipSelection<PlatformAsset>,
+        ],
+  )
 }
 
 function createPlaceholderBattleCombatant(

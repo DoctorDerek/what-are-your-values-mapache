@@ -135,6 +135,94 @@ function finishApproach(
 afterEach(() => vi.restoreAllMocks())
 
 describe("SeethingSwarmBattleStage", () => {
+  it("settles a failed attention expression into the loaded calm pose", async () => {
+    const props = createStageProps("failed-attention")
+    const { container } = render(
+      <SeethingSwarmBattleStage {...props}>
+        {({ first, second }) => (
+          <>
+            {first(true)}
+            {second(false)}
+          </>
+        )}
+      </SeethingSwarmBattleStage>,
+    )
+    for (const image of container.querySelectorAll("img")) fireEvent.load(image)
+    const expression = getSprite(container, "first")
+    fireEvent.error(expression)
+    await waitFor(() =>
+      expect(getRole(container, "first")).toHaveAttribute(
+        "data-battle-role",
+        "rest",
+      ),
+    )
+    const calm = getSprite(container, "first")
+    expect(calm).toHaveAttribute("src", expect.stringContaining("/idle.png"))
+    expect(calm).toHaveStyle({ "--animal-animation-duration": "640ms" })
+    expect(calm.closest("[data-playback-mode]")).toHaveAttribute(
+      "data-playback-mode",
+      "loop",
+    )
+    expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
+  })
+  it("varies genuine attention entries once and returns to calm without a celebration", async () => {
+    const props = createStageProps("attention-entries")
+    const draw = (attended: boolean, reduced = false) => (
+      <StrictMode>
+        <SeethingSwarmBattleStage {...props} shouldReduceMotion={reduced}>
+          {({ first, second }) => (
+            <>
+              {first(attended)}
+              {second(false)}
+            </>
+          )}
+        </SeethingSwarmBattleStage>
+      </StrictMode>
+    )
+    const { container, rerender } = render(draw(false))
+    rerender(draw(true))
+    for (const image of container.querySelectorAll("img")) fireEvent.load(image)
+    await waitFor(() =>
+      expect(getSprite(container, "first")).toHaveAttribute(
+        "src",
+        expect.stringContaining("/bark.png"),
+      ),
+    )
+    const firstExpression = getSprite(container, "first")
+    rerender(draw(true))
+    expect(getSprite(container, "first")).toBe(firstExpression)
+    await finishClip(container, "first")
+    expect(getRole(container, "first")).toHaveAttribute(
+      "data-battle-role",
+      "rest",
+    )
+    rerender(draw(true))
+    expect(getRole(container, "first")).toHaveAttribute(
+      "data-battle-role",
+      "rest",
+    )
+    rerender(draw(false))
+    rerender(draw(true))
+    for (const image of container.querySelectorAll("img")) fireEvent.load(image)
+    await waitFor(() =>
+      expect(getSprite(container, "first")).toHaveAttribute(
+        "src",
+        expect.stringContaining("/crouch.png"),
+      ),
+    )
+    fireEvent.animationEnd(firstExpression)
+    expect(getSprite(container, "first")).toHaveAttribute(
+      "src",
+      expect.stringContaining("/crouch.png"),
+    )
+    rerender(draw(true, true))
+    rerender(draw(true))
+    expect(getRole(container, "first")).toHaveAttribute(
+      "data-battle-role",
+      "rest",
+    )
+    expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
+  })
   it("waits for its own approach completion rather than bubbled sprite animations", () => {
     const props = {
       ...createStageProps("owned-approach-completion"),
@@ -208,7 +296,7 @@ describe("SeethingSwarmBattleStage", () => {
       "data-playback-mode",
       "static",
     )
-    expect(container.querySelectorAll("img[loading='eager']")).toHaveLength(11)
+    expect(container.querySelectorAll("img[loading='eager']")).toHaveLength(10)
     expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
   })
   it("plays entry then anticipation before settling both animals into rest", async () => {
@@ -225,7 +313,7 @@ describe("SeethingSwarmBattleStage", () => {
     expect(
       container.querySelector("[data-battle-stage-state]"),
     ).not.toHaveAttribute("aria-hidden", "true")
-    expect(container.querySelectorAll("img")).toHaveLength(11)
+    expect(container.querySelectorAll("img")).toHaveLength(10)
 
     for (const combatant of choreography.combatants) {
       expect(getCombatant(container, combatant.side)).toHaveAttribute(
@@ -684,7 +772,7 @@ describe("SeethingSwarmBattleStage", () => {
       )
       expect(
         container.querySelectorAll('[data-playback-mode="static"]'),
-      ).toHaveLength(11)
+      ).toHaveLength(10)
       fireEvent.animationEnd(oldImage)
       expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
       rerender(
@@ -708,7 +796,7 @@ describe("SeethingSwarmBattleStage", () => {
     )
     expect(
       container.querySelectorAll('[data-playback-mode="static"]'),
-    ).toHaveLength(11)
+    ).toHaveLength(10)
     expect(getRole(container, "first")).toHaveAttribute(
       "data-battle-role",
       "rest",
