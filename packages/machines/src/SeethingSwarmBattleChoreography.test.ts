@@ -1,5 +1,6 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
 import { SEETHING_SWARM_BATTLE_ANIMATION_POLICIES } from "@game/data/src/SeethingSwarmBattleAnimationPolicy"
+import { resolveSeethingSwarmFamilyPerformanceProfile } from "@game/data/src/SeethingSwarmFamilyPerformanceProfiles"
 import {
   createSeethingSwarmTypographyOnlyRuntimeClipCatalog,
   type SeethingSwarmLicensedRuntimeClipCatalog,
@@ -28,6 +29,64 @@ import {
 } from "./SeethingSwarmBattleChoreography"
 
 const RACCOON_VALUE_ID = createCanonicalValueId("pvcs-2011:mastery")
+
+it("applies each variant's approved role pools rather than unrelated catalog clips", () => {
+  const allAnimationIds = SEETHING_SWARM_BATTLE_ANIMATION_POLICIES.map(
+    ({ animationId }) => animationId,
+  )
+  const catalog = createTestLicensedCatalog(
+    ZOO_ANIMALS.map(({ id }) => [id, allAnimationIds] as const),
+  )
+  for (const { id: animalId } of ZOO_ANIMALS) {
+    const mapping = VALUE_TO_ANIMAL_MAP.find(
+      (mapping) => mapping.animalId === animalId,
+    )!
+    const profile = resolveSeethingSwarmFamilyPerformanceProfile(animalId)
+    for (let cycleIndex = 0; cycleIndex < 8; cycleIndex += 1) {
+      const result = createSeethingSwarmBattleChoreography({
+        catalog,
+        battle: createTestBattle({
+          pair: [
+            mapping.valueId,
+            animalId === "raccoonpack" ? WOLF_VALUE_ID : RACCOON_VALUE_ID,
+          ],
+          cycleIndex,
+        }),
+      })
+      if (result.mode !== "licensed")
+        throw new Error("Expected licensed test catalog")
+      const { clips } = result.combatants[0]
+      expect(profile.calm).toContain(clips.rest.clip.animationId)
+      expect(profile.attention).toContain(clips.anticipation.clip.animationId)
+      expect(profile.attack).toContain(clips.attack.clip.animationId)
+      expect(clips.attack.clip.animationId).not.toBe("attack_air")
+      expect(clips.reaction.clip.animationId).toBe("hurt")
+      expect(profile.celebration).toContain(clips.flourish.clip.animationId)
+      for (const selection of Object.values(clips)) {
+        if (selection.sequence.length > 1)
+          expect(selection.sequence.at(-1)).toBe(clips.rest.clip)
+      }
+    }
+  }
+})
+
+it("keeps ordinary hurt independently available when a bat lacks required attack recovery", () => {
+  const result = createSeethingSwarmBattleChoreography({
+    catalog: createTestLicensedCatalog([
+      ["bat", ["idle_upright", "attack", "fly_forward", "hurt", "fright"]],
+    ]),
+    battle: createTestBattle({
+      pair: [FIRST_BAT_VALUE_ID, SECOND_BAT_VALUE_ID],
+    }),
+  })
+  if (result.mode !== "licensed")
+    throw new Error("Expected licensed test catalog")
+  for (const { clips } of result.combatants) {
+    expect(clips.attack.semanticFamily).toBe("rest")
+    expect(clips.attack.sequence).toEqual([clips.rest.clip])
+    expect(clips.reaction.clip.animationId).toBe("hurt")
+  }
+})
 
 it("reserves unselected eligible motion while excluding terminal and environment-only poses", () => {
   const animal = createTestAnimalClips("raccoonpack", [
@@ -103,7 +162,11 @@ const CUSTOM_VALUE = Object.freeze({
 
 const COMPLETE_ROLE_ANIMATION_IDS = Object.freeze([
   "sleep",
-  "dance",
+  "bark",
+  "howl",
+  "croak",
+  "hop",
+  "attackforward",
   "hurt",
   "attack",
   "idle",
@@ -249,12 +312,12 @@ describe("SeethingSwarm battle choreography", () => {
         ],
       ),
     ).toEqual([
-      ["entry", ["entry-exit", "anticipation", "rest"]],
-      ["rest", ["rest", "anticipation", "entry-exit"]],
+      ["entry", ["entry-exit", "rest"]],
+      ["rest", ["rest"]],
       ["anticipation", ["anticipation", "rest"]],
-      ["attack", ["attack", "anticipation", "entry-exit", "rest"]],
-      ["reaction", ["reaction", "anticipation", "rest"]],
-      ["flourish", ["celebration", "anticipation", "rest"]],
+      ["attack", ["attack", "rest"]],
+      ["reaction", ["reaction", "rest"]],
+      ["flourish", ["celebration", "rest"]],
     ])
     expect(Object.isFrozen(SEETHING_SWARM_BATTLE_COMBATANT_SIDES)).toBe(true)
     expect(Object.isFrozen(SEETHING_SWARM_BATTLE_CLIP_ROLE_POLICIES)).toBe(true)
@@ -307,18 +370,18 @@ describe("SeethingSwarm battle choreography", () => {
       {
         entry: "run",
         rest: "idle",
-        anticipation: "crouch",
+        anticipation: expect.stringMatching(/^(bark|crouch)$/),
         attack: "attack",
         reaction: "hurt",
-        flourish: "dance",
+        flourish: "bark",
       },
       {
-        entry: "run",
+        entry: "hop",
         rest: "idle",
-        anticipation: "crouch",
-        attack: "attack",
+        anticipation: "croak",
+        attack: "attackforward",
         reaction: "hurt",
-        flourish: "dance",
+        flourish: "croak",
       },
     ])
     expect(Object.isFrozen(choreography)).toBe(true)
@@ -484,7 +547,7 @@ describe("SeethingSwarm battle choreography", () => {
     ).toBe(WOLF_VALUE_ID)
   })
 
-  it("makes every battle-eligible source animation deterministically reachable", () => {
+  it("keeps bat selections inside its approved family even with unrelated source clips", () => {
     const battleEligibleAnimationIds = getBattleEligibleAnimationIds()
     const catalog = createTestLicensedCatalog([
       ["bat", battleEligibleAnimationIds],
@@ -515,13 +578,23 @@ describe("SeethingSwarm battle choreography", () => {
     }
 
     expect([...reachedAnimationIds].toSorted()).toEqual(
-      battleEligibleAnimationIds.toSorted(),
+      [
+        "attack",
+        "crouch",
+        "fly_forward",
+        "fly_idle",
+        "hurt",
+        "idle_upright",
+        "idle_upright_blink",
+      ].toSorted(),
     )
   })
 
   it("projects at least one complete battle for every mapped animal", () => {
     const catalog = createTestLicensedCatalog(
-      ZOO_ANIMALS.map(({ id }) => Object.freeze([id, ["idle"]] as const)),
+      ZOO_ANIMALS.map(({ id }) =>
+        Object.freeze([id, [id === "bat" ? "idle_upright" : "idle"]] as const),
+      ),
     )
     const projectedAnimalIds = new Set<ZooAnimalId>()
 
@@ -586,6 +659,6 @@ describe("SeethingSwarm battle choreography", () => {
           ["wolfpack", ["idle"]],
         ]),
       }),
-    ).toThrow("Missing battle-eligible entry animation for animal: raccoonpack")
+    ).toThrow("Missing battle-eligible rest animation for animal: raccoonpack")
   })
 })

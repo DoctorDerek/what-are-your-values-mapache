@@ -17,19 +17,24 @@ const pair = [
 ] as const
 const animals = (["raccoonpack", "wolfpack"] as const).map((animalId) => ({
   animalId,
-  characterClips: ["run", "idle", "crouch", "attack", "hurt", "dance"].map(
-    (animationId) => ({
-      kind: "character" as const,
-      animalId,
-      animationId,
-      relativePath: `${animalId}/${animationId}.png`,
-      frameWidth: 32,
-      frameHeight: 32,
-      frameCount: 4,
-      visibleBounds: { left: 0, top: 0, width: 32, height: 32 },
-      asset: animationId,
-    }),
-  ),
+  characterClips: [
+    "run",
+    "idle",
+    "crouch",
+    "attack",
+    "hurt",
+    animalId === "raccoonpack" ? "bark" : "howl",
+  ].map((animationId) => ({
+    kind: "character" as const,
+    animalId,
+    animationId,
+    relativePath: `${animalId}/${animationId}.png`,
+    frameWidth: 32,
+    frameHeight: 32,
+    frameCount: 4,
+    visibleBounds: { left: 0, top: 0, width: 32, height: 32 },
+    asset: animationId,
+  })),
   auxiliaryEffectClips: [],
   referencePose: Object.freeze({
     animationId: "idle",
@@ -71,7 +76,7 @@ describe("SeethingSwarm battle playback", () => {
       }),
     )
   })
-  it("acknowledges attention with anticipation and expression without blocking a choice", () => {
+  it("coalesces an identical attention and expression clip without blocking a choice", () => {
     const steps = createSeethingSwarmBattlePlayback({
       combatant,
       winnerId: null,
@@ -80,13 +85,12 @@ describe("SeethingSwarm battle playback", () => {
     expect(steps.map(({ role, playbackMode }) => [role, playbackMode])).toEqual(
       [
         ["anticipation", "one-shot"],
-        ["flourish", "one-shot"],
         ["rest", "loop"],
       ],
     )
     expect(steps[0].clip).toBe(combatant.clips.anticipation.clip)
     expect(steps.every((step) => !step.blocksResult)).toBe(true)
-    expect(steps.map((step) => step.frameDurationMs)).toEqual([100, 100, 160])
+    expect(steps.map((step) => step.frameDurationMs)).toEqual([100, 160])
   })
   it("plays every introductory role before resting without mutating its source", () => {
     const steps = createSeethingSwarmBattlePlayback({
@@ -185,7 +189,7 @@ describe("SeethingSwarm battle playback", () => {
     ])
     expect(impact.map((step) => step.clip.animationId)).toEqual([
       "land",
-      "dance",
+      "bark",
     ])
     expect(
       [...strike, impact[0]].every(

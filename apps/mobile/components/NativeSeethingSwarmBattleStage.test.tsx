@@ -42,19 +42,24 @@ const battle = { pair, scheduler }
 const animals = (["raccoonpack", "wolfpack"] as const).map(
   (animalId, animalIndex) => ({
     animalId,
-    characterClips: ["run", "crouch", "idle", "attack", "hurt", "dance"].map(
-      (animationId, animationIndex) => ({
-        kind: "character" as const,
-        animalId,
-        animationId,
-        relativePath: `${animalId}/${animationId}.png`,
-        frameWidth: 32,
-        frameHeight: 32,
-        frameCount: 4,
-        visibleBounds: { left: 2, top: 3, width: 24, height: 25 },
-        asset: animalIndex * 100 + animationIndex + 1,
-      }),
-    ),
+    characterClips: [
+      "run",
+      "crouch",
+      "idle",
+      "attack",
+      "hurt",
+      animalId === "raccoonpack" ? "bark" : "howl",
+    ].map((animationId, animationIndex) => ({
+      kind: "character" as const,
+      animalId,
+      animationId,
+      relativePath: `${animalId}/${animationId}.png`,
+      frameWidth: 32,
+      frameHeight: 32,
+      frameCount: 4,
+      visibleBounds: { left: 2, top: 3, width: 24, height: 25 },
+      asset: animalIndex * 100 + animationIndex + 1,
+    })),
     auxiliaryEffectClips: [],
     referencePose: Object.freeze({
       animationId: "idle",
@@ -93,8 +98,8 @@ function props(): ComponentProps<typeof NativeSeethingSwarmBattleStage> {
     ),
   }
 }
-function image(animal: "raccoonpack" | "wolfpack") {
-  const side = animal === "raccoonpack" ? "first" : "second"
+function image(animal: "raccoonpack" | "wolfpack" | "bat") {
+  const side = animal === "wolfpack" ? "second" : "first"
   const clips = screen.getAllByTestId(
     new RegExp(`^battle-clip-${side}-`),
     hidden,
@@ -254,7 +259,7 @@ describe("NativeSeethingSwarmBattleStage", () => {
     await loadImages()
     await advance(700)
     expect(image("raccoonpack")).toHaveProp("source", 2)
-    expect(image("wolfpack")).toHaveProp("source", 102)
+    expect(image("wolfpack")).toHaveProp("source", 106)
     await loadImages()
     await advance(700)
     expect(image("raccoonpack")).toHaveProp("source", 3)
@@ -431,39 +436,65 @@ describe("NativeSeethingSwarmBattleStage", () => {
   })
 
   it("plays a complete aerial attack and waits for its landing after the opponent reacts", async () => {
+    const batValue = createCanonicalValueId("pvcs-2011:non-conformity")
     const catalog = {
       ...licensedCatalog,
-      animals: licensedCatalog.animals.map((animal) => ({
-        ...animal,
-        characterClips: animal.characterClips.flatMap((clip) =>
-          clip.animationId !== "attack"
-            ? [clip]
-            : ["takeoff", "attack_air", "land"].map((animationId, index) => ({
-                ...clip,
-                animationId,
-                frameCount: animationId === "land" ? 8 : 4,
-                asset: 201 + index,
-              })),
-        ),
-      })),
+      animals: licensedCatalog.animals.map((animal) => {
+        const animalId =
+          animal.animalId === "raccoonpack" ? ("bat" as const) : animal.animalId
+        return {
+          ...animal,
+          animalId,
+          referencePose: {
+            ...animal.referencePose,
+            animationId:
+              animalId === "bat"
+                ? ("idle_upright" as const)
+                : ("idle" as const),
+          },
+          characterClips: animal.characterClips.flatMap((clip) =>
+            animalId === "bat" && clip.animationId === "attack"
+              ? ["fly_forward", "attack", "land_upright"].map(
+                  (animationId, index) => ({
+                    ...clip,
+                    animalId,
+                    animationId,
+                    frameCount: animationId === "land_upright" ? 8 : 4,
+                    asset: 201 + index,
+                  }),
+                )
+              : [
+                  {
+                    ...clip,
+                    animalId,
+                    animationId:
+                      animalId === "bat" && clip.animationId === "idle"
+                        ? "idle_upright"
+                        : clip.animationId,
+                  },
+                ],
+          ),
+        }
+      }),
     }
     const initial = {
       ...props(),
       catalog,
-      winnerId: pair[0],
+      battle: { ...battle, pair: [batValue, pair[1]] as const },
+      winnerId: batValue,
       isNextBattleReady: true,
     }
     await render(<NativeSeethingSwarmBattleStage {...initial} />)
     await loadImages()
     await advance(200)
-    expect(image("raccoonpack")).toHaveProp("source", 201)
+    expect(image("bat")).toHaveProp("source", 201)
     await advance(300)
-    expect(image("raccoonpack")).toHaveProp("source", 201)
+    expect(image("bat")).toHaveProp("source", 201)
     expect(initial.onResultComplete).not.toHaveBeenCalled()
     await advance(200)
-    expect(image("raccoonpack")).toHaveProp("source", 202)
+    expect(image("bat")).toHaveProp("source", 202)
     await advance(500)
-    expect(image("raccoonpack")).toHaveProp("source", 203)
+    expect(image("bat")).toHaveProp("source", 203)
     expect(image("wolfpack")).toHaveProp("source", 105)
     await advance(500)
     expect(initial.onResultComplete).not.toHaveBeenCalled()

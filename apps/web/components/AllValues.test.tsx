@@ -74,7 +74,13 @@ describe("All Values Component Integration", () => {
       evidenceSnapshotId: "all-values-attention-test",
       animals: ZOO_ANIMALS.map(({ id }) => ({
         animalId: id,
-        characterClips: ["idle", "alerted", "dance"].map((animationId) => ({
+        characterClips: [
+          id === "bat" ? "idle_upright" : "idle",
+          "crouch",
+          "jump",
+          "fall",
+          "land",
+        ].map((animationId) => ({
           kind: "character",
           animalId: id,
           animationId,
@@ -91,46 +97,52 @@ describe("All Values Component Integration", () => {
         })),
         auxiliaryEffectClips: [],
         referencePose: Object.freeze({
-          animationId: "idle",
+          animationId: id === "bat" ? "idle_upright" : "idle",
           frameIndex: 0,
           bounds: Object.freeze({ left: 0, top: 0, width: 1, height: 1 }),
           anchor: Object.freeze({ x: 0.5, y: 1 }),
         }),
       })),
-      characterClipCount: ZOO_ANIMALS.length * 3,
+      characterClipCount: ZOO_ANIMALS.length * 5,
       auxiliaryEffectClipCount: 0,
     } satisfies SeethingSwarmRuntimeClipCatalog<StaticImageData>
     renderAllValues(undefined, { runtimeClipCatalog })
     const row = screen.getAllByRole("listitem")[0]
     const idle = row.querySelector<HTMLImageElement>('img[src$="-idle.png"]')!
-    const alerted = row.querySelector<HTMLImageElement>(
-      'img[src$="-alerted.png"]',
+    const crouch = row.querySelector<HTMLImageElement>(
+      'img[src$="-crouch.png"]',
     )!
-    const dance = row.querySelector<HTMLImageElement>('img[src$="-dance.png"]')!
+    const jump = row.querySelector<HTMLImageElement>('img[src$="-jump.png"]')!
     const active = () => row.querySelector('[data-hub-active-clip="true"] img')
     expect(idle).toHaveAttribute("loading", "lazy")
-    expect(alerted).toHaveAttribute("loading", "lazy")
+    expect(crouch).toHaveAttribute("loading", "lazy")
     fireEvent.load(idle)
-    await waitFor(() => expect(alerted).toHaveAttribute("loading", "eager"))
+    await waitFor(() => expect(crouch).toHaveAttribute("loading", "eager"))
     fireEvent.pointerEnter(row, { pointerType: "mouse" })
     expect(active()).toBe(idle)
-    fireEvent.load(alerted)
-    await waitFor(() => expect(active()).toBe(alerted))
+    fireEvent.load(crouch)
+    await waitFor(() => expect(active()).toBe(crouch))
     fireEvent.focus(row)
     fireEvent.pointerLeave(row)
-    expect(active()).toBe(alerted)
+    expect(active()).toBe(crouch)
     fireEvent.blur(row, { relatedTarget: within(row).getByRole("heading") })
-    expect(active()).toBe(alerted)
-    fireEvent.load(dance)
-    fireEvent.animationEnd(alerted)
-    await waitFor(() => expect(active()).toBe(dance))
-    fireEvent.animationEnd(dance)
+    expect(active()).toBe(crouch)
+    for (const image of row.querySelectorAll("img")) fireEvent.load(image)
+    fireEvent.animationEnd(crouch)
+    await waitFor(() => expect(active()).toBe(jump))
+    fireEvent.animationEnd(jump)
+    fireEvent.animationEnd(
+      row.querySelector<HTMLImageElement>('img[src$="-fall.png"]')!,
+    )
+    fireEvent.animationEnd(
+      row.querySelector<HTMLImageElement>('img[src$="-land.png"]')!,
+    )
     await waitFor(() => expect(active()).toBe(idle))
     fireEvent.blur(row)
     fireEvent.pointerEnter(row, { pointerType: "touch" })
     expect(active()).toBe(idle)
     fireEvent.pointerEnter(row, { pointerType: "mouse" })
-    await waitFor(() => expect(active()).toBe(alerted))
+    await waitFor(() => expect(active()).toBe(crouch))
     fireEvent.pointerCancel(row)
     await waitFor(() => expect(active()).toBe(idle))
   })

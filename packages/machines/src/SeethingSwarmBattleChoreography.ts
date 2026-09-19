@@ -8,6 +8,7 @@ import {
   type SeethingSwarmBattleSemanticFamily,
 } from "@game/data/src/SeethingSwarmBattleAnimationPolicy"
 import { resolveSeethingSwarmBattleSequence } from "@game/data/src/SeethingSwarmBattleSequencePolicy"
+import { resolveSeethingSwarmFamilyPerformanceProfile } from "@game/data/src/SeethingSwarmFamilyPerformanceProfiles"
 import type {
   SeethingSwarmLicensedRuntimeClipCatalog,
   SeethingSwarmRuntimeAnimalClips,
@@ -45,18 +46,12 @@ function defineBattleClipRolePolicy<const Role extends string>(
 }
 
 export const SEETHING_SWARM_BATTLE_CLIP_ROLE_POLICIES = Object.freeze([
-  defineBattleClipRolePolicy("entry", "entry-exit", "anticipation", "rest"),
-  defineBattleClipRolePolicy("rest", "rest", "anticipation", "entry-exit"),
+  defineBattleClipRolePolicy("entry", "entry-exit", "rest"),
+  defineBattleClipRolePolicy("rest", "rest"),
   defineBattleClipRolePolicy("anticipation", "anticipation", "rest"),
-  defineBattleClipRolePolicy(
-    "attack",
-    "attack",
-    "anticipation",
-    "entry-exit",
-    "rest",
-  ),
-  defineBattleClipRolePolicy("reaction", "reaction", "anticipation", "rest"),
-  defineBattleClipRolePolicy("flourish", "celebration", "anticipation", "rest"),
+  defineBattleClipRolePolicy("attack", "attack", "rest"),
+  defineBattleClipRolePolicy("reaction", "reaction", "rest"),
+  defineBattleClipRolePolicy("flourish", "celebration", "rest"),
 ])
 
 export type SeethingSwarmBattleClipRole =
@@ -158,12 +153,33 @@ function resolveRuntimeAnimalClips<PlatformAsset>(
 function classifyBattleEligibleClips<PlatformAsset>(
   animal: SeethingSwarmRuntimeAnimalClips<PlatformAsset>,
 ) {
+  const profile = resolveSeethingSwarmFamilyPerformanceProfile(animal.animalId)
+  const familyPools = [
+    ["rest", profile.calm],
+    ["anticipation", profile.attention],
+    ["entry-exit", profile.locomotion],
+    [
+      "attack",
+      profile.attack.filter((animationId) => animationId !== "attack_air"),
+    ],
+    ["celebration", profile.celebration],
+    ["reaction", ["hurt"]],
+  ] as const
   const battleEligibleClips: ClassifiedBattleEligibleClip<PlatformAsset>[] = []
   for (const clip of animal.characterClips) {
-    const policy = resolveSeethingSwarmBattleAnimationPolicy(clip.animationId)
-    if (policy.usageKind === "battle-eligible") {
-      battleEligibleClips.push(Object.freeze({ clip, policy }))
-    }
+    resolveSeethingSwarmBattleAnimationPolicy(clip.animationId)
+    const semanticFamilies = familyPools.flatMap(([family, animationIds]) =>
+      animationIds.some((animationId) => animationId === clip.animationId)
+        ? [family]
+        : [],
+    )
+    if (semanticFamilies.length === 0) continue
+    const policy = Object.freeze({
+      animationId: clip.animationId,
+      usageKind: "battle-eligible",
+      semanticFamilies: Object.freeze(semanticFamilies),
+    }) satisfies SeethingSwarmBattleEligibleAnimationPolicy
+    battleEligibleClips.push(Object.freeze({ clip, policy }))
   }
 
   return Object.freeze(battleEligibleClips)
@@ -174,6 +190,9 @@ export function createSeethingSwarmSurfaceGeometry<PlatformAsset>(
   surface: "battle" | "portrait",
 ): SeethingSwarmAnimalPresentationGeometry {
   const eligible = classifyBattleEligibleClips(animal)
+  const rest = eligible.find(({ policy }) =>
+    policy.semanticFamilies.includes("rest"),
+  )?.clip
   const clips = eligible.flatMap(({ clip, policy }) => {
     if (
       surface === "portrait" &&
@@ -186,7 +205,7 @@ export function createSeethingSwarmSurfaceGeometry<PlatformAsset>(
     )
       return []
     return (
-      resolveSeethingSwarmBattleSequence(clip, animal.characterClips, false) ??
+      resolveSeethingSwarmBattleSequence(clip, animal.characterClips, rest) ??
       []
     )
   })
@@ -241,12 +260,14 @@ function selectBattleClip<PlatformAsset>({
   animalId,
   selectionOffsets,
   role,
+  restClip,
 }: {
   readonly battleEligibleClips: readonly ClassifiedBattleEligibleClip<PlatformAsset>[]
   readonly availableClips: readonly SeethingSwarmRuntimeCharacterClip<PlatformAsset>[]
   readonly animalId: ZooAnimalId
   readonly selectionOffsets: readonly number[]
   readonly role: SeethingSwarmBattleClipRole
+  readonly restClip?: SeethingSwarmRuntimeCharacterClip<PlatformAsset>
 }) {
   const rolePolicy = resolveRolePolicy(role)
   for (const semanticFamily of rolePolicy.semanticFamilyPriorities) {
@@ -256,7 +277,7 @@ function selectBattleClip<PlatformAsset>({
         const sequence = resolveSeethingSwarmBattleSequence(
           clip,
           availableClips,
-          role === "rest",
+          restClip,
         )
         return sequence ? [{ clip, sequence }] : []
       })
@@ -297,7 +318,10 @@ function createLicensedBattleCombatant<PlatformAsset>({
 }) {
   const animal = resolveRuntimeAnimalClips(catalog, combatant.animalId)
   const battleEligibleClips = classifyBattleEligibleClips(animal)
-  const selectClip = (role: SeethingSwarmBattleClipRole) =>
+  const selectClip = (
+    role: SeethingSwarmBattleClipRole,
+    restClip?: SeethingSwarmRuntimeCharacterClip<PlatformAsset>,
+  ) =>
     selectBattleClip({
       battleEligibleClips,
       availableClips: animal.characterClips,
@@ -308,18 +332,21 @@ function createLicensedBattleCombatant<PlatformAsset>({
         scheduler.cursor,
       ],
       role,
+      restClip,
     })
+
+  const rest = selectClip("rest")
 
   return Object.freeze({
     ...combatant,
     side,
     clips: Object.freeze({
-      entry: selectClip("entry"),
-      rest: selectClip("rest"),
-      anticipation: selectClip("anticipation"),
-      attack: selectClip("attack"),
-      reaction: selectClip("reaction"),
-      flourish: selectClip("flourish"),
+      entry: selectClip("entry", rest.clip),
+      rest,
+      anticipation: selectClip("anticipation", rest.clip),
+      attack: selectClip("attack", rest.clip),
+      reaction: selectClip("reaction", rest.clip),
+      flourish: selectClip("flourish", rest.clip),
     }),
     geometry: createSeethingSwarmSurfaceGeometry(animal, "battle"),
   }) satisfies SeethingSwarmLicensedBattleCombatant<PlatformAsset>
@@ -340,6 +367,7 @@ export function createSeethingSwarmHubAttentionSelections<PlatformAsset>(
       animalId: animal.animalId,
       selectionOffsets: [hashText(`hub-attention:${animal.animalId}:${role}`)],
       role,
+      restClip: calmClip,
     })
   return Object.freeze({
     anticipation: selectClip("anticipation"),

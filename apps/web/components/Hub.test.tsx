@@ -48,7 +48,7 @@ const licensedRuntimeClipCatalog = Object.freeze({
           Object.freeze({
             kind: "character",
             animalId: id,
-            animationId: "idle",
+            animationId: id === "bat" ? "idle_upright" : "idle",
             relativePath: `${id}/idle.png`,
             frameWidth: 1,
             frameHeight: 1,
@@ -68,7 +68,7 @@ const licensedRuntimeClipCatalog = Object.freeze({
         ]),
         auxiliaryEffectClips: Object.freeze([]),
         referencePose: Object.freeze({
-          animationId: "idle",
+          animationId: id === "bat" ? "idle_upright" : "idle",
           frameIndex: 0,
           bounds: Object.freeze({ left: 0, top: 0, width: 1, height: 1 }),
           anchor: Object.freeze({ x: 0.5, y: 1 }),
@@ -126,7 +126,13 @@ describe("Hub Component Integration", () => {
       ...licensedRuntimeClipCatalog,
       animals: licensedRuntimeClipCatalog.animals.map((animal) => ({
         ...animal,
-        characterClips: ["idle", "alerted", "dance"].map((animationId) => ({
+        characterClips: [
+          animal.animalId === "bat" ? "idle_upright" : "idle",
+          "crouch",
+          "jump",
+          "fall",
+          "land",
+        ].map((animationId) => ({
           ...animal.characterClips[0],
           animationId,
           relativePath: `${animal.animalId}/${animationId}.png`,
@@ -136,7 +142,7 @@ describe("Hub Component Integration", () => {
           },
         })),
       })),
-      characterClipCount: ZOO_ANIMALS.length * 3,
+      characterClipCount: ZOO_ANIMALS.length * 5,
     } satisfies SeethingSwarmRuntimeClipCatalog<StaticImageData>
     const cycle = createInitialBattleCycle("hub-attention")
     render(
@@ -158,49 +164,59 @@ describe("Hub Component Integration", () => {
     const idle = [...images].find((image) =>
       image.getAttribute("src")?.includes("-idle.png"),
     )!
-    const alerted = [...images].find((image) =>
-      image.getAttribute("src")?.includes("-alerted.png"),
+    const crouch = [...images].find((image) =>
+      image.getAttribute("src")?.includes("-crouch.png"),
     )!
     expect(idle).toHaveAttribute("loading", "lazy")
-    expect(alerted).toHaveAttribute("loading", "lazy")
+    expect(crouch).toHaveAttribute("loading", "lazy")
     fireEvent.load(idle)
-    await waitFor(() => expect(alerted).toHaveAttribute("loading", "eager"))
+    await waitFor(() => expect(crouch).toHaveAttribute("loading", "eager"))
     expect(idle).toHaveStyle({ "--animal-animation-duration": "160ms" })
     fireEvent.focus(button)
     expect(idle.closest("[data-hub-active-clip]")).toHaveAttribute(
       "data-hub-active-clip",
       "true",
     )
-    expect(alerted.closest("[data-hub-active-clip]")).toHaveAttribute(
+    expect(crouch.closest("[data-hub-active-clip]")).toHaveAttribute(
       "data-hub-active-clip",
       "false",
     )
-    fireEvent.load(alerted)
-    expect(alerted).toHaveStyle({ "--animal-animation-duration": "100ms" })
+    fireEvent.load(crouch)
+    expect(crouch).toHaveStyle({ "--animal-animation-duration": "100ms" })
     await waitFor(() =>
-      expect(alerted.closest("[data-hub-active-clip]")).toHaveAttribute(
+      expect(crouch.closest("[data-hub-active-clip]")).toHaveAttribute(
         "data-hub-active-clip",
         "true",
       ),
     )
     fireEvent.pointerEnter(button, { pointerType: "mouse" })
     fireEvent.pointerLeave(button)
-    expect(alerted.closest("[data-hub-active-clip]")).toHaveAttribute(
+    expect(crouch.closest("[data-hub-active-clip]")).toHaveAttribute(
       "data-hub-active-clip",
       "true",
     )
-    const dance = [...images].find((image) =>
-      image.getAttribute("src")?.includes("-dance.png"),
+    const jump = [...images].find((image) =>
+      image.getAttribute("src")?.includes("-jump.png"),
     )!
-    fireEvent.load(dance)
-    fireEvent.animationEnd(alerted)
+    for (const image of images) fireEvent.load(image)
+    fireEvent.animationEnd(crouch)
     await waitFor(() =>
-      expect(dance.closest("[data-hub-active-clip]")).toHaveAttribute(
+      expect(jump.closest("[data-hub-active-clip]")).toHaveAttribute(
         "data-hub-active-clip",
         "true",
       ),
     )
-    fireEvent.animationEnd(dance)
+    fireEvent.animationEnd(jump)
+    fireEvent.animationEnd(
+      [...images].find((image) =>
+        image.getAttribute("src")?.includes("-fall.png"),
+      )!,
+    )
+    fireEvent.animationEnd(
+      [...images].find((image) =>
+        image.getAttribute("src")?.includes("-land.png"),
+      )!,
+    )
     await waitFor(() =>
       expect(idle.closest("[data-hub-active-clip]")).toHaveAttribute(
         "data-hub-active-clip",
@@ -214,9 +230,9 @@ describe("Hub Component Integration", () => {
       "data-hub-active-clip",
       "true",
     )
-    fireEvent.error(alerted)
+    fireEvent.error(crouch)
     fireEvent.focus(button)
-    expect(alerted.closest("[data-hub-active-clip]")).toHaveAttribute(
+    expect(crouch.closest("[data-hub-active-clip]")).toHaveAttribute(
       "data-hub-active-clip",
       "false",
     )

@@ -89,7 +89,8 @@ function createPlaybackSteps<
 >(
   selections: Readonly<
     Record<Role, SeethingSwarmBattleClipSelection<PlatformAsset>>
-  >,
+  > &
+    Pick<SeethingSwarmBattleClipSelections<PlatformAsset>, "rest">,
   roles: readonly Role[],
   cue: SeethingSwarmBattleExchangeCue,
 ) {
@@ -105,9 +106,12 @@ function createPlaybackSteps<
           ? selection.sequence.slice(contactIndex + 1)
           : selection.sequence.slice(0, contactIndex + 1)
         : selection.sequence
-    const blocksResult =
+    const roleBlocksResult =
       role === "attack" || (cue === "impact" && role === "reaction")
     sequence.forEach((clip, index) => {
+      const returnsToRest =
+        selection.sequence.length > 1 && clip === selections.rest.clip
+      const blocksResult = roleBlocksResult && !returnsToRest
       const playbackMode =
         role === "rest" && index === sequence.length - 1 ? "loop" : "one-shot"
       const previous = steps.at(-1)
@@ -124,7 +128,7 @@ function createPlaybackSteps<
           clip,
           playbackMode,
           frameDurationMs:
-            role === "rest" || role === "entry"
+            role === "rest" || role === "entry" || returnsToRest
               ? SEETHING_SWARM_CALM_FRAME_DURATION_MS
               : cue === "attention" || cue === "introduction"
                 ? SEETHING_SWARM_ATTENTION_FRAME_DURATION_MS
