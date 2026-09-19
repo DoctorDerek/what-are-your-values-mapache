@@ -154,6 +154,28 @@ afterEach(() => {
 })
 
 describe("NativeSeethingSwarmBattleStage", () => {
+  it("settles failed attention to loaded calm without completing a battle", async () => {
+    const initial = props()
+    await render(
+      <NativeSeethingSwarmBattleStage {...initial}>
+        {({ first, second }) => (
+          <>
+            {first(true)}
+            {second(false)}
+          </>
+        )}
+      </NativeSeethingSwarmBattleStage>,
+    )
+    await loadImages()
+    expect(image("raccoonpack")).toHaveProp("source", 6)
+    await fireEvent(image("raccoonpack"), "error", {
+      nativeEvent: { error: "attention unavailable" },
+    })
+    expect(image("raccoonpack")).toHaveProp("source", 3)
+    await advance(700)
+    expect(image("raccoonpack")).toHaveProp("source", 3)
+    expect(initial.onResultComplete).not.toHaveBeenCalled()
+  })
   it("rotates attention only on new entries and stays calm after completion or cancellation", async () => {
     const initial = props()
     const draw = (attended: boolean, reduced = false) => (

@@ -135,6 +135,36 @@ function finishApproach(
 afterEach(() => vi.restoreAllMocks())
 
 describe("SeethingSwarmBattleStage", () => {
+  it("settles a failed attention expression into the loaded calm pose", async () => {
+    const props = createStageProps("failed-attention")
+    const { container } = render(
+      <SeethingSwarmBattleStage {...props}>
+        {({ first, second }) => (
+          <>
+            {first(true)}
+            {second(false)}
+          </>
+        )}
+      </SeethingSwarmBattleStage>,
+    )
+    for (const image of container.querySelectorAll("img")) fireEvent.load(image)
+    const expression = getSprite(container, "first")
+    fireEvent.error(expression)
+    await waitFor(() =>
+      expect(getRole(container, "first")).toHaveAttribute(
+        "data-battle-role",
+        "rest",
+      ),
+    )
+    const calm = getSprite(container, "first")
+    expect(calm).toHaveAttribute("src", expect.stringContaining("/idle.png"))
+    expect(calm).toHaveStyle({ "--animal-animation-duration": "640ms" })
+    expect(calm.closest("[data-playback-mode]")).toHaveAttribute(
+      "data-playback-mode",
+      "loop",
+    )
+    expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
+  })
   it("varies genuine attention entries once and returns to calm without a celebration", async () => {
     const props = createStageProps("attention-entries")
     const draw = (attended: boolean, reduced = false) => (
