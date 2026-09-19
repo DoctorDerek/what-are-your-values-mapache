@@ -195,28 +195,13 @@ describe("Hub Component Integration", () => {
       "data-hub-active-clip",
       "true",
     )
-    const jump = [...images].find((image) =>
-      image.getAttribute("src")?.includes("-jump.png"),
-    )!
     for (const image of images) fireEvent.load(image)
     fireEvent.animationEnd(crouch)
-    await waitFor(() =>
-      expect(jump.closest("[data-hub-active-clip]")).toHaveAttribute(
-        "data-hub-active-clip",
-        "true",
+    expect(
+      [...images].some((image) =>
+        image.getAttribute("src")?.includes("-jump.png"),
       ),
-    )
-    fireEvent.animationEnd(jump)
-    fireEvent.animationEnd(
-      [...images].find((image) =>
-        image.getAttribute("src")?.includes("-fall.png"),
-      )!,
-    )
-    fireEvent.animationEnd(
-      [...images].find((image) =>
-        image.getAttribute("src")?.includes("-land.png"),
-      )!,
-    )
+    ).toBe(false)
     await waitFor(() =>
       expect(idle.closest("[data-hub-active-clip]")).toHaveAttribute(
         "data-hub-active-clip",

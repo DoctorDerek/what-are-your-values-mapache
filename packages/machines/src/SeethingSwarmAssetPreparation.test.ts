@@ -129,7 +129,7 @@ describe("scoped animal preparation", () => {
           : []
       },
     )
-    expect(prepared).toHaveLength(expectedAnimals.length * 3)
+    expect(prepared).toHaveLength(expectedAnimals.length * 2)
     expect(new Set(prepared.map(({ animalId }) => animalId))).toEqual(
       new Set(expectedAnimals),
     )

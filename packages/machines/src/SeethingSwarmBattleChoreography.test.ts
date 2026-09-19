@@ -19,8 +19,8 @@ import { describe, expect, it } from "vitest"
 import type { PresentedBattle } from "./CombatMachine"
 import { createSchedulerRestorePoint } from "./PairScheduler"
 import {
+  createSeethingSwarmAttentionAlternatives,
   createSeethingSwarmBattleChoreography,
-  createSeethingSwarmHubAttentionSelections,
   createSeethingSwarmSurfaceGeometry,
   resolveSeethingSwarmBattleResult,
   SEETHING_SWARM_BATTLE_CHOREOGRAPHY_VERSION,
@@ -124,6 +124,25 @@ it("reserves unselected eligible motion while excluding terminal and environment
   ).toEqual(createSeethingSwarmSurfaceGeometry(expanded, "battle"))
 })
 
+it("falls back to calm when the family has no available attention source", () => {
+  const catalog = createTestLicensedCatalog([["raccoonpack", ["idle"]]])
+  const calm = catalog.animals[0].characterClips[0]
+  expect(createSeethingSwarmAttentionAlternatives(calm, catalog)).toEqual([
+    {
+      role: "anticipation",
+      semanticFamily: "rest",
+      clip: calm,
+      sequence: [calm],
+    },
+  ])
+  expect(() =>
+    createSeethingSwarmAttentionAlternatives(
+      calm,
+      createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
+    ),
+  ).toThrow("requires licensed clips")
+})
+
 it("selects stable Hub attention without a scheduler or catalog-order dependence", () => {
   const catalog = createTestLicensedCatalog([
     ["raccoonpack", COMPLETE_ROLE_ANIMATION_IDS],
@@ -131,16 +150,20 @@ it("selects stable Hub attention without a scheduler or catalog-order dependence
   const calm = catalog.animals[0].characterClips.find(
     (clip) => clip.animationId === "idle",
   )!
-  const selections = createSeethingSwarmHubAttentionSelections(calm, catalog)
+  const selections = createSeethingSwarmAttentionAlternatives(calm, catalog)
   expect(selections).toEqual(
-    createSeethingSwarmHubAttentionSelections(
+    createSeethingSwarmAttentionAlternatives(
       calm,
       reverseTestCatalogClips(catalog),
     ),
   )
-  expect(selections.rest.clip).toBe(calm)
-  expect(selections.anticipation.semanticFamily).toBe("anticipation")
-  expect(selections.flourish.semanticFamily).toBe("celebration")
+  expect(selections.map(({ clip }) => clip.animationId)).toEqual([
+    "bark",
+    "crouch",
+  ])
+  expect(
+    selections.every(({ semanticFamily }) => semanticFamily === "anticipation"),
+  ).toBe(true)
 })
 const WOLF_VALUE_ID = createCanonicalValueId("pvcs-2011:courage")
 const FIRST_BAT_VALUE_ID = createCanonicalValueId("pvcs-2011:non-conformity")

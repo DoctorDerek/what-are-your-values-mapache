@@ -112,7 +112,6 @@ describe("All Values Component Integration", () => {
     const crouch = row.querySelector<HTMLImageElement>(
       'img[src$="-crouch.png"]',
     )!
-    const jump = row.querySelector<HTMLImageElement>('img[src$="-jump.png"]')!
     const active = () => row.querySelector('[data-hub-active-clip="true"] img')
     expect(idle).toHaveAttribute("loading", "lazy")
     expect(crouch).toHaveAttribute("loading", "lazy")
@@ -129,14 +128,7 @@ describe("All Values Component Integration", () => {
     expect(active()).toBe(crouch)
     for (const image of row.querySelectorAll("img")) fireEvent.load(image)
     fireEvent.animationEnd(crouch)
-    await waitFor(() => expect(active()).toBe(jump))
-    fireEvent.animationEnd(jump)
-    fireEvent.animationEnd(
-      row.querySelector<HTMLImageElement>('img[src$="-fall.png"]')!,
-    )
-    fireEvent.animationEnd(
-      row.querySelector<HTMLImageElement>('img[src$="-land.png"]')!,
-    )
+    expect(row.querySelector('img[src$="-jump.png"]')).toBeNull()
     await waitFor(() => expect(active()).toBe(idle))
     fireEvent.blur(row)
     fireEvent.pointerEnter(row, { pointerType: "touch" })
