@@ -1,7 +1,7 @@
 import { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import { createCanonicalValueId } from "@game/data/src/Value"
 import { createInitialBattleCycle } from "@game/machines/src/BattleCycle"
 import type { PresentedBattle } from "@game/machines/src/CombatMachine"
-import { projectScheduledPair } from "@game/machines/src/PairScheduler"
 import {
   createSeethingSwarmBattleChoreography,
   type SeethingSwarmBattleCombatantSide,
@@ -15,8 +15,10 @@ import { createSeethingSwarmBattleStageTestCatalog } from "@/components/Seething
 function createPresentedBattle(seed: string) {
   const battleCycle = createInitialBattleCycle(seed)
   return Object.freeze({
-    pair: projectScheduledPair(battleCycle.activeDeck, battleCycle.scheduler)
-      .pair,
+    pair: [
+      createCanonicalValueId("pvcs-2011:mastery"),
+      createCanonicalValueId("pvcs-2011:courage"),
+    ] as const,
     scheduler: battleCycle.scheduler,
   }) satisfies PresentedBattle
 }
@@ -206,7 +208,7 @@ describe("SeethingSwarmBattleStage", () => {
       "data-playback-mode",
       "static",
     )
-    expect(container.querySelectorAll("img[loading='eager']")).toHaveLength(12)
+    expect(container.querySelectorAll("img[loading='eager']")).toHaveLength(11)
     expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
   })
   it("plays entry then anticipation before settling both animals into rest", async () => {
@@ -223,7 +225,7 @@ describe("SeethingSwarmBattleStage", () => {
     expect(
       container.querySelector("[data-battle-stage-state]"),
     ).not.toHaveAttribute("aria-hidden", "true")
-    expect(container.querySelectorAll("img")).toHaveLength(12)
+    expect(container.querySelectorAll("img")).toHaveLength(11)
 
     for (const combatant of choreography.combatants) {
       expect(getCombatant(container, combatant.side)).toHaveAttribute(
@@ -406,23 +408,39 @@ describe("SeethingSwarmBattleStage", () => {
   })
 
   it("retains every aerial strip and waits for landing as well as the opposing reaction", async () => {
-    const props = createStageProps("complete-airborne-attack")
+    const initialProps = createStageProps("complete-airborne-attack")
+    const battle = {
+      ...initialProps.battle,
+      pair: [
+        createCanonicalValueId("pvcs-2011:non-conformity"),
+        createCanonicalValueId("pvcs-2011:courage"),
+      ] as const,
+    }
+    const props = {
+      ...initialProps,
+      battle,
+      runtimeClipCatalog: createSeethingSwarmBattleStageTestCatalog(battle),
+    }
     const runtimeClipCatalog = {
       ...props.runtimeClipCatalog,
       animals: props.runtimeClipCatalog.animals.map((animal) => ({
         ...animal,
-        characterClips: animal.characterClips.flatMap((clip) =>
-          clip.animationId !== "attack"
-            ? [clip]
-            : ["takeoff", "attack_air", "land"].map((animationId) => ({
-                ...clip,
-                animationId,
-                asset: {
-                  ...clip.asset,
-                  src: `/test-assets/${animal.animalId}/${animationId}.png`,
-                },
-              })),
-        ),
+        characterClips: animal.characterClips
+          .filter((clip) => clip.animationId !== "fly_forward")
+          .flatMap((clip) =>
+            clip.animationId !== "attack"
+              ? [clip]
+              : ["fly_forward", "attack", "land_upright"].map(
+                  (animationId) => ({
+                    ...clip,
+                    animationId,
+                    asset: {
+                      ...clip.asset,
+                      src: `/test-assets/${animal.animalId}/${animationId}.png`,
+                    },
+                  }),
+                ),
+          ),
       })),
     }
     const { container } = render(
@@ -444,22 +462,22 @@ describe("SeethingSwarmBattleStage", () => {
       if (!image) throw new Error(`Missing ${animationId} source`)
       return image
     }
-    const takeoff = sourceImage("takeoff")
-    const attack = sourceImage("attack_air")
-    const land = sourceImage("land")
+    const flight = sourceImage("fly_forward")
+    const attack = sourceImage("attack")
+    const land = sourceImage("land_upright")
     const expectVisible = (image: HTMLImageElement) =>
       expect(image.closest("[data-battle-active-clip]")).toHaveAttribute(
         "data-battle-active-clip",
         "true",
       )
-    expectVisible(takeoff)
-    fireEvent.animationEnd(takeoff)
+    expectVisible(flight)
+    fireEvent.animationEnd(flight)
     expectVisible(attack)
     fireEvent.animationEnd(attack)
     expectVisible(land)
     await finishClip(container, "second")
     expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
-    expect(sourceImage("attack_air")).toBe(attack)
+    expect(sourceImage("attack")).toBe(attack)
     expect(
       container.querySelectorAll("[data-placeholder-playback]"),
     ).toHaveLength(0)
@@ -666,7 +684,7 @@ describe("SeethingSwarmBattleStage", () => {
       )
       expect(
         container.querySelectorAll('[data-playback-mode="static"]'),
-      ).toHaveLength(12)
+      ).toHaveLength(11)
       fireEvent.animationEnd(oldImage)
       expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
       rerender(
@@ -690,7 +708,7 @@ describe("SeethingSwarmBattleStage", () => {
     )
     expect(
       container.querySelectorAll('[data-playback-mode="static"]'),
-    ).toHaveLength(12)
+    ).toHaveLength(11)
     expect(getRole(container, "first")).toHaveAttribute(
       "data-battle-role",
       "rest",

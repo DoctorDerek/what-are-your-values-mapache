@@ -1,3 +1,4 @@
+import { resolveSeethingSwarmFamilyPerformanceProfile } from "@game/data/src/SeethingSwarmFamilyPerformanceProfiles"
 import type {
   SeethingSwarmLicensedRuntimeClipCatalog,
   SeethingSwarmRuntimeCharacterClip,
@@ -7,19 +8,21 @@ import type { PresentedBattle } from "@game/machines/src/CombatMachine"
 import { resolveSeethingSwarmBattleCombatant } from "@game/machines/src/SeethingSwarmBattleCombatant"
 import type { StaticImageData } from "next/image"
 
-const TEST_ANIMATION_IDS = Object.freeze([
-  "idle",
-  "alerted",
-  "attack",
-  "hurt",
-  "dance",
-  "run",
-] as const)
+function getTestAnimationIds(animalId: ZooAnimalId) {
+  const profile = resolveSeethingSwarmFamilyPerformanceProfile(animalId)
+  return [
+    ...new Set([
+      profile.calm[0]!,
+      profile.attention.at(-1)!,
+      profile.attack[0]!,
+      "hurt",
+      profile.celebration[0]!,
+      profile.locomotion[0]!,
+    ]),
+  ]
+}
 
-function createTestClip(
-  animalId: ZooAnimalId,
-  animationId: (typeof TEST_ANIMATION_IDS)[number],
-) {
+function createTestClip(animalId: ZooAnimalId, animationId: string) {
   const frameWidth = 32
   const frameHeight = 32
   const frameCount = 4
@@ -62,13 +65,13 @@ export function createSeethingSwarmBattleStageTestCatalog(
     Object.freeze({
       animalId,
       characterClips: Object.freeze(
-        TEST_ANIMATION_IDS.map((animationId) =>
+        getTestAnimationIds(animalId).map((animationId) =>
           createTestClip(animalId, animationId),
         ),
       ),
       auxiliaryEffectClips: Object.freeze([]),
       referencePose: Object.freeze({
-        animationId: "idle",
+        animationId: animalId === "bat" ? "idle_upright" : "idle",
         frameIndex: 0,
         bounds: Object.freeze({ left: 0, top: 0, width: 32, height: 32 }),
         anchor: Object.freeze({ x: 16, y: 32 }),
@@ -80,7 +83,10 @@ export function createSeethingSwarmBattleStageTestCatalog(
     mode: "licensed",
     evidenceSnapshotId: "battle-stage-test",
     animals: Object.freeze(animals),
-    characterClipCount: animals.length * TEST_ANIMATION_IDS.length,
+    characterClipCount: animals.reduce(
+      (count, animal) => count + animal.characterClips.length,
+      0,
+    ),
     auxiliaryEffectClipCount: 0,
   }) satisfies SeethingSwarmLicensedRuntimeClipCatalog<StaticImageData>
 }
