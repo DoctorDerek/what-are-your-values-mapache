@@ -154,6 +154,36 @@ afterEach(() => {
 })
 
 describe("NativeSeethingSwarmBattleStage", () => {
+  it("rotates attention only on new entries and stays calm after completion or cancellation", async () => {
+    const initial = props()
+    const draw = (attended: boolean, reduced = false) => (
+      <NativeSeethingSwarmBattleStage {...initial} shouldReduceMotion={reduced}>
+        {({ first, second }) => (
+          <>
+            {first(attended)}
+            {second(false)}
+          </>
+        )}
+      </NativeSeethingSwarmBattleStage>
+    )
+    const { rerender } = await render(draw(false))
+    await rerender(draw(true))
+    await loadImages()
+    expect(image("raccoonpack")).toHaveProp("source", 6)
+    await advance(450)
+    expect(image("raccoonpack")).toHaveProp("source", 3)
+    await rerender(draw(true))
+    await advance(450)
+    expect(image("raccoonpack")).toHaveProp("source", 3)
+    await rerender(draw(false))
+    await rerender(draw(true))
+    await loadImages()
+    expect(image("raccoonpack")).toHaveProp("source", 2)
+    await rerender(draw(true, true))
+    await rerender(draw(true))
+    expect(image("raccoonpack")).toHaveProp("source", 3)
+    expect(initial.onResultComplete).not.toHaveBeenCalled()
+  })
   it("preserves attended fallback clearance when every licensed source fails", async () => {
     const initial = props()
     await render(
@@ -258,7 +288,7 @@ describe("NativeSeethingSwarmBattleStage", () => {
     expect(image("wolfpack")).toHaveProp("source", 101)
     await loadImages()
     await advance(700)
-    expect(image("raccoonpack")).toHaveProp("source", 2)
+    expect(image("raccoonpack")).toHaveProp("source", 6)
     expect(image("wolfpack")).toHaveProp("source", 106)
     await loadImages()
     await advance(700)
