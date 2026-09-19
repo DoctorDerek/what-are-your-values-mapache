@@ -1,4 +1,9 @@
+import { SEETHING_SWARM_CALM_FRAME_DURATION_MS } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { ValueId } from "@game/data/src/Value"
+import {
+  createSeethingSwarmAttentionState,
+  updateSeethingSwarmAttention,
+} from "@game/machines/src/SeethingSwarmAttention"
 import type { SeethingSwarmLicensedBattleCombatant } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import type { SeethingSwarmBattleExchangeCue } from "@game/machines/src/SeethingSwarmBattleExchange"
 import {
@@ -28,17 +33,44 @@ export default function SeethingSwarmCombatant({
   onPlaybackComplete: () => void
   onReady: () => void
 }) {
-  const [playback, setPlayback] = useState({ cue: exchangeCue, stepIndex: 0 })
+  const [attention, setAttention] = useState(createSeethingSwarmAttentionState)
+  const nextAttention = updateSeethingSwarmAttention(
+    attention,
+    isAttended,
+    !shouldReduceMotion && exchangeCue === "introduction",
+    combatant.attentionAlternatives.length,
+  )
+  if (nextAttention !== attention) setAttention(nextAttention)
+  const performanceCombatant = useMemo(
+    () => ({
+      ...combatant,
+      clips: {
+        ...combatant.clips,
+        anticipation:
+          combatant.attentionAlternatives[nextAttention.alternativeIndex]!,
+      },
+    }),
+    [combatant, nextAttention.alternativeIndex],
+  )
+  const [playback, setPlayback] = useState({
+    cue: exchangeCue,
+    stepIndex: 0,
+    generation: nextAttention.generation,
+  })
   const cue =
     exchangeCue !== "introduction"
       ? exchangeCue
-      : isAttended
+      : nextAttention.isActive
         ? "attention"
         : playback.cue === "introduction"
           ? "introduction"
           : "rest"
-  if (playback.cue !== cue) setPlayback({ cue, stepIndex: 0 })
-  const requestedStepIndex = playback.cue === cue ? playback.stepIndex : 0
+  if (playback.cue !== cue || playback.generation !== nextAttention.generation)
+    setPlayback({ cue, stepIndex: 0, generation: nextAttention.generation })
+  const requestedStepIndex =
+    playback.cue === cue && playback.generation === nextAttention.generation
+      ? playback.stepIndex
+      : 0
   const preparedAssets = useSeethingSwarmPreparedAssets()
   const [loadedImageClips, setLoadedClips] = useState<ReadonlySet<string>>(
     () => new Set(),
@@ -50,12 +82,17 @@ export default function SeethingSwarmCombatant({
     combatant.clips.rest.clip.animationId,
   )
   const residentClips = useMemo(
-    () => getSeethingSwarmBattleClips(combatant),
-    [combatant],
+    () => getSeethingSwarmBattleClips(performanceCombatant),
+    [performanceCombatant],
   )
   const steps = useMemo(
-    () => createSeethingSwarmBattlePlayback({ combatant, winnerId, cue }),
-    [combatant, winnerId, cue],
+    () =>
+      createSeethingSwarmBattlePlayback({
+        combatant: performanceCombatant,
+        winnerId,
+        cue,
+      }),
+    [performanceCombatant, winnerId, cue],
   )
   const loadedClips = new Set([
     ...loadedImageClips,
@@ -95,13 +132,22 @@ export default function SeethingSwarmCombatant({
     : requestedStepIndex
   const step = steps[Math.min(stepIndex, steps.length - 1)]
   const isComplete = stepIndex === steps.length
-  const role = shouldReduceMotion && !winnerId ? "rest" : step.role
+  const attentionFailed =
+    cue === "attention" &&
+    steps.some(({ clip }) => failedClips.has(clip.animationId))
+  const attentionReady =
+    cue !== "attention" ||
+    steps.every(({ clip }) => loadedClips.has(clip.animationId))
+  const role =
+    (shouldReduceMotion && !winnerId) || attentionFailed ? "rest" : step.role
   const requestedClipId =
-    shouldReduceMotion && !winnerId
+    (shouldReduceMotion && !winnerId) || attentionFailed
       ? combatant.clips.rest.clip.animationId
       : step.clip.animationId
   const isReady =
-    loadedClips.has(requestedClipId) && !failedClips.has(requestedClipId)
+    loadedClips.has(requestedClipId) &&
+    !failedClips.has(requestedClipId) &&
+    (attentionFailed || attentionReady)
   if (isReady && displayedClipId !== requestedClipId)
     setDisplayedClipId(requestedClipId)
   const visibleClipId = isReady ? requestedClipId : retainedClipId
@@ -115,7 +161,13 @@ export default function SeethingSwarmCombatant({
 
   const finishStep = () => {
     if (isComplete) return
-    setPlayback({ cue, stepIndex: stepIndex + 1 })
+    setPlayback((previous) =>
+      previous.cue === cue &&
+      previous.generation === nextAttention.generation &&
+      previous.stepIndex === requestedStepIndex
+        ? { cue, stepIndex: stepIndex + 1, generation: previous.generation }
+        : previous,
+    )
     if (winnerId && stepIndex + 1 === steps.length) onPlaybackComplete()
   }
 
@@ -159,9 +211,13 @@ export default function SeethingSwarmCombatant({
           >
             <SeethingSwarmAnimal
               clip={clip}
-              playbackIdentity={`${cue}:${stepIndex}`}
+              playbackIdentity={`${cue}:${nextAttention.generation}:${stepIndex}`}
               facing={combatant.side === "first" ? "right" : "left"}
-              frameDurationMs={step.frameDurationMs}
+              frameDurationMs={
+                attentionFailed
+                  ? SEETHING_SWARM_CALM_FRAME_DURATION_MS
+                  : step.frameDurationMs
+              }
               geometry={combatant.geometry}
               preload
               playbackMode={
@@ -169,7 +225,9 @@ export default function SeethingSwarmCombatant({
                   ? "static"
                   : !isReady || isComplete
                     ? "hold-final-frame"
-                    : step.playbackMode
+                    : attentionFailed
+                      ? "loop"
+                      : step.playbackMode
               }
               shouldReduceMotion={shouldReduceMotion}
               onLoadError={() =>
@@ -182,7 +240,11 @@ export default function SeethingSwarmCombatant({
                   (previous) => new Set([...previous, clip.animationId]),
                 )
               }
-              onPlaybackComplete={isVisible && isReady ? finishStep : undefined}
+              onPlaybackComplete={
+                isVisible && isReady && !attentionFailed
+                  ? finishStep
+                  : undefined
+              }
             />
           </span>
         )

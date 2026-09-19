@@ -19,11 +19,7 @@ const BATTLE_INTRODUCTION_ROLES = Object.freeze([
   "anticipation",
   "rest",
 ] as const)
-const BATTLE_ATTENTION_ROLES = Object.freeze([
-  "anticipation",
-  "flourish",
-  "rest",
-] as const)
+const BATTLE_ATTENTION_ROLES = Object.freeze(["anticipation", "rest"] as const)
 
 export type SeethingSwarmBattlePlaybackStep<PlatformAsset> = Omit<
   SeethingSwarmBattleClipSelection<PlatformAsset>,
@@ -77,7 +73,7 @@ export function createSeethingSwarmBattlePlayback<PlatformAsset>({
 export function createSeethingSwarmAttentionPlayback<PlatformAsset>(
   selections: Pick<
     SeethingSwarmBattleClipSelections<PlatformAsset>,
-    "anticipation" | "flourish" | "rest"
+    "anticipation" | "rest"
   >,
 ) {
   return createPlaybackSteps(selections, BATTLE_ATTENTION_ROLES, "attention")
@@ -109,6 +105,12 @@ function createPlaybackSteps<
     const roleBlocksResult =
       role === "attack" || (cue === "impact" && role === "reaction")
     sequence.forEach((clip, index) => {
+      if (
+        cue === "attention" &&
+        role !== "rest" &&
+        clip === selections.rest.clip
+      )
+        return
       const returnsToRest =
         selection.sequence.length > 1 && clip === selections.rest.clip
       const blocksResult = roleBlocksResult && !returnsToRest

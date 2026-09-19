@@ -6,7 +6,11 @@ import type {
   SeethingSwarmRuntimeCharacterClip,
   SeethingSwarmRuntimeClipCatalog,
 } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
-import { createSeethingSwarmHubAttentionSelections } from "@game/machines/src/SeethingSwarmBattleChoreography"
+import {
+  createSeethingSwarmAttentionState,
+  updateSeethingSwarmAttention,
+} from "@game/machines/src/SeethingSwarmAttention"
+import { createSeethingSwarmAttentionAlternatives } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { createSeethingSwarmAttentionPlayback } from "@game/machines/src/SeethingSwarmBattlePlayback"
 import type { StaticImageData } from "next/image"
 import { useMemo, useState } from "react"
@@ -28,23 +32,42 @@ export default function SeethingSwarmHubAnimal({
   shouldReduceMotion: boolean
   onLoadError: () => void
 }) {
-  const steps = useMemo(
-    () =>
-      createSeethingSwarmAttentionPlayback(
-        createSeethingSwarmHubAttentionSelections(calmClip, catalog),
-      ),
+  const alternatives = useMemo(
+    () => createSeethingSwarmAttentionAlternatives(calmClip, catalog),
     [calmClip, catalog],
   )
+  const [attention, setAttention] = useState(createSeethingSwarmAttentionState)
+  const nextAttention = updateSeethingSwarmAttention(
+    attention,
+    isAttended,
+    !shouldReduceMotion,
+    alternatives.length,
+  )
+  if (nextAttention !== attention) setAttention(nextAttention)
+  const attended = nextAttention.isActive
+  const steps = useMemo(
+    () =>
+      createSeethingSwarmAttentionPlayback({
+        anticipation: alternatives[nextAttention.alternativeIndex]!,
+        rest: {
+          role: "rest",
+          semanticFamily: "rest",
+          clip: calmClip,
+          sequence: [calmClip],
+        },
+      }),
+    [calmClip, alternatives, nextAttention.alternativeIndex],
+  )
+  const [retainedClip, setRetainedClip] = useState(calmClip)
   const clips = useMemo(
     () => [
       ...new Map(
-        [calmClip, ...steps.map(({ clip }) => clip)].map((clip) => [
-          clip.relativePath,
-          clip,
-        ]),
+        [calmClip, retainedClip, ...steps.map(({ clip }) => clip)].map(
+          (clip) => [clip.relativePath, clip],
+        ),
       ).values(),
     ],
-    [calmClip, steps],
+    [calmClip, retainedClip, steps],
   )
   const preparedAssets = useSeethingSwarmPreparedAssets()
   const [loadedPaths, setLoadedPaths] = useState<ReadonlySet<string>>(
@@ -53,33 +76,28 @@ export default function SeethingSwarmHubAnimal({
   const [failedPaths, setFailedPaths] = useState<ReadonlySet<string>>(
     () => new Set(),
   )
-  const attended = isAttended && !shouldReduceMotion
   const [playback, setPlayback] = useState({
-    attended,
     index: 0,
-    generation: 0,
+    generation: nextAttention.generation,
   })
-  if (playback.attended !== attended)
-    setPlayback({ attended, index: 0, generation: playback.generation + 1 })
-  const index = playback.attended === attended ? playback.index : 0
+  if (playback.generation !== nextAttention.generation)
+    setPlayback({ index: 0, generation: nextAttention.generation })
+  const index =
+    playback.generation === nextAttention.generation ? playback.index : 0
   const step = steps[Math.min(index, steps.length - 1)]!
-  const requestedClip = attended ? step.clip : calmClip
-  const [retainedClip, setRetainedClip] = useState(calmClip)
   const isFailed = (path: string) =>
     failedPaths.has(path) || preparedAssets?.get(path)?.status === "failed"
   const isReady = (path: string) =>
     !isFailed(path) &&
     (loadedPaths.has(path) || preparedAssets?.get(path)?.status === "ready")
-  const requestedReady = isReady(requestedClip.relativePath)
+  const recipeFailed = steps.some(({ clip }) => isFailed(clip.relativePath))
+  const recipeReady = steps.every(({ clip }) => isReady(clip.relativePath))
+  const requestedClip = attended && !recipeFailed ? step.clip : calmClip
+  const requestedReady =
+    isReady(requestedClip.relativePath) &&
+    (!attended || recipeFailed || recipeReady)
   if (requestedReady && retainedClip !== requestedClip)
     setRetainedClip(requestedClip)
-  if (
-    attended &&
-    playback.attended === attended &&
-    isFailed(requestedClip.relativePath) &&
-    index < steps.length - 1
-  )
-    setPlayback({ ...playback, index: index + 1 })
   const visibleClip = requestedReady ? requestedClip : retainedClip
 
   return (
@@ -101,17 +119,17 @@ export default function SeethingSwarmHubAnimal({
                 preparedAssets?.has(calmClip.relativePath) === true
               }
               frameDurationMs={
-                attended
+                attended && !recipeFailed
                   ? step.frameDurationMs
                   : SEETHING_SWARM_CALM_FRAME_DURATION_MS
               }
-              playbackIdentity={`${playback.generation}:${index}:${attended}`}
+              playbackIdentity={`${nextAttention.generation}:${index}:${attended}`}
               playbackMode={
                 !visible || shouldReduceMotion
                   ? "static"
                   : !requestedReady
                     ? "hold-final-frame"
-                    : attended
+                    : attended && !recipeFailed
                       ? step.playbackMode
                       : "loop"
               }
@@ -133,11 +151,11 @@ export default function SeethingSwarmHubAnimal({
                 visible &&
                 requestedReady &&
                 attended &&
+                !recipeFailed &&
                 index < steps.length - 1
                   ? () =>
                       setPlayback((previous) =>
-                        previous.attended &&
-                        previous.generation === playback.generation &&
+                        previous.generation === nextAttention.generation &&
                         previous.index === index
                           ? { ...previous, index: index + 1 }
                           : previous,
