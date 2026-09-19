@@ -21,6 +21,23 @@ function createClips(
 }
 
 describe("SeethingSwarm complete source sequences", () => {
+  it("resolves the bat's whole attack with or without an explicit calm continuation", () => {
+    const clips = createClips(
+      "fly_forward",
+      "attack",
+      "land_upright",
+      "idle_upright",
+    ).map((clip) => ({ ...clip, animalId: "bat" as const }))
+    expect(resolveSeethingSwarmBattleSequence(clips[1], clips)).toEqual(
+      clips.slice(0, 3),
+    )
+    expect(
+      resolveSeethingSwarmBattleSequence(clips[1], clips, clips[3]),
+    ).toEqual(clips)
+    expect(
+      resolveSeethingSwarmBattleSequence(clips[1], clips.slice(0, 2)),
+    ).toBeNull()
+  })
   it.each([
     ["hide", ["hide", "unhide"]],
     ["unhide", ["hide", "unhide"]],

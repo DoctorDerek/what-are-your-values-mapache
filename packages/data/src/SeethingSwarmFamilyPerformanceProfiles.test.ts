@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import {
   resolveSeethingSwarmFamilyPerformanceProfile,
   SEETHING_SWARM_FAMILY_PERFORMANCE_PROFILES,
@@ -6,6 +6,32 @@ import {
 import { SEETHING_SWARM_SOURCE_PACKS } from "./SeethingSwarmSourceEvidence"
 
 describe("approved SeethingSwarm family profiles", () => {
+  it.each([
+    { sourcePacks: [] },
+    {
+      sourcePacks: [
+        { ...SEETHING_SWARM_SOURCE_PACKS[0], packId: "unadopted-family" },
+      ],
+    },
+  ])(
+    "rejects a source registry whose animal family has no approved profile",
+    async ({ sourcePacks }) => {
+      vi.resetModules()
+      vi.doMock("./SeethingSwarmSourceEvidence", () => ({
+        SEETHING_SWARM_SOURCE_PACKS: sourcePacks,
+      }))
+      try {
+        const { resolveSeethingSwarmFamilyPerformanceProfile: resolveProfile } =
+          await import("./SeethingSwarmFamilyPerformanceProfiles")
+        expect(() => resolveProfile("bat")).toThrow(
+          "Missing SeethingSwarm family profile: bat",
+        )
+      } finally {
+        vi.doUnmock("./SeethingSwarmSourceEvidence")
+        vi.resetModules()
+      }
+    },
+  )
   it("covers the 27 source families and resolves all 45 variants through their source owner", () => {
     expect(SEETHING_SWARM_FAMILY_PERFORMANCE_PROFILES).toHaveLength(27)
     expect(
