@@ -31,6 +31,50 @@ import { INITIAL_SEETHING_SWARM_ROLE_ORDINALS } from "./SeethingSwarmBattleVaria
 
 const RACCOON_VALUE_ID = createCanonicalValueId("pvcs-2011:mastery")
 
+it("selects flight recovery for a dragonfly only when that attack selected flight locomotion", () => {
+  const animalId = "dragonfly/dragonfly01_blue" as const
+  const valueId = VALUE_TO_ANIMAL_MAP.find(
+    (mapping) => mapping.animalId === animalId,
+  )!.valueId
+  const catalog = createTestLicensedCatalog([
+    [
+      animalId,
+      [
+        "idle",
+        "crouch",
+        "walk",
+        "run",
+        "fly_forward",
+        "attack",
+        "hurt",
+        "land",
+      ],
+    ],
+    ["wolfpack", COMPLETE_ROLE_ANIMATION_IDS],
+  ])
+  const selected = (attack: number) => {
+    const choreography = createSeethingSwarmBattleChoreography({
+      battle: createTestBattle({ pair: [valueId, WOLF_VALUE_ID] }),
+      catalog,
+      ordinals: new Map([
+        [animalId, { ...INITIAL_SEETHING_SWARM_ROLE_ORDINALS, attack }],
+      ]),
+    })
+    if (choreography.mode !== "licensed")
+      throw new Error("Expected licensed choreography")
+    return choreography.combatants[0]
+  }
+  expect(selected(0).locomotion.animationId).toBe("walk")
+  expect(selected(1).locomotion.animationId).toBe("run")
+  expect(selected(2).locomotion.animationId).toBe("fly_forward")
+  expect(
+    selected(2).clips.attack.sequence.map((clip) => clip.animationId),
+  ).toEqual(["fly_forward", "attack", "land", "idle"])
+  expect(
+    selected(0).clips.attack.sequence.map((clip) => clip.animationId),
+  ).toEqual(["attack"])
+})
+
 it("rotates complete authored alternatives without scheduler or catalog-order randomness", () => {
   const catalog = createTestLicensedCatalog([
     [
