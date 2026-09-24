@@ -33,6 +33,56 @@ const geometry = createSeethingSwarmAnimalPresentationGeometry(
 afterEach(() => vi.restoreAllMocks())
 
 describe("SeethingSwarmAnimal", () => {
+  it("continues the resident source from the contact frame with only the remaining duration", async () => {
+    const complete = vi.fn()
+    const props = {
+      clip,
+      geometry,
+      shouldReduceMotion: false,
+      playbackMode: "one-shot" as const,
+      frameDurationMs: 100,
+      onPlaybackComplete: complete,
+    }
+    const { rerender } = render(
+      <SeethingSwarmAnimal
+        {...props}
+        startFrame={0}
+        endFrame={1}
+        playbackIdentity="strike"
+      />,
+    )
+    const image = screen.getByAltText("")
+    fireEvent.load(image)
+    await waitFor(() =>
+      expect(image.closest("[data-playback-ready]")).toHaveAttribute(
+        "data-playback-ready",
+        "true",
+      ),
+    )
+    expect(image).toHaveStyle({
+      "--animal-animation-duration": "100ms",
+      "--animal-strip-start-offset": "0px",
+      "--animal-strip-travel": "-12px",
+    })
+    fireEvent.animationEnd(image)
+    expect(complete).toHaveBeenCalledTimes(1)
+    rerender(
+      <SeethingSwarmAnimal
+        {...props}
+        startFrame={1}
+        endFrame={4}
+        playbackIdentity="impact"
+      />,
+    )
+    expect(screen.getByAltText("")).toBe(image)
+    expect(image).toHaveStyle({
+      "--animal-animation-duration": "300ms",
+      "--animal-strip-start-offset": "-12px",
+      "--animal-strip-travel": "-48px",
+    })
+    fireEvent.animationEnd(image)
+    expect(complete).toHaveBeenCalledTimes(2)
+  })
   it("replays a resident strip on a new cue without replacing or reloading its image", async () => {
     const props = {
       clip,
