@@ -82,6 +82,7 @@ export type SeethingSwarmLicensedBattleCombatant<PlatformAsset> =
     Readonly<{
       side: SeethingSwarmBattleCombatantSide
       clips: SeethingSwarmBattleClipSelections<PlatformAsset>
+      locomotion: SeethingSwarmRuntimeCharacterClip<PlatformAsset>
       attentionAlternatives: readonly SeethingSwarmBattleClipSelection<PlatformAsset>[]
       geometry: SeethingSwarmAnimalPresentationGeometry
     }>
@@ -314,6 +315,14 @@ function createLicensedBattleCombatant<PlatformAsset>({
       reaction: selectClip("reaction", rest.clip),
       flourish: selectClip("flourish", rest.clip),
     }),
+    locomotion: selectBattleClip({
+      battleEligibleClips,
+      availableClips: animal.characterClips,
+      animalId: combatant.animalId,
+      ordinal: ordinals.attack,
+      role: "entry",
+      restClip: rest.clip,
+    }).clip,
     attentionAlternatives,
     geometry: createSeethingSwarmSurfaceGeometry(animal, "battle"),
   }) satisfies SeethingSwarmLicensedBattleCombatant<PlatformAsset>
