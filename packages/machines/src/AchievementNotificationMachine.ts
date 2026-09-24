@@ -1,6 +1,6 @@
 import { assign, setup } from "xstate"
-import type { AchievementId } from "@game/machines/src/AchievementCatalog"
-import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
+import type { AchievementId } from "./AchievementCatalog"
+import type { AchievementPresentation } from "./AchievementPresentation"
 
 export const ACHIEVEMENT_NOTIFICATION_DURATION_MILLISECONDS = 8_000
 export const ACHIEVEMENT_NOTIFICATION_VISIBLE_LIMIT = 2
@@ -23,16 +23,27 @@ type NotificationContext = NotificationInput & {
 }
 
 type NotificationEvent =
-  | { type: "NOTIFICATION.SYNC"; achievements: readonly AchievementPresentation[] }
+  | {
+      type: "NOTIFICATION.SYNC"
+      achievements: readonly AchievementPresentation[]
+    }
   | { type: "NOTIFICATION.APP_ACTIVITY"; isActive: boolean }
-  | { type: "NOTIFICATION.INTERACTION"; interaction: NotificationInteraction; isActive: boolean }
+  | {
+      type: "NOTIFICATION.INTERACTION"
+      interaction: NotificationInteraction
+      isActive: boolean
+    }
   | { type: "NOTIFICATION.DISMISS"; achievementId: AchievementId }
 
-function reconcileNotifications(context: NotificationContext): NotificationContext {
+function reconcileNotifications(
+  context: NotificationContext,
+): NotificationContext {
   const pendingIds = new Set(context.achievements.map(({ id }) => id))
   const visible = context.visible.filter(({ id }) => pendingIds.has(id))
-  const interactions = context.interactions.filter(({ achievementId }) => pendingIds.has(achievementId))
-  const requestedIds = context.requestedIds.filter(id => pendingIds.has(id))
+  const interactions = context.interactions.filter(({ achievementId }) =>
+    pendingIds.has(achievementId),
+  )
+  const requestedIds = context.requestedIds.filter((id) => pendingIds.has(id))
   if (interactions.length > 0 || !context.isAppActive)
     return { ...context, visible, interactions, requestedIds }
 
@@ -41,7 +52,12 @@ function reconcileNotifications(context: NotificationContext): NotificationConte
     .filter(({ id }) => !visibleIds.has(id))
     .slice(0, ACHIEVEMENT_NOTIFICATION_VISIBLE_LIMIT - visible.length)
 
-  return { ...context, visible: [...admitted.reverse(), ...visible], interactions, requestedIds }
+  return {
+    ...context,
+    visible: [...admitted.reverse(), ...visible],
+    interactions,
+    requestedIds,
+  }
 }
 
 export const achievementNotificationMachine = setup({
@@ -52,27 +68,40 @@ export const achievementNotificationMachine = setup({
   },
 }).createMachine({
   id: "achievementNotifications",
-  context: ({ input }) => reconcileNotifications({
-    ...input,
-    visible: [],
-    requestedIds: [],
-    interactions: [],
-    isAppActive: true,
-  }),
+  context: ({ input }) =>
+    reconcileNotifications({
+      ...input,
+      visible: [],
+      requestedIds: [],
+      interactions: [],
+      isAppActive: true,
+    }),
   on: {
     "NOTIFICATION.SYNC": {
-      actions: assign(({ context, event }) => reconcileNotifications({ ...context, achievements: event.achievements })),
+      actions: assign(({ context, event }) =>
+        reconcileNotifications({
+          ...context,
+          achievements: event.achievements,
+        }),
+      ),
     },
     "NOTIFICATION.APP_ACTIVITY": {
-      actions: assign(({ context, event }) => reconcileNotifications({ ...context, isAppActive: event.isActive })),
+      actions: assign(({ context, event }) =>
+        reconcileNotifications({ ...context, isAppActive: event.isActive }),
+      ),
     },
     "NOTIFICATION.INTERACTION": {
       actions: assign(({ context, event }) => {
-        const interactions = context.interactions.filter(interaction =>
-          interaction.achievementId !== event.interaction.achievementId || interaction.kind !== event.interaction.kind)
+        const interactions = context.interactions.filter(
+          (interaction) =>
+            interaction.achievementId !== event.interaction.achievementId ||
+            interaction.kind !== event.interaction.kind,
+        )
         return reconcileNotifications({
           ...context,
-          interactions: event.isActive ? [...interactions, event.interaction] : interactions,
+          interactions: event.isActive
+            ? [...interactions, event.interaction]
+            : interactions,
         })
       }),
     },
@@ -83,7 +112,9 @@ export const achievementNotificationMachine = setup({
       actions: [
         assign(({ context, event }) => ({
           requestedIds: [...context.requestedIds, event.achievementId],
-          interactions: context.interactions.filter(({ achievementId }) => achievementId !== event.achievementId),
+          interactions: context.interactions.filter(
+            ({ achievementId }) => achievementId !== event.achievementId,
+          ),
         })),
         ({ context, event }) => context.onPresented(event.achievementId),
       ],
