@@ -16,6 +16,7 @@ import {
 import { VALUE_TO_ANIMAL_MAP } from "@game/data/src/ValueToAnimalMap"
 import { ZOO_ANIMALS, type ZooAnimalId } from "@game/data/src/ZooAnimals"
 import { describe, expect, it } from "vitest"
+import { INITIAL_SEETHING_SWARM_ROLE_ORDINALS } from "./SeethingSwarmBattleVariation"
 import type { PresentedBattle } from "./CombatMachine"
 import { createSchedulerRestorePoint } from "./PairScheduler"
 import {
@@ -29,6 +30,29 @@ import {
 } from "./SeethingSwarmBattleChoreography"
 
 const RACCOON_VALUE_ID = createCanonicalValueId("pvcs-2011:mastery")
+
+it("rotates complete authored alternatives without scheduler or catalog-order randomness", () => {
+  const catalog = createTestLicensedCatalog([
+    ["raccoonpack", ["idle_blink", "dash", "idle", "run", "crouch", "attack", "hurt", "bark"]],
+    ["wolfpack", COMPLETE_ROLE_ANIMATION_IDS],
+  ])
+  const select = (rest: number, entry: number, cycleIndex = 0) => {
+    const result = createSeethingSwarmBattleChoreography({
+      battle: createTestBattle({ pair: [RACCOON_VALUE_ID, WOLF_VALUE_ID], cycleIndex }),
+      catalog: reverseTestCatalogClips(catalog),
+      ordinals: new Map([["raccoonpack", { ...INITIAL_SEETHING_SWARM_ROLE_ORDINALS, rest, entry }]]),
+    })
+    if (result.mode !== "licensed") throw new Error("Expected licensed catalog")
+    return result.combatants[0].clips
+  }
+  expect(select(0, 0).rest.clip.animationId).toBe("idle")
+  expect(select(1, 0).rest.clip.animationId).toBe("idle_blink")
+  expect(select(2, 0).rest.clip.animationId).toBe("idle")
+  expect(select(0, 0).entry.clip.animationId).toBe("run")
+  expect(select(0, 1).entry.clip.animationId).toBe("dash")
+  expect(select(0, 2).entry.clip.animationId).toBe("run")
+  expect(select(1, 1, 100)).toEqual(select(1, 1))
+})
 
 it("applies each variant's approved role pools rather than unrelated catalog clips", () => {
   const allAnimationIds = SEETHING_SWARM_BATTLE_ANIMATION_POLICIES.map(
@@ -45,6 +69,7 @@ it("applies each variant's approved role pools rather than unrelated catalog cli
     for (let cycleIndex = 0; cycleIndex < 8; cycleIndex += 1) {
       const result = createSeethingSwarmBattleChoreography({
         catalog,
+        ordinals: new Map([[animalId, { entry: cycleIndex, rest: cycleIndex, attack: cycleIndex, reaction: cycleIndex, flourish: cycleIndex }]]),
         battle: createTestBattle({
           pair: [
             mapping.valueId,
@@ -583,6 +608,7 @@ describe("SeethingSwarm battle choreography", () => {
       cycleIndex += 1
     ) {
       const choreography = createSeethingSwarmBattleChoreography({
+        ordinals: new Map([["bat", { ...INITIAL_SEETHING_SWARM_ROLE_ORDINALS, rest: cycleIndex }]]),
         battle: createTestBattle({
           pair: Object.freeze([FIRST_BAT_VALUE_ID, SECOND_BAT_VALUE_ID]),
           cycleIndex,
