@@ -4,8 +4,13 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { createWebMetadata } from "@/lib/WebMetadata"
 import RootLayout, { metadata, viewport } from "./layout"
 
-const { serwistProviderSpy } = vi.hoisted(() => ({
+const { serwistProviderSpy, websiteAnalyticsSpy } = vi.hoisted(() => ({
   serwistProviderSpy: vi.fn(),
+  websiteAnalyticsSpy: vi.fn(() => null),
+}))
+
+vi.mock("@/components/WebsiteAnalytics", () => ({
+  default: websiteAnalyticsSpy,
 }))
 
 vi.mock("@serwist/turbopack/react", () => ({
@@ -27,9 +32,35 @@ vi.mock("@serwist/turbopack/react", () => ({
 afterEach(() => {
   vi.unstubAllEnvs()
   serwistProviderSpy.mockClear()
+  websiteAnalyticsSpy.mockClear()
 })
 
 describe("Root layout", () => {
+  it.each([
+    ["production", true],
+    ["preview", false],
+    ["development", false],
+    ["staging", false],
+    [undefined, false],
+  ] as const)(
+    "mounts audience analytics only for the production deployment: %s",
+    (vercelEnvironment, analyticsIsExpected) => {
+      vi.stubEnv("NODE_ENV", "production")
+      vi.stubEnv("VERCEL_ENV", vercelEnvironment)
+
+      render(
+        <RootLayout>
+          <p>Private values game</p>
+        </RootLayout>,
+      )
+
+      expect(screen.getByText("Private values game")).toBeVisible()
+      expect(websiteAnalyticsSpy).toHaveBeenCalledTimes(
+        analyticsIsExpected ? 1 : 0,
+      )
+    },
+  )
+
   it("exposes safe-area insets without restricting user zoom", () => {
     expect(viewport).toEqual({ viewportFit: "cover" })
   })
