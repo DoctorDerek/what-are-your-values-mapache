@@ -3,305 +3,160 @@ import {
   getAchievementEnglishCopy,
   type AchievementPresentation,
 } from "@game/machines/src/AchievementPresentation"
-import { act, fireEvent, render, screen } from "@testing-library/react"
-import type { HTMLAttributes, PropsWithChildren } from "react"
-import { afterEach, describe, expect, it, vi } from "vitest"
-import AchievementBanner from "./AchievementBanner"
+import { act, fireEvent, render, screen, within } from "@testing-library/react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import AchievementBanner from "@/components/AchievementBanner"
 
-type MotionAsideProps = PropsWithChildren<
-  HTMLAttributes<HTMLElement> & {
-    readonly initial: unknown
-    readonly animate: unknown
-    readonly transition: unknown
-  }
->
+const achievements = ACHIEVEMENT_CATALOG.slice(0, 3).map(
+  (achievement) =>
+    ({
+      id: achievement.id,
+      ...getAchievementEnglishCopy(achievement),
+      status: "unlocked",
+      progress: null,
+      unlockedAt: "2026-09-24T12:00:00.000Z",
+      unlockedDate: "Sep 24, 2026",
+    }) satisfies AchievementPresentation,
+)
 
-vi.mock("motion/react", () => ({
-  motion: {
-    aside: ({
-      children,
-      initial,
-      animate,
-      transition,
-      ...props
-    }: MotionAsideProps) => (
-      <aside
-        {...props}
-        data-motion-initial={JSON.stringify(initial)}
-        data-motion-animate={JSON.stringify(animate)}
-        data-motion-transition={JSON.stringify(transition)}
-      >
-        {children}
-      </aside>
-    ),
-  },
-}))
-
-const firstAchievement = ACHIEVEMENT_CATALOG[0]
-const firstAchievementPresentation = Object.freeze({
-  id: firstAchievement.id,
-  title: "First Battle",
-  unlockReason: "First pair compared.",
-  requirement: "Compare your first pair of values.",
-  status: "unlocked",
-  progress: null,
-  unlockedAt: "2026-08-07T12:34:56.000Z",
-  unlockedDate: "Aug 7, 2026",
-}) satisfies AchievementPresentation
-
-describe("AchievementBanner Integration", () => {
+describe("Achievement overlay integration", () => {
+  beforeEach(() => {
+    vi.spyOn(document, "hasFocus").mockReturnValue(true)
+  })
   afterEach(() => {
-    vi.clearAllTimers()
+    vi.restoreAllMocks()
     vi.useRealTimers()
   })
 
-  it("presents exact milestone copy accessibly and dismisses only its canonical ID", () => {
-    const onPresented = vi.fn()
-
-    render(
+  it("renders nothing without pending unlocks", () => {
+    const { container } = render(
       <AchievementBanner
-        achievement={firstAchievementPresentation}
-        isAcknowledgementPending={false}
-        shouldReduceMotion={false}
-        onPresented={onPresented}
-      />,
-    )
-
-    const banner = screen.getByRole("complementary", {
-      name: "Achievement unlocked",
-    })
-    expect(banner).toHaveAttribute(
-      "data-motion-initial",
-      JSON.stringify({ opacity: 0, y: 24 }),
-    )
-    const announcement = screen.getByRole("status")
-    expect(announcement).toHaveAttribute("aria-live", "polite")
-    expect(announcement).toHaveAttribute("aria-atomic", "true")
-    expect(announcement).toHaveTextContent(
-      "Achievement unlocked: First Battle.",
-    )
-    expect(
-      screen.getByRole("heading", { name: "First Battle" }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText("Compare your first pair of values."),
-    ).toBeInTheDocument()
-    expect(
-      screen.queryByText("First pair compared.", { exact: true }),
-    ).toBeNull()
-
-    fireEvent.click(screen.getByRole("button", { name: "Dismiss achievement" }))
-
-    expect(onPresented).toHaveBeenCalledExactlyOnceWith(firstAchievement.id)
-  })
-
-  it("explains a battle unlock visually and through its polite announcement", () => {
-    render(
-      <AchievementBanner
-        achievement={firstAchievementPresentation}
-        isAcknowledgementPending={false}
-        placement="battle"
-        shouldReduceMotion={false}
-        onPresented={vi.fn()}
-      />,
-    )
-
-    const banner = screen.getByRole("complementary", {
-      name: "Achievement unlocked",
-    })
-    expect(banner).toHaveClass("relative")
-    expect(banner).not.toHaveClass("fixed")
-    expect(banner).toHaveAttribute(
-      "data-motion-initial",
-      JSON.stringify({ opacity: 0, y: 0 }),
-    )
-    expect(screen.queryByText("Compare your first pair of values.")).toBeNull()
-    expect(
-      screen.getByText("First pair compared.", { exact: true }),
-    ).toBeVisible()
-    expect(screen.getByRole("heading", { name: "First Battle" })).toBeVisible()
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Achievement unlocked: First Battle. First pair compared.",
-    )
-    expect(
-      screen.getByRole("button", { name: "Dismiss achievement" }),
-    ).toBeEnabled()
-  })
-
-  it("keeps the longer Top Five title and concise reason readable until dismissal", () => {
-    const onPresented = vi.fn()
-    const topFiveAchievement = ACHIEVEMENT_CATALOG.find(
-      ({ id }) => id === "topFive.first",
-    )!
-    render(
-      <AchievementBanner
-        achievement={{
-          ...firstAchievementPresentation,
-          ...getAchievementEnglishCopy(topFiveAchievement),
-          id: topFiveAchievement.id,
-        }}
-        isAcknowledgementPending={false}
-        placement="battle"
-        shouldReduceMotion={false}
-        onPresented={onPresented}
-      />,
-    )
-
-    expect(
-      screen.getByRole("heading", { name: "Reveal Your Top Five" }),
-    ).toBeVisible()
-    expect(
-      screen.getByText("Five values earned XP.", { exact: true }),
-    ).toBeVisible()
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Achievement unlocked: Reveal Your Top Five. Five values earned XP.",
-    )
-    expect(
-      screen.queryByText(
-        getAchievementEnglishCopy(topFiveAchievement).requirement,
-      ),
-    ).toBeNull()
-    const dismissButton = screen.getByRole("button", {
-      name: "Dismiss achievement",
-    })
-    expect(dismissButton).toBeEnabled()
-    fireEvent.click(dismissButton)
-    expect(onPresented).toHaveBeenCalledExactlyOnceWith(topFiveAchievement.id)
-  })
-
-  it("uses canonical opaque Vivid contrast tokens for battle feedback", () => {
-    render(
-      <AchievementBanner
-        achievement={firstAchievementPresentation}
-        isAcknowledgementPending={false}
-        placement="battle"
-        shouldReduceMotion={false}
-        onPresented={vi.fn()}
-      />,
-    )
-
-    const achievementPanel = screen.getByRole("heading", {
-      name: "First Battle",
-    }).parentElement?.parentElement
-    expect(achievementPanel).toHaveClass(
-      "bg-mapache-vivid-white",
-      "text-mapache-vivid-black",
-    )
-    expect(achievementPanel).not.toHaveClass("bg-mapache-vivid-primary-yellow")
-  })
-
-  it.each([false, true])(
-    "keeps an eight-second dwell across updates with Reduced Motion %s",
-    (shouldReduceMotion) => {
-      vi.useFakeTimers()
-      const onPresented = vi.fn()
-      const props = {
-        achievement: firstAchievementPresentation,
-        isAcknowledgementPending: false,
-        shouldReduceMotion,
-        onPresented,
-      }
-      const { rerender } = render(<AchievementBanner {...props} />)
-
-      act(() => vi.advanceTimersByTime(4000))
-      rerender(
-        <AchievementBanner
-          {...props}
-          achievement={{ ...firstAchievementPresentation }}
-        />,
-      )
-      act(() => vi.advanceTimersByTime(3999))
-      expect(onPresented).not.toHaveBeenCalled()
-      act(() => vi.advanceTimersByTime(1))
-      expect(onPresented).toHaveBeenCalledExactlyOnceWith(firstAchievement.id)
-    },
-  )
-
-  it("cancels the old dwell when the queued milestone changes or unmounts", () => {
-    vi.useFakeTimers()
-    const onPresented = vi.fn()
-    const props = {
-      achievement: firstAchievementPresentation,
-      isAcknowledgementPending: false,
-      shouldReduceMotion: true,
-      onPresented,
-    }
-    const { rerender, unmount } = render(<AchievementBanner {...props} />)
-    act(() => vi.advanceTimersByTime(4000))
-    const nextAchievement = {
-      ...firstAchievementPresentation,
-      id: ACHIEVEMENT_CATALOG[1].id,
-    }
-    rerender(<AchievementBanner {...props} achievement={nextAchievement} />)
-    act(() => vi.advanceTimersByTime(4000))
-    expect(onPresented).not.toHaveBeenCalled()
-    act(() => vi.advanceTimersByTime(4000))
-    expect(onPresented).toHaveBeenCalledExactlyOnceWith(nextAchievement.id)
-
-    rerender(<AchievementBanner {...props} />)
-    unmount()
-    act(() => vi.advanceTimersByTime(8000))
-    expect(onPresented).toHaveBeenCalledTimes(1)
-  })
-
-  it("removes movement under Reduced Motion while preserving readable dwell time", () => {
-    render(
-      <AchievementBanner
-        achievement={firstAchievementPresentation}
+        achievements={[]}
         isAcknowledgementPending={false}
         shouldReduceMotion
         onPresented={vi.fn()}
       />,
     )
-
-    const banner = screen.getByRole("complementary", {
-      name: "Achievement unlocked",
-    })
-    expect(banner).toHaveAttribute(
-      "data-motion-initial",
-      JSON.stringify({ opacity: 1 }),
-    )
-    expect(banner).toHaveAttribute(
-      "data-motion-animate",
-      JSON.stringify({ opacity: [1, 1] }),
-    )
-    expect(banner).toHaveAttribute(
-      "data-motion-transition",
-      JSON.stringify({ duration: 8 }),
-    )
+    expect(container).toBeEmptyDOMElement()
   })
 
-  it("prevents duplicate explicit dismissal while durable acknowledgement is pending", () => {
-    vi.useFakeTimers()
+  it("shows two newest-on-top compact cards with independent dismissals and FIFO overflow", () => {
     const onPresented = vi.fn()
-    render(
+    const props = {
+      achievements,
+      isAcknowledgementPending: false,
+      shouldReduceMotion: true,
+      onPresented,
+    }
+    const { rerender } = render(<AchievementBanner {...props} />)
+    expect(
+      screen.getAllByRole("heading").map((element) => element.textContent),
+    ).toEqual(["5 Battles", "First Battle"])
+    expect(screen.getAllByRole("status")).toHaveLength(2)
+    expect(screen.getByText("5 pairs compared.", { exact: true })).toBeVisible()
+    expect(
+      screen.queryByText("Achievement Unlocked", { exact: true }),
+    ).toBeNull()
+    expect(screen.queryByText(achievements[1].requirement)).toBeNull()
+    expect(screen.queryByText("10 Battles")).toBeNull()
+    const close = screen.getByRole("button", {
+      name: "Dismiss achievement: 5 Battles",
+    })
+    fireEvent.click(close)
+    fireEvent.click(close)
+    expect(onPresented).toHaveBeenCalledExactlyOnceWith(achievements[1].id)
+    expect(close).toBeDisabled()
+    rerender(
       <AchievementBanner
-        achievement={firstAchievementPresentation}
-        isAcknowledgementPending
-        shouldReduceMotion={false}
-        onPresented={onPresented}
+        {...props}
+        achievements={[achievements[0], achievements[2]]}
       />,
     )
-
     expect(
-      screen.getByRole("button", { name: "Dismiss achievement" }),
-    ).toBeDisabled()
-    act(() => vi.advanceTimersByTime(8000))
-    expect(onPresented).not.toHaveBeenCalled()
+      screen.getAllByRole("heading").map((element) => element.textContent),
+    ).toEqual(["10 Battles", "First Battle"])
+    expect(
+      screen.queryByRole("button", { name: "Dismiss achievement: 5 Battles" }),
+    ).toBeNull()
   })
 
-  it("renders nothing without a pending milestone", () => {
+  it("keeps focus and card order stable when a new unlock arrives during keyboard interaction", () => {
+    const props = {
+      achievements: achievements.slice(0, 1),
+      isAcknowledgementPending: false,
+      shouldReduceMotion: true,
+      onPresented: vi.fn(),
+    }
+    const { rerender } = render(<AchievementBanner {...props} />)
+    const dismiss = screen.getByRole("button", {
+      name: "Dismiss achievement: First Battle",
+    })
+    act(() => dismiss.focus())
+    rerender(<AchievementBanner {...props} achievements={achievements} />)
+    expect(dismiss).toHaveFocus()
+    expect(screen.queryByText("5 Battles")).toBeNull()
+    act(() => dismiss.blur())
+    expect(
+      screen.getAllByRole("heading").map((element) => element.textContent),
+    ).toEqual(["5 Battles", "First Battle"])
+  })
+
+  it("retains concise polite announcements and a decorative countdown, not a second control", () => {
     render(
       <AchievementBanner
-        achievement={null}
+        achievements={achievements.slice(0, 1)}
+        placement="battle"
         isAcknowledgementPending={false}
-        shouldReduceMotion={false}
+        shouldReduceMotion
         onPresented={vi.fn()}
       />,
     )
+    const card = screen.getByRole("complementary", {
+      name: "Achievement unlocked",
+    })
+    expect(within(card).getByRole("status")).toHaveAttribute(
+      "aria-live",
+      "polite",
+    )
+    expect(within(card).getByRole("status")).toHaveTextContent(
+      "Achievement unlocked: First Battle. First pair compared.",
+    )
+    expect(card.querySelector("[data-achievement-countdown]")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    )
+    expect(within(card).getAllByRole("button")).toHaveLength(1)
+  })
 
-    expect(
-      screen.queryByRole("complementary", { name: "Achievement unlocked" }),
-    ).not.toBeInTheDocument()
+  it("blocks explicit acknowledgement while its durable write is pending", () => {
+    const onPresented = vi.fn()
+    render(
+      <AchievementBanner
+        achievements={achievements}
+        isAcknowledgementPending
+        shouldReduceMotion
+        onPresented={onPresented}
+      />,
+    )
+    screen.getAllByRole("button").forEach((button) => {
+      expect(button).toBeDisabled()
+      fireEvent.click(button)
+    })
+    expect(onPresented).not.toHaveBeenCalled()
+  })
+
+  it("does not admit a new notification while the window is inactive", () => {
+    const props = {
+      achievements: [],
+      isAcknowledgementPending: false,
+      shouldReduceMotion: true,
+      onPresented: vi.fn(),
+    }
+    const { rerender } = render(<AchievementBanner {...props} />)
+    fireEvent.blur(window)
+    rerender(<AchievementBanner {...props} achievements={achievements} />)
+    expect(screen.queryByRole("heading")).toBeNull()
+    fireEvent.focus(window)
+    expect(screen.getAllByRole("heading")).toHaveLength(2)
   })
 })

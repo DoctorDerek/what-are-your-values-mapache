@@ -68,7 +68,7 @@ function getPresentedCombatantIds(container: HTMLElement) {
 
 function createHistoryProps() {
   return {
-    achievement: null,
+    achievements: [],
     canUndo: false,
     canRedo: false,
     controlHintPreference: "auto" as const,
@@ -187,7 +187,7 @@ describe("Crucible Component Integration", () => {
       <Crucible
         {...createHistoryProps()}
         activeDeck={battleCycle.activeDeck}
-        achievement={firstAchievementPresentation}
+        achievements={[firstAchievementPresentation]}
         battle={battle}
         progressById={battleCycle.progressById}
         onExit={vi.fn()}
@@ -202,7 +202,7 @@ describe("Crucible Component Integration", () => {
     const banner = screen.getByRole("complementary", {
       name: "Achievement unlocked",
     })
-    const overlay = banner.parentElement
+    const overlay = banner.parentElement?.parentElement
 
     expect(battleSurface).toHaveAttribute("data-slot", "mapache-screen")
     expect(battleSurface).toHaveClass(
@@ -235,7 +235,7 @@ describe("Crucible Component Integration", () => {
       <Crucible
         {...createHistoryProps()}
         activeDeck={battleCycle.activeDeck}
-        achievement={firstAchievementPresentation}
+        achievements={[firstAchievementPresentation]}
         battle={battle}
         progressById={battleCycle.progressById}
         onAchievementPresented={onAchievementPresented}
@@ -244,7 +244,9 @@ describe("Crucible Component Integration", () => {
       />,
     )
     const combatantsBeforeDismissal = getPresentedCombatantIds(container)
-    fireEvent.click(screen.getByRole("button", { name: "Dismiss achievement" }))
+    fireEvent.click(
+      screen.getByRole("button", { name: /^Dismiss achievement/ }),
+    )
 
     expect(onAchievementPresented).toHaveBeenCalledExactlyOnceWith(
       firstAchievement.id,

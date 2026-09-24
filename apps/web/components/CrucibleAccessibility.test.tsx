@@ -138,7 +138,7 @@ function createCrucibleProps(
 ) {
   return {
     activeDeck: fixture.initialBattleCycle.activeDeck,
-    achievement: null,
+    achievements: [],
     battle: fixture.initialBattle,
     progressById: fixture.initialBattleCycle.progressById,
     canUndo: false,
