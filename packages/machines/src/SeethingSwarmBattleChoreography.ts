@@ -303,6 +303,23 @@ function createLicensedBattleCombatant<PlatformAsset>({
     rest.clip,
     catalog,
   )
+  const locomotion = selectBattleClip({
+    battleEligibleClips,
+    availableClips: animal.characterClips,
+    animalId: combatant.animalId,
+    ordinal: ordinals.attack,
+    role: "entry",
+    restClip: rest.clip,
+  })
+  const attack = selectClip("attack", rest.clip)
+  const attackSequence =
+    locomotion.clip.animationId === "fly_forward"
+      ? Object.freeze([
+          locomotion.clip,
+          attack.clip,
+          ...locomotion.sequence.slice(1),
+        ])
+      : attack.sequence
 
   return Object.freeze({
     ...combatant,
@@ -311,18 +328,11 @@ function createLicensedBattleCombatant<PlatformAsset>({
       entry: selectClip("entry", rest.clip),
       rest,
       anticipation: attentionAlternatives[0]!,
-      attack: selectClip("attack", rest.clip),
+      attack: Object.freeze({ ...attack, sequence: attackSequence }),
       reaction: selectClip("reaction", rest.clip),
       flourish: selectClip("flourish", rest.clip),
     }),
-    locomotion: selectBattleClip({
-      battleEligibleClips,
-      availableClips: animal.characterClips,
-      animalId: combatant.animalId,
-      ordinal: ordinals.attack,
-      role: "entry",
-      restClip: rest.clip,
-    }).clip,
+    locomotion: locomotion.clip,
     attentionAlternatives,
     geometry: createSeethingSwarmSurfaceGeometry(animal, "battle"),
   }) satisfies SeethingSwarmLicensedBattleCombatant<PlatformAsset>
