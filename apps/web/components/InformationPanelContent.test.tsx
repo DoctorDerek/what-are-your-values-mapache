@@ -1,4 +1,5 @@
 import {
+  CREDITS_PRIVACY_INFORMATION_PANEL,
   FREE_RESOURCES_INFORMATION_PANEL,
   HOW_IT_WORKS_INFORMATION_PANEL,
   WHY_I_MADE_THIS_GAME_INFORMATION_PANEL,
@@ -8,6 +9,28 @@ import { describe, expect, it } from "vitest"
 import InformationPanelContent from "@/components/InformationPanelContent"
 
 describe("InformationPanelContent", () => {
+  it("discloses website analytics while retaining the private gameplay boundary", () => {
+    render(
+      <InformationPanelContent
+        informationPanel={CREDITS_PRIVACY_INFORMATION_PANEL}
+      />,
+    )
+
+    expect(
+      screen.getByText(
+        /production website uses cookieless Vercel Web Analytics/,
+      ),
+    ).toBeVisible()
+    expect(
+      screen.getByText(/native apps do not load this analytics service/),
+    ).toBeVisible()
+    expect(
+      screen.getByText(
+        /does not send your comparisons, canonical or Custom Values/,
+      ),
+    ).toBeVisible()
+  })
+
   it("renders approved sections and creator attribution semantically", () => {
     const { rerender } = render(
       <InformationPanelContent
