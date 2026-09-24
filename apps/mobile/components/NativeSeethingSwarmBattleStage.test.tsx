@@ -25,6 +25,7 @@ import { AppState, Pressable, View, type AppStateStatus } from "react-native"
 import { getAnimatedStyle } from "react-native-reanimated"
 import NativeSeethingSwarmAssetPreparation from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSeethingSwarmBattleStage from "@/components/NativeSeethingSwarmBattleStage"
+import NativeSeethingSwarmBattleVariation from "@/components/NativeSeethingSwarmBattleVariation"
 
 const pair = [
   createCanonicalValueId("pvcs-2011:mastery"),
@@ -154,6 +155,47 @@ afterEach(() => {
 })
 
 describe("NativeSeethingSwarmBattleStage", () => {
+  it("retains app-session entry rotation across Hub visits without consuming unseen or reduced-motion roles", async () => {
+    const initial = props()
+    const catalog = {
+      ...licensedCatalog,
+      animals: animals.map((animal, index) => ({
+        ...animal,
+        characterClips: [...animal.characterClips, {
+          ...animal.characterClips[0],
+          animationId: "dash",
+          relativePath: `${animal.animalId}/dash.png`,
+          asset: index * 100 + 7,
+        }],
+      })),
+    }
+    const draw = (inBattle: boolean, reduced = false) => (
+      <NativeSeethingSwarmBattleVariation>
+        {inBattle ? <NativeSeethingSwarmBattleStage {...initial} catalog={catalog} shouldReduceMotion={reduced} /> : null}
+      </NativeSeethingSwarmBattleVariation>
+    )
+    const { rerender } = await render(draw(true))
+    await loadImages()
+    expect(image("raccoonpack")).toHaveProp("source", 1)
+    await rerender(draw(true))
+    expect(image("raccoonpack")).toHaveProp("source", 1)
+    await rerender(draw(false))
+    await rerender(draw(true))
+    await rerender(draw(false))
+    await rerender(draw(true, true))
+    await loadImages()
+    expect(image("raccoonpack")).toHaveProp("source", 3)
+    await rerender(draw(false))
+    await rerender(draw(true))
+    await loadImages()
+    expect(image("raccoonpack")).toHaveProp("source", 7)
+    await rerender(draw(false))
+    await rerender(draw(true))
+    await loadImages()
+    expect(image("raccoonpack")).toHaveProp("source", 1)
+    expect(initial.onResultComplete).not.toHaveBeenCalled()
+  })
+
   it("settles failed attention to loaded calm without completing a battle", async () => {
     const initial = props()
     await render(
