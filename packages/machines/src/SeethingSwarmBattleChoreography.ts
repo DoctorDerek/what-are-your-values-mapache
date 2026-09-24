@@ -26,6 +26,7 @@ import {
   INITIAL_SEETHING_SWARM_ROLE_ORDINALS,
   type SeethingSwarmAnimalOrdinals,
   type SeethingSwarmRoleOrdinals,
+  type SeethingSwarmVariedRole,
 } from "./SeethingSwarmBattleVariation"
 
 export const SEETHING_SWARM_BATTLE_CHOREOGRAPHY_VERSION = 2
@@ -284,14 +285,14 @@ function createLicensedBattleCombatant<PlatformAsset>({
   const animal = resolveRuntimeAnimalClips(catalog, combatant.animalId)
   const battleEligibleClips = classifyBattleEligibleClips(animal)
   const selectClip = (
-    role: SeethingSwarmBattleClipRole,
+    role: SeethingSwarmVariedRole,
     restClip?: SeethingSwarmRuntimeCharacterClip<PlatformAsset>,
   ) =>
     selectBattleClip({
       battleEligibleClips,
       availableClips: animal.characterClips,
       animalId: combatant.animalId,
-      ordinal: role === "anticipation" ? 0 : ordinals[role],
+      ordinal: ordinals[role],
       role,
       restClip,
     })
