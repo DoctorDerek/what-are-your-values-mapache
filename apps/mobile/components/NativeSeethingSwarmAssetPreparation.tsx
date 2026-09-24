@@ -8,7 +8,7 @@ import {
   getChoreographyPreparationClips,
   isChoreographyPrepared,
 } from "@game/machines/src/SeethingSwarmAssetPreparation"
-import { createSeethingSwarmBattleChoreography } from "@game/machines/src/SeethingSwarmBattleChoreography"
+import NativeSeethingSwarmBattleVariation, { useNativeSeethingSwarmProjectedBattle } from "@/components/NativeSeethingSwarmBattleVariation"
 import { useActorRef, useSelector } from "@xstate/react"
 import {
   createContext,
@@ -35,7 +35,7 @@ export default function NativeSeethingSwarmAssetPreparation({
   const assets = useSelector(actor, (snapshot) => snapshot.context.assets)
   return (
     <PreparationContext value={actor}>
-      {children}
+      <NativeSeethingSwarmBattleVariation>{children}</NativeSeethingSwarmBattleVariation>
       <View
         pointerEvents="none"
         accessibilityElementsHidden
@@ -105,13 +105,7 @@ export function usePreparedNativeSeethingSwarmBattle(
   catalog: SeethingSwarmRuntimeClipCatalog<number>,
 ) {
   const actor = useContext(PreparationContext)
-  const choreography = useMemo(
-    () =>
-      battle
-        ? createSeethingSwarmBattleChoreography({ battle, catalog })
-        : null,
-    [battle, catalog],
-  )
+  const choreography = useNativeSeethingSwarmProjectedBattle(battle, catalog)
   const clips = useMemo(
     () => (choreography ? getChoreographyPreparationClips(choreography) : []),
     [choreography],
