@@ -208,7 +208,7 @@ export default function SeethingSwarmCombatant({
     .slice(stepIndex)
     .some((candidate) => candidate.blocksResult)
   useEffect(() => {
-    if (winnerId && (cue === "strike" || cue === "impact") && !hasBlockingSteps)
+    if (winnerId && cue !== "approach" && cue !== "introduction" && !hasBlockingSteps)
       onPlaybackComplete()
   }, [cue, hasBlockingSteps, onPlaybackComplete, winnerId])
 
@@ -240,7 +240,9 @@ export default function SeethingSwarmCombatant({
             <SeethingSwarmAnimal
               clip={clip}
               playbackIdentity={`${cue}:${nextAttention.generation}:${stepIndex}`}
-              facing={combatant.side === "first" ? "right" : "left"}
+              facing={(combatant.side === "first") !== step.facesAway ? "right" : "left"}
+              startFrame={isVisible && isReady ? step.startFrame : 0}
+              endFrame={isVisible && isReady ? step.endFrame : clip.frameCount}
               frameDurationMs={
                 attentionFailed
                   ? SEETHING_SWARM_CALM_FRAME_DURATION_MS
