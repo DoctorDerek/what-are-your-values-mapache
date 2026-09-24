@@ -46,7 +46,7 @@ export default function NativeSeethingSwarmAnimal({
   startFrame?: number
   endFrame?: number
 }) {
-  const frameProgress = useSharedValue(0)
+  const frameProgress = useSharedValue(startFrame)
   const [loadedAsset, setLoadedAsset] = useState<number | null>(null)
   const preparedStatus = useNativeSeethingSwarmAssetStatus(clip.relativePath)
   const isImageLoaded = loadedAsset === clip.asset || preparedStatus === "ready"
@@ -71,9 +71,9 @@ export default function NativeSeethingSwarmAnimal({
     height: scaledFrameHeight,
   }
   const animatedStyle = useAnimatedStyle(() => {
-    const frameIndex = Math.min(
-      endFrame - 1,
-      Math.floor(frameProgress.get()),
+    const frameIndex = Math.max(
+      startFrame,
+      Math.min(endFrame - 1, Math.floor(frameProgress.get())),
     )
     return {
       transform: [{ translateX: -frameIndex * scaledFrameWidth }],
