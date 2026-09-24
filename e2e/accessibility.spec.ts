@@ -286,7 +286,7 @@ for (const viewport of [
     ).toBeVisible()
     await banner.scrollIntoViewIfNeeded()
     await expect(banner).toBeInViewport({ ratio: 1 })
-    const dismiss = banner.getByRole("button", { name: "Dismiss achievement" })
+    const dismiss = banner.getByRole("button", { name: /^Dismiss achievement/ })
     await expect(dismiss).not.toBeFocused()
     const dismissBounds = await dismiss.boundingBox()
     expect(Number(dismissBounds!.width.toFixed(3))).toBeGreaterThanOrEqual(44)
