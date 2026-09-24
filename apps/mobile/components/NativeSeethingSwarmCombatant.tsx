@@ -27,6 +27,7 @@ export default function NativeSeethingSwarmCombatant({
   onPlaybackComplete,
   onReady,
   onRoleEntered,
+  isTravelReady = true,
 }: {
   combatant: SeethingSwarmLicensedBattleCombatant<number>
   winnerId: ValueId | null
@@ -36,6 +37,7 @@ export default function NativeSeethingSwarmCombatant({
   onPlaybackComplete: () => void
   onReady: () => void
   onRoleEntered?: (animalId: ZooAnimalId, role: SeethingSwarmVariedRole) => void
+  isTravelReady?: boolean
 }) {
   const [attention, setAttention] = useState(createSeethingSwarmAttentionState)
   const nextAttention = updateSeethingSwarmAttention(
@@ -165,6 +167,7 @@ export default function NativeSeethingSwarmCombatant({
       !hasVisibleImage ||
       isComplete ||
       shouldReduceMotion ||
+      (cue === "approach" && !isTravelReady) ||
       cue === "attention" ||
       role === "anticipation" ||
       (role !== "rest" && step.semanticFamily === "rest")
@@ -177,15 +180,25 @@ export default function NativeSeethingSwarmCombatant({
     hasVisibleImage,
     isComplete,
     isReady,
+    isTravelReady,
     onRoleEntered,
     role,
     shouldReduceMotion,
     step.semanticFamily,
   ])
 
+  const requiredBattleClips =
+    winnerId === combatant.valueId
+      ? [combatant.locomotion, ...combatant.clips.attack.sequence]
+      : combatant.clips.reaction.sequence
+  const isBattlePrepared = requiredBattleClips.every(
+    (clip) =>
+      loadedClips.has(clip.animationId) || failedClips.has(clip.animationId),
+  )
   useEffect(() => {
-    if (isReady || (hasLoadError && hasVisibleImage)) onReady()
-  }, [cue, hasLoadError, hasVisibleImage, isReady, onReady])
+    if (isBattlePrepared && (isReady || (hasLoadError && hasVisibleImage) || hasNoUsableImage))
+      onReady()
+  }, [cue, hasLoadError, hasVisibleImage, hasNoUsableImage, isBattlePrepared, isReady, onReady])
 
   const finishStep = () => {
     if (isComplete) return
@@ -208,7 +221,12 @@ export default function NativeSeethingSwarmCombatant({
     .slice(stepIndex)
     .some((candidate) => candidate.blocksResult)
   useEffect(() => {
-    if (winnerId && cue !== "approach" && cue !== "introduction" && !hasBlockingSteps)
+    if (
+      winnerId &&
+      cue !== "approach" &&
+      cue !== "introduction" &&
+      !hasBlockingSteps
+    )
       onPlaybackComplete()
   }, [cue, hasBlockingSteps, onPlaybackComplete, winnerId])
 
@@ -231,7 +249,11 @@ export default function NativeSeethingSwarmCombatant({
             <NativeSeethingSwarmAnimal
               clip={clip}
               playbackIdentity={`${cue}:${nextAttention.generation}:${stepIndex}`}
-              facing={(combatant.side === "first") !== step.facesAway ? "right" : "left"}
+              facing={
+                (combatant.side === "first") !== step.facesAway
+                  ? "right"
+                  : "left"
+              }
               startFrame={isVisible && isReady ? step.startFrame : 0}
               endFrame={isVisible && isReady ? step.endFrame : clip.frameCount}
               frameDurationMs={
@@ -241,13 +263,15 @@ export default function NativeSeethingSwarmCombatant({
               }
               geometry={combatant.geometry}
               playbackMode={
-                !isVisible || shouldReduceMotion
+                cue === "approach" && !isTravelReady
                   ? "static"
-                  : !isReady || isComplete
-                    ? "hold-final-frame"
-                    : attentionFailed
-                      ? "loop"
-                      : step.playbackMode
+                  : !isVisible || shouldReduceMotion
+                    ? "static"
+                    : !isReady || isComplete
+                      ? "hold-final-frame"
+                      : attentionFailed
+                        ? "loop"
+                        : step.playbackMode
               }
               shouldReduceMotion={shouldReduceMotion}
               onLoadError={() =>
@@ -278,6 +302,7 @@ export default function NativeSeethingSwarmCombatant({
           }}
         >
           <NativeSeethingSwarmPlaceholder
+            key={cue}
             side={combatant.side}
             role={role === "entry" || role === "anticipation" ? "rest" : role}
             shouldReduceMotion={shouldReduceMotion}

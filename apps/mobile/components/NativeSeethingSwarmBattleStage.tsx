@@ -10,6 +10,8 @@ import {
 import {
   createSeethingSwarmBattleTravel,
   resolveSeethingSwarmPlaceholderRole,
+  requiresSeethingSwarmReturnTravel,
+  resolveSeethingSwarmTravelDuration,
   type SeethingSwarmBattleExchangeCue,
   type SeethingSwarmBattlePoint,
 } from "@game/machines/src/SeethingSwarmBattleExchange"
@@ -54,9 +56,10 @@ function NativeBattlePlayback({
   const cue = winnerId ? resultCue : "introduction"
   const completedSidesRef = useRef(new Set<SeethingSwarmBattleCombatantSide>())
   const hasReportedResultRef = useRef(false)
+  const hasFinishedPlaybackRef = useRef(false)
   const reportResult = useCallback(() => {
     if (!winnerId || !isNextBattleReady || hasReportedResultRef.current) return
-    if (!shouldReduceMotion && completedSidesRef.current.size !== 2) return
+    if (!shouldReduceMotion && !hasFinishedPlaybackRef.current) return
     hasReportedResultRef.current = true
     onResultComplete()
   }, [isNextBattleReady, onResultComplete, shouldReduceMotion, winnerId])
@@ -87,10 +90,6 @@ function NativeBattlePlayback({
               combatantWidth: isFirstWinner ? firstWidth : secondWidth,
             })
             setTravel(nextTravel)
-            if (nextTravel.x === 0 && nextTravel.y === 0)
-              setResultCue((current) =>
-                current === "approach" ? "strike" : current,
-              )
           },
         )
       },
@@ -112,7 +111,23 @@ function NativeBattlePlayback({
     }
     if (cue !== "impact") return
     completedSidesRef.current.add(side)
+    if (completedSidesRef.current.size !== 2) return
+    if (requiresSeethingSwarmReturnTravel(choreography, winnerId)) {
+      setResultCue("recovery")
+      return
+    }
+    hasFinishedPlaybackRef.current = true
+    setResultCue("settled")
     reportResult()
+  }
+
+  const handleTravelComplete = () => {
+    if (cue === "approach") setResultCue("strike")
+    if (cue === "recovery") {
+      hasFinishedPlaybackRef.current = true
+      setResultCue("settled")
+      reportResult()
+    }
   }
 
   const handleReady = (side: SeethingSwarmBattleCombatantSide) => {
@@ -155,7 +170,11 @@ function NativeBattlePlayback({
               cue={cue}
               travel={combatant.valueId === winnerId ? travel : null}
               shouldReduceMotion={shouldReduceMotion}
-              onApproachComplete={() => setResultCue("strike")}
+              durationMs={resolveSeethingSwarmTravelDuration(
+                choreography,
+                winnerId,
+              )}
+              onTravelComplete={handleTravelComplete}
             >
               {reward ? (
                 <View className="absolute bottom-full left-0 z-10 w-full pb-1">
@@ -168,6 +187,7 @@ function NativeBattlePlayback({
                   isAttended={isAttended}
                   winnerId={winnerId}
                   cue={cue}
+                  isTravelReady={travel !== null}
                   shouldReduceMotion={shouldReduceMotion}
                   onPlaybackComplete={() =>
                     handlePlaybackComplete(combatant.side)

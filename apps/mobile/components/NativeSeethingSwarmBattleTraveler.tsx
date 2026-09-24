@@ -1,5 +1,4 @@
 import {
-  SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS,
   type SeethingSwarmBattleExchangeCue,
   type SeethingSwarmBattlePoint,
 } from "@game/machines/src/SeethingSwarmBattleExchange"
@@ -18,20 +17,22 @@ export default function NativeSeethingSwarmBattleTraveler({
   cue,
   travel,
   shouldReduceMotion,
-  onApproachComplete,
+  durationMs,
+  onTravelComplete,
   children,
 }: {
   cue: SeethingSwarmBattleExchangeCue
   travel: SeethingSwarmBattlePoint | null
   shouldReduceMotion: boolean
-  onApproachComplete: () => void
+  durationMs: number
+  onTravelComplete: () => void
   children: ReactNode
 }) {
   const progress = useSharedValue(0)
-  const completeRef = useRef(onApproachComplete)
+  const completeRef = useRef(onTravelComplete)
   useEffect(() => {
-    completeRef.current = onApproachComplete
-  }, [onApproachComplete])
+    completeRef.current = onTravelComplete
+  }, [onTravelComplete])
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
       { translateX: progress.get() * (travel?.x ?? 0) },
@@ -41,24 +42,26 @@ export default function NativeSeethingSwarmBattleTraveler({
 
   useEffect(() => {
     let isActive = true
-    const finishApproach = () => {
-      if (isActive && cue === "approach") completeRef.current()
+    const finishTravel = () => {
+      if (isActive && (cue === "approach" || cue === "recovery"))
+        completeRef.current()
     }
     cancelAnimation(progress)
-    if (!travel || shouldReduceMotion) {
+    if (!travel || shouldReduceMotion || cue === "settled") {
       progress.set(0)
       return
     }
+    if (cue !== "approach" && cue !== "recovery") return
     progress.set(
       withTiming(
-        1,
+        cue === "recovery" ? 0 : 1,
         {
-          duration: SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS,
+          duration: durationMs,
           easing: Easing.out(Easing.quad),
           reduceMotion: ReduceMotion.Never,
         },
         (finished) => {
-          if (finished) scheduleOnRN(finishApproach)
+          if (finished) scheduleOnRN(finishTravel)
         },
       ),
     )
@@ -66,7 +69,7 @@ export default function NativeSeethingSwarmBattleTraveler({
       isActive = false
       cancelAnimation(progress)
     }
-  }, [cue, progress, shouldReduceMotion, travel])
+  }, [cue, durationMs, progress, shouldReduceMotion, travel])
 
   return (
     <Animated.View
