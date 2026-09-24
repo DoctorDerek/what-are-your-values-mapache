@@ -126,7 +126,7 @@ export default function SeethingSwarmAnimal({
     effectivePlaybackMode === "loop"
       ? "animate-seething-swarm-strip [animation-iteration-count:infinite]"
       : effectivePlaybackMode === "one-shot"
-        ? "animate-seething-swarm-strip"
+        ? "animate-seething-swarm-strip [animation-fill-mode:both]"
         : effectivePlaybackMode === "hold-final-frame"
           ? "animate-none [transform:translate3d(var(--animal-strip-final-offset),0,0)]"
           : "animate-none [transform:translate3d(var(--animal-strip-start-offset),0,0)]"
