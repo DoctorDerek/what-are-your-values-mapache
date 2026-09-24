@@ -34,6 +34,9 @@
   }
 
   @keyframes advance-seething-swarm-strip {
+    from {
+      transform: translate3d(var(--animal-strip-start-offset), 0, 0);
+    }
     to {
       transform: translate3d(var(--animal-strip-travel), 0, 0);
     }
