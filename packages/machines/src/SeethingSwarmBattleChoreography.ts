@@ -22,7 +22,7 @@ import {
   INITIAL_SEETHING_SWARM_ROLE_ORDINALS,
   type SeethingSwarmAnimalOrdinals,
   type SeethingSwarmRoleOrdinals,
-} from "@game/machines/src/SeethingSwarmBattleVariation"
+} from "./SeethingSwarmBattleVariation"
 import {
   resolveSeethingSwarmBattleCombatant,
   type SeethingSwarmBattleCombatant,
@@ -164,11 +164,12 @@ function classifyBattleEligibleClips<PlatformAsset>(
     ["reaction", ["hurt"]],
   ] as const
   const battleEligibleClips: ClassifiedBattleEligibleClip<PlatformAsset>[] = []
+  for (const clip of animal.characterClips)
+    resolveSeethingSwarmBattleAnimationPolicy(clip.animationId)
   for (const [family, animationIds] of familyPools) {
     for (const animationId of animationIds) {
     const clip = animal.characterClips.find((candidate) => candidate.animationId === animationId)
     if (!clip) continue
-    resolveSeethingSwarmBattleAnimationPolicy(clip.animationId)
     const policy = Object.freeze({
       animationId: clip.animationId,
       usageKind: "battle-eligible",
