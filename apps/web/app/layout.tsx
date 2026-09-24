@@ -1,6 +1,7 @@
 import "./globals.css"
 import { SerwistProvider } from "@serwist/turbopack/react"
 import type { Metadata, Viewport } from "next"
+import WebsiteAnalytics from "@/components/WebsiteAnalytics"
 import { createWebMetadata } from "@/lib/WebMetadata"
 
 export const metadata: Metadata = createWebMetadata(process.env.VERCEL_ENV)
@@ -29,6 +30,7 @@ export default function RootLayout({
         >
           {children}
         </SerwistProvider>
+        {process.env.VERCEL_ENV === "production" && <WebsiteAnalytics />}
       </body>
     </html>
   )
