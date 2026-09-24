@@ -37,7 +37,7 @@ type BattleAccessibilityAnnouncement = Readonly<{
 
 export default function Crucible({
   activeDeck,
-  achievement,
+  achievements,
   battle,
   progressById,
   runtimeClipCatalog,
@@ -56,7 +56,7 @@ export default function Crucible({
   onWinnerSelected,
 }: {
   activeDeck: ActiveDeck
-  achievement: AchievementPresentation | null
+  achievements: readonly AchievementPresentation[]
   battle: PresentedBattle
   progressById: ValueProgressById
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
@@ -429,9 +429,9 @@ export default function Crucible({
           </>
         )}
       </SeethingSwarmBattleStage>
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-60 flex h-max justify-center self-start supports-[position-try-fallbacks:--battle-achievement-over-controls]:top-[anchor(--battle-actions_bottom)] supports-[position-try-fallbacks:--battle-achievement-over-controls]:bottom-[max(anchor(--battle-first-value_top),anchor(--battle-second-value_top))] supports-[position-try-fallbacks:--battle-achievement-over-controls]:self-center supports-[position-try-fallbacks:--battle-achievement-over-controls]:[position-try-fallbacks:--battle-achievement-over-controls]">
+      <div className="pointer-events-none fixed inset-x-0 top-[max(4px,env(safe-area-inset-top))] z-60 flex h-max justify-center self-start [overflow-anchor:none] supports-[position-try-fallbacks:--battle-achievement-over-controls]:top-[anchor(--battle-actions_bottom)] supports-[position-try-fallbacks:--battle-achievement-over-controls]:bottom-[max(anchor(--battle-first-value_top),anchor(--battle-second-value_top))] supports-[position-try-fallbacks:--battle-achievement-over-controls]:self-center supports-[position-try-fallbacks:--battle-achievement-over-controls]:[position-try-fallbacks:--battle-achievement-over-controls]">
         <AchievementBanner
-          achievement={achievement}
+          achievements={achievements}
           isAcknowledgementPending={isAchievementAcknowledgementPending}
           placement="battle"
           shouldReduceMotion={shouldReduceMotion}
