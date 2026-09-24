@@ -15,6 +15,7 @@
     "@game/design-tokens": "workspace:*",
     "@game/utils": "workspace:*",
     "@game/machines": "workspace:*",
+    "@vercel/analytics": "^2",
     "@xstate/react": "^5",
     "class-variance-authority": "^0.7.1",
     "motion": "^12",
