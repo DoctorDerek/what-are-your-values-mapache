@@ -10,7 +10,6 @@ import {
   getChoreographyPreparationClips,
   isChoreographyPrepared,
 } from "@game/machines/src/SeethingSwarmAssetPreparation"
-import { createSeethingSwarmBattleChoreography } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { useActorRef, useSelector } from "@xstate/react"
 import Image, { type StaticImageData } from "next/image"
 import {
@@ -22,6 +21,9 @@ import {
   type ReactNode,
 } from "react"
 import type { ActorRefFrom } from "xstate"
+import SeethingSwarmBattleVariation, {
+  useSeethingSwarmProjectedBattle,
+} from "@/components/SeethingSwarmBattleVariation"
 
 const preparationMachine =
   createSeethingSwarmAssetPreparationMachine<StaticImageData>()
@@ -38,7 +40,7 @@ export default function SeethingSwarmAssetPreparation({
   const assets = useSelector(actor, (snapshot) => snapshot.context.assets)
   return (
     <PreparationContext value={actor}>
-      {children}
+      <SeethingSwarmBattleVariation>{children}</SeethingSwarmBattleVariation>
       <div hidden aria-hidden="true">
         {[...assets.values()].map(({ clip, generation }) => (
           <Image
@@ -113,13 +115,7 @@ export function usePreparedSeethingSwarmBattle(
   catalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>,
 ) {
   const actor = useContext(PreparationContext)
-  const choreography = useMemo(
-    () =>
-      battle
-        ? createSeethingSwarmBattleChoreography({ battle, catalog })
-        : null,
-    [battle, catalog],
-  )
+  const choreography = useSeethingSwarmProjectedBattle(battle, catalog)
   const clips = useMemo(
     () => (choreography ? getChoreographyPreparationClips(choreography) : []),
     [choreography],

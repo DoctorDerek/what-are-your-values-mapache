@@ -4,9 +4,9 @@ import {
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
+import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
 import type { PresentedBattle } from "@game/machines/src/CombatMachine"
 import {
-  createSeethingSwarmBattleChoreography,
   type SeethingSwarmBattleChoreography,
   type SeethingSwarmBattleCombatantSide,
 } from "@game/machines/src/SeethingSwarmBattleChoreography"
@@ -15,12 +15,12 @@ import {
   SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS,
   type SeethingSwarmBattleExchangeCue,
 } from "@game/machines/src/SeethingSwarmBattleExchange"
+import type { SeethingSwarmVariedRole } from "@game/machines/src/SeethingSwarmBattleVariation"
 import type { StaticImageData } from "next/image"
 import {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -28,6 +28,7 @@ import {
   type ReactNode,
 } from "react"
 import { usePreparedSeethingSwarmBattle } from "@/components/SeethingSwarmAssetPreparation"
+import { useSeethingSwarmActiveBattle } from "@/components/SeethingSwarmBattleVariation"
 import SeethingSwarmCombatant from "@/components/SeethingSwarmCombatant"
 import SeethingSwarmPlaceholder from "@/components/SeethingSwarmPlaceholder"
 
@@ -58,6 +59,7 @@ function BattlePlayback({
   isNextBattleReady,
   shouldReduceMotion,
   onResultComplete,
+  onRoleEntered,
   children,
 }: {
   choreography: SeethingSwarmBattleChoreography<StaticImageData>
@@ -65,6 +67,7 @@ function BattlePlayback({
   isNextBattleReady: boolean
   shouldReduceMotion: boolean
   onResultComplete: () => void
+  onRoleEntered: (animalId: ZooAnimalId, role: SeethingSwarmVariedRole) => void
   children: (combatants: {
     first: (isAttended: boolean, reward?: ReactNode) => ReactNode
     second: (isAttended: boolean, reward?: ReactNode) => ReactNode
@@ -170,6 +173,7 @@ function BattlePlayback({
                       handlePlaybackComplete(combatant.side)
                     }
                     onReady={() => handleReady(combatant.side)}
+                    onRoleEntered={onRoleEntered}
                   />
                 ) : (
                   <SeethingSwarmPlaceholder
@@ -224,13 +228,9 @@ export default function SeethingSwarmBattleStage({
     getIsDocumentHidden,
     getServerIsDocumentHidden,
   )
-  const choreography = useMemo(
-    () =>
-      createSeethingSwarmBattleChoreography({
-        battle,
-        catalog: runtimeClipCatalog,
-      }),
-    [battle, runtimeClipCatalog],
+  const { choreography, onRoleEntered } = useSeethingSwarmActiveBattle(
+    battle,
+    runtimeClipCatalog,
   )
   usePreparedSeethingSwarmBattle(battle, runtimeClipCatalog)
   usePreparedSeethingSwarmBattle(pendingBattle, runtimeClipCatalog)
@@ -262,6 +262,7 @@ export default function SeethingSwarmBattleStage({
         isNextBattleReady={isNextBattleReady}
         shouldReduceMotion={shouldReduceMotion || isPaused || isDocumentHidden}
         onResultComplete={onResultAnimationComplete}
+        onRoleEntered={onRoleEntered}
       >
         {children}
       </BattlePlayback>

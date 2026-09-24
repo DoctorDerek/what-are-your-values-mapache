@@ -17,13 +17,17 @@ import type {
 } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
-import type { BattleSchedulerRestorePoint } from "./BattleScheduler"
 import type { PresentedBattle } from "./CombatMachine"
-import { hashText } from "./DeterministicSequence"
 import {
   resolveSeethingSwarmBattleCombatant,
   type SeethingSwarmBattleCombatant,
 } from "./SeethingSwarmBattleCombatant"
+import {
+  INITIAL_SEETHING_SWARM_ROLE_ORDINALS,
+  type SeethingSwarmAnimalOrdinals,
+  type SeethingSwarmRoleOrdinals,
+  type SeethingSwarmVariedRole,
+} from "./SeethingSwarmBattleVariation"
 
 export const SEETHING_SWARM_BATTLE_CHOREOGRAPHY_VERSION = 2
 
@@ -115,13 +119,9 @@ type ClassifiedBattleEligibleClip<PlatformAsset> = Readonly<{
   policy: SeethingSwarmBattleEligibleAnimationPolicy
 }>
 
-function compareText(first: string, second: string) {
-  if (first < second) return -1
-  if (first > second) return 1
-  return 0
-}
-
-function createChoreographyIdentity(battle: PresentedBattle) {
+export function createSeethingSwarmChoreographyIdentity(
+  battle: PresentedBattle,
+) {
   const { scheduler } = battle
   return JSON.stringify([
     "seethingswarm-battle-choreography",
@@ -167,20 +167,21 @@ function classifyBattleEligibleClips<PlatformAsset>(
     ["reaction", ["hurt"]],
   ] as const
   const battleEligibleClips: ClassifiedBattleEligibleClip<PlatformAsset>[] = []
-  for (const clip of animal.characterClips) {
+  for (const clip of animal.characterClips)
     resolveSeethingSwarmBattleAnimationPolicy(clip.animationId)
-    const semanticFamilies = familyPools.flatMap(([family, animationIds]) =>
-      animationIds.some((animationId) => animationId === clip.animationId)
-        ? [family]
-        : [],
-    )
-    if (semanticFamilies.length === 0) continue
-    const policy = Object.freeze({
-      animationId: clip.animationId,
-      usageKind: "battle-eligible",
-      semanticFamilies: Object.freeze(semanticFamilies),
-    }) satisfies SeethingSwarmBattleEligibleAnimationPolicy
-    battleEligibleClips.push(Object.freeze({ clip, policy }))
+  for (const [family, animationIds] of familyPools) {
+    for (const animationId of animationIds) {
+      const clip = animal.characterClips.find(
+        (candidate) => candidate.animationId === animationId,
+      )
+      if (!clip) continue
+      const policy = Object.freeze({
+        animationId: clip.animationId,
+        usageKind: "battle-eligible",
+        semanticFamilies: Object.freeze([family]),
+      }) satisfies SeethingSwarmBattleEligibleAnimationPolicy
+      battleEligibleClips.push(Object.freeze({ clip, policy }))
+    }
   }
 
   return Object.freeze(battleEligibleClips)
@@ -226,47 +227,18 @@ function resolveRolePolicy(role: SeethingSwarmBattleClipRole) {
   return policy
 }
 
-function createStableSelectionOffset({
-  scheduler,
-  combatant,
-  side,
-  role,
-}: {
-  readonly scheduler: BattleSchedulerRestorePoint
-  readonly combatant: SeethingSwarmBattleCombatant
-  readonly side: SeethingSwarmBattleCombatantSide
-  readonly role: SeethingSwarmBattleClipRole
-}) {
-  return hashText(
-    JSON.stringify([
-      "seethingswarm-battle-clip-selection",
-      SEETHING_SWARM_BATTLE_CHOREOGRAPHY_VERSION,
-      scheduler.algorithmVersion,
-      scheduler.activeDeckFingerprint,
-      scheduler.progressGeneration,
-      scheduler.deckRevision,
-      scheduler.scheduleKind,
-      scheduler.seed,
-      combatant.valueId,
-      combatant.animalId,
-      side,
-      role,
-    ]),
-  )
-}
-
 function selectBattleClip<PlatformAsset>({
   battleEligibleClips,
   availableClips,
   animalId,
-  selectionOffsets,
+  ordinal,
   role,
   restClip,
 }: {
   readonly battleEligibleClips: readonly ClassifiedBattleEligibleClip<PlatformAsset>[]
   readonly availableClips: readonly SeethingSwarmRuntimeCharacterClip<PlatformAsset>[]
   readonly animalId: ZooAnimalId
-  readonly selectionOffsets: readonly number[]
+  readonly ordinal: number
   readonly role: SeethingSwarmBattleClipRole
   readonly restClip?: SeethingSwarmRuntimeCharacterClip<PlatformAsset>
 }) {
@@ -282,16 +254,9 @@ function selectBattleClip<PlatformAsset>({
         )
         return sequence ? [{ clip, sequence }] : []
       })
-      .toSorted((first, second) =>
-        compareText(first.clip.animationId, second.clip.animationId),
-      )
     if (candidates.length === 0) continue
 
-    const selectedIndex =
-      selectionOffsets.reduce(
-        (sum, offset) => sum + (offset % candidates.length),
-        0,
-      ) % candidates.length
+    const selectedIndex = ordinal % candidates.length
 
     return Object.freeze({
       role,
@@ -309,29 +274,25 @@ function selectBattleClip<PlatformAsset>({
 function createLicensedBattleCombatant<PlatformAsset>({
   catalog,
   combatant,
-  scheduler,
+  ordinals,
   side,
 }: {
   readonly catalog: SeethingSwarmLicensedRuntimeClipCatalog<PlatformAsset>
   readonly combatant: SeethingSwarmBattleCombatant
-  readonly scheduler: BattleSchedulerRestorePoint
+  readonly ordinals: SeethingSwarmRoleOrdinals
   readonly side: SeethingSwarmBattleCombatantSide
 }) {
   const animal = resolveRuntimeAnimalClips(catalog, combatant.animalId)
   const battleEligibleClips = classifyBattleEligibleClips(animal)
   const selectClip = (
-    role: SeethingSwarmBattleClipRole,
+    role: SeethingSwarmVariedRole,
     restClip?: SeethingSwarmRuntimeCharacterClip<PlatformAsset>,
   ) =>
     selectBattleClip({
       battleEligibleClips,
       availableClips: animal.characterClips,
       animalId: combatant.animalId,
-      selectionOffsets: [
-        createStableSelectionOffset({ scheduler, combatant, side, role }),
-        scheduler.cycleIndex,
-        scheduler.cursor,
-      ],
+      ordinal: ordinals[role],
       role,
       restClip,
     })
@@ -414,13 +375,15 @@ function createPlaceholderBattleCombatant(
 export function createSeethingSwarmBattleChoreography<PlatformAsset>({
   battle,
   catalog,
+  ordinals,
 }: {
   readonly battle: PresentedBattle
   readonly catalog: SeethingSwarmRuntimeClipCatalog<PlatformAsset>
+  readonly ordinals?: SeethingSwarmAnimalOrdinals
 }): SeethingSwarmBattleChoreography<PlatformAsset> {
   const firstCombatant = resolveSeethingSwarmBattleCombatant(battle.pair[0])
   const secondCombatant = resolveSeethingSwarmBattleCombatant(battle.pair[1])
-  const choreographyIdentity = createChoreographyIdentity(battle)
+  const choreographyIdentity = createSeethingSwarmChoreographyIdentity(battle)
 
   if (catalog.mode === "typography-only") {
     return Object.freeze({
@@ -440,13 +403,17 @@ export function createSeethingSwarmBattleChoreography<PlatformAsset>({
       createLicensedBattleCombatant({
         catalog,
         combatant: firstCombatant,
-        scheduler: battle.scheduler,
+        ordinals:
+          ordinals?.get(firstCombatant.animalId) ??
+          INITIAL_SEETHING_SWARM_ROLE_ORDINALS,
         side: "first",
       }),
       createLicensedBattleCombatant({
         catalog,
         combatant: secondCombatant,
-        scheduler: battle.scheduler,
+        ordinals:
+          ordinals?.get(secondCombatant.animalId) ??
+          INITIAL_SEETHING_SWARM_ROLE_ORDINALS,
         side: "second",
       }),
     ] as const),

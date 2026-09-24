@@ -1,5 +1,6 @@
 import { SEETHING_SWARM_CALM_FRAME_DURATION_MS } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { ValueId } from "@game/data/src/Value"
+import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
 import {
   createSeethingSwarmAttentionState,
   updateSeethingSwarmAttention,
@@ -10,6 +11,7 @@ import {
   createSeethingSwarmBattlePlayback,
   getSeethingSwarmBattleClips,
 } from "@game/machines/src/SeethingSwarmBattlePlayback"
+import type { SeethingSwarmVariedRole } from "@game/machines/src/SeethingSwarmBattleVariation"
 import type { StaticImageData } from "next/image"
 import { useEffect, useMemo, useState, type CSSProperties } from "react"
 import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
@@ -24,6 +26,7 @@ export default function SeethingSwarmCombatant({
   shouldReduceMotion,
   onPlaybackComplete,
   onReady,
+  onRoleEntered,
 }: {
   combatant: SeethingSwarmLicensedBattleCombatant<StaticImageData>
   winnerId: ValueId | null
@@ -32,6 +35,7 @@ export default function SeethingSwarmCombatant({
   shouldReduceMotion: boolean
   onPlaybackComplete: () => void
   onReady: () => void
+  onRoleEntered?: (animalId: ZooAnimalId, role: SeethingSwarmVariedRole) => void
 }) {
   const [attention, setAttention] = useState(createSeethingSwarmAttentionState)
   const nextAttention = updateSeethingSwarmAttention(
@@ -154,6 +158,30 @@ export default function SeethingSwarmCombatant({
   const hasVisibleImage =
     loadedClips.has(visibleClipId) && !failedClips.has(visibleClipId)
   const hasLoadError = failedClips.has(requestedClipId)
+
+  useEffect(() => {
+    if (
+      !isReady ||
+      !hasVisibleImage ||
+      isComplete ||
+      shouldReduceMotion ||
+      cue === "attention" ||
+      role === "anticipation" ||
+      (role !== "rest" && step.semanticFamily === "rest")
+    )
+      return
+    onRoleEntered?.(combatant.animalId, role)
+  }, [
+    combatant.animalId,
+    cue,
+    hasVisibleImage,
+    isComplete,
+    isReady,
+    onRoleEntered,
+    role,
+    shouldReduceMotion,
+    step.semanticFamily,
+  ])
 
   useEffect(() => {
     if (isReady || (hasLoadError && hasVisibleImage)) onReady()
