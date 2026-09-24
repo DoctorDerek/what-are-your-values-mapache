@@ -4,7 +4,7 @@ import type { SeethingSwarmBattleCombatantSide } from "./SeethingSwarmBattleChor
 export const SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS = 160
 
 export type SeethingSwarmBattleExchangeCue =
-  "introduction" | "attention" | "rest" | "approach" | "strike" | "impact"
+  "introduction" | "attention" | "rest" | "approach" | "strike" | "impact" | "recovery" | "settled"
 
 export type SeethingSwarmBattlePoint = Readonly<{ x: number; y: number }>
 
