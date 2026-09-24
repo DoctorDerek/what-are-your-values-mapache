@@ -81,7 +81,7 @@ function createNativeCrucibleProps(
 ) {
   return {
     activeDeck: fixture.initialBattleCycle.activeDeck,
-    achievement: null,
+    achievements: [],
     battle: fixture.initialBattle,
     runtimeClipCatalog: createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
     progressById: fixture.initialBattleCycle.progressById,
