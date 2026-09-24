@@ -35,7 +35,7 @@ export default function SeethingSwarmCombatant({
   isAttended: boolean
   shouldReduceMotion: boolean
   onPlaybackComplete: () => void
-  onReady: () => void
+  onReady: (canPlaySequence: boolean) => void
   onRoleEntered?: (animalId: ZooAnimalId, role: SeethingSwarmVariedRole) => void
   isTravelReady?: boolean
 }) {
@@ -119,6 +119,13 @@ export default function SeethingSwarmCombatant({
   const hasNoUsableImage = residentClips.every((clip) =>
     failedClips.has(clip.animationId),
   )
+  const requiredBattleClips =
+    winnerId === combatant.valueId
+      ? [combatant.locomotion, ...combatant.clips.attack.sequence]
+      : combatant.clips.reaction.sequence
+  const hasIncompleteBattleSequence =
+    winnerId !== null &&
+    requiredBattleClips.some((clip) => failedClips.has(clip.animationId))
   const retainedClipId =
     loadedClips.has(displayedClipId) && !failedClips.has(displayedClipId)
       ? displayedClipId
@@ -145,9 +152,15 @@ export default function SeethingSwarmCombatant({
     cue !== "attention" ||
     steps.every(({ clip }) => loadedClips.has(clip.animationId))
   const role =
-    (shouldReduceMotion && !winnerId) || attentionFailed ? "rest" : step.role
+    (shouldReduceMotion && !winnerId) ||
+    attentionFailed ||
+    hasIncompleteBattleSequence
+      ? "rest"
+      : step.role
   const requestedClipId =
-    (shouldReduceMotion && !winnerId) || attentionFailed
+    (shouldReduceMotion && !winnerId) ||
+    attentionFailed ||
+    hasIncompleteBattleSequence
       ? combatant.clips.rest.clip.animationId
       : step.clip.animationId
   const isReady =
@@ -167,6 +180,7 @@ export default function SeethingSwarmCombatant({
       !hasVisibleImage ||
       isComplete ||
       shouldReduceMotion ||
+      hasIncompleteBattleSequence ||
       (cue === "approach" && !isTravelReady) ||
       cue === "attention" ||
       role === "anticipation" ||
@@ -178,6 +192,7 @@ export default function SeethingSwarmCombatant({
     combatant.animalId,
     cue,
     hasVisibleImage,
+    hasIncompleteBattleSequence,
     isComplete,
     isReady,
     isTravelReady,
@@ -187,18 +202,26 @@ export default function SeethingSwarmCombatant({
     step.semanticFamily,
   ])
 
-  const requiredBattleClips =
-    winnerId === combatant.valueId
-      ? [combatant.locomotion, ...combatant.clips.attack.sequence]
-      : combatant.clips.reaction.sequence
   const isBattlePrepared = requiredBattleClips.every(
     (clip) =>
       loadedClips.has(clip.animationId) || failedClips.has(clip.animationId),
   )
   useEffect(() => {
-    if (isBattlePrepared && (isReady || (hasLoadError && hasVisibleImage) || hasNoUsableImage))
-      onReady()
-  }, [cue, hasLoadError, hasVisibleImage, hasNoUsableImage, isBattlePrepared, isReady, onReady])
+    if (
+      isBattlePrepared &&
+      (isReady || (hasLoadError && hasVisibleImage) || hasNoUsableImage)
+    )
+      onReady(!hasIncompleteBattleSequence)
+  }, [
+    cue,
+    hasLoadError,
+    hasVisibleImage,
+    hasNoUsableImage,
+    hasIncompleteBattleSequence,
+    isBattlePrepared,
+    isReady,
+    onReady,
+  ])
 
   const finishStep = () => {
     if (isComplete) return
@@ -225,10 +248,16 @@ export default function SeethingSwarmCombatant({
       winnerId &&
       cue !== "approach" &&
       cue !== "introduction" &&
-      !hasBlockingSteps
+      (!hasBlockingSteps || hasIncompleteBattleSequence)
     )
       onPlaybackComplete()
-  }, [cue, hasBlockingSteps, onPlaybackComplete, winnerId])
+  }, [
+    cue,
+    hasBlockingSteps,
+    hasIncompleteBattleSequence,
+    onPlaybackComplete,
+    winnerId,
+  ])
 
   const combatantStyle: CSSProperties & {
     "--combatant-width": string
@@ -263,8 +292,22 @@ export default function SeethingSwarmCombatant({
                   ? "right"
                   : "left"
               }
-              startFrame={isVisible && isReady ? step.startFrame : 0}
-              endFrame={isVisible && isReady ? step.endFrame : clip.frameCount}
+              startFrame={
+                isVisible &&
+                isReady &&
+                !hasIncompleteBattleSequence &&
+                !attentionFailed
+                  ? step.startFrame
+                  : 0
+              }
+              endFrame={
+                isVisible &&
+                isReady &&
+                !hasIncompleteBattleSequence &&
+                !attentionFailed
+                  ? step.endFrame
+                  : clip.frameCount
+              }
               frameDurationMs={
                 attentionFailed
                   ? SEETHING_SWARM_CALM_FRAME_DURATION_MS
@@ -275,7 +318,9 @@ export default function SeethingSwarmCombatant({
               playbackMode={
                 cue === "approach" && !isTravelReady
                   ? "static"
-                  : !isVisible || shouldReduceMotion
+                  : !isVisible ||
+                      shouldReduceMotion ||
+                      hasIncompleteBattleSequence
                     ? "static"
                     : !isReady || isComplete
                       ? "hold-final-frame"
@@ -295,7 +340,10 @@ export default function SeethingSwarmCombatant({
                 )
               }
               onPlaybackComplete={
-                isVisible && isReady && !attentionFailed
+                isVisible &&
+                isReady &&
+                !attentionFailed &&
+                !hasIncompleteBattleSequence
                   ? finishStep
                   : undefined
               }
@@ -311,7 +359,7 @@ export default function SeethingSwarmCombatant({
             role={role === "entry" || role === "anticipation" ? "rest" : role}
             shouldReduceMotion={shouldReduceMotion}
             onPlaybackComplete={finishStep}
-            onReady={onReady}
+            onReady={() => onReady(false)}
           />
         </span>
       ) : null}

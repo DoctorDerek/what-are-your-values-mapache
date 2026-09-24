@@ -11,8 +11,8 @@ import {
   type SeethingSwarmBattleCombatantSide,
 } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import {
-  resolveSeethingSwarmPlaceholderRole,
   requiresSeethingSwarmReturnTravel,
+  resolveSeethingSwarmPlaceholderRole,
   resolveSeethingSwarmTravelDuration,
   type SeethingSwarmBattleExchangeCue,
 } from "@game/machines/src/SeethingSwarmBattleExchange"
@@ -77,10 +77,24 @@ function BattlePlayback({
   const [resultCue, setResultCue] =
     useState<SeethingSwarmBattleExchangeCue>("approach")
   const [readySides, setReadySides] = useState<
-    ReadonlySet<SeethingSwarmBattleCombatantSide>
-  >(() => new Set())
+    ReadonlyMap<SeethingSwarmBattleCombatantSide, boolean>
+  >(() => new Map())
   const battleVisibilityRef = useRef<HTMLDivElement>(null)
   const cue = winnerId ? resultCue : "introduction"
+  const winnerSide = choreography.combatants.find(
+    (combatant) => combatant.valueId === winnerId,
+  )?.side
+  const canWinnerTravel =
+    winnerSide !== undefined && readySides.get(winnerSide) === true
+  useEffect(() => {
+    if (
+      winnerSide &&
+      readySides.size === 2 &&
+      !canWinnerTravel &&
+      cue === "approach"
+    )
+      setResultCue("strike")
+  }, [winnerSide, readySides.size, canWinnerTravel, cue])
   const completedSidesRef = useRef(new Set<SeethingSwarmBattleCombatantSide>())
   const hasReportedResultRef = useRef(false)
   const hasFinishedPlaybackRef = useRef(false)
@@ -114,7 +128,10 @@ function BattlePlayback({
     if (cue !== "impact") return
     completedSidesRef.current.add(side)
     if (completedSidesRef.current.size !== 2) return
-    if (requiresSeethingSwarmReturnTravel(choreography, winnerId)) {
+    if (
+      canWinnerTravel &&
+      requiresSeethingSwarmReturnTravel(choreography, winnerId)
+    ) {
       setResultCue("recovery")
       return
     }
@@ -132,10 +149,15 @@ function BattlePlayback({
     }
   }
 
-  const handleReady = (side: SeethingSwarmBattleCombatantSide) => {
-    if (cue !== "approach") return
+  const handleReady = (
+    side: SeethingSwarmBattleCombatantSide,
+    canPlaySequence = true,
+  ) => {
+    if (cue !== "approach" && canPlaySequence) return
     setReadySides((previous) =>
-      previous.has(side) ? previous : new Set([...previous, side]),
+      previous.get(side) === canPlaySequence
+        ? previous
+        : new Map([...previous, [side, canPlaySequence]]),
     )
   }
 
@@ -159,7 +181,7 @@ function BattlePlayback({
             data-battle-cue={cue}
           >
             <div
-              className={`relative flex h-(--battle-visible-size) w-(--battle-combatant-size) shrink-0 items-end justify-center ${combatant.side === "first" ? "[--battle-travel-direction:1]" : "[--battle-travel-direction:-1]"} ${!shouldReduceMotion && combatant.valueId === winnerId && readySides.size === 2 && cue !== "settled" ? (cue === "recovery" ? "animate-seething-swarm-return" : "animate-seething-swarm-approach") : ""}`}
+              className={`relative flex h-(--battle-visible-size) w-(--battle-combatant-size) shrink-0 items-end justify-center ${combatant.side === "first" ? "[--battle-travel-direction:1]" : "[--battle-travel-direction:-1]"} ${!shouldReduceMotion && canWinnerTravel && combatant.valueId === winnerId && readySides.size === 2 && cue !== "settled" ? (cue === "recovery" ? "animate-seething-swarm-return" : "animate-seething-swarm-approach") : ""}`}
               data-combatant-traveler={combatant.side}
               onAnimationEnd={(event) => {
                 if (
@@ -193,8 +215,10 @@ function BattlePlayback({
                     onPlaybackComplete={() =>
                       handlePlaybackComplete(combatant.side)
                     }
-                    onReady={() => handleReady(combatant.side)}
                     onRoleEntered={onRoleEntered}
+                    onReady={(canPlaySequence) =>
+                      handleReady(combatant.side, canPlaySequence)
+                    }
                   />
                 ) : (
                   <SeethingSwarmPlaceholder
