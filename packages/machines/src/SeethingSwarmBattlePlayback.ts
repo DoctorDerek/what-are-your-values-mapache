@@ -90,7 +90,12 @@ export function createSeethingSwarmBattlePlayback<PlatformAsset>({
               ? ["flourish", "rest"]
               : ["rest"]
 
-  const steps = createPlaybackSteps(combatant.clips, roles, cue, combatant.locomotion.animationId)
+  const steps = createPlaybackSteps(
+    combatant.clips,
+    roles,
+    cue,
+    combatant.locomotion.animationId,
+  )
   return steps.length
     ? steps
     : createPlaybackSteps(combatant.clips, ["rest"], "rest")
@@ -131,7 +136,9 @@ function createPlaybackSteps<
       role === "attack"
         ? cue === "impact"
           ? selection.sequence.slice(contactIndex + (contact ? 0 : 1))
-          : selection.sequence.slice(0, contactIndex + 1).filter((clip) => clip.animationId !== playedLocomotion)
+          : selection.sequence
+              .slice(0, contactIndex + 1)
+              .filter((clip) => clip.animationId !== playedLocomotion)
         : selection.sequence
     const roleBlocksResult =
       role === "attack" || (cue === "impact" && role === "reaction")

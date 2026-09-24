@@ -95,7 +95,14 @@ export default function SeethingSwarmAnimal({
       animation.currentTime = 0
       animation.play()
     }
-  }, [effectivePlaybackMode, frameDurationMs, isImageLoaded, playbackIdentity, startFrame, endFrame])
+  }, [
+    effectivePlaybackMode,
+    frameDurationMs,
+    isImageLoaded,
+    playbackIdentity,
+    startFrame,
+    endFrame,
+  ])
   const scaledFrameWidth = clip.frameWidth * geometry.integerScale
   const scaledFrameHeight = clip.frameHeight * geometry.integerScale
   const scaledStripWidth = scaledFrameWidth * clip.frameCount

@@ -14,8 +14,13 @@ export function requiresSeethingSwarmReturnTravel<Asset>(
   choreography: SeethingSwarmBattleChoreography<Asset>,
   winnerId: ValueId | null,
 ) {
-  return choreography.mode === "licensed" && choreography.combatants.some(
-    (combatant) => combatant.valueId === winnerId && combatant.locomotion.animationId !== "fly_forward",
+  return (
+    choreography.mode === "licensed" &&
+    choreography.combatants.some(
+      (combatant) =>
+        combatant.valueId === winnerId &&
+        combatant.locomotion.animationId !== "fly_forward",
+    )
   )
 }
 
