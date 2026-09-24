@@ -509,7 +509,9 @@ export const rootMachine = setup({
       event.type === "ACHIEVEMENT.PRESENTED" &&
       context.battleProfileStoreState !== null &&
       context.playerData !== null &&
-      !context.pendingAchievementPresentationIds.includes(event.achievementId) &&
+      !context.pendingAchievementPresentationIds.includes(
+        event.achievementId,
+      ) &&
       getPendingAchievementUnlocks(context.playerData.achievements).some(
         ({ id }) => id === event.achievementId,
       ),
@@ -736,8 +738,9 @@ export const rootMachine = setup({
           guard: "canRecordAchievementPresentation",
           target: "RecordingAchievementPresentation",
           actions: assign({
-            pendingAchievementPresentationIds: ({ event }) =>
-              [event.achievementId],
+            pendingAchievementPresentationIds: ({ event }) => [
+              event.achievementId,
+            ],
             achievementPresentationReturnTarget: "hub",
           }),
         },
@@ -807,8 +810,9 @@ export const rootMachine = setup({
           guard: "canRecordAchievementPresentation",
           target: "RecordingAchievementPresentation",
           actions: assign({
-            pendingAchievementPresentationIds: ({ event }) =>
-              [event.achievementId],
+            pendingAchievementPresentationIds: ({ event }) => [
+              event.achievementId,
+            ],
             achievementPresentationReturnTarget: "achievements",
           }),
         },
@@ -1624,8 +1628,9 @@ export const rootMachine = setup({
               guard: "canRecordAchievementPresentation",
               target: "#root.RecordingAchievementPresentation",
               actions: assign({
-                pendingAchievementPresentationIds: ({ event }) =>
-                  [event.achievementId],
+                pendingAchievementPresentationIds: ({ event }) => [
+                  event.achievementId,
+                ],
                 achievementPresentationReturnTarget: "crucible",
               }),
             },
@@ -1680,8 +1685,10 @@ export const rootMachine = setup({
             "ACHIEVEMENT.PRESENTED": {
               guard: "canRecordAchievementPresentation",
               actions: assign({
-                pendingAchievementPresentationIds: ({ context, event }) =>
-                  [...context.pendingAchievementPresentationIds, event.achievementId],
+                pendingAchievementPresentationIds: ({ context, event }) => [
+                  ...context.pendingAchievementPresentationIds,
+                  event.achievementId,
+                ],
                 achievementPresentationReturnTarget: "crucible",
               }),
             },
@@ -1783,8 +1790,10 @@ export const rootMachine = setup({
         "ACHIEVEMENT.PRESENTED": {
           guard: "canRecordAchievementPresentation",
           actions: assign({
-            pendingAchievementPresentationIds: ({ context, event }) =>
-              [...context.pendingAchievementPresentationIds, event.achievementId],
+            pendingAchievementPresentationIds: ({ context, event }) => [
+              ...context.pendingAchievementPresentationIds,
+              event.achievementId,
+            ],
           }),
         },
       },

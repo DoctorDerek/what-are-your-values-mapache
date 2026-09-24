@@ -2,13 +2,26 @@ import { ACHIEVEMENT_NOTIFICATION_DURATION_MILLISECONDS } from "@game/machines/s
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
 import { useEffect } from "react"
 import { View } from "react-native"
-import Animated, { cancelAnimation, Easing, FadeIn, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated"
+import Animated, {
+  cancelAnimation,
+  Easing,
+  FadeIn,
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated"
 import { scheduleOnRN } from "react-native-worklets"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 
 export default function NativeAchievementToast({
-  achievement, isPaused, isDismissalPending, shouldReduceMotion, onPresented, onInteraction,
+  achievement,
+  isPaused,
+  isDismissalPending,
+  shouldReduceMotion,
+  onPresented,
+  onInteraction,
 }: {
   achievement: AchievementPresentation
   isPaused: boolean
@@ -18,16 +31,26 @@ export default function NativeAchievementToast({
   onInteraction: (kind: "hover" | "focus" | "touch", isActive: boolean) => void
 }) {
   const remainingTime = useSharedValue(1)
-  const countdownStyle = useAnimatedStyle(() => ({ transform: [{ scaleX: remainingTime.get() }] }))
+  const countdownStyle = useAnimatedStyle(() => ({
+    transform: [{ scaleX: remainingTime.get() }],
+  }))
   useEffect(() => {
     if (isPaused || isDismissalPending) return
-    remainingTime.set(withTiming(0, {
-      duration: remainingTime.get() * ACHIEVEMENT_NOTIFICATION_DURATION_MILLISECONDS,
-      easing: Easing.linear,
-      reduceMotion: ReduceMotion.Never,
-    }, finished => {
-      if (finished) scheduleOnRN(onPresented, achievement.id)
-    }))
+    remainingTime.set(
+      withTiming(
+        0,
+        {
+          duration:
+            remainingTime.get() *
+            ACHIEVEMENT_NOTIFICATION_DURATION_MILLISECONDS,
+          easing: Easing.linear,
+          reduceMotion: ReduceMotion.Never,
+        },
+        (finished) => {
+          if (finished) scheduleOnRN(onPresented, achievement.id)
+        },
+      ),
+    )
     return () => cancelAnimation(remainingTime)
   }, [achievement.id, isDismissalPending, isPaused, onPresented, remainingTime])
 
@@ -43,8 +66,15 @@ export default function NativeAchievementToast({
     >
       <View className="flex-row items-start gap-2 px-2 py-1">
         <View className="min-w-0 flex-1">
-          <Text accessibilityRole="header" className="text-mapache-vivid-black text-sm leading-tight font-black uppercase">{achievement.title}</Text>
-          <Text className="text-mapache-vivid-black text-sm leading-tight font-semibold">{achievement.unlockReason}</Text>
+          <Text
+            accessibilityRole="header"
+            className="text-mapache-vivid-black text-sm leading-tight font-black uppercase"
+          >
+            {achievement.title}
+          </Text>
+          <Text className="text-mapache-vivid-black text-sm leading-tight font-semibold">
+            {achievement.unlockReason}
+          </Text>
         </View>
         <Button
           accessibilityLabel={`Dismiss achievement: ${achievement.title}`}
@@ -57,7 +87,9 @@ export default function NativeAchievementToast({
           onBlur={() => onInteraction("focus", false)}
           onHoverIn={() => onInteraction("hover", true)}
           onHoverOut={() => onInteraction("hover", false)}
-        ><Text>×</Text></Button>
+        >
+          <Text>×</Text>
+        </Button>
       </View>
       <Animated.View
         accessible={false}

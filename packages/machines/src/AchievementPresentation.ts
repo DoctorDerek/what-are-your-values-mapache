@@ -53,7 +53,9 @@ export function getPendingAchievementPresentations({
   readonly achievementPresentations: readonly AchievementPresentation[]
 }) {
   return getPendingAchievementUnlocks(achievementState).map(({ id }) => {
-    const presentation = achievementPresentations.find(achievement => achievement.id === id)
+    const presentation = achievementPresentations.find(
+      (achievement) => achievement.id === id,
+    )
     if (!presentation)
       throw new Error("Pending achievement presentation is unavailable")
     return presentation

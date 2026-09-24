@@ -665,7 +665,7 @@ function WritableGameClient({
     state.context.achievementPresentationReturnTarget
   const achievementBanner = (
     <AchievementBanner
-        achievements={pendingAchievementPresentations}
+      achievements={pendingAchievementPresentations}
       isAcknowledgementPending={isRecordingAchievementPresentation}
       shouldReduceMotion={shouldReduceMotion}
       onPresented={handleAchievementPresented}
@@ -909,7 +909,7 @@ function WritableGameClient({
       <>
         <Crucible
           activeDeck={battleProfile.activeDeck}
-        achievements={pendingAchievementPresentations}
+          achievements={pendingAchievementPresentations}
           battle={presentedBattle}
           progressById={battleProfile.progressById}
           runtimeClipCatalog={SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG}

@@ -481,7 +481,7 @@ function NativeGameClientContent() {
       backgroundCheckpointReturnTarget === "settings")
   const achievementBanner = (
     <NativeAchievementBanner
-        achievements={pendingAchievementPresentations}
+      achievements={pendingAchievementPresentations}
       isAcknowledgementPending={isRecordingAchievementPresentation}
       shouldReduceMotion={shouldReduceMotion}
       onPresented={handleAchievementPresented}
@@ -711,7 +711,7 @@ function NativeGameClientContent() {
       <View className="flex-1">
         <NativeCrucible
           activeDeck={battleProfile.activeDeck}
-        achievements={pendingAchievementPresentations}
+          achievements={pendingAchievementPresentations}
           battle={presentedBattle}
           runtimeClipCatalog={SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG}
           progressById={battleProfile.progressById}
