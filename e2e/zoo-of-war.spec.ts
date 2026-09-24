@@ -293,6 +293,48 @@ test("cached matchup changes preserve animal pixels without layout-position jump
   }
 })
 
+for (const { animalId, seed } of [
+  {
+    animalId: "mousepack/mouse02_brown",
+    seed: "982bdf8f-6f7e-421b-9888-282be4a9a60e",
+  },
+  {
+    animalId: "bunnypack",
+    seed: "16385167-7073-40e0-a660-0513608bcfd9",
+  },
+]) {
+  test(`${animalId} completes equal-duration windup and contact segments`, async ({
+    page,
+  }) => {
+    await page.addInitScript((seed) => {
+      Object.defineProperty(crypto, "randomUUID", { value: () => seed })
+    }, seed)
+    await page.goto("/")
+    await page.getByRole("button", { name: "Start", exact: true }).click()
+    await page.getByRole("button", { name: "Battle", exact: true }).click()
+    const stage = page.locator("[data-choreography-identity]")
+    await expect(
+      stage.locator('[data-combatant-side="first"]'),
+    ).toHaveAttribute("data-animal-id", animalId)
+    const identity = await stage.getAttribute("data-choreography-identity")
+    await page
+      .getByRole("button", { name: /^Choose / })
+      .first()
+      .click()
+    await expect(stage).not.toHaveAttribute(
+      "data-choreography-identity",
+      identity!,
+    )
+    await expect(stage).toHaveAttribute(
+      "data-battle-stage-state",
+      "awaiting-input",
+    )
+    await expect(stage.locator('[data-battle-active-clip="true"]')).toHaveCount(
+      2,
+    )
+  })
+}
+
 async function expectRenderedCombatant(
   combatant: Locator,
   mode: string | null,
