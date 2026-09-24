@@ -329,6 +329,7 @@ describe("NativeSeethingSwarmBattleStage", () => {
       await advance(600)
       await advance(600)
       await advance(600)
+      await advance(600)
       expect(initial.onResultComplete).toHaveBeenCalledTimes(1)
     },
   )
@@ -390,10 +391,16 @@ describe("NativeSeethingSwarmBattleStage", () => {
       await loadImages()
       await advance(100)
       await rerender(<NativeSeethingSwarmBattleStage {...selected} />)
-      expect(image("raccoonpack")).toHaveProp("source", 3)
-      expect(image("wolfpack")).toHaveProp("source", 103)
+      expect(image("raccoonpack")).toHaveProp(
+        "source",
+        winnerIndex === 0 ? 1 : 3,
+      )
+      expect(image("wolfpack")).toHaveProp(
+        "source",
+        winnerIndex === 1 ? 101 : 103,
+      )
       await loadImages()
-      await advance(200)
+      await advance(450)
       expect(image("raccoonpack")).toHaveProp(
         "source",
         winnerIndex === 0 ? 4 : 3,
@@ -413,10 +420,15 @@ describe("NativeSeethingSwarmBattleStage", () => {
       await advance(200)
       expect(image(winnerAnimal)).toHaveProp(
         "source",
-        winnerIndex === 0 ? 6 : 106,
+        winnerIndex === 0 ? 3 : 103,
       )
       expect(initial.onResultComplete).not.toHaveBeenCalled()
       await loadImages()
+      await advance(500)
+      expect(image(winnerAnimal)).toHaveProp(
+        "source",
+        winnerIndex === 0 ? 1 : 101,
+      )
       await advance(500)
       expect(initial.onResultComplete).not.toHaveBeenCalled()
       await rerender(
@@ -450,6 +462,12 @@ describe("NativeSeethingSwarmBattleStage", () => {
     await advance(500)
     expect(initial.onResultComplete).not.toHaveBeenCalled()
     await loadRole("second", "hurt")
+    await loadRole("first", "run")
+    await advance(500)
+    expect(initial.onResultComplete).not.toHaveBeenCalled()
+    await advance(500)
+    await advance(500)
+    expect(initial.onResultComplete).not.toHaveBeenCalled()
     await advance(500)
     expect(initial.onResultComplete).toHaveBeenCalledTimes(1)
     await unmount()
@@ -526,84 +544,101 @@ describe("NativeSeethingSwarmBattleStage", () => {
     const initial = { ...props(), winnerId: pair[0], isNextBattleReady: true }
     await render(<NativeSeethingSwarmBattleStage {...initial} />)
     await loadImages()
-    await advance(200)
+    await advance(450)
     await fireEvent(image("raccoonpack"), "error", {
       nativeEvent: { error: "decode failed" },
     })
     expect(screen.queryByTestId("battle-placeholder-first", hidden)).toBeNull()
-    expect(image("raccoonpack")).toHaveProp("source", 6)
+    expect(image("raccoonpack")).toHaveProp("source", 3)
+    await advance(550)
     await advance(550)
     await loadImages()
     await advance(550)
     expect(initial.onResultComplete).toHaveBeenCalledTimes(1)
   })
 
-  it("plays a complete aerial attack and waits for its landing after the opponent reacts", async () => {
-    const batValue = createCanonicalValueId("pvcs-2011:non-conformity")
-    const catalog = {
-      ...licensedCatalog,
-      animals: licensedCatalog.animals.map((animal) => {
-        const animalId =
-          animal.animalId === "raccoonpack" ? ("bat" as const) : animal.animalId
-        return {
-          ...animal,
-          animalId,
-          referencePose: {
-            ...animal.referencePose,
-            animationId:
-              animalId === "bat"
-                ? ("idle_upright" as const)
-                : ("idle" as const),
-          },
-          characterClips: animal.characterClips.flatMap((clip) =>
-            animalId === "bat" && clip.animationId === "attack"
-              ? ["fly_forward", "attack", "land_upright"].map(
-                  (animationId, index) => ({
-                    ...clip,
-                    animalId,
-                    animationId,
-                    frameCount: animationId === "land_upright" ? 8 : 4,
-                    asset: 201 + index,
-                  }),
-                )
-              : [
-                  {
-                    ...clip,
-                    animalId,
-                    animationId:
-                      animalId === "bat" && clip.animationId === "idle"
-                        ? "idle_upright"
-                        : clip.animationId,
-                  },
-                ],
-          ),
-        }
-      }),
-    }
-    const initial = {
-      ...props(),
-      catalog,
-      battle: { ...battle, pair: [batValue, pair[1]] as const },
-      winnerId: batValue,
-      isNextBattleReady: true,
-    }
-    await render(<NativeSeethingSwarmBattleStage {...initial} />)
-    await loadImages()
-    await advance(200)
-    expect(image("bat")).toHaveProp("source", 201)
-    await advance(300)
-    expect(image("bat")).toHaveProp("source", 201)
-    expect(initial.onResultComplete).not.toHaveBeenCalled()
-    await advance(200)
-    expect(image("bat")).toHaveProp("source", 202)
-    await advance(500)
-    expect(image("bat")).toHaveProp("source", 203)
-    expect(image("wolfpack")).toHaveProp("source", 105)
-    await advance(500)
-    expect(initial.onResultComplete).not.toHaveBeenCalled()
-    await advance(400)
-    expect(initial.onResultComplete).toHaveBeenCalledTimes(1)
-  })
+  it.each([false, true])(
+    "requires a complete aerial recipe before flight, failed landing %s",
+    async (failedLanding) => {
+      const batValue = createCanonicalValueId("pvcs-2011:non-conformity")
+      const catalog = {
+        ...licensedCatalog,
+        animals: licensedCatalog.animals.map((animal) => {
+          const animalId =
+            animal.animalId === "raccoonpack"
+              ? ("bat" as const)
+              : animal.animalId
+          return {
+            ...animal,
+            animalId,
+            referencePose: {
+              ...animal.referencePose,
+              animationId:
+                animalId === "bat"
+                  ? ("idle_upright" as const)
+                  : ("idle" as const),
+            },
+            characterClips: animal.characterClips.flatMap((clip) =>
+              animalId === "bat" && clip.animationId === "attack"
+                ? ["fly_forward", "attack", "land_upright"].map(
+                    (animationId, index) => ({
+                      ...clip,
+                      animalId,
+                      animationId,
+                      frameCount: animationId === "land_upright" ? 8 : 4,
+                      asset: 201 + index,
+                    }),
+                  )
+                : [
+                    {
+                      ...clip,
+                      animalId,
+                      animationId:
+                        animalId === "bat" && clip.animationId === "idle"
+                          ? "idle_upright"
+                          : clip.animationId,
+                    },
+                  ],
+            ),
+          }
+        }),
+      }
+      const initial = {
+        ...props(),
+        catalog,
+        battle: { ...battle, pair: [batValue, pair[1]] as const },
+        winnerId: batValue,
+        isNextBattleReady: true,
+      }
+      await render(<NativeSeethingSwarmBattleStage {...initial} />)
+      await loadImages()
+      if (failedLanding) {
+        const landing = within(
+          screen.getByTestId("battle-clip-first-land_upright", hidden),
+        ).getByTestId(/-image$/, hidden)
+        await fireEvent(landing, "error")
+        expect(image("bat")).not.toHaveProp("source", 201)
+        expect(initial.onResultComplete).not.toHaveBeenCalled()
+        await advance(550)
+        expect(initial.onResultComplete).toHaveBeenCalledTimes(1)
+        return
+      }
+      await advance(200)
+      expect(image("bat")).toHaveProp("source", 201)
+      await advance(300)
+      expect(image("bat")).toHaveProp("source", 202)
+      expect(initial.onResultComplete).not.toHaveBeenCalled()
+      await advance(200)
+      expect(image("bat")).toHaveProp("source", 202)
+      await advance(500)
+      expect(image("bat")).toHaveProp("source", 203)
+      expect(image("wolfpack")).toHaveProp("source", 105)
+      await advance(500)
+      expect(initial.onResultComplete).not.toHaveBeenCalled()
+      await advance(400)
+      expect(initial.onResultComplete).toHaveBeenCalledTimes(1)
+    },
+  )
 
   it("keeps two animated public-clone animals and resets result ownership with the battle", async () => {
     const initial = {

@@ -51,6 +51,52 @@ afterEach(() => {
 })
 
 describe("NativeSeethingSwarmAnimal", () => {
+  it("continues from contact on the same image without repeating earlier frames", async () => {
+    const complete = jest.fn()
+    const props = {
+      clip,
+      geometry,
+      shouldReduceMotion: false,
+      playbackMode: "one-shot" as const,
+      frameDurationMs: 100,
+      onPlaybackComplete: complete,
+    }
+    const { rerender } = await render(
+      <NativeSeethingSwarmAnimal
+        {...props}
+        startFrame={0}
+        endFrame={1}
+        playbackIdentity="strike"
+      />,
+    )
+    await fireEvent(getImage(), "load")
+    const resident = getImage()
+    await advance(150)
+    expect(complete).toHaveBeenCalledTimes(1)
+    await rerender(
+      <NativeSeethingSwarmAnimal
+        {...props}
+        startFrame={1}
+        endFrame={4}
+        playbackIdentity="impact"
+      />,
+    )
+    expect(getImage()).toBe(resident)
+    await advance(20)
+    expect(getAnimatedStyle(getStrip())).toMatchObject({
+      transform: [{ translateX: -12 }],
+    })
+    await advance(150)
+    expect(getAnimatedStyle(getStrip())).toMatchObject({
+      transform: [{ translateX: -24 }],
+    })
+    expect(complete).toHaveBeenCalledTimes(1)
+    await advance(200)
+    expect(getAnimatedStyle(getStrip())).toMatchObject({
+      transform: [{ translateX: -36 }],
+    })
+    expect(complete).toHaveBeenCalledTimes(2)
+  })
   it("restarts a resident strip for a new cue and cancels its previous completion", async () => {
     const complete = jest.fn()
     const props = {
@@ -203,7 +249,7 @@ describe("NativeSeethingSwarmAnimal", () => {
     })
   })
 
-  it("completes single-frame and reduced-motion one-shots without animated delay", async () => {
+  it("holds a single source frame for its duration but settles reduced motion immediately", async () => {
     for (const scenario of [
       { shouldReduceMotion: true, clip },
       { shouldReduceMotion: false, clip: { ...clip, frameCount: 1 } },
@@ -219,6 +265,12 @@ describe("NativeSeethingSwarmAnimal", () => {
       )
       await fireEvent(getImage(), "load")
       expect(getStrip()).toHaveStyle({ transform: [{ translateX: -0 }] })
+      if (!scenario.shouldReduceMotion) {
+        expect(complete).not.toHaveBeenCalled()
+        await act(async () => {
+          jest.advanceTimersByTime(200)
+        })
+      }
       expect(complete).toHaveBeenCalledTimes(1)
       await unmount()
     }
