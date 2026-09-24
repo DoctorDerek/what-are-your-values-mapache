@@ -368,7 +368,10 @@ test("the Zoo of War holds both animals through a committed battle", async ({
           !(image instanceof HTMLImageElement) ||
           image
             .closest("[data-battle-role]")
-            ?.getAttribute("data-battle-role") !== "attack"
+            ?.getAttribute("data-battle-role") !== "attack" ||
+          image
+            .closest("[data-battle-cue]")
+            ?.getAttribute("data-battle-cue") !== "strike"
         )
           return
         const stage = image.closest("[data-choreography-identity]")
