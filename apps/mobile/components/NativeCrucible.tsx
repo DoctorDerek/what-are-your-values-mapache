@@ -31,7 +31,7 @@ const NATIVE_CONTROL_HINT_INPUT_MODALITY = "touch-pointer" as const
 
 export default function NativeCrucible({
   activeDeck,
-  achievement,
+  achievements,
   battle,
   runtimeClipCatalog,
   progressById,
@@ -50,7 +50,7 @@ export default function NativeCrucible({
   onWinnerSelected,
 }: {
   activeDeck: ActiveDeck
-  achievement: AchievementPresentation | null
+  achievements: readonly AchievementPresentation[]
   battle: PresentedBattle
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
   progressById: ValueProgressById
@@ -210,13 +210,7 @@ export default function NativeCrucible({
         onRedo={handleRedo}
         onStop={onExit}
       />
-      <NativeAchievementBanner
-        achievement={achievement}
-        isAcknowledgementPending={isAchievementAcknowledgementPending}
-        placement="battle"
-        shouldReduceMotion={shouldReduceMotion}
-        onPresented={onAchievementPresented}
-      />
+      <View className="relative min-h-0 flex-1">
       <NativeSeethingSwarmBattleStage
         battle={currentBattle}
         catalog={runtimeClipCatalog}
@@ -258,6 +252,14 @@ export default function NativeCrucible({
           </>
         )}
       </NativeSeethingSwarmBattleStage>
+      <NativeAchievementBanner
+        achievements={achievements}
+        isAcknowledgementPending={isAchievementAcknowledgementPending}
+        placement="battle"
+        shouldReduceMotion={shouldReduceMotion}
+        onPresented={onAchievementPresented}
+      />
+      </View>
     </MapacheScreen>
   )
 }

@@ -10,7 +10,7 @@ import {
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { rankValues } from "@game/data/src/ValueRanking"
 import {
-  getPendingAchievementPresentation,
+  getPendingAchievementPresentations,
   projectAchievementCatalog,
   type AchievementPresentation,
 } from "@game/machines/src/AchievementPresentation"
@@ -118,10 +118,10 @@ function NativeGameClientContent() {
         : [],
     [playerData],
   )
-  const pendingAchievementPresentation = useMemo(() => {
-    if (!playerData) return null
+  const pendingAchievementPresentations = useMemo(() => {
+    if (!playerData) return []
 
-    return getPendingAchievementPresentation({
+    return getPendingAchievementPresentations({
       achievementState: playerData.achievements,
       achievementPresentations,
     })
@@ -481,7 +481,7 @@ function NativeGameClientContent() {
       backgroundCheckpointReturnTarget === "settings")
   const achievementBanner = (
     <NativeAchievementBanner
-      achievement={pendingAchievementPresentation}
+        achievements={pendingAchievementPresentations}
       isAcknowledgementPending={isRecordingAchievementPresentation}
       shouldReduceMotion={shouldReduceMotion}
       onPresented={handleAchievementPresented}
@@ -711,7 +711,7 @@ function NativeGameClientContent() {
       <View className="flex-1">
         <NativeCrucible
           activeDeck={battleProfile.activeDeck}
-          achievement={pendingAchievementPresentation}
+        achievements={pendingAchievementPresentations}
           battle={presentedBattle}
           runtimeClipCatalog={SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG}
           progressById={battleProfile.progressById}
