@@ -94,7 +94,7 @@ describe("Achievement State", () => {
     ])
   })
 
-  it("marks only unlocked achievements as presented in stable order and remains idempotent", () => {
+  it("marks unlocked achievements independently while retaining unlock order and idempotency", () => {
     const activeDeck = createActiveDeck([])
     const firstBattleId = readAchievementId("battle.first", "Achievement ID")
     const tenBattlesId = readAchievementId("battle.10", "Achievement ID")
@@ -119,13 +119,15 @@ describe("Achievement State", () => {
         lifetimeBattleCount: 10,
       },
     })
-    expect(() =>
-      markAchievementPresented({
-        activeDeck,
-        state: unlocked,
-        achievementId: tenBattlesId,
-      }),
-    ).toThrow("does not follow unlock order")
+    const newerPresented = markAchievementPresented({
+      activeDeck,
+      state: unlocked,
+      achievementId: tenBattlesId,
+    })
+    expect(newerPresented.presentedAchievementIds).toEqual([tenBattlesId])
+    expect(
+      getPendingAchievementUnlocks(newerPresented).map(({ id }) => id),
+    ).toEqual([firstBattleId])
     const presented = markAchievementPresented({
       activeDeck,
       state: unlocked,
@@ -197,7 +199,7 @@ describe("Achievement State", () => {
           lifetimeBattleCount: 10,
         },
       }),
-    ).toThrow("does not follow unlock order")
+    ).not.toThrow()
   })
 
   it("rejects malformed achievement progress and baseline coverage", () => {

@@ -911,7 +911,7 @@ describe("Root Machine", () => {
     await expect(durableStore.readAll()).resolves.toEqual(entriesBeforeReset)
   })
 
-  it("records only the first pending milestone and returns to the Hub without changing battle progress", async () => {
+  it("records only an unlocked milestone and returns to the Hub without changing battle progress", async () => {
     const { actor } = await bootRootActor({
       schedulerSeed: "achievement-hub-presentation-seed",
     })
@@ -936,8 +936,8 @@ describe("Root Machine", () => {
 
     expect(actor.getSnapshot().matches("Hub")).toBe(true)
     expect(
-      actor.getSnapshot().context.pendingAchievementPresentationId,
-    ).toBeNull()
+      actor.getSnapshot().context.pendingAchievementPresentationIds,
+    ).toEqual([])
 
     actor.send({
       type: "ACHIEVEMENT.PRESENTED",
@@ -958,62 +958,57 @@ describe("Root Machine", () => {
     expect(
       presentedSnapshot.context.battleProfileStoreState?.head.generation,
     ).toBe(unlockedStoreState.head.generation + 1)
-    expect(
-      presentedSnapshot.context.pendingAchievementPresentationId,
-    ).toBeNull()
+    expect(presentedSnapshot.context.pendingAchievementPresentationIds).toEqual(
+      [],
+    )
     expect(
       presentedSnapshot.context.achievementPresentationReturnTarget,
     ).toBeNull()
   })
 
-  it("refuses to skip an unlocked milestone and exposes the next queued presentation only after durable acknowledgement", async () => {
-    const { actor } = await bootRootActor({
-      schedulerSeed: "achievement-fifo-presentation-seed",
+  it("serializes newest-first dismissals and ignores duplicate requests without changing progress", async () => {
+    const { actor, durableStore } = await bootRootActor({
+      schedulerSeed: "achievement-independent-presentation-seed",
     })
     for (let battleIndex = 0; battleIndex < 5; battleIndex += 1)
       await commitOneBattle(actor)
-
     const playerData = actor.getSnapshot().context.playerData
-    if (!playerData)
-      throw new Error("Achievement FIFO Player Data is unavailable")
-
-    const [firstPendingUnlock, secondPendingUnlock] =
-      getPendingAchievementUnlocks(playerData.achievements)
-    if (!firstPendingUnlock || !secondPendingUnlock)
-      throw new Error("Achievement FIFO requires multiple pending unlocks")
-
-    actor.send({
-      type: "ACHIEVEMENT.PRESENTED",
-      achievementId: secondPendingUnlock.id,
-    })
-
-    expect(actor.getSnapshot().matches({ Crucible: "Ready" })).toBe(true)
-    expect(
-      actor.getSnapshot().context.pendingAchievementPresentationId,
-    ).toBeNull()
-    expect(
-      actor.getSnapshot().context.playerData?.achievements
-        .presentedAchievementIds,
-    ).toEqual([])
-
-    actor.send({
-      type: "ACHIEVEMENT.PRESENTED",
-      achievementId: firstPendingUnlock.id,
-    })
-    const acknowledgedSnapshot = await waitFor(
-      actor,
-      (candidate) =>
-        candidate.matches({ Crucible: "Ready" }) &&
-        candidate.context.playerData?.achievements
-          .presentedAchievementIds[0] === firstPendingUnlock.id,
+    if (!playerData) throw new Error("Achievement Player Data is unavailable")
+    const [first, second] = getPendingAchievementUnlocks(
+      playerData.achievements,
     )
-    const acknowledgedPlayerData = acknowledgedSnapshot.context.playerData
-    if (!acknowledgedPlayerData)
-      throw new Error("Achievement FIFO acknowledgement lost Player Data")
-
+    if (!first || !second) throw new Error("Multiple pending unlocks required")
+    actor.send({ type: "ACHIEVEMENT.PRESENTED", achievementId: second.id })
+    actor.send({ type: "ACHIEVEMENT.PRESENTED", achievementId: first.id })
+    actor.send({ type: "ACHIEVEMENT.PRESENTED", achievementId: second.id })
     expect(
-      getPendingAchievementUnlocks(acknowledgedPlayerData.achievements)[0]?.id,
-    ).toBe(secondPendingUnlock.id)
+      actor.getSnapshot().context.pendingAchievementPresentationIds,
+    ).toEqual([second.id, first.id])
+    const acknowledged = await waitFor(
+      actor,
+      (snapshot) =>
+        snapshot.matches({ Crucible: "Ready" }) &&
+        snapshot.context.playerData?.achievements.presentedAchievementIds
+          .length === 2,
+    )
+    expect(
+      acknowledged.context.playerData?.achievements.presentedAchievementIds,
+    ).toEqual([second.id, first.id])
+    expect(acknowledged.context.playerData?.profile).toEqual(playerData.profile)
+    expect(acknowledged.context.playerData?.achievements.unlocks).toEqual(
+      playerData.achievements.unlocks,
+    )
+    expect(acknowledged.context.pendingAchievementPresentationIds).toEqual([])
+    actor.stop()
+    const reloaded = await bootRootActor({
+      durableStore,
+      schedulerSeed: "ignored-existing-profile",
+    })
+    expect(
+      reloaded.actor.getSnapshot().context.playerData?.achievements
+        .presentedAchievementIds,
+    ).toEqual([second.id, first.id])
+    reloaded.actor.stop()
   })
 
   it("returns a durable milestone presentation to the unchanged Crucible pair", async () => {
@@ -1160,8 +1155,8 @@ describe("Root Machine", () => {
     expect(serializedSnapshot.context.persistenceIssue).toBeNull()
     expect(serializedSnapshot.context.pendingBattleProfileCommit).toBeNull()
     expect(
-      serializedSnapshot.context.pendingAchievementPresentationId,
-    ).toBeNull()
+      serializedSnapshot.context.pendingAchievementPresentationIds,
+    ).toEqual([])
   })
 
   it("retries rejected milestone acknowledgement without losing its pending unlock or Crucible return", async () => {
@@ -1183,9 +1178,9 @@ describe("Root Machine", () => {
     expect(failedSnapshot.context.persistenceFailureOrigin).toBe(
       "achievement-presentation",
     )
-    expect(failedSnapshot.context.pendingAchievementPresentationId).toBe(
+    expect(failedSnapshot.context.pendingAchievementPresentationIds).toEqual([
       pendingUnlock.id,
-    )
+    ])
     expect(failedSnapshot.context.achievementPresentationReturnTarget).toBe(
       "crucible",
     )
@@ -1210,7 +1205,9 @@ describe("Root Machine", () => {
     )
 
     expect(retriedSnapshot.context.persistenceIssue).toBeNull()
-    expect(retriedSnapshot.context.pendingAchievementPresentationId).toBeNull()
+    expect(retriedSnapshot.context.pendingAchievementPresentationIds).toEqual(
+      [],
+    )
   })
 
   it.each(["hub", "achievements", "crucible"] as const)(
@@ -1251,8 +1248,8 @@ describe("Root Machine", () => {
         ),
       ).toBe(false)
       expect(
-        returnedSnapshot.context.pendingAchievementPresentationId,
-      ).toBeNull()
+        returnedSnapshot.context.pendingAchievementPresentationIds,
+      ).toEqual([])
       const returnedPlayerData = returnedSnapshot.context.playerData
       if (!returnedPlayerData)
         throw new Error("Presentation return lost Player Data")

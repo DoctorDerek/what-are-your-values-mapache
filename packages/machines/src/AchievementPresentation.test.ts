@@ -7,7 +7,7 @@ import { ACHIEVEMENT_CATALOG, readAchievementId } from "./AchievementCatalog"
 import {
   formatAchievementUnlockedDate,
   getAchievementEnglishCopy,
-  getPendingAchievementPresentation,
+  getPendingAchievementPresentations,
   projectAchievementCatalog,
 } from "./AchievementPresentation"
 import {
@@ -263,13 +263,13 @@ describe("Achievement presentation", () => {
       unlockedDate: null,
     })
     expect(
-      getPendingAchievementPresentation({
+      getPendingAchievementPresentations({
         achievementState,
         achievementPresentations: catalog,
       }),
-    ).toMatchObject({ id: firstBattleId, status: "unlocked" })
+    ).toMatchObject([{ id: firstBattleId, status: "unlocked" }])
     expect(() =>
-      getPendingAchievementPresentation({
+      getPendingAchievementPresentations({
         achievementState,
         achievementPresentations: [],
       }),
@@ -285,14 +285,14 @@ describe("Achievement presentation", () => {
     )
 
     expect(
-      getPendingAchievementPresentation({
+      getPendingAchievementPresentations({
         achievementState,
         achievementPresentations: projectAchievementCatalog({
           achievementState,
           battleProfile,
         }),
       }),
-    ).toBeNull()
+    ).toEqual([])
   })
 
   it("fails loudly when achievement baselines or value progress omit an active value", () => {
