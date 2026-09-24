@@ -1,7 +1,6 @@
 import { SEETHING_SWARM_CALM_FRAME_DURATION_MS } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { ValueId } from "@game/data/src/Value"
 import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
-import type { SeethingSwarmVariedRole } from "@game/machines/src/SeethingSwarmBattleVariation"
 import {
   createSeethingSwarmAttentionState,
   updateSeethingSwarmAttention,
@@ -12,6 +11,7 @@ import {
   createSeethingSwarmBattlePlayback,
   getSeethingSwarmBattleClips,
 } from "@game/machines/src/SeethingSwarmBattlePlayback"
+import type { SeethingSwarmVariedRole } from "@game/machines/src/SeethingSwarmBattleVariation"
 import type { StaticImageData } from "next/image"
 import { useEffect, useMemo, useState, type CSSProperties } from "react"
 import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
@@ -161,12 +161,27 @@ export default function SeethingSwarmCombatant({
 
   useEffect(() => {
     if (
-      !isReady || !hasVisibleImage || isComplete || shouldReduceMotion ||
-      cue === "attention" || role === "anticipation" ||
+      !isReady ||
+      !hasVisibleImage ||
+      isComplete ||
+      shouldReduceMotion ||
+      cue === "attention" ||
+      role === "anticipation" ||
       (role !== "rest" && step.semanticFamily === "rest")
-    ) return
+    )
+      return
     onRoleEntered?.(combatant.animalId, role)
-  }, [combatant.animalId, cue, hasVisibleImage, isComplete, isReady, onRoleEntered, role, shouldReduceMotion, step.semanticFamily])
+  }, [
+    combatant.animalId,
+    cue,
+    hasVisibleImage,
+    isComplete,
+    isReady,
+    onRoleEntered,
+    role,
+    shouldReduceMotion,
+    step.semanticFamily,
+  ])
 
   useEffect(() => {
     if (isReady || (hasLoadError && hasVisibleImage)) onReady()

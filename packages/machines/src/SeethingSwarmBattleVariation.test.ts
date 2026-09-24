@@ -32,9 +32,13 @@ describe("mounted battle variation", () => {
   it("projects future preparation repeatedly without consuming any role", () => {
     const actor = start()
     const context = actor.getSnapshot().context
-    expect(projectSeethingSwarmBattleOrdinals(undefined, "battle")).toBeUndefined()
+    expect(
+      projectSeethingSwarmBattleOrdinals(undefined, "battle"),
+    ).toBeUndefined()
     for (let index = 0; index < 10; index += 1)
-      expect(projectSeethingSwarmBattleOrdinals(context, "pending")).toBe(context.nextOrdinals)
+      expect(projectSeethingSwarmBattleOrdinals(context, "pending")).toBe(
+        context.nextOrdinals,
+      )
     expect(context.nextOrdinals.size).toBe(0)
     actor.stop()
   })
@@ -47,10 +51,20 @@ describe("mounted battle variation", () => {
     actor.send(enter("entry"))
     actor.send(enter("attack"))
     const context = actor.getSnapshot().context
-    expect(projectSeethingSwarmBattleOrdinals(context, presentation.identity)).toBe(selected)
-    expect(selected.get("raccoonpack")).toEqual(INITIAL_SEETHING_SWARM_ROLE_ORDINALS)
-    expect(projectSeethingSwarmBattleOrdinals(context, "next")!.get("raccoonpack")).toEqual({
-      entry: 1, rest: 0, attack: 1, reaction: 0, flourish: 0,
+    expect(
+      projectSeethingSwarmBattleOrdinals(context, presentation.identity),
+    ).toBe(selected)
+    expect(selected.get("raccoonpack")).toEqual(
+      INITIAL_SEETHING_SWARM_ROLE_ORDINALS,
+    )
+    expect(
+      projectSeethingSwarmBattleOrdinals(context, "next")!.get("raccoonpack"),
+    ).toEqual({
+      entry: 1,
+      rest: 0,
+      attack: 1,
+      reaction: 0,
+      flourish: 0,
     })
     expect(context.nextOrdinals.has("wolfpack")).toBe(false)
     actor.stop()
@@ -62,13 +76,26 @@ describe("mounted battle variation", () => {
     actor.send(enter("entry"))
     const selected = actor.getSnapshot().context.performance!.ordinals
     actor.send({ ...presentation, type: "PERFORMANCE.CLOSED" })
-    expect(projectSeethingSwarmBattleOrdinals(actor.getSnapshot().context, presentation.identity)).not.toBe(selected)
-    expect(projectSeethingSwarmBattleOrdinals(actor.getSnapshot().context, presentation.identity, presentation.scope)).toBe(selected)
+    expect(
+      projectSeethingSwarmBattleOrdinals(
+        actor.getSnapshot().context,
+        presentation.identity,
+      ),
+    ).not.toBe(selected)
+    expect(
+      projectSeethingSwarmBattleOrdinals(
+        actor.getSnapshot().context,
+        presentation.identity,
+        presentation.scope,
+      ),
+    ).toBe(selected)
     actor.send(presentation)
     actor.send(presentation)
     actor.send(enter("entry"))
     expect(actor.getSnapshot().context.performance!.ordinals).toBe(selected)
-    expect(actor.getSnapshot().context.nextOrdinals.get("raccoonpack")!.entry).toBe(1)
+    expect(
+      actor.getSnapshot().context.nextOrdinals.get("raccoonpack")!.entry,
+    ).toBe(1)
     actor.stop()
   })
 
@@ -78,12 +105,18 @@ describe("mounted battle variation", () => {
     actor.send(enter("rest"))
     actor.send({ ...presentation, type: "PERFORMANCE.CLOSED" })
     actor.send({ ...presentation, scope: "mounted-stage-b" })
-    expect(actor.getSnapshot().context.performance!.ordinals.get("raccoonpack")!.rest).toBe(1)
+    expect(
+      actor.getSnapshot().context.performance!.ordinals.get("raccoonpack")!
+        .rest,
+    ).toBe(1)
     expect(actor.getSnapshot().context.performance!.entered.size).toBe(0)
     actor.stop()
     const reloaded = start()
     reloaded.send(presentation)
-    expect(reloaded.getSnapshot().context.performance!.ordinals.get("raccoonpack")!.rest).toBe(0)
+    expect(
+      reloaded.getSnapshot().context.performance!.ordinals.get("raccoonpack")!
+        .rest,
+    ).toBe(0)
     reloaded.stop()
   })
 
@@ -108,9 +141,14 @@ describe("mounted battle variation", () => {
     actor.send(enter("reaction"))
     actor.send(enter("reaction"))
     expect(actor.getSnapshot().context.performance!.ordinals.size).toBe(1)
-    expect(actor.getSnapshot().context.nextOrdinals.get("raccoonpack")!.reaction).toBe(1)
+    expect(
+      actor.getSnapshot().context.nextOrdinals.get("raccoonpack")!.reaction,
+    ).toBe(1)
     actor.send({ ...presentation, identity: "battle-b" })
-    expect(actor.getSnapshot().context.performance!.ordinals.get("raccoonpack")!.reaction).toBe(1)
+    expect(
+      actor.getSnapshot().context.performance!.ordinals.get("raccoonpack")!
+        .reaction,
+    ).toBe(1)
     expect(actor.getSnapshot().context.performance!.entered.size).toBe(0)
     actor.stop()
   })

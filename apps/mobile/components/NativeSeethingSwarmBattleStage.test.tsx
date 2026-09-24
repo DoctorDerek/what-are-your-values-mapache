@@ -161,17 +161,26 @@ describe("NativeSeethingSwarmBattleStage", () => {
       ...licensedCatalog,
       animals: animals.map((animal, index) => ({
         ...animal,
-        characterClips: [...animal.characterClips, {
-          ...animal.characterClips[0],
-          animationId: "dash",
-          relativePath: `${animal.animalId}/dash.png`,
-          asset: index * 100 + 7,
-        }],
+        characterClips: [
+          ...animal.characterClips,
+          {
+            ...animal.characterClips[0],
+            animationId: "dash",
+            relativePath: `${animal.animalId}/dash.png`,
+            asset: index * 100 + 7,
+          },
+        ],
       })),
     }
     const draw = (inBattle: boolean, reduced = false) => (
       <NativeSeethingSwarmBattleVariation>
-        {inBattle ? <NativeSeethingSwarmBattleStage {...initial} catalog={catalog} shouldReduceMotion={reduced} /> : null}
+        {inBattle ? (
+          <NativeSeethingSwarmBattleStage
+            {...initial}
+            catalog={catalog}
+            shouldReduceMotion={reduced}
+          />
+        ) : null}
       </NativeSeethingSwarmBattleVariation>
     )
     const { rerender } = await render(draw(true))

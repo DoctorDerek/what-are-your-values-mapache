@@ -4,6 +4,7 @@ import {
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
+import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
 import type { PresentedBattle } from "@game/machines/src/CombatMachine"
 import {
   type SeethingSwarmBattleChoreography,
@@ -14,6 +15,7 @@ import {
   SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS,
   type SeethingSwarmBattleExchangeCue,
 } from "@game/machines/src/SeethingSwarmBattleExchange"
+import type { SeethingSwarmVariedRole } from "@game/machines/src/SeethingSwarmBattleVariation"
 import type { StaticImageData } from "next/image"
 import {
   useCallback,
@@ -26,10 +28,8 @@ import {
   type ReactNode,
 } from "react"
 import { usePreparedSeethingSwarmBattle } from "@/components/SeethingSwarmAssetPreparation"
-import SeethingSwarmCombatant from "@/components/SeethingSwarmCombatant"
 import { useSeethingSwarmActiveBattle } from "@/components/SeethingSwarmBattleVariation"
-import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
-import type { SeethingSwarmVariedRole } from "@game/machines/src/SeethingSwarmBattleVariation"
+import SeethingSwarmCombatant from "@/components/SeethingSwarmCombatant"
 import SeethingSwarmPlaceholder from "@/components/SeethingSwarmPlaceholder"
 
 type SeethingSwarmBattleStageStyle = CSSProperties & {
@@ -228,7 +228,10 @@ export default function SeethingSwarmBattleStage({
     getIsDocumentHidden,
     getServerIsDocumentHidden,
   )
-  const { choreography, onRoleEntered } = useSeethingSwarmActiveBattle(battle, runtimeClipCatalog)
+  const { choreography, onRoleEntered } = useSeethingSwarmActiveBattle(
+    battle,
+    runtimeClipCatalog,
+  )
   usePreparedSeethingSwarmBattle(battle, runtimeClipCatalog)
   usePreparedSeethingSwarmBattle(pendingBattle, runtimeClipCatalog)
   const stageGeometry = createSeethingSwarmStageGeometry(

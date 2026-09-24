@@ -10,8 +10,10 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react"
 import { StrictMode, type ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import SeethingSwarmBattleStage from "@/components/SeethingSwarmBattleStage"
-import SeethingSwarmBattleVariation, { useSeethingSwarmProjectedBattle } from "@/components/SeethingSwarmBattleVariation"
 import { createSeethingSwarmBattleStageTestCatalog } from "@/components/SeethingSwarmBattleStage.test-fixture"
+import SeethingSwarmBattleVariation, {
+  useSeethingSwarmProjectedBattle,
+} from "@/components/SeethingSwarmBattleVariation"
 
 function createPresentedBattle(seed: string) {
   const battleCycle = createInitialBattleCycle(seed)
@@ -142,23 +144,48 @@ describe("SeethingSwarmBattleStage", () => {
       ...props.runtimeClipCatalog,
       animals: props.runtimeClipCatalog.animals.map((animal) => ({
         ...animal,
-        characterClips: [...animal.characterClips, ...["dash", "idle_blink"].filter((animationId) => !animal.characterClips.some((clip) => clip.animationId === animationId)).map((animationId) => ({
-          ...animal.characterClips[0],
-          animationId,
-          relativePath: `${animal.animalId}/${animationId}.png`,
-          asset: { ...animal.characterClips[0].asset, src: `/test-assets/${animal.animalId}/${animationId}.png` },
-        }))],
+        characterClips: [
+          ...animal.characterClips,
+          ...["dash", "idle_blink"]
+            .filter(
+              (animationId) =>
+                !animal.characterClips.some(
+                  (clip) => clip.animationId === animationId,
+                ),
+            )
+            .map((animationId) => ({
+              ...animal.characterClips[0],
+              animationId,
+              relativePath: `${animal.animalId}/${animationId}.png`,
+              asset: {
+                ...animal.characterClips[0].asset,
+                src: `/test-assets/${animal.animalId}/${animationId}.png`,
+              },
+            })),
+        ],
       })),
     }
     function PreparationProbe() {
       const projected = useSeethingSwarmProjectedBattle(props.battle, catalog)
-      return <output>{projected?.mode === "licensed" ? projected.combatants[0].clips.entry.clip.animationId : ""}</output>
+      return (
+        <output>
+          {projected?.mode === "licensed"
+            ? projected.combatants[0].clips.entry.clip.animationId
+            : ""}
+        </output>
+      )
     }
     const draw = (inBattle: boolean, reduced = false) => (
       <StrictMode>
         <SeethingSwarmBattleVariation>
           <PreparationProbe />
-          {inBattle ? <SeethingSwarmBattleStage {...props} runtimeClipCatalog={catalog} shouldReduceMotion={reduced} /> : null}
+          {inBattle ? (
+            <SeethingSwarmBattleStage
+              {...props}
+              runtimeClipCatalog={catalog}
+              shouldReduceMotion={reduced}
+            />
+          ) : null}
         </SeethingSwarmBattleVariation>
       </StrictMode>
     )
@@ -166,7 +193,10 @@ describe("SeethingSwarmBattleStage", () => {
     expect(container.querySelector("output")).toHaveTextContent("run")
     rerender(draw(false))
     rerender(draw(true))
-    expect(getRole(container, "first")).toHaveAttribute("data-battle-requested-clip", "run")
+    expect(getRole(container, "first")).toHaveAttribute(
+      "data-battle-requested-clip",
+      "run",
+    )
     await finishClip(container, "first")
     expect(container.querySelector("output")).toHaveTextContent("run")
     rerender(draw(true))
@@ -174,7 +204,10 @@ describe("SeethingSwarmBattleStage", () => {
     rerender(draw(false))
     expect(container.querySelector("output")).toHaveTextContent("dash")
     rerender(draw(true))
-    expect(getRole(container, "first")).toHaveAttribute("data-battle-requested-clip", "dash")
+    expect(getRole(container, "first")).toHaveAttribute(
+      "data-battle-requested-clip",
+      "dash",
+    )
     rerender(draw(false))
     rerender(draw(true, true))
     for (const image of container.querySelectorAll("img")) fireEvent.load(image)

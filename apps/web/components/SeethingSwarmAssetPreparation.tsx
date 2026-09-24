@@ -10,7 +10,6 @@ import {
   getChoreographyPreparationClips,
   isChoreographyPrepared,
 } from "@game/machines/src/SeethingSwarmAssetPreparation"
-import SeethingSwarmBattleVariation, { useSeethingSwarmProjectedBattle } from "@/components/SeethingSwarmBattleVariation"
 import { useActorRef, useSelector } from "@xstate/react"
 import Image, { type StaticImageData } from "next/image"
 import {
@@ -22,6 +21,9 @@ import {
   type ReactNode,
 } from "react"
 import type { ActorRefFrom } from "xstate"
+import SeethingSwarmBattleVariation, {
+  useSeethingSwarmProjectedBattle,
+} from "@/components/SeethingSwarmBattleVariation"
 
 const preparationMachine =
   createSeethingSwarmAssetPreparationMachine<StaticImageData>()

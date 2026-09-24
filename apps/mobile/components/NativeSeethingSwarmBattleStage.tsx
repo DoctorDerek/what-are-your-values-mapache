@@ -1,6 +1,7 @@
 import { createSeethingSwarmStageGeometry } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
+import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
 import type { PresentedBattle } from "@game/machines/src/CombatMachine"
 import {
   type SeethingSwarmBattleChoreography,
@@ -12,20 +13,13 @@ import {
   type SeethingSwarmBattleExchangeCue,
   type SeethingSwarmBattlePoint,
 } from "@game/machines/src/SeethingSwarmBattleExchange"
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react"
+import type { SeethingSwarmVariedRole } from "@game/machines/src/SeethingSwarmBattleVariation"
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { AppState, View } from "react-native"
 import { usePreparedNativeSeethingSwarmBattle } from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSeethingSwarmBattleTraveler from "@/components/NativeSeethingSwarmBattleTraveler"
-import NativeSeethingSwarmCombatant from "@/components/NativeSeethingSwarmCombatant"
 import { useNativeSeethingSwarmActiveBattle } from "@/components/NativeSeethingSwarmBattleVariation"
-import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
-import type { SeethingSwarmVariedRole } from "@game/machines/src/SeethingSwarmBattleVariation"
+import NativeSeethingSwarmCombatant from "@/components/NativeSeethingSwarmCombatant"
 import NativeSeethingSwarmPlaceholder from "@/components/NativeSeethingSwarmPlaceholder"
 
 function NativeBattlePlayback({
@@ -178,8 +172,8 @@ function NativeBattlePlayback({
                   onPlaybackComplete={() =>
                     handlePlaybackComplete(combatant.side)
                   }
-                    onReady={() => handleReady(combatant.side)}
-                    onRoleEntered={onRoleEntered}
+                  onReady={() => handleReady(combatant.side)}
+                  onRoleEntered={onRoleEntered}
                 />
               ) : (
                 <NativeSeethingSwarmPlaceholder
@@ -243,7 +237,10 @@ export default function NativeSeethingSwarmBattleStage({
     )
     return () => subscription.remove()
   }, [])
-  const { choreography, onRoleEntered } = useNativeSeethingSwarmActiveBattle(battle, catalog)
+  const { choreography, onRoleEntered } = useNativeSeethingSwarmActiveBattle(
+    battle,
+    catalog,
+  )
   usePreparedNativeSeethingSwarmBattle(battle, catalog)
 
   return (

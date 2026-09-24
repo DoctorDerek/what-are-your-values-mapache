@@ -19,14 +19,14 @@ import type { ValueId } from "@game/data/src/Value"
 import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
 import type { PresentedBattle } from "./CombatMachine"
 import {
+  resolveSeethingSwarmBattleCombatant,
+  type SeethingSwarmBattleCombatant,
+} from "./SeethingSwarmBattleCombatant"
+import {
   INITIAL_SEETHING_SWARM_ROLE_ORDINALS,
   type SeethingSwarmAnimalOrdinals,
   type SeethingSwarmRoleOrdinals,
 } from "./SeethingSwarmBattleVariation"
-import {
-  resolveSeethingSwarmBattleCombatant,
-  type SeethingSwarmBattleCombatant,
-} from "./SeethingSwarmBattleCombatant"
 
 export const SEETHING_SWARM_BATTLE_CHOREOGRAPHY_VERSION = 2
 
@@ -118,7 +118,9 @@ type ClassifiedBattleEligibleClip<PlatformAsset> = Readonly<{
   policy: SeethingSwarmBattleEligibleAnimationPolicy
 }>
 
-export function createSeethingSwarmChoreographyIdentity(battle: PresentedBattle) {
+export function createSeethingSwarmChoreographyIdentity(
+  battle: PresentedBattle,
+) {
   const { scheduler } = battle
   return JSON.stringify([
     "seethingswarm-battle-choreography",
@@ -168,14 +170,16 @@ function classifyBattleEligibleClips<PlatformAsset>(
     resolveSeethingSwarmBattleAnimationPolicy(clip.animationId)
   for (const [family, animationIds] of familyPools) {
     for (const animationId of animationIds) {
-    const clip = animal.characterClips.find((candidate) => candidate.animationId === animationId)
-    if (!clip) continue
-    const policy = Object.freeze({
-      animationId: clip.animationId,
-      usageKind: "battle-eligible",
-      semanticFamilies: Object.freeze([family]),
-    }) satisfies SeethingSwarmBattleEligibleAnimationPolicy
-    battleEligibleClips.push(Object.freeze({ clip, policy }))
+      const clip = animal.characterClips.find(
+        (candidate) => candidate.animationId === animationId,
+      )
+      if (!clip) continue
+      const policy = Object.freeze({
+        animationId: clip.animationId,
+        usageKind: "battle-eligible",
+        semanticFamilies: Object.freeze([family]),
+      }) satisfies SeethingSwarmBattleEligibleAnimationPolicy
+      battleEligibleClips.push(Object.freeze({ clip, policy }))
     }
   }
 
@@ -398,13 +402,17 @@ export function createSeethingSwarmBattleChoreography<PlatformAsset>({
       createLicensedBattleCombatant({
         catalog,
         combatant: firstCombatant,
-        ordinals: ordinals?.get(firstCombatant.animalId) ?? INITIAL_SEETHING_SWARM_ROLE_ORDINALS,
+        ordinals:
+          ordinals?.get(firstCombatant.animalId) ??
+          INITIAL_SEETHING_SWARM_ROLE_ORDINALS,
         side: "first",
       }),
       createLicensedBattleCombatant({
         catalog,
         combatant: secondCombatant,
-        ordinals: ordinals?.get(secondCombatant.animalId) ?? INITIAL_SEETHING_SWARM_ROLE_ORDINALS,
+        ordinals:
+          ordinals?.get(secondCombatant.animalId) ??
+          INITIAL_SEETHING_SWARM_ROLE_ORDINALS,
         side: "second",
       }),
     ] as const),
