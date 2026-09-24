@@ -177,7 +177,10 @@ for (const viewport of [
             !(image instanceof HTMLImageElement) ||
             image
               .closest("[data-battle-role]")
-              ?.getAttribute("data-battle-role") !== "attack"
+              ?.getAttribute("data-battle-role") !== "attack" ||
+            image
+              .closest("[data-combatant-side]")
+              ?.getAttribute("data-battle-cue") !== "strike"
           )
             return
           const stage = image.closest("[data-choreography-identity]")

@@ -23,6 +23,7 @@ type SeethingSwarmAnimalStyle = CSSProperties & {
   "--animal-strip-left": string
   "--animal-strip-top": string
   "--animal-strip-travel": string
+  "--animal-strip-start-offset": string
   "--animal-strip-width": string
   "--animal-frame-width": string
 }
@@ -44,6 +45,8 @@ export default function SeethingSwarmAnimal({
   onLoadError,
   onReady,
   onPlaybackComplete,
+  startFrame = 0,
+  endFrame = clip.frameCount,
 }: {
   clip: SeethingSwarmRuntimeCharacterClip<StaticImageData>
   facing?: SeethingSwarmAnimalFacingDirection
@@ -56,6 +59,8 @@ export default function SeethingSwarmAnimal({
   onLoadError?: () => void
   onReady?: () => void
   onPlaybackComplete?: () => void
+  startFrame?: number
+  endFrame?: number
 }) {
   const [loadedAssetSource, setLoadedAssetSource] = useState<string | null>(
     null,
@@ -90,18 +95,26 @@ export default function SeethingSwarmAnimal({
       animation.currentTime = 0
       animation.play()
     }
-  }, [effectivePlaybackMode, frameDurationMs, isImageLoaded, playbackIdentity])
+  }, [
+    effectivePlaybackMode,
+    frameDurationMs,
+    isImageLoaded,
+    playbackIdentity,
+    startFrame,
+    endFrame,
+  ])
   const scaledFrameWidth = clip.frameWidth * geometry.integerScale
   const scaledFrameHeight = clip.frameHeight * geometry.integerScale
   const scaledStripWidth = scaledFrameWidth * clip.frameCount
   const stripStyle: SeethingSwarmAnimalStyle = {
-    "--animal-animation-duration": `${clip.frameCount * frameDurationMs}ms`,
-    "--animal-frame-count": clip.frameCount,
+    "--animal-animation-duration": `${(endFrame - startFrame) * frameDurationMs}ms`,
+    "--animal-frame-count": endFrame - startFrame,
     "--animal-strip-height": `${scaledFrameHeight}px`,
-    "--animal-strip-final-offset": `${-scaledFrameWidth * (clip.frameCount - 1)}px`,
+    "--animal-strip-final-offset": `${-scaledFrameWidth * (endFrame - 1)}px`,
     "--animal-strip-left": `${geometry.frameOffsetX}px`,
     "--animal-strip-top": `${geometry.frameOffsetY}px`,
-    "--animal-strip-travel": `${-scaledStripWidth}px`,
+    "--animal-strip-travel": `${-scaledFrameWidth * endFrame}px`,
+    "--animal-strip-start-offset": `${-scaledFrameWidth * startFrame}px`,
     "--animal-strip-width": `${scaledStripWidth}px`,
     "--animal-frame-width": `${scaledFrameWidth}px`,
   }
@@ -113,10 +126,10 @@ export default function SeethingSwarmAnimal({
     effectivePlaybackMode === "loop"
       ? "animate-seething-swarm-strip [animation-iteration-count:infinite]"
       : effectivePlaybackMode === "one-shot"
-        ? "animate-seething-swarm-strip"
+        ? "animate-seething-swarm-strip [animation-fill-mode:both]"
         : effectivePlaybackMode === "hold-final-frame"
           ? "animate-none [transform:translate3d(var(--animal-strip-final-offset),0,0)]"
-          : "animate-none"
+          : "animate-none [transform:translate3d(var(--animal-strip-start-offset),0,0)]"
 
   return (
     <span

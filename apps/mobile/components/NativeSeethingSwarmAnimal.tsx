@@ -30,6 +30,8 @@ export default function NativeSeethingSwarmAnimal({
   onPlaybackComplete,
   onLoadError,
   onReady,
+  startFrame = 0,
+  endFrame = clip.frameCount,
 }: {
   clip: SeethingSwarmRuntimeCharacterClip<number>
   facing?: SeethingSwarmAnimalFacingDirection
@@ -41,8 +43,10 @@ export default function NativeSeethingSwarmAnimal({
   onPlaybackComplete?: () => void
   onLoadError?: () => void
   onReady?: () => void
+  startFrame?: number
+  endFrame?: number
 }) {
-  const frameProgress = useSharedValue(0)
+  const frameProgress = useSharedValue(startFrame)
   const [loadedAsset, setLoadedAsset] = useState<number | null>(null)
   const preparedStatus = useNativeSeethingSwarmAssetStatus(clip.relativePath)
   const isImageLoaded = loadedAsset === clip.asset || preparedStatus === "ready"
@@ -67,9 +71,9 @@ export default function NativeSeethingSwarmAnimal({
     height: scaledFrameHeight,
   }
   const animatedStyle = useAnimatedStyle(() => {
-    const frameIndex = Math.min(
-      clip.frameCount - 1,
-      Math.floor(frameProgress.get()),
+    const frameIndex = Math.max(
+      startFrame,
+      Math.min(endFrame - 1, Math.floor(frameProgress.get())),
     )
     return {
       transform: [{ translateX: -frameIndex * scaledFrameWidth }],
@@ -83,19 +87,19 @@ export default function NativeSeethingSwarmAnimal({
     }
     cancelAnimation(frameProgress)
     frameProgress.set(
-      playbackMode === "hold-final-frame" ? clip.frameCount - 1 : 0,
+      playbackMode === "hold-final-frame" ? endFrame - 1 : startFrame,
     )
     if (!isImageLoaded) return
-    if (shouldReduceMotion || clip.frameCount === 1) {
+    if (shouldReduceMotion) {
       if (playbackMode === "one-shot") finishPlayback()
       return
     }
     if (playbackMode === "static" || playbackMode === "hold-final-frame") return
 
     const animation = withTiming(
-      clip.frameCount,
+      endFrame,
       {
-        duration: clip.frameCount * frameDurationMs,
+        duration: (endFrame - startFrame) * frameDurationMs,
         easing: Easing.linear,
         reduceMotion: ReduceMotion.Never,
       },
@@ -117,6 +121,8 @@ export default function NativeSeethingSwarmAnimal({
   }, [
     clip.asset,
     clip.frameCount,
+    startFrame,
+    endFrame,
     frameDurationMs,
     frameProgress,
     isImageLoaded,

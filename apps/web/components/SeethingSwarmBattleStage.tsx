@@ -11,8 +11,9 @@ import {
   type SeethingSwarmBattleCombatantSide,
 } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import {
+  requiresSeethingSwarmReturnTravel,
   resolveSeethingSwarmPlaceholderRole,
-  SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS,
+  resolveSeethingSwarmTravelDuration,
   type SeethingSwarmBattleExchangeCue,
 } from "@game/machines/src/SeethingSwarmBattleExchange"
 import type { SeethingSwarmVariedRole } from "@game/machines/src/SeethingSwarmBattleVariation"
@@ -76,15 +77,25 @@ function BattlePlayback({
   const [resultCue, setResultCue] =
     useState<SeethingSwarmBattleExchangeCue>("approach")
   const [readySides, setReadySides] = useState<
-    ReadonlySet<SeethingSwarmBattleCombatantSide>
-  >(() => new Set())
+    ReadonlyMap<SeethingSwarmBattleCombatantSide, boolean>
+  >(() => new Map())
   const battleVisibilityRef = useRef<HTMLDivElement>(null)
-  const cue = winnerId ? resultCue : "introduction"
+  const winnerSide = choreography.combatants.find(
+    (combatant) => combatant.valueId === winnerId,
+  )?.side
+  const canWinnerTravel =
+    winnerSide !== undefined && readySides.get(winnerSide) === true
+  const cue = !winnerId
+    ? "introduction"
+    : resultCue === "approach" && readySides.size === 2 && !canWinnerTravel
+      ? "strike"
+      : resultCue
   const completedSidesRef = useRef(new Set<SeethingSwarmBattleCombatantSide>())
   const hasReportedResultRef = useRef(false)
+  const hasFinishedPlaybackRef = useRef(false)
   const reportResult = useCallback(() => {
     if (!winnerId || !isNextBattleReady || hasReportedResultRef.current) return
-    if (!shouldReduceMotion && completedSidesRef.current.size !== 2) return
+    if (!shouldReduceMotion && !hasFinishedPlaybackRef.current) return
     hasReportedResultRef.current = true
     onResultComplete()
   }, [isNextBattleReady, onResultComplete, shouldReduceMotion, winnerId])
@@ -111,13 +122,37 @@ function BattlePlayback({
     }
     if (cue !== "impact") return
     completedSidesRef.current.add(side)
+    if (completedSidesRef.current.size !== 2) return
+    if (
+      canWinnerTravel &&
+      requiresSeethingSwarmReturnTravel(choreography, winnerId)
+    ) {
+      setResultCue("recovery")
+      return
+    }
+    hasFinishedPlaybackRef.current = true
+    setResultCue("settled")
     reportResult()
   }
 
-  const handleReady = (side: SeethingSwarmBattleCombatantSide) => {
-    if (cue !== "approach") return
+  const handleTravelComplete = () => {
+    if (cue === "approach") setResultCue("strike")
+    if (cue === "recovery") {
+      hasFinishedPlaybackRef.current = true
+      setResultCue("settled")
+      reportResult()
+    }
+  }
+
+  const handleReady = (
+    side: SeethingSwarmBattleCombatantSide,
+    canPlaySequence = true,
+  ) => {
+    if (cue !== "approach" && canPlaySequence) return
     setReadySides((previous) =>
-      previous.has(side) ? previous : new Set([...previous, side]),
+      previous.get(side) === canPlaySequence
+        ? previous
+        : new Map([...previous, [side, canPlaySequence]]),
     )
   }
 
@@ -141,16 +176,18 @@ function BattlePlayback({
             data-battle-cue={cue}
           >
             <div
-              className={`relative flex h-(--battle-visible-size) w-(--battle-combatant-size) shrink-0 items-end justify-center ${combatant.side === "first" ? "[--battle-travel-direction:1]" : "[--battle-travel-direction:-1]"} ${!shouldReduceMotion && combatant.valueId === winnerId && readySides.size === 2 ? "animate-seething-swarm-approach" : ""}`}
+              className={`relative flex h-(--battle-visible-size) w-(--battle-combatant-size) shrink-0 items-end justify-center ${combatant.side === "first" ? "[--battle-travel-direction:1]" : "[--battle-travel-direction:-1]"} ${!shouldReduceMotion && canWinnerTravel && combatant.valueId === winnerId && readySides.size === 2 && cue !== "settled" ? (cue === "recovery" ? "animate-seething-swarm-return" : "animate-seething-swarm-approach") : ""}`}
               data-combatant-traveler={combatant.side}
               onAnimationEnd={(event) => {
                 if (
                   event.target === event.currentTarget &&
-                  event.animationName === "seething-swarm-approach" &&
-                  cue === "approach" &&
+                  ((event.animationName === "seething-swarm-approach" &&
+                    cue === "approach") ||
+                    (event.animationName === "seething-swarm-return" &&
+                      cue === "recovery")) &&
                   combatant.valueId === winnerId
                 )
-                  setResultCue("strike")
+                  handleTravelComplete()
               }}
             >
               {reward ? (
@@ -169,11 +206,14 @@ function BattlePlayback({
                     winnerId={winnerId}
                     cue={cue}
                     shouldReduceMotion={shouldReduceMotion}
+                    isTravelReady={readySides.size === 2}
                     onPlaybackComplete={() =>
                       handlePlaybackComplete(combatant.side)
                     }
-                    onReady={() => handleReady(combatant.side)}
                     onRoleEntered={onRoleEntered}
+                    onReady={(canPlaySequence) =>
+                      handleReady(combatant.side, canPlaySequence)
+                    }
                   />
                 ) : (
                   <SeethingSwarmPlaceholder
@@ -241,7 +281,7 @@ export default function SeethingSwarmBattleStage({
   )
   const stageStyle: SeethingSwarmBattleStageStyle = {
     "--battle-result-duration": `${SEETHING_SWARM_BATTLE_RESULT_DURATION_MS}ms`,
-    "--battle-approach-duration": `${SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS}ms`,
+    "--battle-approach-duration": `${resolveSeethingSwarmTravelDuration(choreography, winnerId)}ms`,
     "--battle-tile-size": `${stageGeometry.width}px`,
     "--battle-below-anchor": `${stageGeometry.belowAnchor}px`,
     "--battle-visible-height": `${stageGeometry.height}px`,

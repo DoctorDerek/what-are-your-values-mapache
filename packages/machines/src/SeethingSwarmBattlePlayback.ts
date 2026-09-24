@@ -4,6 +4,7 @@ import {
   SEETHING_SWARM_CALM_FRAME_DURATION_MS,
   type SeethingSwarmAnimalPlaybackMode,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
+import { resolveSeethingSwarmAttackContact } from "@game/data/src/SeethingSwarmAttackContact"
 import type { SeethingSwarmRuntimeCharacterClip } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type {
@@ -29,6 +30,9 @@ export type SeethingSwarmBattlePlaybackStep<PlatformAsset> = Omit<
     playbackMode: SeethingSwarmAnimalPlaybackMode
     frameDurationMs: number
     blocksResult: boolean
+    startFrame: number
+    endFrame: number
+    facesAway: boolean
   }>
 
 export function getSeethingSwarmBattleClips<PlatformAsset>(
@@ -41,6 +45,7 @@ export function getSeethingSwarmBattleClips<PlatformAsset>(
   for (const selection of Object.values(combatant.clips)) {
     for (const clip of selection.sequence) clipsById.set(clip.animationId, clip)
   }
+  clipsById.set(combatant.locomotion.animationId, combatant.locomotion)
   return Object.freeze([...clipsById.values()])
 }
 
@@ -54,6 +59,22 @@ export function createSeethingSwarmBattlePlayback<PlatformAsset>({
   readonly cue: SeethingSwarmBattleExchangeCue
 }): readonly SeethingSwarmBattlePlaybackStep<PlatformAsset>[] {
   const isWinner = combatant.valueId === winnerId
+  if (isWinner && (cue === "approach" || cue === "recovery")) {
+    const clip = combatant.locomotion
+    return [
+      {
+        role: "attack",
+        semanticFamily: "entry-exit",
+        clip,
+        playbackMode: "one-shot",
+        frameDurationMs: SEETHING_SWARM_BATTLE_FRAME_DURATION_MS,
+        blocksResult: true,
+        startFrame: 0,
+        endFrame: clip.frameCount,
+        facesAway: cue === "recovery",
+      },
+    ]
+  }
   const roles: readonly SeethingSwarmBattleClipRole[] =
     cue === "introduction"
       ? BATTLE_INTRODUCTION_ROLES
@@ -63,11 +84,21 @@ export function createSeethingSwarmBattlePlayback<PlatformAsset>({
           ? ["attack"]
           : cue === "impact"
             ? isWinner
-              ? ["attack", "flourish"]
+              ? ["attack"]
               : ["reaction"]
-            : ["rest"]
+            : cue === "settled" && isWinner
+              ? ["flourish", "rest"]
+              : ["rest"]
 
-  return createPlaybackSteps(combatant.clips, roles, cue)
+  const steps = createPlaybackSteps(
+    combatant.clips,
+    roles,
+    cue,
+    combatant.locomotion.animationId,
+  )
+  return steps.length
+    ? steps
+    : createPlaybackSteps(combatant.clips, ["rest"], "rest")
 }
 
 export function createSeethingSwarmAttentionPlayback<PlatformAsset>(
@@ -89,6 +120,7 @@ function createPlaybackSteps<
     Pick<SeethingSwarmBattleClipSelections<PlatformAsset>, "rest">,
   roles: readonly Role[],
   cue: SeethingSwarmBattleExchangeCue,
+  playedLocomotion?: string,
 ) {
   const steps: SeethingSwarmBattlePlaybackStep<PlatformAsset>[] = []
   for (const role of roles) {
@@ -96,11 +128,17 @@ function createPlaybackSteps<
     const contactIndex = selection.sequence.findIndex(
       (clip) => clip.animationId === selection.clip.animationId,
     )
+    const contact =
+      role === "attack"
+        ? resolveSeethingSwarmAttackContact(selection.clip)
+        : null
     const sequence =
       role === "attack"
         ? cue === "impact"
-          ? selection.sequence.slice(contactIndex + 1)
-          : selection.sequence.slice(0, contactIndex + 1)
+          ? selection.sequence.slice(contactIndex + (contact ? 0 : 1))
+          : selection.sequence
+              .slice(0, contactIndex + 1)
+              .filter((clip) => clip.animationId !== playedLocomotion)
         : selection.sequence
     const roleBlocksResult =
       role === "attack" || (cue === "impact" && role === "reaction")
@@ -114,6 +152,13 @@ function createPlaybackSteps<
       const returnsToRest =
         selection.sequence.length > 1 && clip === selections.rest.clip
       const blocksResult = roleBlocksResult && !returnsToRest
+      const isStrikeClip = role === "attack" && clip === selection.clip
+      const startFrame =
+        isStrikeClip && cue === "impact" && contact ? contact.frameIndex : 0
+      const endFrame =
+        isStrikeClip && cue === "strike" && contact
+          ? contact.frameIndex
+          : clip.frameCount
       const playbackMode =
         role === "rest" && index === sequence.length - 1 ? "loop" : "one-shot"
       const previous = steps.at(-1)
@@ -136,6 +181,9 @@ function createPlaybackSteps<
                 ? SEETHING_SWARM_ATTENTION_FRAME_DURATION_MS
                 : SEETHING_SWARM_BATTLE_FRAME_DURATION_MS,
           blocksResult,
+          startFrame,
+          endFrame,
+          facesAway: isStrikeClip && (contact?.facesAway ?? false),
         }),
       )
     })
