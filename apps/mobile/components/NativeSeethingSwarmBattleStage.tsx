@@ -53,21 +53,16 @@ function NativeBattlePlayback({
   const [layoutRevision, setLayoutRevision] = useState(0)
   const firstAnchorRef = useRef<View>(null)
   const secondAnchorRef = useRef<View>(null)
-  const cue = winnerId ? resultCue : "introduction"
   const winnerSide = choreography.combatants.find(
     (combatant) => combatant.valueId === winnerId,
   )?.side
   const canWinnerTravel =
     winnerSide !== undefined && readySides.get(winnerSide) === true
-  useEffect(() => {
-    if (
-      winnerSide &&
-      readySides.size === 2 &&
-      !canWinnerTravel &&
-      cue === "approach"
-    )
-      setResultCue("strike")
-  }, [winnerSide, readySides.size, canWinnerTravel, cue])
+  const cue = !winnerId
+    ? "introduction"
+    : resultCue === "approach" && readySides.size === 2 && !canWinnerTravel
+      ? "strike"
+      : resultCue
   const completedSidesRef = useRef(new Set<SeethingSwarmBattleCombatantSide>())
   const hasReportedResultRef = useRef(false)
   const hasFinishedPlaybackRef = useRef(false)
