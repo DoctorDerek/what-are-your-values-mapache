@@ -30,7 +30,7 @@ import {
   within,
 } from "@testing-library/react"
 import { Component, type ReactNode } from "react"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { webStorage } from "@/lib/WebStorage"
 import GameClient from "./GameClient"
 
@@ -217,6 +217,9 @@ async function openProductMenuDestination(
 }
 
 describe("GameClient Integration", () => {
+  beforeEach(() => {
+    vi.spyOn(document, "hasFocus").mockReturnValue(true)
+  })
   afterEach(() => {
     durableStoreFailure.initialEntries = []
     durableStoreFailure.readCount = 0
@@ -1333,7 +1336,9 @@ describe("GameClient Integration", () => {
     expect(nextChoices).toHaveLength(2)
     for (const choice of nextChoices) expect(choice).toBeEnabled()
 
-    fireEvent.click(screen.getByRole("button", { name: "Dismiss achievement" }))
+    fireEvent.click(
+      screen.getByRole("button", { name: /^Dismiss achievement/ }),
+    )
 
     await waitFor(() =>
       expect(
@@ -1389,7 +1394,9 @@ describe("GameClient Integration", () => {
     await screen.findByRole("heading", { name: "First Battle" })
 
     durableStoreFailure.writeEnabled = true
-    fireEvent.click(screen.getByRole("button", { name: "Dismiss achievement" }))
+    fireEvent.click(
+      screen.getByRole("button", { name: /^Dismiss achievement/ }),
+    )
 
     expect(
       await screen.findByRole("heading", {

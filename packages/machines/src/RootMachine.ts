@@ -94,7 +94,7 @@ type RootMachineContext = {
   battleProfileStoreState: BattleProfileStoreState | null
   pendingBattleProfileCommit: BattleProfileCommit | null
   pendingCustomValueDrafts: readonly CustomValueDraft[]
-  pendingAchievementPresentationId: AchievementId | null
+  pendingAchievementPresentationIds: readonly AchievementId[]
   achievementPresentationReturnTarget: AchievementPresentationReturnTarget | null
   backgroundCheckpointReturnTarget: BackgroundCheckpointReturnTarget | null
   pendingPlayerSettings: PlayerSettings | null
@@ -213,7 +213,7 @@ type RootMachineInput = {
 }
 
 const CLEARED_ACHIEVEMENT_PRESENTATION_CONTEXT = Object.freeze({
-  pendingAchievementPresentationId: null,
+  pendingAchievementPresentationIds: [] as readonly AchievementId[],
   achievementPresentationReturnTarget: null,
   persistenceFailureOrigin: null,
   persistenceIssue: null,
@@ -258,11 +258,12 @@ function requirePendingBattleProfileCommit(context: RootMachineContext) {
 }
 
 function requirePendingAchievementPresentationId(context: RootMachineContext) {
-  if (!context.pendingAchievementPresentationId) {
+  const achievementId = context.pendingAchievementPresentationIds[0]
+  if (!achievementId) {
     throw new Error("Achievement presentation is not prepared")
   }
 
-  return context.pendingAchievementPresentationId
+  return achievementId
 }
 
 function requirePendingPlayerSettings(context: RootMachineContext) {
@@ -508,10 +509,16 @@ export const rootMachine = setup({
       event.type === "ACHIEVEMENT.PRESENTED" &&
       context.battleProfileStoreState !== null &&
       context.playerData !== null &&
-      getPendingAchievementUnlocks(context.playerData.achievements)[0]?.id ===
+      !context.pendingAchievementPresentationIds.includes(
         event.achievementId,
+      ) &&
+      getPendingAchievementUnlocks(context.playerData.achievements).some(
+        ({ id }) => id === event.achievementId,
+      ),
     hasPendingAchievementPresentation: ({ context }) =>
-      context.pendingAchievementPresentationId !== null,
+      context.pendingAchievementPresentationIds.length > 0,
+    hasQueuedAchievementPresentation: ({ context }) =>
+      context.pendingAchievementPresentationIds.length > 1,
     shouldReturnAchievementPresentationToAchievements: ({ context }) =>
       context.achievementPresentationReturnTarget === "achievements",
     shouldReturnAchievementPresentationToCrucible: ({ context }) =>
@@ -554,7 +561,7 @@ export const rootMachine = setup({
     battleProfileStoreState: null,
     pendingBattleProfileCommit: null,
     pendingCustomValueDrafts: [],
-    pendingAchievementPresentationId: null,
+    pendingAchievementPresentationIds: [],
     achievementPresentationReturnTarget: null,
     backgroundCheckpointReturnTarget: null,
     pendingPlayerSettings: null,
@@ -731,8 +738,9 @@ export const rootMachine = setup({
           guard: "canRecordAchievementPresentation",
           target: "RecordingAchievementPresentation",
           actions: assign({
-            pendingAchievementPresentationId: ({ event }) =>
+            pendingAchievementPresentationIds: ({ event }) => [
               event.achievementId,
+            ],
             achievementPresentationReturnTarget: "hub",
           }),
         },
@@ -802,8 +810,9 @@ export const rootMachine = setup({
           guard: "canRecordAchievementPresentation",
           target: "RecordingAchievementPresentation",
           actions: assign({
-            pendingAchievementPresentationId: ({ event }) =>
+            pendingAchievementPresentationIds: ({ event }) => [
               event.achievementId,
+            ],
             achievementPresentationReturnTarget: "achievements",
           }),
         },
@@ -1619,8 +1628,9 @@ export const rootMachine = setup({
               guard: "canRecordAchievementPresentation",
               target: "#root.RecordingAchievementPresentation",
               actions: assign({
-                pendingAchievementPresentationId: ({ event }) =>
+                pendingAchievementPresentationIds: ({ event }) => [
                   event.achievementId,
+                ],
                 achievementPresentationReturnTarget: "crucible",
               }),
             },
@@ -1675,8 +1685,10 @@ export const rootMachine = setup({
             "ACHIEVEMENT.PRESENTED": {
               guard: "canRecordAchievementPresentation",
               actions: assign({
-                pendingAchievementPresentationId: ({ event }) =>
+                pendingAchievementPresentationIds: ({ context, event }) => [
+                  ...context.pendingAchievementPresentationIds,
                   event.achievementId,
+                ],
                 achievementPresentationReturnTarget: "crucible",
               }),
             },
@@ -1774,6 +1786,17 @@ export const rootMachine = setup({
       ],
     },
     RecordingAchievementPresentation: {
+      on: {
+        "ACHIEVEMENT.PRESENTED": {
+          guard: "canRecordAchievementPresentation",
+          actions: assign({
+            pendingAchievementPresentationIds: ({ context, event }) => [
+              ...context.pendingAchievementPresentationIds,
+              event.achievementId,
+            ],
+          }),
+        },
+      },
       invoke: {
         src: "recordAchievementPresentation",
         input: ({ context }) => ({
@@ -1783,6 +1806,17 @@ export const rootMachine = setup({
           presentedAt: context.now(),
         }),
         onDone: [
+          {
+            guard: "hasQueuedAchievementPresentation",
+            target: "RecordingAchievementPresentation",
+            reenter: true,
+            actions: assign({
+              playerData: ({ event }) => event.output.head.playerData,
+              battleProfileStoreState: ({ event }) => event.output,
+              pendingAchievementPresentationIds: ({ context }) =>
+                context.pendingAchievementPresentationIds.slice(1),
+            }),
+          },
           {
             guard: "shouldReturnAchievementPresentationToAchievements",
             target: "Achievements",

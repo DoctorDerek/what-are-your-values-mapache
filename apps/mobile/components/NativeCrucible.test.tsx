@@ -39,7 +39,7 @@ if (!firstValue || !secondValue)
 function createCrucibleProps(isPersistencePending: boolean) {
   return {
     activeDeck: battleCycle.activeDeck,
-    achievement: null,
+    achievements: [],
     battle,
     runtimeClipCatalog: createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
     progressById: battleCycle.progressById,

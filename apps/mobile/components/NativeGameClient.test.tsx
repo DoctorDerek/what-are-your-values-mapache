@@ -78,6 +78,7 @@ const runtimeCatalogModule = jest.requireMock<{
 const chooseBackup = jest.fn(async () => undefined)
 
 beforeEach(() => {
+  AppState.currentState = "active"
   runtimeCatalogModule.SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG =
     createSeethingSwarmTypographyOnlyRuntimeClipCatalog()
   const store = createInMemoryDurableStore()
@@ -374,6 +375,12 @@ describe("NativeGameClient battle routing", () => {
     await render(<NativeGameClient />)
 
     await user.press(await screen.findByRole("button", { name: "Start" }))
+    await openMenuDestination(user, "Settings")
+    await user.press(screen.getByRole("radio", { name: "On" }))
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Back" })).toBeEnabled(),
+    )
+    await user.press(screen.getByRole("button", { name: "Back" }))
     await user.press(screen.getByRole("button", { name: "Battle" }))
 
     await user.press(
@@ -382,7 +389,7 @@ describe("NativeGameClient battle routing", () => {
       })[0],
     )
     await user.press(
-      await screen.findByRole("button", { name: "Dismiss achievement" }),
+      await screen.findByRole("button", { name: /^Dismiss achievement/ }),
     )
 
     const undo = await screen.findByRole("button", { name: "Undo" })
@@ -539,13 +546,20 @@ describe("NativeGameClient persistence recovery and lifecycle", () => {
   })
 
   it("closes overlays and checkpoints only when the app enters background", async () => {
-    let notifyAppState: (appState: AppStateStatus) => void = () => undefined
+    const appStateListeners = new Set<(appState: AppStateStatus) => void>()
+    const notifyAppState = (appState: AppStateStatus) =>
+      [...appStateListeners].forEach((listener) => listener(appState))
     const remove = jest.fn()
-    jest
+    const subscriptions = jest
       .spyOn(AppState, "addEventListener")
-      .mockImplementation((_eventType, listener) => {
-        notifyAppState = listener
-        return { remove }
+      .mockImplementation((eventType, listener) => {
+        if (eventType === "change") appStateListeners.add(listener)
+        return {
+          remove: () => {
+            appStateListeners.delete(listener)
+            remove()
+          },
+        }
       })
     const user = userEvent.setup()
     const { unmount } = await render(<NativeGameClient />)
@@ -568,7 +582,7 @@ describe("NativeGameClient persistence recovery and lifecycle", () => {
     expect(await screen.findByText("Your Values")).toBeOnTheScreen()
 
     await unmount()
-    expect(remove).toHaveBeenCalledTimes(1)
+    expect(remove).toHaveBeenCalledTimes(subscriptions.mock.calls.length)
   })
 })
 

@@ -45,24 +45,21 @@ export type AchievementPresentation = Readonly<{
   unlockedDate: string | null
 }>
 
-export function getPendingAchievementPresentation({
+export function getPendingAchievementPresentations({
   achievementState,
   achievementPresentations,
 }: {
   readonly achievementState: AchievementState
   readonly achievementPresentations: readonly AchievementPresentation[]
 }) {
-  const pendingAchievementId =
-    getPendingAchievementUnlocks(achievementState)[0]?.id
-  if (!pendingAchievementId) return null
-
-  const presentation = achievementPresentations.find(
-    ({ id }) => id === pendingAchievementId,
-  )
-  if (!presentation)
-    throw new Error("Pending achievement presentation is unavailable")
-
-  return presentation
+  return getPendingAchievementUnlocks(achievementState).map(({ id }) => {
+    const presentation = achievementPresentations.find(
+      (achievement) => achievement.id === id,
+    )
+    if (!presentation)
+      throw new Error("Pending achievement presentation is unavailable")
+    return presentation
+  })
 }
 
 export function getAchievementEnglishCopy(

@@ -31,7 +31,7 @@ const NATIVE_CONTROL_HINT_INPUT_MODALITY = "touch-pointer" as const
 
 export default function NativeCrucible({
   activeDeck,
-  achievement,
+  achievements,
   battle,
   runtimeClipCatalog,
   progressById,
@@ -50,7 +50,7 @@ export default function NativeCrucible({
   onWinnerSelected,
 }: {
   activeDeck: ActiveDeck
-  achievement: AchievementPresentation | null
+  achievements: readonly AchievementPresentation[]
   battle: PresentedBattle
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
   progressById: ValueProgressById
@@ -210,54 +210,56 @@ export default function NativeCrucible({
         onRedo={handleRedo}
         onStop={onExit}
       />
-      <NativeAchievementBanner
-        achievement={achievement}
-        isAcknowledgementPending={isAchievementAcknowledgementPending}
-        placement="battle"
-        shouldReduceMotion={shouldReduceMotion}
-        onPresented={onAchievementPresented}
-      />
-      <NativeSeethingSwarmBattleStage
-        battle={currentBattle}
-        catalog={runtimeClipCatalog}
-        winnerId={state.context.winnerId}
-        isNextBattleReady={state.context.pendingBattle !== null}
-        isPaused={isMenuOpen}
-        shouldReduceMotion={shouldReduceMotion}
-        onResultComplete={handleAnimationComplete}
-      >
-        {(combatants) => (
-          <>
-            <NativeValueChoiceCard
-              ref={firstChoiceRef}
-              key={`first:${firstValueId}:${secondValueId}`}
-              position="first"
-              value={firstValue}
-              level={getLevelFromXP(firstProgress.totalXp)}
-              controlHint={firstControlHint}
-              winnerId={state.context.winnerId}
-              isEnabled={isInteractive}
-              isAnimating={isAnimating}
-              combatant={combatants.first}
-              reward={reward?.valueId === firstValueId ? reward : null}
-              onActivate={handleSelect}
-            />
-            <NativeValueChoiceCard
-              key={`second:${secondValueId}:${firstValueId}`}
-              position="second"
-              value={secondValue}
-              level={getLevelFromXP(secondProgress.totalXp)}
-              controlHint={secondControlHint}
-              winnerId={state.context.winnerId}
-              isEnabled={isInteractive}
-              isAnimating={isAnimating}
-              combatant={combatants.second}
-              reward={reward?.valueId === secondValueId ? reward : null}
-              onActivate={handleSelect}
-            />
-          </>
-        )}
-      </NativeSeethingSwarmBattleStage>
+      <View className="relative min-h-0 flex-1">
+        <NativeSeethingSwarmBattleStage
+          battle={currentBattle}
+          catalog={runtimeClipCatalog}
+          winnerId={state.context.winnerId}
+          isNextBattleReady={state.context.pendingBattle !== null}
+          isPaused={isMenuOpen}
+          shouldReduceMotion={shouldReduceMotion}
+          onResultComplete={handleAnimationComplete}
+        >
+          {(combatants) => (
+            <>
+              <NativeValueChoiceCard
+                ref={firstChoiceRef}
+                key={`first:${firstValueId}:${secondValueId}`}
+                position="first"
+                value={firstValue}
+                level={getLevelFromXP(firstProgress.totalXp)}
+                controlHint={firstControlHint}
+                winnerId={state.context.winnerId}
+                isEnabled={isInteractive}
+                isAnimating={isAnimating}
+                combatant={combatants.first}
+                reward={reward?.valueId === firstValueId ? reward : null}
+                onActivate={handleSelect}
+              />
+              <NativeValueChoiceCard
+                key={`second:${secondValueId}:${firstValueId}`}
+                position="second"
+                value={secondValue}
+                level={getLevelFromXP(secondProgress.totalXp)}
+                controlHint={secondControlHint}
+                winnerId={state.context.winnerId}
+                isEnabled={isInteractive}
+                isAnimating={isAnimating}
+                combatant={combatants.second}
+                reward={reward?.valueId === secondValueId ? reward : null}
+                onActivate={handleSelect}
+              />
+            </>
+          )}
+        </NativeSeethingSwarmBattleStage>
+        <NativeAchievementBanner
+          achievements={achievements}
+          isAcknowledgementPending={isAchievementAcknowledgementPending}
+          placement="battle"
+          shouldReduceMotion={shouldReduceMotion}
+          onPresented={onAchievementPresented}
+        />
+      </View>
     </MapacheScreen>
   )
 }

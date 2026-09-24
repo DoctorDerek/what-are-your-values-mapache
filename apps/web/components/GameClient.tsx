@@ -12,7 +12,7 @@ import {
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { rankValues } from "@game/data/src/ValueRanking"
 import {
-  getPendingAchievementPresentation,
+  getPendingAchievementPresentations,
   projectAchievementCatalog,
   type AchievementPresentation,
 } from "@game/machines/src/AchievementPresentation"
@@ -182,10 +182,10 @@ function WritableGameClient({
         : [],
     [playerData],
   )
-  const pendingAchievementPresentation = useMemo(() => {
-    if (!playerData) return null
+  const pendingAchievementPresentations = useMemo(() => {
+    if (!playerData) return []
 
-    return getPendingAchievementPresentation({
+    return getPendingAchievementPresentations({
       achievementState: playerData.achievements,
       achievementPresentations,
     })
@@ -665,7 +665,7 @@ function WritableGameClient({
     state.context.achievementPresentationReturnTarget
   const achievementBanner = (
     <AchievementBanner
-      achievement={pendingAchievementPresentation}
+      achievements={pendingAchievementPresentations}
       isAcknowledgementPending={isRecordingAchievementPresentation}
       shouldReduceMotion={shouldReduceMotion}
       onPresented={handleAchievementPresented}
@@ -909,7 +909,7 @@ function WritableGameClient({
       <>
         <Crucible
           activeDeck={battleProfile.activeDeck}
-          achievement={pendingAchievementPresentation}
+          achievements={pendingAchievementPresentations}
           battle={presentedBattle}
           progressById={battleProfile.progressById}
           runtimeClipCatalog={SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG}
