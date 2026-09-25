@@ -512,13 +512,22 @@ for (const viewport of [
       beforeWheel.controlsTop,
     )
     await choices.last().hover()
-    const beforeValueWheel = await battle.evaluate(
-      (surface) => surface.scrollTop,
-    )
-    await page.mouse.wheel(0, -200)
+    const beforeValueWheel = await battle.evaluate((surface) => ({
+      scrollTop: surface.scrollTop,
+      remainingScroll:
+        surface.scrollHeight - surface.clientHeight - surface.scrollTop,
+    }))
+    const scrollDown =
+      beforeValueWheel.remainingScroll > beforeValueWheel.scrollTop
+    await page.mouse.wheel(0, scrollDown ? 200 : -200)
     await expect
-      .poll(() => battle.evaluate((surface) => surface.scrollTop))
-      .toBeLessThan(beforeValueWheel)
+      .poll(async () => {
+        const scrollTop = await battle.evaluate((surface) => surface.scrollTop)
+        return scrollDown
+          ? scrollTop > beforeValueWheel.scrollTop
+          : scrollTop < beforeValueWheel.scrollTop
+      })
+      .toBe(true)
     expect(
       await battle.evaluate((element) => element.scrollWidth),
     ).toBeLessThanOrEqual(viewport.width)

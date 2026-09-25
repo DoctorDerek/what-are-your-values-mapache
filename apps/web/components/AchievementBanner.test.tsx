@@ -128,6 +128,70 @@ describe("Achievement overlay integration", () => {
     expect(within(card).getAllByRole("button")).toHaveLength(1)
   })
 
+  it("holds incoming cards while the pointer is over a notification", () => {
+    const props = {
+      achievements: achievements.slice(0, 1),
+      isAcknowledgementPending: false,
+      shouldReduceMotion: true,
+      onPresented: vi.fn(),
+    }
+    const { rerender } = render(<AchievementBanner {...props} />)
+    const card = screen.getByRole("complementary", {
+      name: "Achievement unlocked",
+    })
+    fireEvent.pointerEnter(card, { pointerType: "mouse" })
+    rerender(<AchievementBanner {...props} achievements={achievements} />)
+    expect(screen.queryByText("5 Battles")).toBeNull()
+    fireEvent.pointerLeave(card, { pointerType: "mouse" })
+    expect(
+      screen.getAllByRole("heading").map((element) => element.textContent),
+    ).toEqual(["5 Battles", "First Battle"])
+    expect(props.onPresented).not.toHaveBeenCalled()
+  })
+
+  it.each(["pointerUp", "pointerCancel", "pointerLeave"] as const)(
+    "releases a touch-held stack after %s without dismissing its cards",
+    (releaseEvent) => {
+      const props = {
+        achievements: achievements.slice(0, 1),
+        isAcknowledgementPending: false,
+        shouldReduceMotion: true,
+        onPresented: vi.fn(),
+      }
+      const { rerender } = render(<AchievementBanner {...props} />)
+      const card = screen.getByRole("complementary", {
+        name: "Achievement unlocked",
+      })
+      fireEvent.pointerEnter(card, { pointerType: "touch" })
+      fireEvent.pointerDown(card, { pointerType: "touch" })
+      rerender(<AchievementBanner {...props} achievements={achievements} />)
+      expect(screen.queryByText("5 Battles")).toBeNull()
+      fireEvent[releaseEvent](card, { pointerType: "touch" })
+      expect(
+        screen.getAllByRole("heading").map((element) => element.textContent),
+      ).toEqual(["5 Battles", "First Battle"])
+      expect(props.onPresented).not.toHaveBeenCalled()
+    },
+  )
+
+  it("does not treat touch entry or mouse press as a held touch", () => {
+    const props = {
+      achievements: achievements.slice(0, 1),
+      isAcknowledgementPending: false,
+      shouldReduceMotion: true,
+      onPresented: vi.fn(),
+    }
+    const { rerender } = render(<AchievementBanner {...props} />)
+    const card = screen.getByRole("complementary", {
+      name: "Achievement unlocked",
+    })
+    fireEvent.pointerEnter(card, { pointerType: "touch" })
+    fireEvent.pointerDown(card, { pointerType: "mouse" })
+    rerender(<AchievementBanner {...props} achievements={achievements} />)
+    expect(screen.getAllByRole("heading")).toHaveLength(2)
+    expect(props.onPresented).not.toHaveBeenCalled()
+  })
+
   it("blocks explicit acknowledgement while its durable write is pending", () => {
     const onPresented = vi.fn()
     render(
@@ -157,6 +221,23 @@ describe("Achievement overlay integration", () => {
     rerender(<AchievementBanner {...props} achievements={achievements} />)
     expect(screen.queryByRole("heading")).toBeNull()
     fireEvent.focus(window)
+    expect(screen.getAllByRole("heading")).toHaveLength(2)
+  })
+
+  it("holds incoming notifications until a hidden document becomes visible", () => {
+    const visibility = vi.spyOn(document, "visibilityState", "get")
+    visibility.mockReturnValue("hidden")
+    const props = {
+      achievements: [],
+      isAcknowledgementPending: false,
+      shouldReduceMotion: true,
+      onPresented: vi.fn(),
+    }
+    const { rerender } = render(<AchievementBanner {...props} />)
+    rerender(<AchievementBanner {...props} achievements={achievements} />)
+    expect(screen.queryByRole("heading")).toBeNull()
+    visibility.mockReturnValue("visible")
+    fireEvent(document, new Event("visibilitychange"))
     expect(screen.getAllByRole("heading")).toHaveLength(2)
   })
 })

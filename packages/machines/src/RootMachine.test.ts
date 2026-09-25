@@ -1092,7 +1092,7 @@ describe("Root Machine", () => {
     ).toBeNull()
   })
 
-  it("serializes milestone acknowledgement behind an in-flight battle write", async () => {
+  it("serializes stacked acknowledgements behind an in-flight battle write without duplicates", async () => {
     const memoryStore = createInMemoryDurableStore()
     let pauseNextWrite = false
     const pendingWrite = Promise.withResolvers<void>()
@@ -1113,40 +1113,50 @@ describe("Root Machine", () => {
       durableStore,
       schedulerSeed: "serialized-achievement-presentation-seed",
     })
-    await commitOneBattle(actor)
-    const firstCommittedPlayerData = actor.getSnapshot().context.playerData
-    if (!firstCommittedPlayerData)
+    for (let battle = 0; battle < 5; battle += 1) await commitOneBattle(actor)
+    const committedPlayerData = actor.getSnapshot().context.playerData
+    if (!committedPlayerData)
       throw new Error("Serialized presentation Player Data is unavailable")
 
-    const [firstPendingUnlock] = getPendingAchievementUnlocks(
-      firstCommittedPlayerData.achievements,
-    )
-    if (!firstPendingUnlock)
-      throw new Error("Serialized presentation unlock is unavailable")
+    const [firstPendingUnlock, secondPendingUnlock] =
+      getPendingAchievementUnlocks(committedPlayerData.achievements)
+    if (!firstPendingUnlock || !secondPendingUnlock)
+      throw new Error("Serialized presentation unlocks are unavailable")
 
-    const secondProfile = firstCommittedPlayerData.profile
-    const [secondWinnerId] = projectBattlePair(
-      secondProfile.activeDeck,
-      secondProfile.scheduler,
+    const nextProfile = committedPlayerData.profile
+    const [nextWinnerId] = projectBattlePair(
+      nextProfile.activeDeck,
+      nextProfile.scheduler,
     )
     pauseNextWrite = true
     actor.send({
       type: "BATTLE.WINNER_SELECTED",
-      winnerId: secondWinnerId,
-      expectedScheduler: secondProfile.scheduler,
+      winnerId: nextWinnerId,
+      expectedScheduler: nextProfile.scheduler,
     })
     await pendingWriteStarted.promise
     actor.send({
       type: "ACHIEVEMENT.PRESENTED",
+      achievementId: secondPendingUnlock.id,
+    })
+    actor.send({
+      type: "ACHIEVEMENT.PRESENTED",
       achievementId: firstPendingUnlock.id,
     })
+    actor.send({
+      type: "ACHIEVEMENT.PRESENTED",
+      achievementId: firstPendingUnlock.id,
+    })
+    expect(
+      actor.getSnapshot().context.pendingAchievementPresentationIds,
+    ).toEqual([secondPendingUnlock.id, firstPendingUnlock.id])
     pendingWrite.resolve()
 
     const serializedSnapshot = await waitFor(
       actor,
       (candidate) =>
         candidate.matches({ Crucible: "Ready" }) &&
-        candidate.context.playerData?.profile.history.length === 2 &&
+        candidate.context.playerData?.profile.history.length === 6 &&
         candidate.context.playerData.achievements.presentedAchievementIds.includes(
           firstPendingUnlock.id,
         ),
@@ -1154,6 +1164,13 @@ describe("Root Machine", () => {
 
     expect(serializedSnapshot.context.persistenceIssue).toBeNull()
     expect(serializedSnapshot.context.pendingBattleProfileCommit).toBeNull()
+    expect(
+      serializedSnapshot.context.playerData?.achievements
+        .presentedAchievementIds,
+    ).toEqual([secondPendingUnlock.id, firstPendingUnlock.id])
+    expect(serializedSnapshot.context.playerData?.achievements.unlocks).toEqual(
+      committedPlayerData.achievements.unlocks,
+    )
     expect(
       serializedSnapshot.context.pendingAchievementPresentationIds,
     ).toEqual([])

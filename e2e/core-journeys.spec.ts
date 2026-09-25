@@ -72,7 +72,7 @@ test("a returning player keeps Undo and Redo across reloads", async ({
   await expect(
     page.getByRole("heading", { level: 1, name: "Your Values" }),
   ).toBeVisible()
-  await page.getByRole("button", { name: "Battle" }).click()
+  await page.getByRole("button", { name: "Battle", exact: true }).click()
   await expect(page.getByRole("main", { name: "Value battle" })).toBeVisible()
 
   const firstChoice = page.getByRole("button", { name: /^Choose / }).first()
@@ -89,7 +89,7 @@ test("a returning player keeps Undo and Redo across reloads", async ({
   await expect(page.getByRole("button", { name: "Redo" })).toBeEnabled()
   await page.reload()
 
-  await page.getByRole("button", { name: "Battle" }).click()
+  await page.getByRole("button", { name: "Battle", exact: true }).click()
   await expect(page.getByRole("button", { name: "Redo" })).toBeEnabled()
   await page.getByRole("button", { name: "Redo" }).click()
   await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled()
@@ -116,7 +116,7 @@ test("a secondary tab stays read-only then inherits released writer ownership", 
 }) => {
   await page.goto("/")
   await page.getByRole("button", { name: "Start" }).click()
-  await page.getByRole("button", { name: "Battle" }).click()
+  await page.getByRole("button", { name: "Battle", exact: true }).click()
   await expect(page.getByRole("main", { name: "Value battle" })).toBeVisible()
 
   const secondaryPage = await context.newPage()
@@ -136,7 +136,7 @@ test("a secondary tab stays read-only then inherits released writer ownership", 
     secondaryPage.getByRole("button", { name: "Start" }),
   ).toHaveCount(0)
   await expect(
-    secondaryPage.getByRole("button", { name: "Battle" }),
+    secondaryPage.getByRole("button", { name: "Battle", exact: true }),
   ).toHaveCount(0)
   await expect(
     secondaryPage.getByRole("button", { name: /^Choose / }),
@@ -166,7 +166,9 @@ test("a secondary tab stays read-only then inherits released writer ownership", 
   await expect(inheritedTopValue).toContainText(ownerChoiceName)
   await expect(inheritedTopValue).toContainText("Level 3")
 
-  await secondaryPage.getByRole("button", { name: "Battle" }).click()
+  await secondaryPage
+    .getByRole("button", { name: "Battle", exact: true })
+    .click()
   await expect(
     secondaryPage.getByRole("main", { name: "Value battle" }),
   ).toBeVisible()
