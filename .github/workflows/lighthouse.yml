@@ -19,4 +19,4 @@ jobs:
   lighthouse:
     uses: DoctorDerek/DoctorDerekCICD/.github/workflows/lighthouse.yml@93e29ba0fcf1d35d8ff0040002816c36d763d966
     with:
-      production-url: https://www.whatareyourvaluesmapache.com/
+      production-url: https://whatareyourvaluesmapache.com/
