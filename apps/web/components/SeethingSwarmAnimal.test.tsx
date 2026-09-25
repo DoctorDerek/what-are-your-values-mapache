@@ -62,7 +62,10 @@ describe("SeethingSwarmAnimal", () => {
     expect(image).toHaveStyle({
       "--animal-animation-duration": "100ms",
       "--animal-strip-start-offset": "0px",
-      "--animal-strip-travel": "-12px",
+      "--animal-strip-travel": "0px",
+      "--animal-animation-step-count": "2",
+      "--animal-animation-step-position": "jump-none",
+      "--animal-strip-final-offset": "0px",
     })
     fireEvent.animationEnd(image)
     expect(complete).toHaveBeenCalledTimes(1)
@@ -78,11 +81,65 @@ describe("SeethingSwarmAnimal", () => {
     expect(image).toHaveStyle({
       "--animal-animation-duration": "300ms",
       "--animal-strip-start-offset": "-12px",
-      "--animal-strip-travel": "-48px",
+      "--animal-strip-travel": "-36px",
+      "--animal-animation-step-count": "3",
+      "--animal-strip-final-offset": "-36px",
     })
     fireEvent.animationEnd(image)
     expect(complete).toHaveBeenCalledTimes(2)
   })
+  it.each([
+    {
+      startFrame: 0,
+      endFrame: 4,
+      duration: "400ms",
+      finalOffset: "-36px",
+      steps: "4",
+    },
+    {
+      startFrame: 3,
+      endFrame: 4,
+      duration: "100ms",
+      finalOffset: "-36px",
+      steps: "2",
+    },
+  ])(
+    "retains a valid terminal frame for the $startFrame–$endFrame range",
+    async ({ startFrame, endFrame, duration, finalOffset, steps }) => {
+      const complete = vi.fn()
+      render(
+        <SeethingSwarmAnimal
+          clip={clip}
+          geometry={geometry}
+          shouldReduceMotion={false}
+          playbackMode="one-shot"
+          frameDurationMs={100}
+          startFrame={startFrame}
+          endFrame={endFrame}
+          onPlaybackComplete={complete}
+        />,
+      )
+      const image = screen.getByAltText("")
+      fireEvent.animationEnd(image)
+      expect(complete).not.toHaveBeenCalled()
+      fireEvent.load(image)
+      await waitFor(() =>
+        expect(image.closest("[data-playback-ready]")).toHaveAttribute(
+          "data-playback-ready",
+          "true",
+        ),
+      )
+      expect(image).toHaveStyle({
+        "--animal-animation-duration": duration,
+        "--animal-strip-final-offset": finalOffset,
+        "--animal-animation-step-count": steps,
+        "--animal-animation-step-position": "jump-none",
+      })
+      fireEvent.animationEnd(image)
+      expect(complete).toHaveBeenCalledTimes(1)
+      expect(screen.getByAltText("")).toBe(image)
+    },
+  )
   it("replays a resident strip on a new cue without replacing or reloading its image", async () => {
     const props = {
       clip,
@@ -204,7 +261,8 @@ describe("SeethingSwarmAnimal", () => {
     expect(image).toHaveAttribute("height", "12")
     expect(image).toHaveStyle({
       "--animal-animation-duration": "640ms",
-      "--animal-frame-count": "4",
+      "--animal-animation-step-count": "4",
+      "--animal-animation-step-position": "end",
       "--animal-strip-height": "12px",
       "--animal-strip-left": "-3px",
       "--animal-strip-top": "-3px",
@@ -267,7 +325,7 @@ describe("SeethingSwarmAnimal", () => {
       "--animal-strip-height": "12px",
       "--animal-strip-left": "-3px",
       "--animal-strip-top": "-3px",
-      "--animal-strip-travel": "-48px",
+      "--animal-strip-travel": "-36px",
       "--animal-strip-width": "48px",
     })
 

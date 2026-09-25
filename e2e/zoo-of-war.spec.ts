@@ -160,6 +160,10 @@ interface CompletedAnimalClip {
   role: string | null
   source: string
   isLoaded: boolean
+  terminalOffset: number
+  finalFrameOffset: number
+  frameWidth: number
+  stripWidth: number
 }
 
 interface AnimalStrikeGeometry {
@@ -461,6 +465,7 @@ test("the Zoo of War holds both animals through a committed battle", async ({
         if (!(image instanceof HTMLImageElement)) return
         const stage = image.closest("[data-choreography-identity]")
         if (!stage) return
+        const style = getComputedStyle(image)
         window.completedAnimalClips.push({
           choreographyIdentity: stage.getAttribute(
             "data-choreography-identity",
@@ -475,6 +480,16 @@ test("the Zoo of War holds both animals through a committed battle", async ({
               ?.getAttribute("data-battle-role") ?? null,
           source: image.currentSrc,
           isLoaded: image.complete && image.naturalWidth > 0,
+          terminalOffset: new DOMMatrixReadOnly(style.transform).m41,
+          finalFrameOffset: Number.parseFloat(
+            style.getPropertyValue("--animal-strip-final-offset"),
+          ),
+          frameWidth: Number.parseFloat(
+            style.getPropertyValue("--animal-frame-width"),
+          ),
+          stripWidth: Number.parseFloat(
+            style.getPropertyValue("--animal-strip-width"),
+          ),
         })
       },
       true,
@@ -574,6 +589,13 @@ test("the Zoo of War holds both animals through a committed battle", async ({
     expect(
       completedClips.every((clip) => clip.isLoaded && clip.source.length > 0),
     ).toBe(true)
+    for (const clip of completedClips) {
+      expect(clip.terminalOffset).toBeCloseTo(clip.finalFrameOffset)
+      expect(clip.terminalOffset).toBeLessThanOrEqual(0)
+      expect(clip.terminalOffset).toBeGreaterThanOrEqual(
+        clip.frameWidth - clip.stripWidth,
+      )
+    }
     expect(
       completedClips.findIndex((clip) => clip.role === "reaction"),
     ).toBeGreaterThan(

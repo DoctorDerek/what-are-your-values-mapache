@@ -9,7 +9,11 @@
 
 @theme inline {
   --animate-seething-swarm-strip: advance-seething-swarm-strip
-    var(--animal-animation-duration) steps(var(--animal-frame-count), end);
+    var(--animal-animation-duration)
+    steps(
+      var(--animal-animation-step-count),
+      var(--animal-animation-step-position)
+    );
   --animate-seething-swarm-placeholder-rest: seething-swarm-placeholder-rest
     900ms steps(2, end) infinite;
   --animate-seething-swarm-placeholder-attack: seething-swarm-placeholder-attack

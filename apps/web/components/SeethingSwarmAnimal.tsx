@@ -17,7 +17,8 @@ import { useSeethingSwarmAssetStatus } from "@/components/SeethingSwarmAssetPrep
 
 type SeethingSwarmAnimalStyle = CSSProperties & {
   "--animal-animation-duration": string
-  "--animal-frame-count": number
+  "--animal-animation-step-count": number
+  "--animal-animation-step-position": "end" | "jump-none"
   "--animal-strip-height": string
   "--animal-strip-final-offset": string
   "--animal-strip-left": string
@@ -108,12 +109,20 @@ export default function SeethingSwarmAnimal({
   const scaledStripWidth = scaledFrameWidth * clip.frameCount
   const stripStyle: SeethingSwarmAnimalStyle = {
     "--animal-animation-duration": `${(endFrame - startFrame) * frameDurationMs}ms`,
-    "--animal-frame-count": endFrame - startFrame,
+    "--animal-animation-step-count":
+      effectivePlaybackMode === "one-shot"
+        ? Math.max(2, endFrame - startFrame)
+        : endFrame - startFrame,
+    "--animal-animation-step-position":
+      effectivePlaybackMode === "one-shot" ? "jump-none" : "end",
     "--animal-strip-height": `${scaledFrameHeight}px`,
     "--animal-strip-final-offset": `${-scaledFrameWidth * (endFrame - 1)}px`,
     "--animal-strip-left": `${geometry.frameOffsetX}px`,
     "--animal-strip-top": `${geometry.frameOffsetY}px`,
-    "--animal-strip-travel": `${-scaledFrameWidth * endFrame}px`,
+    "--animal-strip-travel":
+      effectivePlaybackMode === "one-shot"
+        ? "var(--animal-strip-final-offset)"
+        : `${-scaledFrameWidth * endFrame}px`,
     "--animal-strip-start-offset": `${-scaledFrameWidth * startFrame}px`,
     "--animal-strip-width": `${scaledStripWidth}px`,
     "--animal-frame-width": `${scaledFrameWidth}px`,
