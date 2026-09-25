@@ -26,13 +26,14 @@ describe("Website analytics payload boundary", () => {
     expect(pageView.url).toContain("token=private")
   })
 
-  it("normalizes production deployment aliases to the canonical public URL", () => {
-    expect(
-      sanitizeWebsiteAnalyticsEvent({
-        type: "pageview",
-        url: "https://deployment.vercel.app/?ref=portfolio",
-      }),
-    ).toEqual({ type: "pageview", url: CANONICAL_WEB_ROOT_URL })
+  it.each([
+    "https://deployment.vercel.app/?ref=portfolio",
+    "https://www.whatareyourvaluesmapache.com/?ref=portfolio#TopFive",
+  ])("normalizes production aliases to the bare public URL: %s", (url) => {
+    expect(sanitizeWebsiteAnalyticsEvent({ type: "pageview", url })).toEqual({
+      type: "pageview",
+      url: "https://whatareyourvaluesmapache.com/",
+    })
   })
 
   it("rejects custom events", () => {
