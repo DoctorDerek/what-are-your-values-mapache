@@ -121,6 +121,117 @@ for (const width of [390, 1440]) {
   })
 }
 
+test("Hub attention displays each authored frame for one complete interval", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.emulateMedia({ reducedMotion: "no-preference" })
+  await startAtHub(page)
+  const row = page
+    .getByRole("region", { name: "Value roster" })
+    .getByRole("button")
+    .first()
+  await row.hover()
+  const image = row.locator(
+    '[data-hub-active-clip="true"] [data-playback-mode="one-shot"][data-playback-ready="true"] img',
+  )
+  await expect(image).toBeVisible()
+  const sampledFrames = await image.evaluate((element) => {
+    const animation = element.getAnimations()[0]
+    animation.pause()
+    const style = getComputedStyle(element)
+    const duration = Number.parseFloat(style.animationDuration) * 1000
+    const frameWidth = Number.parseFloat(
+      style.getPropertyValue("--animal-frame-width"),
+    )
+    const frameCount = Number(
+      element.closest("[data-frame-count]")?.getAttribute("data-frame-count"),
+    )
+    const frames = Array.from({ length: frameCount }, (_, frameIndex) => {
+      const offsets = [0.1, 0.5, 0.9].map((progress) => {
+        animation.currentTime =
+          ((frameIndex + progress) * duration) / frameCount
+        return new DOMMatrixReadOnly(getComputedStyle(element).transform).m41
+      })
+      return { offsets, expectedOffset: -frameIndex * frameWidth }
+    })
+    animation.currentTime = 0
+    animation.play()
+    return frames
+  })
+  expect(sampledFrames.length).toBeGreaterThan(1)
+  for (const frame of sampledFrames) {
+    for (const offset of frame.offsets) {
+      expect(offset).toBeCloseTo(frame.expectedOffset)
+    }
+  }
+})
+
+test("Hub hover completions retain the final authored frame across repeated attention entries", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.emulateMedia({ reducedMotion: "no-preference" })
+  await startAtHub(page)
+  const row = page
+    .getByRole("region", { name: "Value roster" })
+    .getByRole("button")
+    .first()
+  const active = row.locator('[data-hub-active-clip="true"]')
+  await expect(active.locator('[data-playback-ready="true"]')).toHaveCount(1)
+  const calmSource = await active.locator("img").getAttribute("src")
+
+  for (let entry = 0; entry < 3; entry += 1) {
+    const completion = row.evaluate(
+      (element) =>
+        new Promise<{
+          terminalOffset: number
+          finalFrameOffset: number
+          frameWidth: number
+          stripWidth: number
+          isLoaded: boolean
+        }>((resolve) => {
+          const captureCompletion = (event: Event) => {
+            const image = event.target
+            if (
+              !(image instanceof HTMLImageElement) ||
+              !image.closest('[data-hub-active-clip="true"]')
+            )
+              return
+            const style = getComputedStyle(image)
+            element.removeEventListener("animationend", captureCompletion, true)
+            resolve({
+              terminalOffset: new DOMMatrixReadOnly(style.transform).m41,
+              finalFrameOffset: Number.parseFloat(
+                style.getPropertyValue("--animal-strip-final-offset"),
+              ),
+              frameWidth: Number.parseFloat(
+                style.getPropertyValue("--animal-frame-width"),
+              ),
+              stripWidth: Number.parseFloat(
+                style.getPropertyValue("--animal-strip-width"),
+              ),
+              isLoaded: image.complete && image.naturalWidth > 0,
+            })
+          }
+          element.addEventListener("animationend", captureCompletion, true)
+        }),
+    )
+    await row.hover()
+    const completedClip = await completion
+    expect(completedClip.isLoaded).toBe(true)
+    expect(completedClip.terminalOffset).toBeCloseTo(
+      completedClip.finalFrameOffset,
+    )
+    expect(completedClip.terminalOffset).toBeLessThanOrEqual(0)
+    expect(completedClip.terminalOffset).toBeGreaterThanOrEqual(
+      completedClip.frameWidth - completedClip.stripWidth,
+    )
+    await expect(active.locator("img")).toHaveAttribute("src", calmSource!)
+    await page.mouse.move(0, 0)
+  }
+})
+
 test("Hub attention responds to hover and focus without shifting the row", async ({
   page,
 }) => {
