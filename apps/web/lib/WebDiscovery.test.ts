@@ -16,8 +16,8 @@ describe("web crawler discovery", () => {
         userAgent: "*",
         allow: "/",
       },
-      sitemap: "https://www.whatareyourvaluesmapache.com/sitemap.xml",
-      host: "https://www.whatareyourvaluesmapache.com",
+      sitemap: "https://whatareyourvaluesmapache.com/sitemap.xml",
+      host: "https://whatareyourvaluesmapache.com",
     })
   })
 
@@ -35,7 +35,7 @@ describe("web crawler discovery", () => {
   it("publishes only the shipped English canonical route", () => {
     expect(createSitemapMetadata()).toEqual([
       {
-        url: "https://www.whatareyourvaluesmapache.com/",
+        url: "https://whatareyourvaluesmapache.com/",
       },
     ])
   })
