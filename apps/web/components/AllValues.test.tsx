@@ -10,6 +10,7 @@ import {
   getValueDisplayName,
   type CustomValueDefinition,
 } from "@game/data/src/Value"
+import { resolveValueAnimalId } from "@game/data/src/ValueAnimalAssociation"
 import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues } from "@game/data/src/ValueRanking"
 import { ZOO_ANIMALS } from "@game/data/src/ZooAnimals"
@@ -63,49 +64,53 @@ function renderAllValues(
   )
 }
 
+function createLicensedRuntimeClipCatalog() {
+  return {
+    mode: "licensed",
+    evidenceSnapshotId: "all-values-attention-test",
+    animals: ZOO_ANIMALS.map(({ id }) => ({
+      animalId: id,
+      characterClips: [
+        id === "bat" ? "idle_upright" : "idle",
+        "crouch",
+        "jump",
+        "fall",
+        "land",
+      ].map((animationId) => ({
+        kind: "character",
+        animalId: id,
+        animationId,
+        relativePath: `${id}/${animationId}.png`,
+        frameWidth: 1,
+        frameHeight: 1,
+        frameCount: 1,
+        visibleBounds: { left: 0, top: 0, width: 1, height: 1 },
+        asset: {
+          src: `/test-animals/${id}-${animationId}.png`,
+          width: 1,
+          height: 1,
+        },
+      })),
+      auxiliaryEffectClips: [],
+      referencePose: Object.freeze({
+        animationId: id === "bat" ? "idle_upright" : "idle",
+        frameIndex: 0,
+        bounds: Object.freeze({ left: 0, top: 0, width: 1, height: 1 }),
+        anchor: Object.freeze({ x: 0.5, y: 1 }),
+      }),
+    })),
+    characterClipCount: ZOO_ANIMALS.length * 5,
+    auxiliaryEffectClipCount: 0,
+  } satisfies SeethingSwarmRuntimeClipCatalog<StaticImageData>
+}
+
 describe("All Values Component Integration", () => {
   afterEach(() => vi.restoreAllMocks())
   it("retains calm art until attention is ready and preserves focus while the pointer leaves", async () => {
     vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockReturnValue(
       false,
     )
-    const runtimeClipCatalog = {
-      mode: "licensed",
-      evidenceSnapshotId: "all-values-attention-test",
-      animals: ZOO_ANIMALS.map(({ id }) => ({
-        animalId: id,
-        characterClips: [
-          id === "bat" ? "idle_upright" : "idle",
-          "crouch",
-          "jump",
-          "fall",
-          "land",
-        ].map((animationId) => ({
-          kind: "character",
-          animalId: id,
-          animationId,
-          relativePath: `${id}/${animationId}.png`,
-          frameWidth: 1,
-          frameHeight: 1,
-          frameCount: 1,
-          visibleBounds: { left: 0, top: 0, width: 1, height: 1 },
-          asset: {
-            src: `/test-animals/${id}-${animationId}.png`,
-            width: 1,
-            height: 1,
-          },
-        })),
-        auxiliaryEffectClips: [],
-        referencePose: Object.freeze({
-          animationId: id === "bat" ? "idle_upright" : "idle",
-          frameIndex: 0,
-          bounds: Object.freeze({ left: 0, top: 0, width: 1, height: 1 }),
-          anchor: Object.freeze({ x: 0.5, y: 1 }),
-        }),
-      })),
-      characterClipCount: ZOO_ANIMALS.length * 5,
-      auxiliaryEffectClipCount: 0,
-    } satisfies SeethingSwarmRuntimeClipCatalog<StaticImageData>
+    const runtimeClipCatalog = createLicensedRuntimeClipCatalog()
     renderAllValues(undefined, { runtimeClipCatalog })
     const row = screen.getAllByRole("listitem")[0]
     const idle = row.querySelector<HTMLImageElement>('img[src$="-idle.png"]')!
@@ -178,6 +183,23 @@ describe("All Values Component Integration", () => {
     expect(
       screen.queryByRole("button", { name: "Edit" }),
     ).not.toBeInTheDocument()
+  })
+
+  it("shows a Custom Value’s battle-assigned animal alongside its authored definition", () => {
+    const activeDeck = createActiveDeckWithIngenuity()
+    renderAllValues(createRankedValues(activeDeck), {
+      runtimeClipCatalog: createLicensedRuntimeClipCatalog(),
+    })
+
+    const customRow = screen.getByText("Ingenuity").closest("li")
+    expect(customRow).not.toBeNull()
+    expect(customRow?.querySelector("[data-animal-id]")).toHaveAttribute(
+      "data-animal-id",
+      resolveValueAnimalId(activeDeck.customValues[0]!.id),
+    )
+    expect(
+      within(customRow!).getByText("“Ability to solve problems creatively.”"),
+    ).toBeVisible()
   })
 
   it("hands creation to the Hub instead of rendering a second builder", () => {

@@ -17,6 +17,7 @@ import {
 } from "./SeethingSwarmRuntimeClipCatalog"
 import { createCompleteSeethingSwarmRuntimeClipTestFixture } from "./SeethingSwarmRuntimeClipCatalog.test-fixture"
 import { createCanonicalValueId, createCustomValueId } from "./Value"
+import { resolveValueAnimalId } from "./ValueAnimalAssociation"
 import { ZOO_ANIMALS } from "./ZooAnimals"
 
 const customValue = Object.freeze({
@@ -218,16 +219,28 @@ describe("SeethingSwarm animal presentation", () => {
     ).toMatchObject({ kind: "animal", clip: { animationId: "idle" } })
   })
 
-  it("uses one authored grapheme for Custom Values without animal inference", () => {
+  it("shows the battle-assigned animal for a Custom Value without reading its authored text", () => {
     const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const presentation = resolveValueAnimalPresentation(customValue, catalog)
+    const renamedPresentation = resolveValueAnimalPresentation(
+      {
+        ...customValue,
+        name: "Entirely different personal name",
+        definition: "An entirely different private definition",
+      },
+      catalog,
+    )
 
-    expect(resolveValueAnimalPresentation(customValue, catalog)).toEqual({
-      kind: "custom-initial",
-      initial: "👩🏽‍🔬",
-    })
-    expect(() =>
-      resolveValueAnimalPresentation({ ...customValue, name: "   " }, catalog),
-    ).toThrow("Custom Value name must contain one grapheme")
+    expect(presentation.kind).toBe("animal")
+    if (presentation.kind !== "animal") {
+      throw new Error("Expected the assigned Custom Value animal")
+    }
+    expect(presentation.animal.animalId).toBe(
+      resolveValueAnimalId(customValue.id),
+    )
+    expect(presentation.clip.animalId).toBe(presentation.animal.animalId)
+    expect(isCalmAnimation(presentation.clip.animationId)).toBe(true)
+    expect(renamedPresentation).toEqual(presentation)
   })
 
   it("preserves one frozen metadata-free result in typography-only mode", () => {
