@@ -1,4 +1,3 @@
-import { resolveValueAnimalId } from "./ValueAnimalAssociation"
 import {
   createSeethingSwarmVisibleContentBounds,
   SeethingSwarmReferencePose,
@@ -8,6 +7,7 @@ import {
   SeethingSwarmVisibleContentBounds,
 } from "./SeethingSwarmRuntimeClipCatalog"
 import type { ActiveValueDefinition } from "./Value"
+import { resolveValueAnimalId } from "./ValueAnimalAssociation"
 import type { ZooAnimalId } from "./ZooAnimals"
 
 export const SEETHING_SWARM_HUB_ANIMATION_CANDIDATES = Object.freeze([

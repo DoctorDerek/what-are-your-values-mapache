@@ -1,5 +1,5 @@
-import { resolveValueAnimalId } from "@game/data/src/ValueAnimalAssociation"
 import type { ValueId } from "@game/data/src/Value"
+import { resolveValueAnimalId } from "@game/data/src/ValueAnimalAssociation"
 import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
 
 export type SeethingSwarmBattleCombatant = Readonly<{
