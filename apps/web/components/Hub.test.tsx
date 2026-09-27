@@ -10,6 +10,7 @@ import {
   type CustomValueDefinition,
   type ValueId,
 } from "@game/data/src/Value"
+import { resolveValueAnimalId } from "@game/data/src/ValueAnimalAssociation"
 import {
   createInitialValueProgress,
   createValueProgress,
@@ -473,7 +474,7 @@ describe("Hub Component Integration", () => {
     expect(screen.getAllByText("🥇")).toHaveLength(5)
   })
 
-  it("renders an equal Custom Value initial tile without inferring an animal", () => {
+  it("renders the battle-assigned animal for a Custom Value without changing its rank or navigation", () => {
     const onOpenValue = vi.fn()
     const { customValue, rankedValues } = createCustomRankedValues()
     const { container } = render(
@@ -494,7 +495,7 @@ describe("Hub Component Integration", () => {
       name: "Open 🧠 Curiosity in All Values",
     })
     const customValueTile = customValueButton.querySelector<HTMLElement>(
-      '[data-value-presentation="custom-initial"]',
+      '[data-value-presentation="animal"]',
     )
     if (!customValueTile) throw new Error("Custom Value tile is missing")
     expect(customValueTile.querySelector("[style]")).toHaveStyle({
@@ -502,13 +503,15 @@ describe("Hub Component Integration", () => {
       "--portrait-height": "72px",
     })
     expect(customValueTile).toHaveAttribute("aria-hidden", "true")
-    expect(within(customValueTile).getByText("🧠")).toBeVisible()
     expect(customValueButton).toHaveAccessibleDescription("Rank 1, gold medal")
     expect(within(customValueButton).getByText("🥇")).toBeVisible()
-    expect(customValueTile.querySelector("[data-animal-id]")).toBeNull()
+    expect(customValueTile.querySelector("[data-animal-id]")).toHaveAttribute(
+      "data-animal-id",
+      resolveValueAnimalId(customValue.id),
+    )
     expect(
       container.querySelectorAll('[data-value-presentation="animal"]'),
-    ).toHaveLength(100)
+    ).toHaveLength(101)
 
     fireEvent.click(customValueButton)
     expect(onOpenValue).toHaveBeenCalledWith(

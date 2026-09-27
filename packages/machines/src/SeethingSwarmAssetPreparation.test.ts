@@ -6,6 +6,11 @@ import type {
   SeethingSwarmRuntimeClipCatalog,
 } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import {
+  createCustomValueId,
+  type CustomValueDefinition,
+} from "@game/data/src/Value"
+import { resolveValueAnimalId } from "@game/data/src/ValueAnimalAssociation"
 import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues } from "@game/data/src/ValueRanking"
 import { ZOO_ANIMALS } from "@game/data/src/ZooAnimals"
@@ -98,9 +103,25 @@ describe("scoped animal preparation", () => {
     actor.stop()
   })
 
-  it("prepares only the first five Hub values before navigation", () => {
-    const deck = createActiveDeck([])
-    const ranking = rankValues(deck, createInitialValueProgress(deck))
+  it("prepares only the first five Hub animals, including a ranked Custom Value", () => {
+    const customValue = Object.freeze({
+      kind: "custom",
+      id: createCustomValueId("custom:00000000-0000-4000-8000-000000000001"),
+      name: "Ingenuity",
+      definition: "to solve unfamiliar problems inventively",
+      creationOrdinal: 1,
+      createdAt: "2026-09-01T00:00:00.000Z",
+      updatedAt: "2026-09-01T00:00:00.000Z",
+    }) satisfies CustomValueDefinition
+    const deck = createActiveDeck([customValue])
+    const progress = new Map(createInitialValueProgress(deck))
+    progress.set(customValue.id, {
+      totalXp: 100,
+      profileWins: 1,
+      profileComparisons: 1,
+      currentCycleWins: 1,
+    })
+    const ranking = rankValues(deck, progress)
     const catalog = {
       mode: "licensed",
       evidenceSnapshotId: "hub-preparation-test",
@@ -133,6 +154,14 @@ describe("scoped animal preparation", () => {
     expect(new Set(prepared.map(({ animalId }) => animalId))).toEqual(
       new Set(expectedAnimals),
     )
+    expect(projectHubValues(ranking).topFive[0]?.definition.id).toBe(
+      customValue.id,
+    )
+    expect(
+      prepared.some(
+        ({ animalId }) => animalId === resolveValueAnimalId(customValue.id),
+      ),
+    ).toBe(true)
     expect(prepared.every(({ animationId }) => animationId === "idle")).toBe(
       true,
     )

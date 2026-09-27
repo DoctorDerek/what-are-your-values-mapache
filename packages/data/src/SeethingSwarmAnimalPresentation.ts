@@ -1,4 +1,3 @@
-import { splitGraphemes } from "unicode-segmenter/grapheme"
 import {
   createSeethingSwarmVisibleContentBounds,
   SeethingSwarmReferencePose,
@@ -8,7 +7,7 @@ import {
   SeethingSwarmVisibleContentBounds,
 } from "./SeethingSwarmRuntimeClipCatalog"
 import type { ActiveValueDefinition } from "./Value"
-import { VALUE_TO_ANIMAL_MAP } from "./ValueToAnimalMap"
+import { resolveValueAnimalId } from "./ValueAnimalAssociation"
 import type { ZooAnimalId } from "./ZooAnimals"
 
 export const SEETHING_SWARM_HUB_ANIMATION_CANDIDATES = Object.freeze([
@@ -60,10 +59,6 @@ export type ValueAnimalPresentation<PlatformAsset> =
       kind: "animal"
       clip: SeethingSwarmRuntimeCharacterClip<PlatformAsset>
       animal: SeethingSwarmRuntimeAnimalClips<PlatformAsset>
-    }>
-  | Readonly<{
-      kind: "custom-initial"
-      initial: string
     }>
   | Readonly<{
       kind: "typography-only"
@@ -172,12 +167,6 @@ function resolveAnimalClips<PlatformAsset>(
   return animal
 }
 
-function getCustomValueInitial(valueName: string) {
-  const initial = splitGraphemes(valueName.trim()).next().value
-  if (!initial) throw new Error("Custom Value name must contain one grapheme")
-  return initial
-}
-
 export function resolveValueAnimalPresentation<PlatformAsset>(
   value: ActiveValueDefinition,
   catalog: SeethingSwarmRuntimeClipCatalog<PlatformAsset>,
@@ -185,21 +174,7 @@ export function resolveValueAnimalPresentation<PlatformAsset>(
   if (catalog.mode === "typography-only") {
     return TYPOGRAPHY_ONLY_VALUE_PRESENTATION
   }
-  if (value.kind === "custom") {
-    return Object.freeze({
-      kind: "custom-initial",
-      initial: getCustomValueInitial(value.name),
-    })
-  }
-
-  const animalId = VALUE_TO_ANIMAL_MAP.find(
-    ({ valueId }) => valueId === value.id,
-  )?.animalId
-  if (!animalId) {
-    throw new Error(`Missing animal mapping for canonical value: ${value.id}`)
-  }
-
-  const animal = resolveAnimalClips(catalog, animalId)
+  const animal = resolveAnimalClips(catalog, resolveValueAnimalId(value.id))
   return Object.freeze({
     kind: "animal",
     clip: resolveCalmAnimalClip(animal),

@@ -10,6 +10,7 @@ import {
   type CustomValueDefinition,
   type ValueId,
 } from "@game/data/src/Value"
+import { resolveValueAnimalId } from "@game/data/src/ValueAnimalAssociation"
 import {
   createInitialValueProgress,
   createValueProgress,
@@ -329,7 +330,7 @@ describe("NativeHub", () => {
     })
   })
 
-  it("renders an equal Custom Value initial tile without inferring an animal", async () => {
+  it("renders the battle-assigned Custom Value animal while preserving its row action", async () => {
     const callbacks = createHubCallbacks()
     const user = userEvent.setup()
     const { customValue, rankedValues } = createCustomRankedValues()
@@ -350,8 +351,8 @@ describe("NativeHub", () => {
     expect(customValueTile.children[1]).toHaveStyle({ width: 72, height: 72 })
     expect(screen.queryByTestId("hub-top-five-rank-1-presentation")).toBeNull()
     expect(
-      screen.getByText("🧠", { includeHiddenElements: true }),
-    ).toBeOnTheScreen()
+      screen.queryByText("🧠", { includeHiddenElements: true }),
+    ).not.toBeOnTheScreen()
     expect(
       screen.getAllByTestId(/^hub-top-five-rank-\d+-presentation$/, {
         includeHiddenElements: true,
@@ -367,8 +368,8 @@ describe("NativeHub", () => {
       ),
     ).toEqual(
       rankedValues
-        .slice(1, 5)
-        .map(({ definition }) => getMappedAnimalId(definition.id)),
+        .slice(0, 5)
+        .map(({ definition }) => resolveValueAnimalId(definition.id)),
     )
 
     await user.press(
