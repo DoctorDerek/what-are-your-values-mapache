@@ -1,5 +1,9 @@
 import { CANONICAL_VALUES } from "@game/data/src/CanonicalValues"
 import {
+  SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ASSOCIATION_VERSION,
+  SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ROSTER,
+} from "@game/data/src/ValueAnimalAssociation"
+import {
   createCanonicalValueId,
   createCustomValueId,
   type CustomValueDefinition,
@@ -9,8 +13,6 @@ import { ZOO_ANIMALS } from "@game/data/src/ZooAnimals"
 import { describe, expect, it } from "vitest"
 import {
   resolveSeethingSwarmBattleCombatant,
-  SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ASSOCIATION_VERSION,
-  SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ROSTER,
 } from "./SeethingSwarmBattleCombatant"
 
 const FIXED_CUSTOM_ASSOCIATIONS = Object.freeze([
