@@ -84,13 +84,7 @@ function NativeValueRankPresentation({
               onLoadError={() => setFailedImagePath(imagePath)}
               shouldReduceMotion={shouldReduceMotion}
             />
-          ) : (
-            <Text className="text-mapache-vivid-secondary-purple text-4xl font-black uppercase">
-              {valuePresentation.kind === "custom-initial"
-                ? valuePresentation.initial
-                : null}
-            </Text>
-          )}
+          ) : null}
         </View>
       </View>
       {medal ? <Text className="text-2xl">{medal.emoji}</Text> : null}

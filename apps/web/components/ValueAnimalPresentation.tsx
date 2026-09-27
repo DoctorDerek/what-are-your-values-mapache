@@ -94,13 +94,7 @@ export default function ValueAnimalPresentation({
                 shouldReduceMotion={shouldReduceMotion}
               />
             </span>
-          ) : (
-            <span className="text-mapache-vivid-secondary-purple text-4xl font-black uppercase">
-              {valuePresentation.kind === "custom-initial"
-                ? valuePresentation.initial
-                : null}
-            </span>
-          )}
+          ) : null}
         </span>
       </span>
       {showRank && medal ? (
