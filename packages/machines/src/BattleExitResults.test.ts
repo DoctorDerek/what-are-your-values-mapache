@@ -34,10 +34,38 @@ describe("Battle-exit Results", () => {
     expect(results.values[0]?.definition.id).toBe(winnerId)
     expect(results.values[0]?.exitRank).toBe(1)
     expect(projectBattleExitResultsFrame(results, 0).profileXp).toBe(0n)
+    const firstFill = projectBattleExitResultsFrame(results, 5)
+    const firstBoundary = projectBattleExitResultsFrame(results, 10)
+    const secondFill = projectBattleExitResultsFrame(results, 15)
+    const winnerAt = (step: number) =>
+      projectBattleExitResultsFrame(results, step).values.find(
+        ({ value }) => value.definition.id === winnerId,
+      )
+    expect(firstFill.profileLevelProgress.level).toBe(1n)
+    expect(firstFill.profileLevelBarPercentage).toBe(50)
+    expect(winnerAt(5)?.levelBarPercentage).toBe(50)
+    expect(firstBoundary.profileLevelProgress.level).toBe(2n)
+    expect(firstBoundary.profileLevelBarPercentage).toBe(0)
+    expect(firstBoundary.profileDidCrossLevel).toBe(true)
+    expect(winnerAt(10)?.didCrossLevel).toBe(true)
+    expect(secondFill.profileLevelProgress.level).toBe(2n)
+    expect(secondFill.profileLevelBarPercentage).toBe(50)
+    expect(
+      firstFill.values
+        .filter(({ value }) => !value.changed)
+        .every(
+          ({ levelBarPercentage, didCrossLevel }) =>
+            levelBarPercentage === 0 && !didCrossLevel,
+        ),
+    ).toBe(true)
     expect(
       projectBattleExitResultsFrame(results, BATTLE_RESULTS_PRESENTATION_STEPS)
         .profileXp,
     ).toBe(4n)
+    expect(
+      projectBattleExitResultsFrame(results, BATTLE_RESULTS_PRESENTATION_STEPS)
+        .profileLevelProgress.level,
+    ).toBe(3n)
     expect(
       projectBattleExitResultsFrame(
         results,
@@ -76,6 +104,15 @@ describe("Battle-exit Results", () => {
     const results = createBattleExitResults(committed.profile, undone.profile)
     expect(results?.hasChanges).toBe(true)
     expect(results?.profileXpChange).toBe(-4n)
+    if (!results) throw new Error("Negative Results projection was unavailable")
+    const descending = projectBattleExitResultsFrame(results, 5)
+    expect(descending.profileXp).toBe(3n)
+    expect(descending.profileLevelProgress.level).toBe(2n)
+    expect(descending.profileLevelBarPercentage).toBe(50)
+    expect(
+      projectBattleExitResultsFrame(results, BATTLE_RESULTS_PRESENTATION_STEPS)
+        .profileXp,
+    ).toBe(0n)
   })
 
   it("sums supported per-value totals without Number aggregate precision loss", () => {
@@ -97,6 +134,28 @@ describe("Battle-exit Results", () => {
       projectBattleExitResultsFrame(results, BATTLE_RESULTS_PRESENTATION_STEPS)
         .profileXp,
     ).toBe(BigInt(MAX_SUPPORTED_TOTAL_XP) * 80n)
+
+    const nextValueId = entry.activeDeck.valueIds[80]
+    if (!nextValueId) throw new Error("Large aggregate fixture is incomplete")
+    const exitProgressById = new Map(progressById)
+    exitProgressById.set(nextValueId, {
+      totalXp: 4,
+      profileWins: 1,
+      profileComparisons: 1,
+      currentCycleWins: 1,
+    })
+    const changed = createBattleExitResults(largeProfile, {
+      ...largeProfile,
+      progressById: exitProgressById,
+    })
+    if (!changed) throw new Error("Large aggregate change was unavailable")
+    expect(projectBattleExitResultsFrame(changed, 5).profileXp).toBe(
+      BigInt(MAX_SUPPORTED_TOTAL_XP) * 80n + 1n,
+    )
+    expect(
+      projectBattleExitResultsFrame(changed, BATTLE_RESULTS_PRESENTATION_STEPS)
+        .profileXp,
+    ).toBe(BigInt(MAX_SUPPORTED_TOTAL_XP) * 80n + 4n)
   })
 
   it("refuses to compare different Active Deck membership", () => {

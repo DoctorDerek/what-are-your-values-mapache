@@ -1797,7 +1797,9 @@ describe("GameClient Integration", () => {
       expect(screen.getByRole("button", { name: "Undo" })).toBeEnabled(),
     )
     fireEvent.click(screen.getByRole("button", { name: /Stop/ }))
-    expect(await screen.findByText("Level 3")).toBeVisible()
+    expect(
+      await screen.findByText("Level 3", undefined, { timeout: 3000 }),
+    ).toBeVisible()
     await openProductMenuDestination("Import & Export")
 
     fireEvent.click(

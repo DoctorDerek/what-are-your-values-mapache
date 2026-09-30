@@ -5,7 +5,7 @@ import {
   createInitialBattleProfile,
 } from "@game/machines/src/BattleProfile"
 import { projectBattlePair } from "@game/machines/src/BattleScheduler"
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import Results from "./Results"
 
@@ -23,6 +23,40 @@ function createResults() {
 }
 
 describe("Battle-exit Results presentation", () => {
+  it("visibly fills and resets the Profile bar across two Levels on one clock", () => {
+    vi.useFakeTimers()
+    try {
+      render(
+        <Results
+          results={createResults()}
+          runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+          shouldReduceMotion={false}
+          isMenuOpen={false}
+          onOpenMenu={vi.fn()}
+          onSeeValues={vi.fn()}
+          onKeepBattling={vi.fn()}
+        />,
+      )
+      const profile = screen.getByRole("region", { name: "Profile progress" })
+      const bar = within(profile).getByRole("progressbar")
+      expect(bar).toHaveAttribute("aria-valuenow", "0")
+      act(() => vi.advanceTimersByTime(225))
+      expect(bar).toHaveAttribute("aria-valuenow", "50")
+      expect(profile).toHaveTextContent("Profile Level 1")
+      act(() => vi.advanceTimersByTime(225))
+      expect(bar).toHaveAttribute("aria-valuenow", "0")
+      expect(profile).toHaveTextContent("Profile Level 2")
+      act(() => vi.advanceTimersByTime(225))
+      expect(bar).toHaveAttribute("aria-valuenow", "50")
+      act(() => vi.advanceTimersByTime(225))
+      expect(profile).toHaveTextContent("Profile Level 3")
+      expect(profile).toHaveTextContent("Profile XP 4")
+      expect(bar).toHaveAttribute("aria-valuenow", "0")
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it("keeps the complete roster scrollable and both exits immediately actionable", () => {
     const onSeeValues = vi.fn()
     const onKeepBattling = vi.fn()

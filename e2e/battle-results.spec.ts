@@ -1,7 +1,10 @@
 import { expect } from "@playwright/test"
 import { test } from "./fixtures"
 
-test.use({ viewport: { width: 320, height: 640 } })
+test.use({
+  viewport: { width: 320, height: 640 },
+  reducedMotion: "no-preference",
+})
 
 test("battle results show committed progress without delaying either exit", async ({
   page,
@@ -16,9 +19,31 @@ test("battle results show committed progress without delaying either exit", asyn
   )
   await choices.first().click()
   await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled()
+  await page.evaluate(() => {
+    const observer = new MutationObserver(() => {
+      const indicator = document.querySelector(
+        '[aria-label="Profile progress"] [data-slot="progress-indicator"]',
+      )
+      const transform = indicator?.getAttribute("style")
+      if (transform && !transform.includes("translateX(-100%)")) {
+        document.documentElement.dataset.resultsBarMoved = "true"
+        observer.disconnect()
+      }
+    })
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["style"],
+      childList: true,
+      subtree: true,
+    })
+  })
   await page.getByRole("button", { name: /Stop/ }).click()
 
   await expect(page.getByRole("heading", { name: "Results" })).toBeVisible()
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-results-bar-moved",
+    "true",
+  )
   await expect(
     page
       .getByRole("list", { name: "Your value results" })
