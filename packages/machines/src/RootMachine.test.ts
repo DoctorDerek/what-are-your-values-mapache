@@ -929,6 +929,8 @@ describe("Root Machine", () => {
       throw new Error("First Battle achievement did not unlock")
 
     actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    expect(actor.getSnapshot().matches("Results")).toBe(true)
+    actor.send({ type: "RESULTS.CLOSE_REQUESTED" })
     actor.send({
       type: "ACHIEVEMENT.PRESENTED",
       achievementId: ACHIEVEMENT_CATALOG[1].id,
@@ -1063,6 +1065,7 @@ describe("Root Machine", () => {
     })
     await commitOneBattle(actor)
     actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    actor.send({ type: "RESULTS.CLOSE_REQUESTED" })
     actor.send({ type: "ACHIEVEMENTS.OPEN_REQUESTED" })
     const playerData = actor.getSnapshot().context.playerData
     if (!playerData)
@@ -1238,6 +1241,8 @@ describe("Root Machine", () => {
         })
       if (returnTarget !== "crucible")
         actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+      if (returnTarget !== "crucible")
+        actor.send({ type: "RESULTS.CLOSE_REQUESTED" })
       if (returnTarget === "achievements")
         actor.send({ type: "ACHIEVEMENTS.OPEN_REQUESTED" })
 
@@ -1762,6 +1767,8 @@ describe("Root Machine", () => {
     )
 
     actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    expect(actor.getSnapshot().matches("Results")).toBe(true)
+    actor.send({ type: "RESULTS.CLOSE_REQUESTED" })
     expect(actor.getSnapshot().matches("Hub")).toBe(true)
   })
 
@@ -2744,6 +2751,7 @@ describe("Root Machine", () => {
     }
 
     actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    actor.send({ type: "RESULTS.CLOSE_REQUESTED" })
     actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
     actor.send({ type: "RESET.LEVELS_AND_EXPERIENCE_REQUESTED" })
     actor.send({
@@ -2806,6 +2814,7 @@ describe("Root Machine", () => {
     ].map(({ battleId }) => battleId)
 
     actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    actor.send({ type: "RESULTS.CLOSE_REQUESTED" })
     actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
     actor.send({ type: "RESET.ACHIEVEMENTS_REQUESTED" })
     actor.send({

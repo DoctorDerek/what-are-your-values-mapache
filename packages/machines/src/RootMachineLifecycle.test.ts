@@ -14,6 +14,7 @@ const STABLE_CHECKPOINT_SURFACES = Object.freeze([
   "data-management",
   "all-values",
   "crucible",
+  "results",
 ] as const)
 
 type StableCheckpointSurface = (typeof STABLE_CHECKPOINT_SURFACES)[number]
@@ -78,6 +79,8 @@ function navigateToStableSurface(
   if (surface === "crucible") return
 
   actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+  if (surface === "results") return
+  actor.send({ type: "RESULTS.CLOSE_REQUESTED" })
   if (surface === "achievements")
     actor.send({ type: "ACHIEVEMENTS.OPEN_REQUESTED" })
   if (surface === "data-management")
@@ -92,6 +95,7 @@ function matchesStableSurface(
 ) {
   const snapshot = actor.getSnapshot()
   if (surface === "hub") return snapshot.matches("Hub")
+  if (surface === "results") return snapshot.matches("Results")
   if (surface === "achievements") return snapshot.matches("Achievements")
   if (surface === "data-management")
     return snapshot.matches({ DataManagement: "Browsing" })
@@ -143,6 +147,35 @@ function createToggleableWriteFailureStore() {
 }
 
 describe("RootMachine native lifecycle persistence", () => {
+  it("offers Results only after a committed change and resumes the exact next pair", async () => {
+    const { actor } = await bootRootActor()
+    actor.send({ type: "BATTLE.START_REQUESTED" })
+    actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    expect(actor.getSnapshot().matches("Hub")).toBe(true)
+
+    await commitOneBattle(actor)
+    const savedProfile = actor.getSnapshot().context.playerData?.profile
+    if (!savedProfile) throw new Error("Committed profile is unavailable")
+    const savedPair = projectBattlePair(
+      savedProfile.activeDeck,
+      savedProfile.scheduler,
+    )
+
+    actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    expect(actor.getSnapshot().matches("Results")).toBe(true)
+    expect(actor.getSnapshot().context.resultsExitProfile).toBe(savedProfile)
+    actor.send({ type: "RESULTS.KEEP_BATTLING_REQUESTED" })
+    expect(actor.getSnapshot().matches({ Crucible: "Ready" })).toBe(true)
+    expect(actor.getSnapshot().context.battleEntryProfile).toBe(savedProfile)
+    const resumedProfile = actor.getSnapshot().context.playerData?.profile
+    if (!resumedProfile) throw new Error("Resumed profile is unavailable")
+    expect(
+      projectBattlePair(resumedProfile.activeDeck, resumedProfile.scheduler),
+    ).toEqual(savedPair)
+    actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    expect(actor.getSnapshot().matches("Hub")).toBe(true)
+  })
+
   it.each(STABLE_CHECKPOINT_SURFACES)(
     "checkpoints the durable head and restores the %s surface",
     async (surface) => {
@@ -221,11 +254,12 @@ describe("RootMachine native lifecycle persistence", () => {
     const { actor } = await bootRootActor(durableStore)
     await commitOneBattle(actor)
     actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    expect(actor.getSnapshot().matches("Results")).toBe(true)
     const beforeCheckpoint = actor.getSnapshot().context
     setWriteIssue("background checkpoint unavailable")
 
     actor.send({ type: "APP.BACKGROUND_CHECKPOINT_REQUESTED" })
-    await waitFor(actor, (snapshot) => snapshot.matches("Hub"))
+    await waitFor(actor, (snapshot) => snapshot.matches("Results"))
 
     const afterCheckpoint = actor.getSnapshot().context
     expect(afterCheckpoint.playerData).toBe(beforeCheckpoint.playerData)
