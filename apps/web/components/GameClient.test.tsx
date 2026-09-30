@@ -822,6 +822,11 @@ describe("GameClient Integration", () => {
       expect(screen.getByRole("button", { name: "Undo" })).toBeEnabled(),
     )
     fireEvent.click(screen.getByRole("button", { name: /Stop/ }))
+    expect(
+      await screen.findByRole("heading", { name: "Results" }),
+    ).toBeVisible()
+    expect(screen.getByRole("button", { name: "See my values" })).toBeVisible()
+    fireEvent.click(screen.getByRole("button", { name: "See my values" }))
 
     expect(
       await screen.findByRole("heading", { name: "Top Five" }),

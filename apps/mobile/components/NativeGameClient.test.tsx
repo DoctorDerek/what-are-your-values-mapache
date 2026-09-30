@@ -402,7 +402,8 @@ describe("NativeGameClient battle routing", () => {
     await waitFor(() => expect(undo).toBeEnabled())
 
     await user.press(screen.getByRole("button", { name: "Stop" }))
-
+    expect(await screen.findByText("Results")).toBeOnTheScreen()
+    await user.press(screen.getByRole("button", { name: "See my values" }))
     expect(await screen.findByText("Your Values")).toBeOnTheScreen()
   }, 10_000)
 })

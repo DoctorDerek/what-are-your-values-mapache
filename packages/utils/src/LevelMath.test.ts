@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   calculateCycleSnapshotXpPayout,
+  getExactLevelProgressFromXP,
   getLevelFromXP,
   getLevelProgressFromXP,
   getMinimumReachableXpForLevel,
@@ -96,6 +97,36 @@ describe("getLevelProgressFromXP", () => {
     expect(Number.isSafeInteger(progress.earnedXpTowardNextLevel)).toBe(true)
     expect(progress.earnedXpTowardNextLevel).toBeLessThan(
       progress.requiredXpForNextLevel,
+    )
+  })
+})
+
+describe("getExactLevelProgressFromXP", () => {
+  it("matches the existing curve at every reachable small XP quantum", () => {
+    for (let totalXp = 0; totalXp <= 400; totalXp += XP_QUANTUM) {
+      const numberProgress = getLevelProgressFromXP(totalXp)
+      const exactProgress = getExactLevelProgressFromXP(BigInt(totalXp))
+      expect(exactProgress).toEqual({
+        level: BigInt(numberProgress.level),
+        earnedXpTowardNextLevel: BigInt(numberProgress.earnedXpTowardNextLevel),
+        requiredXpForNextLevel: BigInt(numberProgress.requiredXpForNextLevel),
+      })
+    }
+  })
+
+  it("derives an exact level above the Number safe-integer boundary", () => {
+    const aggregate = BigInt(MAX_SUPPORTED_TOTAL_XP) * 80n
+    const progress = getExactLevelProgressFromXP(aggregate)
+    expect(progress.level).toBe(1n + (11n * aggregate) / 20n)
+    expect(progress.earnedXpTowardNextLevel).toBeGreaterThanOrEqual(0n)
+    expect(progress.earnedXpTowardNextLevel).toBeLessThan(
+      progress.requiredXpForNextLevel,
+    )
+  })
+
+  it("rejects a negative aggregate", () => {
+    expect(() => getExactLevelProgressFromXP(-1n)).toThrow(
+      "Unsupported total XP",
     )
   })
 })

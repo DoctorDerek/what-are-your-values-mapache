@@ -1,8 +1,13 @@
 export const XP_QUANTUM = 4
 export const MAX_PAYOUT_TIER = 100
 export const MAX_BATTLE_XP = XP_QUANTUM * MAX_PAYOUT_TIER
+const LEVEL_CURVE_NUMERATOR = 11
+const LEVEL_CURVE_DENOMINATOR = 20
 export const MAX_SUPPORTED_TOTAL_XP =
-  Math.floor((Number.MAX_SAFE_INTEGER - 20) / (11 * XP_QUANTUM)) * XP_QUANTUM
+  Math.floor(
+    (Number.MAX_SAFE_INTEGER - LEVEL_CURVE_DENOMINATOR) /
+      (LEVEL_CURVE_NUMERATOR * XP_QUANTUM),
+  ) * XP_QUANTUM
 
 function validateTotalXp(totalXp: number) {
   if (
@@ -16,7 +21,9 @@ function validateTotalXp(totalXp: number) {
 
 export function getLevelFromXP(totalXp: number) {
   validateTotalXp(totalXp)
-  return 1 + Math.floor((11 * totalXp) / 20)
+  return (
+    1 + Math.floor((LEVEL_CURVE_NUMERATOR * totalXp) / LEVEL_CURVE_DENOMINATOR)
+  )
 }
 
 const MAX_SUPPORTED_LEVEL = getLevelFromXP(MAX_SUPPORTED_TOTAL_XP)
@@ -33,8 +40,30 @@ export function getMinimumReachableXpForLevel(level: number) {
 
 export function getLevelProgressFromXP(totalXp: number) {
   const level = getLevelFromXP(totalXp)
-  const levelStartingTotalXp = Math.ceil((20 * (level - 1)) / 11)
-  const nextLevelStartingTotalXp = Math.ceil((20 * level) / 11)
+  const levelStartingTotalXp = Math.ceil(
+    (LEVEL_CURVE_DENOMINATOR * (level - 1)) / LEVEL_CURVE_NUMERATOR,
+  )
+  const nextLevelStartingTotalXp = Math.ceil(
+    (LEVEL_CURVE_DENOMINATOR * level) / LEVEL_CURVE_NUMERATOR,
+  )
+
+  return Object.freeze({
+    level,
+    earnedXpTowardNextLevel: totalXp - levelStartingTotalXp,
+    requiredXpForNextLevel: nextLevelStartingTotalXp - levelStartingTotalXp,
+  } as const)
+}
+
+export function getExactLevelProgressFromXP(totalXp: bigint) {
+  if (totalXp < 0n) throw new Error(`Unsupported total XP: ${totalXp}`)
+
+  const numerator = BigInt(LEVEL_CURVE_NUMERATOR)
+  const denominator = BigInt(LEVEL_CURVE_DENOMINATOR)
+  const level = 1n + (numerator * totalXp) / denominator
+  const levelStartingTotalXp =
+    (denominator * (level - 1n) + numerator - 1n) / numerator
+  const nextLevelStartingTotalXp =
+    (denominator * level + numerator - 1n) / numerator
 
   return Object.freeze({
     level,

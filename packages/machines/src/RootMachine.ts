@@ -6,6 +6,8 @@ import { assign, setup } from "xstate"
 import type { AchievementId } from "./AchievementCatalog"
 import { recordAchievementPresentationActor } from "./AchievementPresentationActors"
 import { getPendingAchievementUnlocks } from "./AchievementState"
+import { createBattleExitResults } from "./BattleExitResults"
+import type { BattleProfile } from "./BattleProfile"
 import {
   createBattleChoiceCommit,
   createBattleRedoCommit,
@@ -74,10 +76,16 @@ import type { PreparedWayvmImport } from "./WayvmImportPreview"
 
 type PendingRecoveryImportSource = "last-known-good" | "selected-backup"
 
-type AchievementPresentationReturnTarget = "hub" | "achievements" | "crucible"
+type AchievementPresentationReturnTarget =
+  "hub" | "achievements" | "crucible" | "results"
 
 type SettingsReturnTarget =
-  "hub" | "achievements" | "data-management" | "all-values" | "crucible"
+  | "hub"
+  | "achievements"
+  | "data-management"
+  | "all-values"
+  | "crucible"
+  | "results"
 
 type BackgroundCheckpointReturnTarget = SettingsReturnTarget | "settings"
 
@@ -91,6 +99,8 @@ type RootMachineContext = {
   readonly now: () => string
   readonly randomUuid: () => string
   playerData: PlayerData | null
+  battleEntryProfile: BattleProfile | null
+  resultsExitProfile: BattleProfile | null
   battleProfileStoreState: BattleProfileStoreState | null
   pendingBattleProfileCommit: BattleProfileCommit | null
   pendingCustomValueDrafts: readonly CustomValueDraft[]
@@ -152,6 +162,8 @@ type RootMachineEvent =
   | { type: "BATTLE.UNDO_REQUESTED" }
   | { type: "BATTLE.REDO_REQUESTED" }
   | { type: "BATTLE.EXIT_REQUESTED" }
+  | { type: "RESULTS.CLOSE_REQUESTED" }
+  | { type: "RESULTS.KEEP_BATTLING_REQUESTED" }
   | { type: "DATA_MANAGEMENT.OPEN_REQUESTED" }
   | { type: "DATA_MANAGEMENT.CLOSE_REQUESTED" }
   | { type: "DATA_MANAGEMENT.EXPORT_REQUESTED" }
@@ -425,6 +437,10 @@ export const rootMachine = setup({
       backgroundCheckpointReturnTarget: null,
     }),
     clearSettingsContext: assign(CLEARED_SETTINGS_TRANSIENT_CONTEXT),
+    clearResultsContext: assign({
+      battleEntryProfile: null,
+      resultsExitProfile: null,
+    }),
   },
   guards: {
     isCurrentBattleSelection: ({ context, event }) => {
@@ -519,10 +535,21 @@ export const rootMachine = setup({
       context.pendingAchievementPresentationIds.length > 0,
     hasQueuedAchievementPresentation: ({ context }) =>
       context.pendingAchievementPresentationIds.length > 1,
+    hasChangedBattleResults: ({ context }) => {
+      if (!context.battleEntryProfile || !context.playerData) return false
+      return (
+        createBattleExitResults(
+          context.battleEntryProfile,
+          context.playerData.profile,
+        )?.hasChanges ?? false
+      )
+    },
     shouldReturnAchievementPresentationToAchievements: ({ context }) =>
       context.achievementPresentationReturnTarget === "achievements",
     shouldReturnAchievementPresentationToCrucible: ({ context }) =>
       context.achievementPresentationReturnTarget === "crucible",
+    shouldReturnAchievementPresentationToResults: ({ context }) =>
+      context.achievementPresentationReturnTarget === "results",
     shouldReturnFailedAchievementPresentationToAchievements: ({ context }) =>
       context.persistenceFailureOrigin === "achievement-presentation" &&
       context.achievementPresentationReturnTarget === "achievements",
@@ -532,6 +559,9 @@ export const rootMachine = setup({
     shouldReturnFailedAchievementPresentationToHub: ({ context }) =>
       context.persistenceFailureOrigin === "achievement-presentation" &&
       context.achievementPresentationReturnTarget === "hub",
+    shouldReturnFailedAchievementPresentationToResults: ({ context }) =>
+      context.persistenceFailureOrigin === "achievement-presentation" &&
+      context.achievementPresentationReturnTarget === "results",
     shouldReturnBackgroundCheckpointToHub: ({ context }) =>
       context.backgroundCheckpointReturnTarget === "hub",
     shouldReturnBackgroundCheckpointToAchievements: ({ context }) =>
@@ -542,6 +572,8 @@ export const rootMachine = setup({
       context.backgroundCheckpointReturnTarget === "all-values",
     shouldReturnBackgroundCheckpointToCrucible: ({ context }) =>
       context.backgroundCheckpointReturnTarget === "crucible",
+    shouldReturnBackgroundCheckpointToResults: ({ context }) =>
+      context.backgroundCheckpointReturnTarget === "results",
     shouldReturnBackgroundCheckpointToSettings: ({ context }) =>
       context.backgroundCheckpointReturnTarget === "settings",
     shouldReturnSettingsToAchievements: ({ context }) =>
@@ -552,12 +584,17 @@ export const rootMachine = setup({
       context.settingsReturnTarget === "all-values",
     shouldReturnSettingsToCrucible: ({ context }) =>
       context.settingsReturnTarget === "crucible",
+    shouldReturnSettingsToResults: ({ context }) =>
+      context.settingsReturnTarget === "results" &&
+      context.playerData?.profile === context.resultsExitProfile,
   },
 }).createMachine({
   id: "root",
   initial: "Hydrating",
   context: ({ input }) => ({
     playerData: null,
+    battleEntryProfile: null,
+    resultsExitProfile: null,
     battleProfileStoreState: null,
     pendingBattleProfileCommit: null,
     pendingCustomValueDrafts: [],
@@ -728,7 +765,14 @@ export const rootMachine = setup({
         },
         "BATTLE.START_REQUESTED": {
           target: "Crucible",
-          actions: "clearPortabilityFeedback",
+          actions: [
+            "clearPortabilityFeedback",
+            assign({
+              battleEntryProfile: ({ context }) =>
+                requireBattleProfile(context),
+              resultsExitProfile: null,
+            }),
+          ],
         },
         "ACHIEVEMENTS.OPEN_REQUESTED": {
           target: "Achievements",
@@ -851,8 +895,13 @@ export const rootMachine = setup({
                 actions: "clearSettingsContext",
               },
               {
-                target: "#root.Hub",
+                guard: "shouldReturnSettingsToResults",
+                target: "#root.Results",
                 actions: "clearSettingsContext",
+              },
+              {
+                target: "#root.Hub",
+                actions: ["clearSettingsContext", "clearResultsContext"],
               },
             ],
             "SETTINGS.UPDATE_REQUESTED": {
@@ -962,8 +1011,13 @@ export const rootMachine = setup({
                 actions: "clearSettingsContext",
               },
               {
-                target: "#root.Hub",
+                guard: "shouldReturnSettingsToResults",
+                target: "#root.Results",
                 actions: "clearSettingsContext",
+              },
+              {
+                target: "#root.Hub",
+                actions: ["clearSettingsContext", "clearResultsContext"],
               },
             ],
             "DATA_MANAGEMENT.RESET_CANCEL_REQUESTED": {
@@ -1616,7 +1670,17 @@ export const rootMachine = setup({
                 backgroundCheckpointReturnTarget: "crucible",
               }),
             },
-            "BATTLE.EXIT_REQUESTED": { target: "#root.Hub" },
+            "BATTLE.EXIT_REQUESTED": [
+              {
+                guard: "hasChangedBattleResults",
+                target: "#root.Results",
+                actions: assign({
+                  resultsExitProfile: ({ context }) =>
+                    requireBattleProfile(context),
+                }),
+              },
+              { target: "#root.Hub", actions: "clearResultsContext" },
+            ],
             "SETTINGS.OPEN_REQUESTED": {
               target: "#root.Settings",
               actions: assign({
@@ -1734,6 +1798,42 @@ export const rootMachine = setup({
         },
       },
     },
+    Results: {
+      on: {
+        "RESULTS.CLOSE_REQUESTED": {
+          target: "Hub",
+          actions: "clearResultsContext",
+        },
+        "RESULTS.KEEP_BATTLING_REQUESTED": {
+          target: "Crucible.Ready",
+          actions: assign({
+            battleEntryProfile: ({ context }) => requireBattleProfile(context),
+            resultsExitProfile: null,
+          }),
+        },
+        "APP.BACKGROUND_CHECKPOINT_REQUESTED": {
+          target: "BackgroundCheckpointing",
+          actions: assign({ backgroundCheckpointReturnTarget: "results" }),
+        },
+        "SETTINGS.OPEN_REQUESTED": {
+          target: "Settings",
+          actions: assign({
+            ...CLEARED_SETTINGS_TRANSIENT_CONTEXT,
+            settingsReturnTarget: "results",
+          }),
+        },
+        "ACHIEVEMENT.PRESENTED": {
+          guard: "canRecordAchievementPresentation",
+          target: "RecordingAchievementPresentation",
+          actions: assign({
+            pendingAchievementPresentationIds: ({ event }) => [
+              event.achievementId,
+            ],
+            achievementPresentationReturnTarget: "results",
+          }),
+        },
+      },
+    },
     BackgroundCheckpointing: {
       invoke: {
         src: "checkpointBattleProfile",
@@ -1776,6 +1876,11 @@ export const rootMachine = setup({
         {
           guard: "shouldReturnBackgroundCheckpointToCrucible",
           target: "Crucible.Ready",
+          actions: "clearBackgroundCheckpointReturnTarget",
+        },
+        {
+          guard: "shouldReturnBackgroundCheckpointToResults",
+          target: "Results",
           actions: "clearBackgroundCheckpointReturnTarget",
         },
         {
@@ -1829,6 +1934,15 @@ export const rootMachine = setup({
           {
             guard: "shouldReturnAchievementPresentationToCrucible",
             target: "Crucible.Ready",
+            actions: assign({
+              playerData: ({ event }) => event.output.head.playerData,
+              battleProfileStoreState: ({ event }) => event.output,
+              ...CLEARED_ACHIEVEMENT_PRESENTATION_CONTEXT,
+            }),
+          },
+          {
+            guard: "shouldReturnAchievementPresentationToResults",
+            target: "Results",
             actions: assign({
               playerData: ({ event }) => event.output.head.playerData,
               battleProfileStoreState: ({ event }) => event.output,
@@ -2004,6 +2118,15 @@ export const rootMachine = setup({
               {
                 guard: "shouldReturnFailedAchievementPresentationToCrucible",
                 target: "#root.Crucible.Ready",
+                actions: assign({
+                  ...CLEARED_ACHIEVEMENT_PRESENTATION_CONTEXT,
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+              {
+                guard: "shouldReturnFailedAchievementPresentationToResults",
+                target: "#root.Results",
                 actions: assign({
                   ...CLEARED_ACHIEVEMENT_PRESENTATION_CONTEXT,
                   portabilityIssue: null,

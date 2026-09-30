@@ -14,6 +14,7 @@ import {
   projectAchievementCatalog,
   type AchievementPresentation,
 } from "@game/machines/src/AchievementPresentation"
+import { createBattleExitResults } from "@game/machines/src/BattleExitResults"
 import { BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY } from "@game/machines/src/BattleProfileStore"
 import {
   projectBattlePair,
@@ -52,6 +53,7 @@ import NativePersistenceFailure, {
 } from "@/components/NativePersistenceFailure"
 import NativePlayerDataLoading from "@/components/NativePlayerDataLoading"
 import NativeProductMenu from "@/components/NativeProductMenu"
+import NativeResults from "@/components/NativeResults"
 import NativeSeethingSwarmAssetPreparation, {
   usePreparedNativeSeethingSwarmBattle,
   usePreparedNativeSeethingSwarmClips,
@@ -231,8 +233,12 @@ function NativeGameClientContent() {
         ? state.context.settingsReturnTarget
         : null
       if (state.matches("Settings")) send({ type: "SETTINGS.CLOSE_REQUESTED" })
-      if (state.matches("Crucible") || settingsReturnTarget === "crucible")
+      if (state.matches("Crucible") || settingsReturnTarget === "crucible") {
         send({ type: "BATTLE.EXIT_REQUESTED" })
+        send({ type: "RESULTS.CLOSE_REQUESTED" })
+      }
+      if (state.matches("Results") || settingsReturnTarget === "results")
+        send({ type: "RESULTS.CLOSE_REQUESTED" })
       if (
         state.matches("Achievements") ||
         settingsReturnTarget === "achievements"
@@ -475,6 +481,21 @@ function NativeGameClientContent() {
       achievementPresentationReturnTarget === "crucible") ||
     (isBackgroundCheckpointing &&
       backgroundCheckpointReturnTarget === "crucible")
+  const isResultsSurface =
+    state.matches("Results") ||
+    (isRecordingAchievementPresentation &&
+      achievementPresentationReturnTarget === "results") ||
+    (isBackgroundCheckpointing &&
+      backgroundCheckpointReturnTarget === "results")
+  const results =
+    isResultsSurface &&
+    state.context.battleEntryProfile &&
+    state.context.resultsExitProfile
+      ? createBattleExitResults(
+          state.context.battleEntryProfile,
+          state.context.resultsExitProfile,
+        )
+      : null
   const isSettingsSurface =
     state.matches("Settings") ||
     (isBackgroundCheckpointing &&
@@ -555,6 +576,32 @@ function NativeGameClientContent() {
           canOpenMenu={state.matches("Achievements")}
           onClose={() => send({ type: "ACHIEVEMENTS.CLOSE_REQUESTED" })}
           onOpenMenu={() => setIsProductMenuOpen(true)}
+        />
+        <NativeProductMenu
+          contextActionLabel={PRODUCT_MENU_COPY.closeAction}
+          open={isProductMenuOpen}
+          onDestinationSelect={handleProductMenuDestinationSelect}
+          onOpenChange={setIsProductMenuOpen}
+        />
+        {reopenedInformationPanel}
+        {controls}
+        {achievementBanner}
+      </View>
+    )
+
+  if (isResultsSurface && results)
+    return (
+      <View className="flex-1">
+        <NativeResults
+          results={results}
+          runtimeClipCatalog={SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG}
+          shouldReduceMotion={shouldReduceMotion}
+          isMenuOpen={isProductOverlayOpen}
+          onOpenMenu={() => setIsProductMenuOpen(true)}
+          onSeeValues={() => send({ type: "RESULTS.CLOSE_REQUESTED" })}
+          onKeepBattling={() =>
+            send({ type: "RESULTS.KEEP_BATTLING_REQUESTED" })
+          }
         />
         <NativeProductMenu
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}

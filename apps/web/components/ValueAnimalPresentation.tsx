@@ -19,6 +19,7 @@ export default function ValueAnimalPresentation({
   isAttended,
   valuePresentation,
   shouldReduceMotion,
+  showAnimal = true,
 }: {
   rank: number
   showRank: boolean
@@ -26,6 +27,7 @@ export default function ValueAnimalPresentation({
   isAttended: boolean
   valuePresentation: ValueAnimalPresentationData<StaticImageData> | undefined
   shouldReduceMotion: boolean
+  showAnimal?: boolean
 }) {
   const imagePath =
     valuePresentation?.kind === "animal"
@@ -83,6 +85,7 @@ export default function ValueAnimalPresentation({
         >
           {valuePresentation.kind === "animal" &&
           geometry &&
+          showAnimal &&
           !hasImageFailed ? (
             <span style={{ width: geometry.width, height: geometry.height }}>
               <SeethingSwarmHubAnimal
