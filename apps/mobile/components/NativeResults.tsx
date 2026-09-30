@@ -7,8 +7,8 @@ import {
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import { getValueDisplayName } from "@game/data/src/Value"
 import {
-  BATTLE_RESULTS_PRESENTATION_DURATION_MS,
-  BATTLE_RESULTS_PRESENTATION_STEPS,
+  BATTLE_RESULTS_PRESENTATION_TICK_MS,
+  BATTLE_RESULTS_REORDER_MOTION_MS,
   projectBattleExitResultsFrame,
   type BattleExitResults,
   type BattleExitResultsFrameValue,
@@ -54,7 +54,11 @@ function NativeResultsValueRow({
       accessible
       accessibilityLabel={`Rank ${value.exitRank}, ${getValueDisplayName(value.definition)}, Level ${finalLevel}, ${value.exitProgress.totalXp} total XP`}
       onFocus={onFocus}
-      layout={animatePosition ? LinearTransition.duration(280) : undefined}
+      layout={
+        animatePosition
+          ? LinearTransition.duration(BATTLE_RESULTS_REORDER_MOTION_MS)
+          : undefined
+      }
       className={`mb-1 flex-row flex-wrap items-center gap-2 border-2 border-black bg-white p-1 shadow-[3px_3px_0px_0px_#000000] ${rank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
     >
       <Text className="w-8 text-center text-lg font-black text-black">
@@ -117,36 +121,47 @@ export default function NativeResults({
   onSeeValues: () => void
   onKeepBattling: () => void
 }) {
-  const [presentationStep, setPresentationStep] = useState(
-    shouldReduceMotion ? BATTLE_RESULTS_PRESENTATION_STEPS : 0,
-  )
+  const [presentationTime, setPresentationTime] = useState(() => ({
+    elapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
+    previousElapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
+  }))
   const settlePresentation = useCallback(
-    () => setPresentationStep(BATTLE_RESULTS_PRESENTATION_STEPS),
-    [],
+    () =>
+      setPresentationTime({
+        elapsedMs: results.presentationDurationMs,
+        previousElapsedMs: results.presentationDurationMs,
+      }),
+    [results.presentationDurationMs],
   )
   const isPresentationComplete =
-    presentationStep === BATTLE_RESULTS_PRESENTATION_STEPS
-  const displayedStep = shouldReduceMotion
-    ? BATTLE_RESULTS_PRESENTATION_STEPS
-    : presentationStep
+    presentationTime.elapsedMs >= results.presentationDurationMs
+  const displayedElapsedMs = shouldReduceMotion
+    ? results.presentationDurationMs
+    : presentationTime.elapsedMs
+  const displayedPreviousElapsedMs = shouldReduceMotion
+    ? results.presentationDurationMs
+    : presentationTime.previousElapsedMs
 
   useEffect(() => {
     if (shouldReduceMotion || isPresentationComplete) return
     const startedAt = Date.now()
     const timer = setInterval(() => {
-      setPresentationStep(
-        Math.min(
-          BATTLE_RESULTS_PRESENTATION_STEPS,
-          Math.floor(
-            ((Date.now() - startedAt) /
-              BATTLE_RESULTS_PRESENTATION_DURATION_MS) *
-              BATTLE_RESULTS_PRESENTATION_STEPS,
-          ),
-        ),
+      const nextElapsedMs = Math.min(
+        results.presentationDurationMs,
+        Date.now() - startedAt,
       )
-    }, BATTLE_RESULTS_PRESENTATION_DURATION_MS / BATTLE_RESULTS_PRESENTATION_STEPS)
+      setPresentationTime(({ elapsedMs }) => ({
+        elapsedMs: Math.max(elapsedMs, nextElapsedMs),
+        previousElapsedMs: elapsedMs,
+      }))
+    }, BATTLE_RESULTS_PRESENTATION_TICK_MS)
     return () => clearInterval(timer)
-  }, [isPresentationComplete, shouldReduceMotion])
+  }, [
+    isPresentationComplete,
+    results.presentationDurationMs,
+    settlePresentation,
+    shouldReduceMotion,
+  ])
 
   useEffect(() => {
     const subscription = BackHandler.addEventListener(
@@ -161,12 +176,17 @@ export default function NativeResults({
   }, [isMenuOpen, onSeeValues])
 
   const frame = useMemo(
-    () => projectBattleExitResultsFrame(results, displayedStep),
-    [results, displayedStep],
+    () =>
+      projectBattleExitResultsFrame(
+        results,
+        displayedElapsedMs,
+        displayedPreviousElapsedMs,
+      ),
+    [results, displayedElapsedMs, displayedPreviousElapsedMs],
   )
   const finalProfileProgress = useMemo(
     () =>
-      projectBattleExitResultsFrame(results, BATTLE_RESULTS_PRESENTATION_STEPS)
+      projectBattleExitResultsFrame(results, results.presentationDurationMs)
         .profileLevelProgress,
     [results],
   )
@@ -210,8 +230,8 @@ export default function NativeResults({
             runtimeClipCatalog={runtimeClipCatalog}
             shouldReduceMotion={shouldReduceMotion}
             animatePosition={
-              displayedStep > 0 &&
-              displayedStep < BATTLE_RESULTS_PRESENTATION_STEPS
+              displayedElapsedMs > 0 &&
+              displayedElapsedMs < results.presentationDurationMs
             }
             onFocus={settlePresentation}
           />
