@@ -88,13 +88,9 @@ function NativeResultsValueRow({
         <View className="mt-1 h-2 flex-row overflow-hidden border border-black bg-white">
           <View
             className="bg-mapache-vivid-primary-raspberry"
-            style={{ flex: earnedXpTowardNextLevel }}
+            style={{ flex: frameValue.levelBarPercentage }}
           />
-          <View
-            style={{
-              flex: requiredXpForNextLevel - earnedXpTowardNextLevel,
-            }}
-          />
+          <View style={{ flex: 100 - frameValue.levelBarPercentage }} />
         </View>
         <Text className="text-xs text-black">
           {earnedXpTowardNextLevel}/{requiredXpForNextLevel} XP
@@ -238,16 +234,9 @@ export default function NativeResults({
         <View className="mt-1 h-3 flex-row overflow-hidden border border-black">
           <View
             className="bg-mapache-vivid-primary-raspberry"
-            style={{ flex: Number(profileProgress.earnedXpTowardNextLevel) }}
+            style={{ flex: frame.profileLevelBarPercentage }}
           />
-          <View
-            style={{
-              flex: Number(
-                profileProgress.requiredXpForNextLevel -
-                  profileProgress.earnedXpTowardNextLevel,
-              ),
-            }}
-          />
+          <View style={{ flex: 100 - frame.profileLevelBarPercentage }} />
         </View>
       </View>
       <View className="gap-2 pt-2">

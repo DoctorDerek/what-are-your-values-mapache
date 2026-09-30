@@ -1,10 +1,7 @@
 import type { ValueId } from "@game/data/src/Value"
 import type { ValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues, type RankedValue } from "@game/data/src/ValueRanking"
-import {
-  getExactLevelProgressFromXP,
-  XP_QUANTUM,
-} from "@game/utils/src/LevelMath"
+import { getExactLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import type { BattleProfile } from "./BattleProfile"
 
 export const BATTLE_RESULTS_PRESENTATION_DURATION_MS = 900
@@ -32,6 +29,8 @@ export type BattleExitResultsFrameValue = {
   readonly value: BattleExitResultsValue
   readonly rank: number
   readonly totalXp: number
+  readonly levelBarPercentage: number
+  readonly didCrossLevel: boolean
 }
 
 function didValueProgressChange(
@@ -108,20 +107,35 @@ export function createBattleExitResults(
   })
 }
 
-function interpolateValueXp(
-  value: BattleExitResultsValue,
+function projectPresentationProgress(
+  entryXp: bigint,
+  exitXp: bigint,
   presentationStep: number,
 ) {
-  const entryQuanta = value.entryProgress.totalXp / XP_QUANTUM
-  const exitQuanta = value.exitProgress.totalXp / XP_QUANTUM
-  const displayedQuanta =
-    entryQuanta +
-    Math.round(
-      ((exitQuanta - entryQuanta) * presentationStep) /
-        BATTLE_RESULTS_PRESENTATION_STEPS,
-    )
+  const steps = BigInt(BATTLE_RESULTS_PRESENTATION_STEPS)
+  const numerator =
+    entryXp * steps + (exitXp - entryXp) * BigInt(presentationStep)
+  const totalXp = numerator / steps
+  const levelProgress = getExactLevelProgressFromXP(totalXp)
+  const levelStartingXp = totalXp - levelProgress.earnedXpTowardNextLevel
+  const previousTotalXp =
+    presentationStep === 0 || entryXp === exitXp
+      ? totalXp
+      : (entryXp * steps + (exitXp - entryXp) * BigInt(presentationStep - 1)) /
+        steps
 
-  return displayedQuanta * XP_QUANTUM
+  return Object.freeze({
+    totalXp,
+    levelProgress,
+    levelBarPercentage:
+      (Number(numerator - levelStartingXp * steps) /
+        Number(levelProgress.requiredXpForNextLevel * steps)) *
+      100,
+    didCrossLevel:
+      previousTotalXp !== totalXp &&
+      getExactLevelProgressFromXP(previousTotalXp).level !==
+        levelProgress.level,
+  })
 }
 
 export function projectBattleExitResultsFrame(
@@ -138,23 +152,32 @@ export function projectBattleExitResultsFrame(
 
   const useExitOrder = presentationStep >= BATTLE_RESULTS_PRESENTATION_STEPS / 2
   const values = results.values
-    .map(
-      (value) =>
-        Object.freeze({
-          value,
-          rank: useExitOrder ? value.exitRank : value.entryRank,
-          totalXp: interpolateValueXp(value, presentationStep),
-        }) satisfies BattleExitResultsFrameValue,
-    )
+    .map((value) => {
+      const progress = projectPresentationProgress(
+        BigInt(value.entryProgress.totalXp),
+        BigInt(value.exitProgress.totalXp),
+        presentationStep,
+      )
+      return Object.freeze({
+        value,
+        rank: useExitOrder ? value.exitRank : value.entryRank,
+        totalXp: Number(progress.totalXp),
+        levelBarPercentage: progress.levelBarPercentage,
+        didCrossLevel: progress.didCrossLevel,
+      }) satisfies BattleExitResultsFrameValue
+    })
     .sort((first, second) => first.rank - second.rank)
-  const profileXp = values.reduce(
-    (total, value) => total + BigInt(value.totalXp),
-    0n,
+  const profileProgress = projectPresentationProgress(
+    results.entryProfileXp,
+    results.exitProfileXp,
+    presentationStep,
   )
 
   return Object.freeze({
     values: Object.freeze(values),
-    profileXp,
-    profileLevelProgress: getExactLevelProgressFromXP(profileXp),
+    profileXp: profileProgress.totalXp,
+    profileLevelProgress: profileProgress.levelProgress,
+    profileLevelBarPercentage: profileProgress.levelBarPercentage,
+    profileDidCrossLevel: profileProgress.didCrossLevel,
   })
 }

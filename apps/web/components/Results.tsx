@@ -94,10 +94,9 @@ function ResultsValueRow({
             </span>
           </div>
           <Progress
-            value={earnedXpTowardNextLevel}
-            max={requiredXpForNextLevel}
+            value={frameValue.levelBarPercentage}
             className="mt-1 h-2 border border-black bg-white"
-            indicatorClassName="bg-mapache-vivid-primary-raspberry"
+            indicatorClassName={`bg-mapache-vivid-primary-raspberry ${frameValue.didCrossLevel ? "transition-none" : "duration-75"}`}
           />
           <span className="text-mapache-vivid-dark text-xs">
             {earnedXpTowardNextLevel}/{requiredXpForNextLevel} XP
@@ -248,11 +247,11 @@ export default function Results({
             </span>
           </div>
           <Progress
-            value={Number(profileProgress.earnedXpTowardNextLevel)}
-            max={Number(profileProgress.requiredXpForNextLevel)}
+            value={frame.profileLevelBarPercentage}
             className="mt-1 h-3 border border-black"
-            indicatorClassName="bg-mapache-vivid-primary-raspberry"
+            indicatorClassName={`bg-mapache-vivid-primary-raspberry ${frame.profileDidCrossLevel ? "transition-none" : "duration-75"}`}
             aria-label={`Profile XP toward Level ${(profileProgress.level + 1n).toString()}`}
+            aria-valuetext={`${profileProgress.earnedXpTowardNextLevel}/${profileProgress.requiredXpForNextLevel} XP`}
           />
         </section>
         <nav
