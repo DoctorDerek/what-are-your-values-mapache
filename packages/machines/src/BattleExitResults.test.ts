@@ -4,7 +4,6 @@ import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { MAX_SUPPORTED_TOTAL_XP } from "@game/utils/src/LevelMath"
 import { describe, expect, it } from "vitest"
 import {
-  BATTLE_RESULTS_PRESENTATION_STEPS,
   createBattleExitResults,
   projectBattleExitResultsFrame,
 } from "./BattleExitResults"
@@ -31,23 +30,27 @@ describe("Battle-exit Results", () => {
     expect(results.entryProfileXp).toBe(0n)
     expect(results.exitProfileXp).toBe(4n)
     expect(results.profileXpChange).toBe(4n)
+    expect(results.presentationDurationMs).toBe(3_700)
+    expect(results.levelBarFillDurationMs).toBe(1_850)
     expect(results.values[0]?.definition.id).toBe(winnerId)
     expect(results.values[0]?.exitRank).toBe(1)
     expect(projectBattleExitResultsFrame(results, 0).profileXp).toBe(0n)
-    const firstFill = projectBattleExitResultsFrame(results, 5)
-    const firstBoundary = projectBattleExitResultsFrame(results, 10)
-    const secondFill = projectBattleExitResultsFrame(results, 15)
-    const winnerAt = (step: number) =>
-      projectBattleExitResultsFrame(results, step).values.find(
-        ({ value }) => value.definition.id === winnerId,
-      )
+    const firstFill = projectBattleExitResultsFrame(results, 925)
+    const firstBoundary = projectBattleExitResultsFrame(results, 1_850, 1_800)
+    const secondFill = projectBattleExitResultsFrame(results, 2_775)
+    const winnerAt = (elapsedMs: number, previousElapsedMs = elapsedMs) =>
+      projectBattleExitResultsFrame(
+        results,
+        elapsedMs,
+        previousElapsedMs,
+      ).values.find(({ value }) => value.definition.id === winnerId)
     expect(firstFill.profileLevelProgress.level).toBe(1n)
     expect(firstFill.profileLevelBarPercentage).toBe(50)
-    expect(winnerAt(5)?.levelBarPercentage).toBe(50)
+    expect(winnerAt(925)?.levelBarPercentage).toBe(50)
     expect(firstBoundary.profileLevelProgress.level).toBe(2n)
     expect(firstBoundary.profileLevelBarPercentage).toBe(0)
     expect(firstBoundary.profileDidCrossLevel).toBe(true)
-    expect(winnerAt(10)?.didCrossLevel).toBe(true)
+    expect(winnerAt(1_850, 1_800)?.didCrossLevel).toBe(true)
     expect(secondFill.profileLevelProgress.level).toBe(2n)
     expect(secondFill.profileLevelBarPercentage).toBe(50)
     expect(
@@ -59,17 +62,17 @@ describe("Battle-exit Results", () => {
         ),
     ).toBe(true)
     expect(
-      projectBattleExitResultsFrame(results, BATTLE_RESULTS_PRESENTATION_STEPS)
+      projectBattleExitResultsFrame(results, results.presentationDurationMs)
         .profileXp,
     ).toBe(4n)
     expect(
-      projectBattleExitResultsFrame(results, BATTLE_RESULTS_PRESENTATION_STEPS)
+      projectBattleExitResultsFrame(results, results.presentationDurationMs)
         .profileLevelProgress.level,
     ).toBe(3n)
     expect(
       projectBattleExitResultsFrame(
         results,
-        BATTLE_RESULTS_PRESENTATION_STEPS,
+        results.presentationDurationMs,
       ).values.map(({ value }) => value.definition.id),
     ).toEqual(results.values.map(({ definition }) => definition.id))
   })
@@ -105,14 +108,112 @@ describe("Battle-exit Results", () => {
     expect(results?.hasChanges).toBe(true)
     expect(results?.profileXpChange).toBe(-4n)
     if (!results) throw new Error("Negative Results projection was unavailable")
-    const descending = projectBattleExitResultsFrame(results, 5)
+    const descending = projectBattleExitResultsFrame(results, 925)
     expect(descending.profileXp).toBe(3n)
     expect(descending.profileLevelProgress.level).toBe(2n)
     expect(descending.profileLevelBarPercentage).toBe(50)
     expect(
-      projectBattleExitResultsFrame(results, BATTLE_RESULTS_PRESENTATION_STEPS)
+      projectBattleExitResultsFrame(results, results.presentationDurationMs)
         .profileXp,
     ).toBe(0n)
+  })
+
+  it("slows one shared fill rate for one award without adding a static hold", () => {
+    const entry = createInitialBattleProfile("results-short-fill-seed")
+    const [valueId] = entry.activeDeck.valueIds
+    if (!valueId) throw new Error("Short-fill fixture is incomplete")
+    const progressById = new Map(entry.progressById)
+    const initialProgress = progressById.get(valueId)
+    if (!initialProgress) throw new Error("Short-fill progress is missing")
+    progressById.set(valueId, { ...initialProgress, totalXp: 4 })
+    const results = createBattleExitResults(entry, {
+      ...entry,
+      progressById,
+    })
+    if (!results) throw new Error("Short-fill Results were unavailable")
+
+    expect(results.presentationDurationMs).toBe(3_700)
+    expect(results.levelBarFillDurationMs).toBe(1_850)
+    expect(
+      projectBattleExitResultsFrame(results, 925).profileLevelBarPercentage,
+    ).toBe(50)
+    expect(
+      projectBattleExitResultsFrame(results, 3_650).profileLevelBarPercentage,
+    ).toBeGreaterThan(95)
+    expect(
+      projectBattleExitResultsFrame(results, 3_650).profileLevelBarPercentage,
+    ).toBeLessThan(100)
+    expect(projectBattleExitResultsFrame(results, 3_700).profileXp).toBe(4n)
+  })
+
+  it("extends a large gain beyond the minimum while shorter rows settle concurrently", () => {
+    const entry = createInitialBattleProfile("results-long-fill-seed")
+    const [longValueId, shortValueId] = entry.activeDeck.valueIds
+    if (!longValueId || !shortValueId)
+      throw new Error("Long-fill fixture is incomplete")
+    const progressById = new Map(entry.progressById)
+    const longProgress = progressById.get(longValueId)
+    const shortProgress = progressById.get(shortValueId)
+    if (!longProgress || !shortProgress)
+      throw new Error("Long-fill progress is missing")
+    progressById.set(longValueId, { ...longProgress, totalXp: 12 })
+    progressById.set(shortValueId, { ...shortProgress, totalXp: 4 })
+    const results = createBattleExitResults(entry, {
+      ...entry,
+      progressById,
+    })
+    if (!results) throw new Error("Long-fill Results were unavailable")
+
+    expect(results.levelBarFillDurationMs).toBe(900)
+    expect(results.presentationDurationMs).toBe(7_650)
+    const midway = projectBattleExitResultsFrame(results, 1_800)
+    expect(
+      midway.values.find(({ value }) => value.definition.id === shortValueId)
+        ?.totalXp,
+    ).toBe(4)
+    expect(
+      midway.values.find(({ value }) => value.definition.id === longValueId)
+        ?.totalXp,
+    ).toBeLessThan(12)
+    expect(
+      projectBattleExitResultsFrame(results, 7_600).profileXp,
+    ).toBeLessThan(16n)
+    expect(projectBattleExitResultsFrame(results, 7_650).profileXp).toBe(16n)
+  })
+
+  it("uses only the reorder motion when ranks change without XP", () => {
+    const initial = createInitialBattleProfile("results-rank-only-seed")
+    const [firstValueId, valueId] = initial.activeDeck.valueIds
+    if (!firstValueId || !valueId)
+      throw new Error("Rank-only fixture is incomplete")
+    const entryProgressById = new Map(initial.progressById)
+    const tiedProgress = {
+      totalXp: 4,
+      profileWins: 1,
+      profileComparisons: 1,
+      currentCycleWins: 0,
+    }
+    entryProgressById.set(firstValueId, tiedProgress)
+    entryProgressById.set(valueId, tiedProgress)
+    const entry = { ...initial, progressById: entryProgressById }
+    const exitProgressById = new Map(entryProgressById)
+    exitProgressById.set(valueId, { ...tiedProgress, currentCycleWins: 1 })
+    const results = createBattleExitResults(entry, {
+      ...entry,
+      progressById: exitProgressById,
+    })
+    if (!results) throw new Error("Rank-only Results were unavailable")
+
+    expect(results.presentationDurationMs).toBe(560)
+    expect(results.levelBarFillDurationMs).toBe(0)
+    expect(
+      projectBattleExitResultsFrame(results, 0).values[0]?.value.definition.id,
+    ).not.toBe(valueId)
+    expect(
+      projectBattleExitResultsFrame(results, 280).values[0]?.value.definition
+        .id,
+    ).toBe(valueId)
+    expect(projectBattleExitResultsFrame(results, 560).profileXp).toBe(8n)
   })
 
   it("sums supported per-value totals without Number aggregate precision loss", () => {
@@ -131,7 +232,7 @@ describe("Battle-exit Results", () => {
     if (!results) throw new Error("Large aggregate Results were unavailable")
     expect(results.entryProfileXp).toBe(BigInt(MAX_SUPPORTED_TOTAL_XP) * 80n)
     expect(
-      projectBattleExitResultsFrame(results, BATTLE_RESULTS_PRESENTATION_STEPS)
+      projectBattleExitResultsFrame(results, results.presentationDurationMs)
         .profileXp,
     ).toBe(BigInt(MAX_SUPPORTED_TOTAL_XP) * 80n)
 
@@ -149,11 +250,11 @@ describe("Battle-exit Results", () => {
       progressById: exitProgressById,
     })
     if (!changed) throw new Error("Large aggregate change was unavailable")
-    expect(projectBattleExitResultsFrame(changed, 5).profileXp).toBe(
+    expect(projectBattleExitResultsFrame(changed, 925).profileXp).toBe(
       BigInt(MAX_SUPPORTED_TOTAL_XP) * 80n + 1n,
     )
     expect(
-      projectBattleExitResultsFrame(changed, BATTLE_RESULTS_PRESENTATION_STEPS)
+      projectBattleExitResultsFrame(changed, changed.presentationDurationMs)
         .profileXp,
     ).toBe(BigInt(MAX_SUPPORTED_TOTAL_XP) * 80n + 4n)
   })

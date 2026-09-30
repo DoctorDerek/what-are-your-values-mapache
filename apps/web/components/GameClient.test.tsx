@@ -1798,8 +1798,10 @@ describe("GameClient Integration", () => {
     )
     fireEvent.click(screen.getByRole("button", { name: /Stop/ }))
     expect(
-      await screen.findByText("Level 3", undefined, { timeout: 3000 }),
+      await screen.findByRole("heading", { name: "Results" }),
     ).toBeVisible()
+    fireEvent.click(screen.getByRole("button", { name: "See my values" }))
+    expect(await screen.findByText("Level 3")).toBeVisible()
     await openProductMenuDestination("Import & Export")
 
     fireEvent.click(

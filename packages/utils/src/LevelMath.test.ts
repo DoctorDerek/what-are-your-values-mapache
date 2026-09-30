@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   calculateCycleSnapshotXpPayout,
   getExactLevelProgressFromXP,
+  getExactLevelStartingXp,
   getLevelFromXP,
   getLevelProgressFromXP,
   getMinimumReachableXpForLevel,
@@ -128,6 +129,22 @@ describe("getExactLevelProgressFromXP", () => {
     expect(() => getExactLevelProgressFromXP(-1n)).toThrow(
       "Unsupported total XP",
     )
+  })
+})
+
+describe("getExactLevelStartingXp", () => {
+  it.each([
+    [1n, 0n],
+    [2n, 2n],
+    [3n, 4n],
+    [4n, 6n],
+    [5n, 8n],
+  ])("places Level %s at exactly %s XP", (level, startingXp) => {
+    expect(getExactLevelStartingXp(level)).toBe(startingXp)
+  })
+
+  it("rejects a Level below one", () => {
+    expect(() => getExactLevelStartingXp(0n)).toThrow("Unsupported Level")
   })
 })
 

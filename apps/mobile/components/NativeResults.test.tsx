@@ -6,7 +6,13 @@ import {
 } from "@game/machines/src/BattleProfile"
 import { projectBattlePair } from "@game/machines/src/BattleScheduler"
 import { describe, expect, it, jest } from "@jest/globals"
-import { render, screen, userEvent } from "@testing-library/react-native"
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  userEvent,
+} from "@testing-library/react-native"
 import NativeResults from "@/components/NativeResults"
 
 function createResults() {
@@ -23,6 +29,37 @@ function createResults() {
 }
 
 describe("Native Battle-exit Results", () => {
+  it("fills through intermediate Levels for 3.7 seconds without blocking actions", async () => {
+    jest.useFakeTimers()
+    try {
+      const onSeeValues = jest.fn()
+      await render(
+        <NativeResults
+          results={createResults()}
+          runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+          shouldReduceMotion={false}
+          isMenuOpen={false}
+          onOpenMenu={jest.fn()}
+          onSeeValues={onSeeValues}
+          onKeepBattling={jest.fn()}
+        />,
+      )
+
+      expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
+      await act(async () => jest.advanceTimersByTime(1_850))
+      expect(screen.getByText("Profile Level 2")).toBeOnTheScreen()
+      await act(async () => jest.advanceTimersByTime(1_800))
+      expect(screen.getByText("Profile Level 2")).toBeOnTheScreen()
+      await act(async () => jest.advanceTimersByTime(50))
+      expect(screen.getByText("Profile Level 3")).toBeOnTheScreen()
+      expect(screen.getByText(/Profile XP 4/)).toBeOnTheScreen()
+      fireEvent.press(screen.getByRole("button", { name: "See my values" }))
+      expect(onSeeValues).toHaveBeenCalledTimes(1)
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
   it("shows exact profile progress and keeps both safe-area actions available", async () => {
     const user = userEvent.setup()
     const onSeeValues = jest.fn()
