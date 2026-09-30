@@ -16,6 +16,7 @@ import {
   projectAchievementCatalog,
   type AchievementPresentation,
 } from "@game/machines/src/AchievementPresentation"
+import { createBattleExitResults } from "@game/machines/src/BattleExitResults"
 import { inspectBattleProfileStore } from "@game/machines/src/BattleProfileHydration"
 import { BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY } from "@game/machines/src/BattleProfileStore"
 import {
@@ -67,6 +68,7 @@ import PlayerDataLoading from "./PlayerDataLoading"
 import PlayerDataRecovery, {
   type PlayerDataRecoveryActivity,
 } from "./PlayerDataRecovery"
+import Results from "./Results"
 import Settings from "./Settings"
 import Splash from "./Splash"
 import WebWriterConflict from "./WebWriterConflict"
@@ -337,8 +339,12 @@ function WritableGameClient({
         ? state.context.settingsReturnTarget
         : null
       if (state.matches("Settings")) send({ type: "SETTINGS.CLOSE_REQUESTED" })
-      if (state.matches("Crucible") || settingsReturnTarget === "crucible")
+      if (state.matches("Crucible") || settingsReturnTarget === "crucible") {
         send({ type: "BATTLE.EXIT_REQUESTED" })
+        send({ type: "RESULTS.CLOSE_REQUESTED" })
+      }
+      if (state.matches("Results") || settingsReturnTarget === "results")
+        send({ type: "RESULTS.CLOSE_REQUESTED" })
       if (
         state.matches("Achievements") ||
         settingsReturnTarget === "achievements"
@@ -711,6 +717,19 @@ function WritableGameClient({
     state.matches("Crucible") ||
     (isRecordingAchievementPresentation &&
       achievementPresentationReturnTarget === "crucible")
+  const isResultsSurface =
+    state.matches("Results") ||
+    (isRecordingAchievementPresentation &&
+      achievementPresentationReturnTarget === "results")
+  const results =
+    isResultsSurface &&
+    state.context.battleEntryProfile &&
+    state.context.resultsExitProfile
+      ? createBattleExitResults(
+          state.context.battleEntryProfile,
+          state.context.resultsExitProfile,
+        )
+      : null
 
   if (isHubSurface) {
     return (
@@ -782,6 +801,33 @@ function WritableGameClient({
           canOpenMenu={!isRecordingAchievementPresentation}
           onClose={() => send({ type: "ACHIEVEMENTS.CLOSE_REQUESTED" })}
           onOpenMenu={handleProductMenuOpen}
+        />
+        <ProductMenu
+          contextActionLabel={PRODUCT_MENU_COPY.closeAction}
+          open={isProductMenuOpen}
+          onDestinationSelect={handleProductMenuDestinationSelect}
+          onOpenChange={setIsProductMenuOpen}
+        />
+        {reopenedInformationPanel}
+        {controls}
+        {achievementBanner}
+      </>
+    )
+  }
+
+  if (isResultsSurface && results) {
+    return (
+      <>
+        <Results
+          results={results}
+          runtimeClipCatalog={SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG}
+          shouldReduceMotion={shouldReduceMotion}
+          isMenuOpen={isProductOverlayOpen}
+          onOpenMenu={handleProductMenuOpen}
+          onSeeValues={() => send({ type: "RESULTS.CLOSE_REQUESTED" })}
+          onKeepBattling={() =>
+            send({ type: "RESULTS.KEEP_BATTLING_REQUESTED" })
+          }
         />
         <ProductMenu
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}
