@@ -5,7 +5,7 @@ import {
   createInitialBattleProfile,
 } from "@game/machines/src/BattleProfile"
 import { projectBattlePair } from "@game/machines/src/BattleScheduler"
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import Results from "./Results"
 
@@ -23,6 +23,50 @@ function createResults() {
 }
 
 describe("Battle-exit Results presentation", () => {
+  it("visibly fills and resets the Profile bar across two Levels on one clock", () => {
+    vi.useFakeTimers()
+    try {
+      const results = createResults()
+      const onKeepBattling = vi.fn()
+      render(
+        <Results
+          results={results}
+          runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+          shouldReduceMotion={false}
+          isMenuOpen={false}
+          onOpenMenu={vi.fn()}
+          onSeeValues={vi.fn()}
+          onKeepBattling={onKeepBattling}
+        />,
+      )
+      const profile = screen.getByRole("region", { name: "Profile progress" })
+      const bar = within(profile).getByRole("progressbar")
+      expect(bar).toHaveAttribute("aria-valuenow", "0")
+      expect(results.presentationDurationMs).toBe(3_700)
+      fireEvent.click(screen.getByRole("button", { name: "Keep battling" }))
+      expect(onKeepBattling).toHaveBeenCalledOnce()
+      act(() => vi.advanceTimersByTime(900))
+      expect(Number(bar.getAttribute("aria-valuenow"))).toBeGreaterThan(40)
+      expect(profile).toHaveTextContent("Profile Level 1")
+      act(() => vi.advanceTimersByTime(50))
+      expect(Number(bar.getAttribute("aria-valuenow"))).toBeGreaterThan(50)
+      expect(profile).toHaveTextContent("Profile Level 1")
+      act(() => vi.advanceTimersByTime(900))
+      expect(bar).toHaveAttribute("aria-valuenow", "0")
+      expect(profile).toHaveTextContent("Profile Level 2")
+      act(() => vi.advanceTimersByTime(900))
+      expect(Number(bar.getAttribute("aria-valuenow"))).toBeGreaterThan(45)
+      act(() => vi.advanceTimersByTime(900))
+      expect(Number(bar.getAttribute("aria-valuenow"))).toBeGreaterThan(95)
+      act(() => vi.advanceTimersByTime(50))
+      expect(profile).toHaveTextContent("Profile Level 3")
+      expect(profile).toHaveTextContent("Profile XP 4")
+      expect(bar).toHaveAttribute("aria-valuenow", "0")
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it("keeps the complete roster scrollable and both exits immediately actionable", () => {
     const onSeeValues = vi.fn()
     const onKeepBattling = vi.fn()

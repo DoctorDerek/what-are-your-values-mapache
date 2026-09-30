@@ -60,16 +60,22 @@ export function getExactLevelProgressFromXP(totalXp: bigint) {
   const numerator = BigInt(LEVEL_CURVE_NUMERATOR)
   const denominator = BigInt(LEVEL_CURVE_DENOMINATOR)
   const level = 1n + (numerator * totalXp) / denominator
-  const levelStartingTotalXp =
-    (denominator * (level - 1n) + numerator - 1n) / numerator
-  const nextLevelStartingTotalXp =
-    (denominator * level + numerator - 1n) / numerator
+  const levelStartingTotalXp = getExactLevelStartingXp(level)
+  const nextLevelStartingTotalXp = getExactLevelStartingXp(level + 1n)
 
   return Object.freeze({
     level,
     earnedXpTowardNextLevel: totalXp - levelStartingTotalXp,
     requiredXpForNextLevel: nextLevelStartingTotalXp - levelStartingTotalXp,
   } as const)
+}
+
+export function getExactLevelStartingXp(level: bigint) {
+  if (level < 1n) throw new Error(`Unsupported Level: ${level}`)
+
+  const numerator = BigInt(LEVEL_CURVE_NUMERATOR)
+  const denominator = BigInt(LEVEL_CURVE_DENOMINATOR)
+  return (denominator * (level - 1n) + numerator - 1n) / numerator
 }
 
 export function getPayoutTierFromXP(totalXp: number) {
