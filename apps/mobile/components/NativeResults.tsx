@@ -17,7 +17,7 @@ import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingS
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { BackHandler, FlatList, View } from "react-native"
-import Animated, { LinearTransition } from "react-native-reanimated"
+import Animated, { Easing, LinearTransition } from "react-native-reanimated"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
 import { Button } from "@/components/ui/button"
@@ -56,7 +56,9 @@ function NativeResultsValueRow({
       onFocus={onFocus}
       layout={
         animatePosition
-          ? LinearTransition.duration(BATTLE_RESULTS_REORDER_MOTION_MS)
+          ? LinearTransition.duration(BATTLE_RESULTS_REORDER_MOTION_MS).easing(
+              Easing.linear,
+            )
           : undefined
       }
       className={`mb-1 flex-row flex-wrap items-center gap-2 border-2 border-black bg-white p-1 shadow-[3px_3px_0px_0px_#000000] ${rank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
@@ -125,13 +127,10 @@ export default function NativeResults({
     elapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
     previousElapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
   }))
-  const settlePresentation = useCallback(
-    () =>
-      setPresentationTime({
-        elapsedMs: results.presentationDurationMs,
-        previousElapsedMs: results.presentationDurationMs,
-      }),
-    [results.presentationDurationMs],
+  const [areRowPositionsSettled, setAreRowPositionsSettled] = useState(false)
+  const settleRowPositions = useCallback(
+    () => setAreRowPositionsSettled(true),
+    [],
   )
   const isPresentationComplete =
     presentationTime.elapsedMs >= results.presentationDurationMs
@@ -159,7 +158,6 @@ export default function NativeResults({
   }, [
     isPresentationComplete,
     results.presentationDurationMs,
-    settlePresentation,
     shouldReduceMotion,
   ])
 
@@ -181,8 +179,14 @@ export default function NativeResults({
         results,
         displayedElapsedMs,
         displayedPreviousElapsedMs,
+        areRowPositionsSettled,
       ),
-    [results, displayedElapsedMs, displayedPreviousElapsedMs],
+    [
+      results,
+      displayedElapsedMs,
+      displayedPreviousElapsedMs,
+      areRowPositionsSettled,
+    ],
   )
   const finalProfileProgress = useMemo(
     () =>
@@ -221,19 +225,16 @@ export default function NativeResults({
         className="min-h-0 flex-1"
         data={frame.values}
         keyExtractor={({ value }) => value.definition.id}
-        onScrollBeginDrag={settlePresentation}
-        onTouchStart={settlePresentation}
+        onScrollBeginDrag={settleRowPositions}
+        onTouchStart={settleRowPositions}
         accessibilityLabel={RESULTS_COPY.rosterLabel}
         renderItem={({ item }) => (
           <NativeResultsValueRow
             frameValue={item}
             runtimeClipCatalog={runtimeClipCatalog}
             shouldReduceMotion={shouldReduceMotion}
-            animatePosition={
-              displayedElapsedMs > 0 &&
-              displayedElapsedMs < results.presentationDurationMs
-            }
-            onFocus={settlePresentation}
+            animatePosition={!shouldReduceMotion && !areRowPositionsSettled}
+            onFocus={settleRowPositions}
           />
         )}
       />
@@ -263,7 +264,7 @@ export default function NativeResults({
         <Button
           size="compact"
           onPress={onSeeValues}
-          onFocus={settlePresentation}
+          onFocus={settleRowPositions}
         >
           <Text>{RESULTS_COPY.seeValuesAction}</Text>
         </Button>
@@ -271,7 +272,7 @@ export default function NativeResults({
           size="compact"
           variant="outline"
           onPress={onKeepBattling}
-          onFocus={settlePresentation}
+          onFocus={settleRowPositions}
         >
           <Text>{RESULTS_COPY.keepBattlingAction}</Text>
         </Button>

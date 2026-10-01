@@ -26,11 +26,13 @@ function ResultsValueRow({
   runtimeClipCatalog,
   shouldReduceMotion,
   animatePosition,
+  areRowPositionsSettled,
 }: {
   frameValue: BattleExitResultsFrameValue
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   shouldReduceMotion: boolean
   animatePosition: boolean
+  areRowPositionsSettled: boolean
 }) {
   const elementRef = useRef<HTMLLIElement>(null)
   const [isNearViewport, setIsNearViewport] = useState(false)
@@ -58,9 +60,13 @@ function ResultsValueRow({
     <motion.li
       ref={elementRef}
       layout={animatePosition ? "position" : false}
+      layoutDependency={`${rank}:${areRowPositionsSettled}`}
+      transformTemplate={areRowPositionsSettled ? () => "none" : undefined}
       transition={{
-        duration: BATTLE_RESULTS_REORDER_MOTION_MS / 1_000,
-        ease: "easeOut",
+        duration: areRowPositionsSettled
+          ? 0
+          : BATTLE_RESULTS_REORDER_MOTION_MS / 1_000,
+        ease: "linear",
       }}
       className={`min-w-0 border-2 border-black bg-white p-1 shadow-[3px_3px_0_#000] ${rank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
     >
@@ -131,13 +137,10 @@ export default function Results({
     elapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
     previousElapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
   }))
-  const settlePresentation = useCallback(
-    () =>
-      setPresentationTime({
-        elapsedMs: results.presentationDurationMs,
-        previousElapsedMs: results.presentationDurationMs,
-      }),
-    [results.presentationDurationMs],
+  const [areRowPositionsSettled, setAreRowPositionsSettled] = useState(false)
+  const settleRowPositions = useCallback(
+    () => setAreRowPositionsSettled(true),
+    [],
   )
   const isPresentationComplete =
     presentationTime.elapsedMs >= results.presentationDurationMs
@@ -165,7 +168,6 @@ export default function Results({
   }, [
     isPresentationComplete,
     results.presentationDurationMs,
-    settlePresentation,
     shouldReduceMotion,
   ])
 
@@ -175,8 +177,14 @@ export default function Results({
         results,
         displayedElapsedMs,
         displayedPreviousElapsedMs,
+        areRowPositionsSettled,
       ),
-    [results, displayedElapsedMs, displayedPreviousElapsedMs],
+    [
+      results,
+      displayedElapsedMs,
+      displayedPreviousElapsedMs,
+      areRowPositionsSettled,
+    ],
   )
   const finalProfileProgress = useMemo(
     () =>
@@ -203,11 +211,11 @@ export default function Results({
       if (isMenuOpen || event.defaultPrevented) return
       if (event.key === "Escape") onSeeValues()
       else if (event.key === "Tab" || event.key.startsWith("Arrow"))
-        settlePresentation()
+        settleRowPositions()
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [isMenuOpen, onSeeValues, settlePresentation])
+  }, [isMenuOpen, onSeeValues, settleRowPositions])
 
   return (
     <MapacheScreen
@@ -228,13 +236,14 @@ export default function Results({
           {changeSummary}. Profile XP {results.exitProfileXp.toString()},
           {changeLabel}. Profile Level {finalProfileProgress.level.toString()}.
         </p>
-        <ol
+        <motion.ol
+          layoutScroll
           aria-label={RESULTS_COPY.rosterLabel}
           className="min-h-24 flex-1 space-y-1 overflow-y-auto overscroll-contain pr-1"
-          onWheelCapture={settlePresentation}
-          onTouchStartCapture={settlePresentation}
-          onFocusCapture={settlePresentation}
-          onKeyDownCapture={settlePresentation}
+          onWheelCapture={settleRowPositions}
+          onTouchStartCapture={settleRowPositions}
+          onFocusCapture={settleRowPositions}
+          onKeyDownCapture={settleRowPositions}
         >
           {frame.values.map((frameValue) => (
             <ResultsValueRow
@@ -242,13 +251,13 @@ export default function Results({
               frameValue={frameValue}
               runtimeClipCatalog={runtimeClipCatalog}
               shouldReduceMotion={shouldReduceMotion}
-              animatePosition={
-                displayedElapsedMs > 0 &&
-                displayedElapsedMs < results.presentationDurationMs
+              animatePosition={!shouldReduceMotion && !areRowPositionsSettled}
+              areRowPositionsSettled={
+                areRowPositionsSettled || shouldReduceMotion
               }
             />
           ))}
-        </ol>
+        </motion.ol>
         <section
           className="border-2 border-black bg-white p-2 text-black shadow-[3px_3px_0_#000]"
           aria-label="Profile progress"
