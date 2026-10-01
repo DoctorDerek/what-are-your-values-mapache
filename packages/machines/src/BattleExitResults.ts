@@ -1,11 +1,11 @@
 import type { ValueId } from "@game/data/src/Value"
 import type { ValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues, type RankedValue } from "@game/data/src/ValueRanking"
-import type { BattleProfile } from "./BattleProfile"
 import {
   getExactLevelProgressFromXP,
   getExactLevelStartingXp,
 } from "@game/utils/src/LevelMath"
+import type { BattleProfile } from "./BattleProfile"
 
 const MIN_LEVEL_BAR_FILL_DURATION_MS = 900
 const MIN_XP_PROGRESSION_DURATION_MS = 3_700
