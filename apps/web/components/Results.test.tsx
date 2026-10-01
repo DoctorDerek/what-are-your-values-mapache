@@ -24,6 +24,29 @@ function createResults() {
 }
 
 describe("Battle-exit Results presentation", () => {
+  it("mounts the promoted reward in the first visible slot without a decorative focus stop", () => {
+    const results = createResults()
+    render(
+      <Results
+        results={results}
+        runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+        shouldReduceMotion={false}
+        isMenuOpen={false}
+        onOpenMenu={vi.fn()}
+        onSeeValues={vi.fn()}
+        onKeepBattling={vi.fn()}
+      />,
+    )
+    const roster = screen.getByRole("list", { name: "Your value results" })
+    const firstRow = within(roster).getAllByRole("listitem")[0]
+    expect(firstRow).toHaveTextContent(
+      `Rank 1, ${getValueDisplayName(results.values[0].definition)}`,
+    )
+    expect(firstRow).toHaveTextContent("Level 1")
+    expect(firstRow).not.toHaveAttribute("tabindex")
+    expect(within(roster).queryAllByRole("button")).toHaveLength(0)
+  })
+
   it("visibly fills and resets the Profile bar across two Levels on one clock", () => {
     vi.useFakeTimers()
     try {

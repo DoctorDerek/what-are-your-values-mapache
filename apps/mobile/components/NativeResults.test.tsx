@@ -1,4 +1,5 @@
 import { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import { getValueDisplayName } from "@game/data/src/Value"
 import { createBattleExitResults } from "@game/machines/src/BattleExitResults"
 import {
   applyBattleChoice,
@@ -13,6 +14,7 @@ import {
   screen,
   userEvent,
 } from "@testing-library/react-native"
+import { getAnimatedStyle } from "react-native-reanimated"
 import NativeResults from "@/components/NativeResults"
 
 function createResults() {
@@ -29,6 +31,30 @@ function createResults() {
 }
 
 describe("Native Battle-exit Results", () => {
+  it("mounts the canonical first reward with entry XP and a bounded entrance", async () => {
+    const results = createResults()
+    await render(
+      <NativeResults
+        results={results}
+        runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+        shouldReduceMotion={false}
+        isMenuOpen={false}
+        onOpenMenu={jest.fn()}
+        onSeeValues={jest.fn()}
+        onKeepBattling={jest.fn()}
+      />,
+    )
+    const winner = results.values[0]
+    const row = screen.getByLabelText(
+      `Rank 1, ${getValueDisplayName(winner.definition)}, Level 3, 4 total XP`,
+    )
+    expect(row).toBeOnTheScreen()
+    expect(getAnimatedStyle(row)).toMatchObject({
+      transform: [{ translateY: 8 }],
+    })
+    expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
+  })
+
   it("fills through intermediate Levels for 3.7 seconds without blocking actions", async () => {
     jest.useFakeTimers()
     try {

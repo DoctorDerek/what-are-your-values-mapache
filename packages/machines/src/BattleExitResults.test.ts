@@ -15,6 +15,44 @@ import {
 import { projectBattlePair } from "./BattleScheduler"
 
 describe("Battle-exit Results", () => {
+  it("stages a distant promotion visibly from entry XP and settles only its position", () => {
+    const entry = createInitialBattleProfile("results-distant-promotion")
+    const valueId = entry.activeDeck.valueIds[74]!
+    const progressById = new Map(entry.progressById)
+    progressById.set(valueId, {
+      ...progressById.get(valueId)!,
+      totalXp: 12,
+      profileWins: 3,
+      profileComparisons: 3,
+    })
+    const results = createBattleExitResults(entry, { ...entry, progressById })!
+    const start = projectBattleExitResultsFrame(results, 0)
+    const midway = projectBattleExitResultsFrame(results, 1_850)
+    const settled = projectBattleExitResultsFrame(results, 1_850, 1_850, true)
+    expect(start.values[0]?.value.definition.id).toBe(valueId)
+    expect(start.values[0]?.value.entryRank).toBe(75)
+    expect(start.values[0]?.totalXp).toBe(0)
+    expect(start.values[0]?.positionOffsetY).toBe(8)
+    expect(midway.values[0]?.positionOffsetY).toBe(4)
+    expect(settled.values[0]?.positionOffsetY).toBe(0)
+    expect(settled.values[0]?.totalXp).toBe(midway.values[0]?.totalXp)
+    const sortComplete = projectBattleExitResultsFrame(results, 3_700)
+    expect(
+      sortComplete.values.every(({ positionOffsetY }) => positionOffsetY === 0),
+    ).toBe(true)
+    expect(sortComplete.values[0]?.totalXp).toBeLessThan(12)
+    expect(
+      start.values.every(
+        ({ positionOffsetY }) => Math.abs(positionOffsetY) <= 8,
+      ),
+    ).toBe(true)
+    expect(
+      start.values
+        .filter(({ value }) => value.entryRank === value.exitRank)
+        .every(({ positionOffsetY }) => positionOffsetY === 0),
+    ).toBe(true)
+  })
+
   it("compares only committed entry and exit profiles using the canonical ranking", () => {
     const entry = createInitialBattleProfile("results-choice-seed")
     const [winnerId] = projectBattlePair(entry.activeDeck, entry.scheduler)
@@ -236,7 +274,7 @@ describe("Battle-exit Results", () => {
     ).toBe(true)
     expect(
       projectBattleExitResultsFrame(results, 0).values[0]?.value.definition.id,
-    ).not.toBe(valueId)
+    ).toBe(valueId)
     expect(
       projectBattleExitResultsFrame(results, 50).values[0]?.value.definition.id,
     ).toBe(valueId)
@@ -267,7 +305,13 @@ describe("Battle-exit Results", () => {
     expect(results.profilePresentationDurationMs).toBe(3_700)
     const moving = projectBattleExitResultsFrame(results, 1_850, 1_800)
     const settled = projectBattleExitResultsFrame(results, 1_850, 1_800, true)
-    expect(settled).toEqual(moving)
+    expect(settled.profileXp).toBe(moving.profileXp)
+    expect(settled.profileLevelBarPercentage).toBe(
+      moving.profileLevelBarPercentage,
+    )
+    expect(settled.values.map(({ totalXp }) => totalXp)).toEqual(
+      moving.values.map(({ totalXp }) => totalXp),
+    )
     expect(settled.profileLevelBarPercentage).toBe(25)
     expect(
       settled.values.find(({ value }) => value.definition.id === valueId)
