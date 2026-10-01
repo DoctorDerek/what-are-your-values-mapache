@@ -23,6 +23,7 @@ import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import ValueAnimalPresentationTile from "@/components/ValueAnimalPresentation"
 import ValueLevelProgress from "@/components/ValueLevelProgress"
+import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
 
 export const HUB_MENU_BUTTON_ID = "hub-menu-button"
 
@@ -43,8 +44,7 @@ function ValueRow({
   showDivider: boolean
   catalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
 }) {
-  const [isHovered, setIsHovered] = useState(false)
-  const [isFocused, setIsFocused] = useState(false)
+  const { isAttended, attentionHandlers } = useAnimalAttentionInput()
   const { definition, progress, rank } = rankedValue
   const displayName = getValueDisplayName(definition)
   const rowId = `hub-value-${definition.id}`
@@ -65,13 +65,7 @@ function ValueRow({
         id={`${rowId}-button`}
         type="button"
         onClick={(event) => onOpenValue(definition.id, event.currentTarget.id)}
-        onPointerEnter={(event) => {
-          if (event.pointerType !== "touch") setIsHovered(true)
-        }}
-        onPointerLeave={() => setIsHovered(false)}
-        onPointerCancel={() => setIsHovered(false)}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        {...attentionHandlers}
         className="hover:bg-mapache-vivid-primary-cyan/10 flex w-full min-w-0 cursor-pointer items-center gap-2 p-2 text-left focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-black xl:gap-3"
         aria-label={`Open ${displayName} in All Values`}
         aria-describedby={hasComparisons ? `${rowId}-rank` : undefined}
@@ -80,7 +74,7 @@ function ValueRow({
           rank={rank}
           showRank={hasComparisons}
           catalog={catalog}
-          isAttended={isHovered || isFocused}
+          isAttended={isAttended}
           valuePresentation={valuePresentation}
           shouldReduceMotion={shouldReduceMotion}
         />
