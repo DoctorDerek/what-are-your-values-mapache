@@ -8,7 +8,6 @@ import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwa
 import { getValueDisplayName } from "@game/data/src/Value"
 import {
   BATTLE_RESULTS_PRESENTATION_TICK_MS,
-  BATTLE_RESULTS_REORDER_MOTION_MS,
   projectBattleExitResultsFrame,
   type BattleExitResults,
   type BattleExitResultsFrameValue,
@@ -17,7 +16,13 @@ import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingS
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { BackHandler, FlatList, View } from "react-native"
-import Animated, { Easing, LinearTransition } from "react-native-reanimated"
+import Animated, {
+  cancelAnimation,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
 import { Button } from "@/components/ui/button"
@@ -40,6 +45,21 @@ function NativeResultsValueRow({
   const { level, earnedXpTowardNextLevel, requiredXpForNextLevel } =
     getLevelProgressFromXP(totalXp)
   const finalLevel = getLevelProgressFromXP(value.exitProgress.totalXp).level
+  const positionOffset = useSharedValue(frameValue.positionOffsetY)
+  const positionStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: positionOffset.get() }],
+  }))
+  useEffect(() => {
+    positionOffset.set(
+      animatePosition
+        ? withTiming(frameValue.positionOffsetY, {
+            duration: BATTLE_RESULTS_PRESENTATION_TICK_MS,
+            easing: Easing.linear,
+          })
+        : 0,
+    )
+    return () => cancelAnimation(positionOffset)
+  }, [animatePosition, frameValue.positionOffsetY, positionOffset])
   const valuePresentation = resolveValueAnimalPresentation(
     value.definition,
     runtimeClipCatalog,
@@ -54,13 +74,7 @@ function NativeResultsValueRow({
       accessible
       accessibilityLabel={`Rank ${value.exitRank}, ${getValueDisplayName(value.definition)}, Level ${finalLevel}, ${value.exitProgress.totalXp} total XP`}
       onFocus={onFocus}
-      layout={
-        animatePosition
-          ? LinearTransition.duration(BATTLE_RESULTS_REORDER_MOTION_MS).easing(
-              Easing.linear,
-            )
-          : undefined
-      }
+      style={positionStyle}
       className={`mb-1 flex-row flex-wrap items-center gap-2 border-2 border-black bg-white p-1 shadow-[3px_3px_0px_0px_#000000] ${rank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
     >
       <Text className="w-8 text-center text-lg font-black text-black">

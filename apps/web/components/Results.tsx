@@ -7,7 +7,6 @@ import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwa
 import { getValueDisplayName } from "@game/data/src/Value"
 import {
   BATTLE_RESULTS_PRESENTATION_TICK_MS,
-  BATTLE_RESULTS_REORDER_MOTION_MS,
   projectBattleExitResultsFrame,
   type BattleExitResults,
   type BattleExitResultsFrameValue,
@@ -26,13 +25,11 @@ function ResultsValueRow({
   frameValue,
   runtimeClipCatalog,
   shouldReduceMotion,
-  animatePosition,
   areRowPositionsSettled,
 }: {
   frameValue: BattleExitResultsFrameValue
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   shouldReduceMotion: boolean
-  animatePosition: boolean
   areRowPositionsSettled: boolean
 }) {
   const elementRef = useRef<HTMLLIElement>(null)
@@ -62,13 +59,13 @@ function ResultsValueRow({
     <motion.li
       ref={elementRef}
       {...attentionHandlers}
-      layout={animatePosition ? "position" : false}
-      layoutDependency={`${rank}:${areRowPositionsSettled}`}
+      initial={false}
+      animate={{ y: frameValue.positionOffsetY }}
       transformTemplate={areRowPositionsSettled ? () => "none" : undefined}
       transition={{
         duration: areRowPositionsSettled
           ? 0
-          : BATTLE_RESULTS_REORDER_MOTION_MS / 1_000,
+          : BATTLE_RESULTS_PRESENTATION_TICK_MS / 1_000,
         ease: "linear",
       }}
       className={`min-w-0 border-2 border-black bg-white p-1 shadow-[3px_3px_0_#000] ${rank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
@@ -239,8 +236,7 @@ export default function Results({
           {changeSummary}. Profile XP {results.exitProfileXp.toString()},
           {changeLabel}. Profile Level {finalProfileProgress.level.toString()}.
         </p>
-        <motion.ol
-          layoutScroll
+        <ol
           aria-label={RESULTS_COPY.rosterLabel}
           className="min-h-24 flex-1 space-y-1 overflow-y-auto overscroll-contain pr-1"
           onWheelCapture={settleRowPositions}
@@ -254,13 +250,12 @@ export default function Results({
               frameValue={frameValue}
               runtimeClipCatalog={runtimeClipCatalog}
               shouldReduceMotion={shouldReduceMotion}
-              animatePosition={!shouldReduceMotion && !areRowPositionsSettled}
               areRowPositionsSettled={
                 areRowPositionsSettled || shouldReduceMotion
               }
             />
           ))}
-        </motion.ol>
+        </ol>
         <section
           className="border-2 border-black bg-white p-2 text-black shadow-[3px_3px_0_#000]"
           aria-label="Profile progress"
