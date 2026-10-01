@@ -1,16 +1,16 @@
 import type { ValueId } from "@game/data/src/Value"
 import type { ValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues, type RankedValue } from "@game/data/src/ValueRanking"
+import type { BattleProfile } from "@game/machines/src/BattleProfile"
 import {
   getExactLevelProgressFromXP,
   getExactLevelStartingXp,
 } from "@game/utils/src/LevelMath"
-import type { BattleProfile } from "./BattleProfile"
 
 const MIN_LEVEL_BAR_FILL_DURATION_MS = 900
 const MIN_XP_PROGRESSION_DURATION_MS = 3_700
 export const BATTLE_RESULTS_PRESENTATION_TICK_MS = 50
-export const BATTLE_RESULTS_REORDER_MOTION_MS = 280
+export const BATTLE_RESULTS_REORDER_MOTION_MS = 3_700
 
 export type BattleExitResultsValue = {
   readonly definition: RankedValue["definition"]
@@ -19,6 +19,7 @@ export type BattleExitResultsValue = {
   readonly entryProgress: ValueProgress
   readonly exitProgress: ValueProgress
   readonly changed: boolean
+  readonly presentationDurationMs: number
 }
 
 export type BattleExitResults = {
@@ -29,7 +30,7 @@ export type BattleExitResults = {
   readonly changedValueCount: number
   readonly hasChanges: boolean
   readonly presentationDurationMs: number
-  readonly levelBarFillDurationMs: number
+  readonly profilePresentationDurationMs: number
 }
 
 export type BattleExitResultsFrameValue = {
@@ -69,6 +70,18 @@ function getSignedLevelDistance(entryXp: bigint, exitXp: bigint) {
     getLevelFraction(exit) -
     getLevelFraction(entry)
   )
+}
+
+function getProgressionDurationMs(entryXp: bigint, exitXp: bigint) {
+  const distance = Math.abs(getSignedLevelDistance(entryXp, exitXp))
+  return entryXp === exitXp
+    ? 0
+    : Math.ceil(
+        Math.max(
+          MIN_XP_PROGRESSION_DURATION_MS,
+          distance * MIN_LEVEL_BAR_FILL_DURATION_MS,
+        ),
+      )
 }
 
 export function createBattleExitResults(
@@ -111,6 +124,10 @@ export function createBattleExitResults(
       changed:
         entryValue.rank !== exitValue.rank ||
         didValueProgressChange(entryValue.progress, exitValue.progress),
+      presentationDurationMs: getProgressionDurationMs(
+        BigInt(entryValue.progress.totalXp),
+        BigInt(exitValue.progress.totalXp),
+      ),
     }) satisfies BattleExitResultsValue
   })
   const entryProfileXp = values.reduce(
@@ -122,30 +139,19 @@ export function createBattleExitResults(
     0n,
   )
   const changedValueCount = values.filter((value) => value.changed).length
-  const greatestLevelDistance = values.reduce(
-    (greatest, value) =>
-      Math.max(
-        greatest,
-        Math.abs(
-          getSignedLevelDistance(
-            BigInt(value.entryProgress.totalXp),
-            BigInt(value.exitProgress.totalXp),
-          ),
-        ),
-      ),
-    Math.abs(getSignedLevelDistance(entryProfileXp, exitProfileXp)),
+  const profilePresentationDurationMs = getProgressionDurationMs(
+    entryProfileXp,
+    exitProfileXp,
   )
-  const presentationDurationMs =
-    greatestLevelDistance > 0
-      ? Math.ceil(
-          Math.max(
-            MIN_XP_PROGRESSION_DURATION_MS,
-            greatestLevelDistance * MIN_LEVEL_BAR_FILL_DURATION_MS,
-          ),
-        )
-      : values.some((value) => value.entryRank !== value.exitRank)
-        ? BATTLE_RESULTS_REORDER_MOTION_MS * 2
-        : 0
+  const presentationDurationMs = values.reduce(
+    (longest, value) => Math.max(longest, value.presentationDurationMs),
+    Math.max(
+      profilePresentationDurationMs,
+      values.some((value) => value.entryRank !== value.exitRank)
+        ? BATTLE_RESULTS_REORDER_MOTION_MS
+        : 0,
+    ),
+  )
 
   return Object.freeze({
     values: Object.freeze(values),
@@ -155,22 +161,22 @@ export function createBattleExitResults(
     changedValueCount,
     hasChanges: changedValueCount > 0,
     presentationDurationMs,
-    levelBarFillDurationMs:
-      greatestLevelDistance > 0
-        ? presentationDurationMs / greatestLevelDistance
-        : 0,
+    profilePresentationDurationMs,
   })
 }
 
 function projectPresentationProgress(
   entryXp: bigint,
   exitXp: bigint,
-  traveledLevelDistance: number,
+  elapsedMs: number,
+  durationMs: number,
 ) {
   const entryProgress = getExactLevelProgressFromXP(entryXp)
   const exitProgress = getExactLevelProgressFromXP(exitXp)
   const signedDistance = getSignedLevelDistance(entryXp, exitXp)
   const distance = Math.abs(signedDistance)
+  const traveledLevelDistance =
+    durationMs > 0 ? (elapsedMs / durationMs) * distance : 0
 
   if (traveledLevelDistance <= 0 || distance === 0)
     return Object.freeze({
@@ -208,6 +214,7 @@ export function projectBattleExitResultsFrame(
   results: BattleExitResults,
   elapsedMs: number,
   previousElapsedMs = elapsedMs,
+  areRowPositionsSettled = false,
 ) {
   if (
     !Number.isFinite(elapsedMs) ||
@@ -219,21 +226,14 @@ export function projectBattleExitResultsFrame(
     throw new Error(`Invalid Results presentation time: ${elapsedMs}`)
   }
 
-  const traveledLevelDistance =
-    results.levelBarFillDurationMs > 0
-      ? elapsedMs / results.levelBarFillDurationMs
-      : 0
-  const previousTraveledLevelDistance =
-    results.levelBarFillDurationMs > 0
-      ? previousElapsedMs / results.levelBarFillDurationMs
-      : 0
-  const useExitOrder = elapsedMs >= results.presentationDurationMs / 2
+  const useExitOrder = elapsedMs > 0 || areRowPositionsSettled
   const values = results.values
     .map((value) => {
       const progress = projectPresentationProgress(
         BigInt(value.entryProgress.totalXp),
         BigInt(value.exitProgress.totalXp),
-        traveledLevelDistance,
+        elapsedMs,
+        value.presentationDurationMs,
       )
       const previousProgress =
         previousElapsedMs === elapsedMs
@@ -241,7 +241,8 @@ export function projectBattleExitResultsFrame(
           : projectPresentationProgress(
               BigInt(value.entryProgress.totalXp),
               BigInt(value.exitProgress.totalXp),
-              previousTraveledLevelDistance,
+              previousElapsedMs,
+              value.presentationDurationMs,
             )
       return Object.freeze({
         value,
@@ -256,7 +257,8 @@ export function projectBattleExitResultsFrame(
   const profileProgress = projectPresentationProgress(
     results.entryProfileXp,
     results.exitProfileXp,
-    traveledLevelDistance,
+    elapsedMs,
+    results.profilePresentationDurationMs,
   )
   const previousProfileProgress =
     previousElapsedMs === elapsedMs
@@ -264,7 +266,8 @@ export function projectBattleExitResultsFrame(
       : projectPresentationProgress(
           results.entryProfileXp,
           results.exitProfileXp,
-          previousTraveledLevelDistance,
+          previousElapsedMs,
+          results.profilePresentationDurationMs,
         )
 
   return Object.freeze({
