@@ -11,6 +11,7 @@ const MIN_LEVEL_BAR_FILL_DURATION_MS = 900
 const MIN_XP_PROGRESSION_DURATION_MS = 3_700
 export const BATTLE_RESULTS_PRESENTATION_TICK_MS = 50
 export const BATTLE_RESULTS_REORDER_MOTION_MS = 3_700
+const MAX_RESULTS_ROW_ENTRANCE_OFFSET_PX = 8
 
 export type BattleExitResultsValue = {
   readonly definition: RankedValue["definition"]
@@ -39,6 +40,7 @@ export type BattleExitResultsFrameValue = {
   readonly totalXp: number
   readonly levelBarPercentage: number
   readonly didCrossLevel: boolean
+  readonly positionOffsetY: number
 }
 
 function didValueProgressChange(
@@ -226,7 +228,9 @@ export function projectBattleExitResultsFrame(
     throw new Error(`Invalid Results presentation time: ${elapsedMs}`)
   }
 
-  const useExitOrder = elapsedMs > 0 || areRowPositionsSettled
+  const remainingPositionProgress = areRowPositionsSettled
+    ? 0
+    : Math.max(0, 1 - elapsedMs / BATTLE_RESULTS_REORDER_MOTION_MS)
   const values = results.values
     .map((value) => {
       const progress = projectPresentationProgress(
@@ -246,7 +250,11 @@ export function projectBattleExitResultsFrame(
             )
       return Object.freeze({
         value,
-        rank: useExitOrder ? value.exitRank : value.entryRank,
+        rank: value.exitRank,
+        positionOffsetY:
+          Math.sign(value.entryRank - value.exitRank) *
+          MAX_RESULTS_ROW_ENTRANCE_OFFSET_PX *
+          remainingPositionProgress,
         totalXp: Number(progress.totalXp),
         levelBarPercentage: progress.levelBarPercentage,
         didCrossLevel:
