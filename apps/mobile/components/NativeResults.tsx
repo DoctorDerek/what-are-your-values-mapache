@@ -15,7 +15,7 @@ import {
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { BackHandler, FlatList, View } from "react-native"
+import { BackHandler, FlatList, View, type CellRendererProps } from "react-native"
 import Animated, {
   cancelAnimation,
   Easing,
@@ -27,6 +27,24 @@ import MapacheScreen from "@/components/MapacheScreen"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
+
+function NativeResultsValueCell({
+  children,
+  item,
+  onFocusCapture,
+  onLayout,
+  style,
+}: CellRendererProps<BattleExitResultsFrameValue>) {
+  return (
+    <View
+      onFocusCapture={onFocusCapture}
+      onLayout={onLayout}
+      style={[style, { zIndex: item.stackingOrder }]}
+    >
+      {children}
+    </View>
+  )
+}
 
 function NativeResultsValueRow({
   frameValue,
@@ -238,6 +256,7 @@ export default function NativeResults({
       <FlatList
         className="min-h-0 flex-1"
         data={frame.values}
+        CellRendererComponent={NativeResultsValueCell}
         keyExtractor={({ value }) => value.definition.id}
         onScrollBeginDrag={settleRowPositions}
         onTouchStart={settleRowPositions}
