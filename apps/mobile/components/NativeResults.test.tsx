@@ -14,6 +14,7 @@ import {
   screen,
   userEvent,
 } from "@testing-library/react-native"
+import { StyleSheet } from "react-native"
 import { getAnimatedStyle } from "react-native-reanimated"
 import NativeResults from "@/components/NativeResults"
 
@@ -52,6 +53,23 @@ describe("Native Battle-exit Results", () => {
     expect(getAnimatedStyle(row)).toMatchObject({
       transform: [{ translateY: 8 }],
     })
+    const cells = screen.container.queryAll(
+      (element) =>
+        StyleSheet.flatten(element.props.style)?.zIndex ===
+          results.values.length &&
+        typeof element.props.onLayout === "function" &&
+        typeof element.props.onFocusCapture === "function",
+    )
+    expect(cells.length).toBeGreaterThan(0)
+    expect(
+      cells.some(
+        (cell) =>
+          cell.queryAll(
+            (element) =>
+              element.props.accessibilityLabel === row.props.accessibilityLabel,
+          ).length > 0,
+      ),
+    ).toBe(true)
     expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
   })
 

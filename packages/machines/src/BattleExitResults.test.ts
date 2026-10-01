@@ -15,6 +15,40 @@ import {
 import { projectBattlePair } from "./BattleScheduler"
 
 describe("Battle-exit Results", () => {
+  it("keeps final XP-ranked paint priority stable through fills and position settlement", () => {
+    const entry = createInitialBattleProfile("results-stacking-order")
+    const progressById = new Map(entry.progressById)
+    for (const valueId of entry.activeDeck.valueIds.slice(74, 76)) {
+      progressById.set(valueId, {
+        ...progressById.get(valueId)!,
+        totalXp: 12,
+        profileWins: 3,
+        profileComparisons: 3,
+      })
+    }
+    const results = createBattleExitResults(entry, { ...entry, progressById })!
+    for (const elapsedMs of [0, 1_850, 3_700, results.presentationDurationMs]) {
+      for (const arePositionsSettled of [false, true]) {
+        const frame = projectBattleExitResultsFrame(
+          results,
+          elapsedMs,
+          elapsedMs,
+          arePositionsSettled,
+        )
+        expect(frame.values.map(({ stackingOrder }) => stackingOrder)).toEqual(
+          results.values.map(
+            ({ exitRank }) => results.values.length + 1 - exitRank,
+          ),
+        )
+        expect(frame.values.map(({ value }) => value.definition.id)).toEqual(
+          results.values.map(({ definition }) => definition.id),
+        )
+      }
+    }
+    expect(projectBattleExitResultsFrame(results, 0).values[0]?.totalXp).toBe(0)
+    expect(results.values[0]?.exitProgress.totalXp).toBe(12)
+  })
+
   it("stages a distant promotion visibly from entry XP and settles only its position", () => {
     const entry = createInitialBattleProfile("results-distant-promotion")
     const valueId = entry.activeDeck.valueIds[74]!

@@ -165,6 +165,90 @@ for (const viewport of [
   { width: 320, height: 640 },
   { width: 1440, height: 900 },
 ]) {
+  test(`final strongest value owns overlapping row pixels at ${viewport.width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport)
+    await page.goto("/")
+    await page.getByRole("button", { name: "Start" }).click()
+    await page.getByRole("button", { name: "Battle", exact: true }).click()
+    const choices = page.getByRole("button", { name: /^Choose / })
+    const firstChoice = await choices.first().getAttribute("aria-label")
+    await (
+      firstChoice?.startsWith("Choose Acceptance")
+        ? choices.last()
+        : choices.first()
+    ).click()
+    await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled()
+    await page.evaluate(() => {
+      let overlapSamples = 0
+      let lastSampleAt = 0
+      const observer = new MutationObserver(() => {
+        const roster = document.querySelector(
+          'ol[aria-label="Your value results"]',
+        )
+        if (!roster || performance.now() - lastSampleAt < 100) return
+        lastSampleAt = performance.now()
+        const rosterBounds = roster.getBoundingClientRect()
+        const rows = [...roster.querySelectorAll("li")].slice(0, 12)
+        for (let index = 0; index < rows.length - 1; index += 1) {
+          const stronger = rows[index]
+          const weaker = rows[index + 1]
+          const strongerBounds = stronger.getBoundingClientRect()
+          const weakerBounds = weaker.getBoundingClientRect()
+          const top = Math.max(
+            strongerBounds.top,
+            weakerBounds.top,
+            rosterBounds.top,
+          )
+          const bottom = Math.min(
+            strongerBounds.bottom,
+            weakerBounds.bottom,
+            rosterBounds.bottom,
+          )
+          if (bottom <= top) continue
+          overlapSamples += 1
+          const painted = document.elementFromPoint(
+            strongerBounds.left + strongerBounds.width / 2,
+            (top + bottom) / 2,
+          )
+          if (!stronger.contains(painted))
+            document.documentElement.dataset.resultsStackObscured = "true"
+        }
+        if (overlapSamples >= 5)
+          document.documentElement.dataset.resultsStackVerified = "true"
+        if (!roster.isConnected) observer.disconnect()
+      })
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["style"],
+        childList: true,
+        subtree: true,
+      })
+    })
+    await page.getByRole("button", { name: /Stop/ }).click()
+    await expect(page.locator("html")).toHaveAttribute(
+      "data-results-stack-verified",
+      "true",
+    )
+    await expect(page.locator("html")).not.toHaveAttribute(
+      "data-results-stack-obscured",
+      "true",
+    )
+    const roster = page.getByRole("list", { name: "Your value results" })
+    await expect(roster.getByRole("listitem").first()).toHaveCSS(
+      "z-index",
+      "100",
+    )
+    await expect(
+      page.getByRole("button", { name: "Menu", exact: true }),
+    ).toBeVisible()
+    await page.getByRole("button", { name: "See my values" }).click()
+    await expect(
+      page.getByRole("heading", { name: "Your Values", level: 1 }),
+    ).toBeVisible()
+  })
+
   test(`scrolling settles ranking without skipping rewards at ${viewport.width}px`, async ({
     page,
   }, testInfo) => {
