@@ -1,7 +1,7 @@
 import type { ValueId } from "@game/data/src/Value"
 import type { ValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues, type RankedValue } from "@game/data/src/ValueRanking"
-import type { BattleProfile } from "@game/machines/src/BattleProfile"
+import type { BattleProfile } from "./BattleProfile"
 import {
   getExactLevelProgressFromXP,
   getExactLevelStartingXp,
