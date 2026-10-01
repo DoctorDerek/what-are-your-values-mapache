@@ -14,7 +14,7 @@ import {
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import { motion } from "motion/react"
 import type { StaticImageData } from "next/image"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -39,6 +39,9 @@ function ResultsValueRow({
   const { level, earnedXpTowardNextLevel, requiredXpForNextLevel } =
     getLevelProgressFromXP(totalXp)
   const finalLevel = getLevelProgressFromXP(value.exitProgress.totalXp).level
+  const rowStyle: CSSProperties & { "--results-row-stacking-order": number } = {
+    "--results-row-stacking-order": frameValue.stackingOrder,
+  }
 
   useEffect(() => {
     const element = elementRef.current
@@ -60,6 +63,7 @@ function ResultsValueRow({
       ref={elementRef}
       {...attentionHandlers}
       initial={false}
+      style={rowStyle}
       animate={{ y: frameValue.positionOffsetY }}
       transformTemplate={areRowPositionsSettled ? () => "none" : undefined}
       transition={{
@@ -68,7 +72,7 @@ function ResultsValueRow({
           : BATTLE_RESULTS_PRESENTATION_TICK_MS / 1_000,
         ease: "linear",
       }}
-      className={`min-w-0 border-2 border-black bg-white p-1 shadow-[3px_3px_0_#000] ${rank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
+      className={`relative z-(--results-row-stacking-order) min-w-0 border-2 border-black bg-white p-1 shadow-[3px_3px_0_#000] ${rank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
     >
       <span className="sr-only">
         Rank {value.exitRank}, {getValueDisplayName(value.definition)}, Level{" "}
@@ -238,7 +242,7 @@ export default function Results({
         </p>
         <ol
           aria-label={RESULTS_COPY.rosterLabel}
-          className="min-h-24 flex-1 space-y-1 overflow-y-auto overscroll-contain pr-1"
+          className="isolate min-h-24 flex-1 space-y-1 overflow-y-auto overscroll-contain pr-1"
           onWheelCapture={settleRowPositions}
           onTouchStartCapture={settleRowPositions}
           onFocusCapture={settleRowPositions}
