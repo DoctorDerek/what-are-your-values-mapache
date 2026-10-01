@@ -35,12 +35,9 @@ function NativeResultsValueCell({
   onLayout,
   style,
 }: CellRendererProps<BattleExitResultsFrameValue>) {
+  const cellCallbacks = { onFocusCapture, onLayout }
   return (
-    <View
-      onFocusCapture={onFocusCapture}
-      onLayout={onLayout}
-      style={[style, { zIndex: item.stackingOrder }]}
-    >
+    <View {...cellCallbacks} style={[style, { zIndex: item.stackingOrder }]}>
       {children}
     </View>
   )
