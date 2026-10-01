@@ -37,6 +37,7 @@ export type BattleExitResults = {
 export type BattleExitResultsFrameValue = {
   readonly value: BattleExitResultsValue
   readonly rank: number
+  readonly stackingOrder: number
   readonly totalXp: number
   readonly levelBarPercentage: number
   readonly didCrossLevel: boolean
@@ -251,6 +252,7 @@ export function projectBattleExitResultsFrame(
       return Object.freeze({
         value,
         rank: value.exitRank,
+        stackingOrder: results.values.length + 1 - value.exitRank,
         positionOffsetY:
           Math.sign(value.entryRank - value.exitRank) *
           MAX_RESULTS_ROW_ENTRANCE_OFFSET_PX *
