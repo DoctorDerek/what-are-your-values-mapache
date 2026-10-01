@@ -1,4 +1,5 @@
 import { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import { getValueDisplayName } from "@game/data/src/Value"
 import { createBattleExitResults } from "@game/machines/src/BattleExitResults"
 import {
   applyBattleChoice,
@@ -99,27 +100,66 @@ describe("Battle-exit Results presentation", () => {
     expect(onKeepBattling).toHaveBeenCalledOnce()
   })
 
-  it("settles before keyboard traversal without delaying the exit control", () => {
-    const onSeeValues = vi.fn()
-    render(
-      <Results
-        results={createResults()}
-        runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
-        shouldReduceMotion={false}
-        isMenuOpen={false}
-        onOpenMenu={vi.fn()}
-        onSeeValues={onSeeValues}
-        onKeepBattling={vi.fn()}
-      />,
-    )
+  it.each(["keyboard", "wheel", "touch", "focus"])(
+    "settles row positions for %s while value and Profile fills continue",
+    (interaction) => {
+      vi.useFakeTimers()
+      try {
+        const onSeeValues = vi.fn()
+        const results = createResults()
+        render(
+          <Results
+            results={results}
+            runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+            shouldReduceMotion={false}
+            isMenuOpen={false}
+            onOpenMenu={vi.fn()}
+            onSeeValues={onSeeValues}
+            onKeepBattling={vi.fn()}
+          />,
+        )
 
-    fireEvent.keyDown(window, { key: "Tab" })
-    expect(
-      within(
-        screen.getByRole("region", { name: "Profile progress" }),
-      ).getByText(/Profile XP 4/),
-    ).toBeVisible()
-    fireEvent.keyDown(window, { key: "Escape" })
-    expect(onSeeValues).toHaveBeenCalledOnce()
-  })
+        const roster = screen.getByRole("list", { name: "Your value results" })
+        const profile = screen.getByRole("region", { name: "Profile progress" })
+        act(() => vi.advanceTimersByTime(900))
+        const before = within(profile)
+          .getByRole("progressbar")
+          .getAttribute("aria-valuenow")
+        if (interaction === "keyboard")
+          fireEvent.keyDown(window, { key: "Tab" })
+        else if (interaction === "wheel") fireEvent.wheel(roster)
+        else if (interaction === "touch") fireEvent.touchStart(roster)
+        else fireEvent.focus(roster)
+        expect(within(profile).getByRole("progressbar")).toHaveAttribute(
+          "aria-valuenow",
+          before,
+        )
+        expect(profile).toHaveTextContent("Profile Level 1")
+        const firstRow = within(roster).getAllByRole("listitem")[0]
+        expect(firstRow).toHaveTextContent(
+          `Rank 1, ${getValueDisplayName(results.values[0].definition)}`,
+        )
+        const valueBar = firstRow.querySelector(
+          '[data-slot="progress-indicator"]',
+        )
+        expect(valueBar).toHaveAttribute(
+          "style",
+          expect.stringContaining("translateX(-51"),
+        )
+        act(() => vi.advanceTimersByTime(950))
+        expect(profile).toHaveTextContent("Profile Level 2")
+        expect(valueBar).toHaveAttribute(
+          "style",
+          expect.stringContaining("translateX(-100%)"),
+        )
+        act(() => vi.advanceTimersByTime(1_850))
+        expect(profile).toHaveTextContent("Profile Level 3")
+        expect(profile).toHaveTextContent("Profile XP 4")
+        fireEvent.keyDown(window, { key: "Escape" })
+        expect(onSeeValues).toHaveBeenCalledOnce()
+      } finally {
+        vi.useRealTimers()
+      }
+    },
+  )
 })

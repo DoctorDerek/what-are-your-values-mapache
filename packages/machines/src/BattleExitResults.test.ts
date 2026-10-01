@@ -31,7 +31,8 @@ describe("Battle-exit Results", () => {
     expect(results.exitProfileXp).toBe(4n)
     expect(results.profileXpChange).toBe(4n)
     expect(results.presentationDurationMs).toBe(3_700)
-    expect(results.levelBarFillDurationMs).toBe(1_850)
+    expect(results.profilePresentationDurationMs).toBe(3_700)
+    expect(results.values[0]?.presentationDurationMs).toBe(3_700)
     expect(results.values[0]?.definition.id).toBe(winnerId)
     expect(results.values[0]?.exitRank).toBe(1)
     expect(projectBattleExitResultsFrame(results, 0).profileXp).toBe(0n)
@@ -118,7 +119,7 @@ describe("Battle-exit Results", () => {
     ).toBe(0n)
   })
 
-  it("slows one shared fill rate for one award without adding a static hold", () => {
+  it("slows each short gain across the minimum without adding a static hold", () => {
     const entry = createInitialBattleProfile("results-short-fill-seed")
     const [valueId] = entry.activeDeck.valueIds
     if (!valueId) throw new Error("Short-fill fixture is incomplete")
@@ -133,7 +134,11 @@ describe("Battle-exit Results", () => {
     if (!results) throw new Error("Short-fill Results were unavailable")
 
     expect(results.presentationDurationMs).toBe(3_700)
-    expect(results.levelBarFillDurationMs).toBe(1_850)
+    expect(results.profilePresentationDurationMs).toBe(3_700)
+    expect(
+      results.values.find(({ definition }) => definition.id === valueId)
+        ?.presentationDurationMs,
+    ).toBe(3_700)
     expect(
       projectBattleExitResultsFrame(results, 925).profileLevelBarPercentage,
     ).toBe(50)
@@ -164,17 +169,35 @@ describe("Battle-exit Results", () => {
     })
     if (!results) throw new Error("Long-fill Results were unavailable")
 
-    expect(results.levelBarFillDurationMs).toBe(900)
+    expect(results.profilePresentationDurationMs).toBe(7_650)
+    expect(
+      results.values.find(({ definition }) => definition.id === shortValueId)
+        ?.presentationDurationMs,
+    ).toBe(3_700)
     expect(results.presentationDurationMs).toBe(7_650)
     const midway = projectBattleExitResultsFrame(results, 1_800)
     expect(
       midway.values.find(({ value }) => value.definition.id === shortValueId)
         ?.totalXp,
-    ).toBe(4)
+    ).toBeLessThan(4)
     expect(
       midway.values.find(({ value }) => value.definition.id === longValueId)
         ?.totalXp,
     ).toBeLessThan(12)
+    const minimumComplete = projectBattleExitResultsFrame(results, 3_700)
+    expect(
+      minimumComplete.values.find(
+        ({ value }) => value.definition.id === shortValueId,
+      )?.totalXp,
+    ).toBe(4)
+    expect(
+      minimumComplete.values.find(
+        ({ value }) => value.definition.id === longValueId,
+      )?.totalXp,
+    ).toBeLessThan(12)
+    expect(
+      minimumComplete.values.map(({ value }) => value.definition.id),
+    ).toEqual(results.values.map(({ definition }) => definition.id))
     expect(
       projectBattleExitResultsFrame(results, 7_600).profileXp,
     ).toBeLessThan(16n)
@@ -204,16 +227,66 @@ describe("Battle-exit Results", () => {
     })
     if (!results) throw new Error("Rank-only Results were unavailable")
 
-    expect(results.presentationDurationMs).toBe(560)
-    expect(results.levelBarFillDurationMs).toBe(0)
+    expect(results.presentationDurationMs).toBe(3_700)
+    expect(results.profilePresentationDurationMs).toBe(0)
+    expect(
+      results.values.every(
+        ({ presentationDurationMs }) => presentationDurationMs === 0,
+      ),
+    ).toBe(true)
     expect(
       projectBattleExitResultsFrame(results, 0).values[0]?.value.definition.id,
     ).not.toBe(valueId)
     expect(
-      projectBattleExitResultsFrame(results, 280).values[0]?.value.definition
-        .id,
+      projectBattleExitResultsFrame(results, 50).values[0]?.value.definition.id,
     ).toBe(valueId)
-    expect(projectBattleExitResultsFrame(results, 560).profileXp).toBe(8n)
+    expect(projectBattleExitResultsFrame(results, 3_700).profileXp).toBe(8n)
+    expect(
+      projectBattleExitResultsFrame(results, 0, 0, true).values[0]?.value
+        .definition.id,
+    ).toBe(valueId)
+  })
+
+  it("preserves partial-span pacing and XP when row positions settle", () => {
+    const initial = createInitialBattleProfile("results-partial-span-seed")
+    const [valueId] = initial.activeDeck.valueIds
+    if (!valueId) throw new Error("Partial-span fixture is incomplete")
+    const progressById = new Map(initial.progressById)
+    const progress = progressById.get(valueId)
+    if (!progress) throw new Error("Partial-span progress is missing")
+    progressById.set(valueId, { ...progress, totalXp: 8 })
+    const entry = { ...initial, progressById }
+    const exitProgressById = new Map(progressById)
+    exitProgressById.set(valueId, { ...progress, totalXp: 12 })
+    const results = createBattleExitResults(entry, {
+      ...entry,
+      progressById: exitProgressById,
+    })
+    if (!results) throw new Error("Partial-span Results were unavailable")
+    expect(results.presentationDurationMs).toBe(3_700)
+    expect(results.profilePresentationDurationMs).toBe(3_700)
+    const moving = projectBattleExitResultsFrame(results, 1_850, 1_800)
+    const settled = projectBattleExitResultsFrame(results, 1_850, 1_800, true)
+    expect(settled).toEqual(moving)
+    expect(settled.profileLevelBarPercentage).toBe(25)
+    expect(
+      settled.values.find(({ value }) => value.definition.id === valueId)
+        ?.levelBarPercentage,
+    ).toBe(25)
+    expect(
+      projectBattleExitResultsFrame(results, 3_650).profileLevelBarPercentage,
+    ).toBeLessThan(50)
+    expect(
+      projectBattleExitResultsFrame(results, 3_700).profileLevelBarPercentage,
+    ).toBe(50)
+    expect(
+      results.values
+        .filter(({ definition }) => definition.id !== valueId)
+        .every(({ presentationDurationMs }) => presentationDurationMs === 0),
+    ).toBe(true)
+    expect(projectBattleExitResultsFrame(results, 0, 0, true).profileXp).toBe(
+      8n,
+    )
   })
 
   it("sums supported per-value totals without Number aggregate precision loss", () => {

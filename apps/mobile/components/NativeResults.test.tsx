@@ -53,12 +53,49 @@ describe("Native Battle-exit Results", () => {
       await act(async () => jest.advanceTimersByTime(50))
       expect(screen.getByText("Profile Level 3")).toBeOnTheScreen()
       expect(screen.getByText(/Profile XP 4/)).toBeOnTheScreen()
-      fireEvent.press(screen.getByRole("button", { name: "See my values" }))
+      await fireEvent.press(
+        screen.getByRole("button", { name: "See my values" }),
+      )
       expect(onSeeValues).toHaveBeenCalledTimes(1)
     } finally {
       jest.useRealTimers()
     }
   })
+
+  it.each(["scrollBeginDrag", "touchStart", "focus"])(
+    "keeps the XP clock running after %s",
+    async (interaction) => {
+      jest.useFakeTimers()
+      try {
+        await render(
+          <NativeResults
+            results={createResults()}
+            runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+            shouldReduceMotion={false}
+            isMenuOpen={false}
+            onOpenMenu={jest.fn()}
+            onSeeValues={jest.fn()}
+            onKeepBattling={jest.fn()}
+          />,
+        )
+        await act(async () => jest.advanceTimersByTime(900))
+        await fireEvent(
+          interaction === "focus"
+            ? screen.getByRole("button", { name: "See my values" })
+            : screen.getByLabelText("Your value results"),
+          interaction,
+        )
+        expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
+        await act(async () => jest.advanceTimersByTime(950))
+        expect(screen.getByText("Profile Level 2")).toBeOnTheScreen()
+        await act(async () => jest.advanceTimersByTime(1_850))
+        expect(screen.getByText("Profile Level 3")).toBeOnTheScreen()
+        expect(screen.getByText(/Profile XP 4/)).toBeOnTheScreen()
+      } finally {
+        jest.useRealTimers()
+      }
+    },
+  )
 
   it("shows exact profile progress and keeps both safe-area actions available", async () => {
     const user = userEvent.setup()
