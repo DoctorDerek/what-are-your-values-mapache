@@ -15,7 +15,12 @@ import {
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { BackHandler, FlatList, View, type CellRendererProps } from "react-native"
+import {
+  BackHandler,
+  FlatList,
+  View,
+  type CellRendererProps,
+} from "react-native"
 import Animated, {
   cancelAnimation,
   Easing,

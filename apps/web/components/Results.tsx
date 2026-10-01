@@ -14,7 +14,14 @@ import {
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import { motion } from "motion/react"
 import type { StaticImageData } from "next/image"
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
