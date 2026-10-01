@@ -20,6 +20,7 @@ import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import ValueAnimalPresentation from "@/components/ValueAnimalPresentation"
+import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
 
 function ResultsValueRow({
   frameValue,
@@ -35,6 +36,7 @@ function ResultsValueRow({
   areRowPositionsSettled: boolean
 }) {
   const elementRef = useRef<HTMLLIElement>(null)
+  const { isAttended, attentionHandlers } = useAnimalAttentionInput()
   const [isNearViewport, setIsNearViewport] = useState(false)
   const { value, rank, totalXp } = frameValue
   const { level, earnedXpTowardNextLevel, requiredXpForNextLevel } =
@@ -59,6 +61,7 @@ function ResultsValueRow({
   return (
     <motion.li
       ref={elementRef}
+      {...attentionHandlers}
       layout={animatePosition ? "position" : false}
       layoutDependency={`${rank}:${areRowPositionsSettled}`}
       transformTemplate={areRowPositionsSettled ? () => "none" : undefined}
@@ -85,7 +88,7 @@ function ResultsValueRow({
           rank={rank}
           showRank={false}
           catalog={runtimeClipCatalog}
-          isAttended={false}
+          isAttended={isAttended}
           valuePresentation={resolveValueAnimalPresentation(
             value.definition,
             runtimeClipCatalog,
