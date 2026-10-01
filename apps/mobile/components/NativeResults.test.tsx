@@ -1,4 +1,5 @@
 import { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import { getValueDisplayName } from "@game/data/src/Value"
 import { createBattleExitResults } from "@game/machines/src/BattleExitResults"
 import {
   applyBattleChoice,
@@ -13,6 +14,8 @@ import {
   screen,
   userEvent,
 } from "@testing-library/react-native"
+import { StyleSheet } from "react-native"
+import { getAnimatedStyle } from "react-native-reanimated"
 import NativeResults from "@/components/NativeResults"
 
 function createResults() {
@@ -29,6 +32,47 @@ function createResults() {
 }
 
 describe("Native Battle-exit Results", () => {
+  it("mounts the canonical first reward with entry XP and a bounded entrance", async () => {
+    const results = createResults()
+    await render(
+      <NativeResults
+        results={results}
+        runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+        shouldReduceMotion={false}
+        isMenuOpen={false}
+        onOpenMenu={jest.fn()}
+        onSeeValues={jest.fn()}
+        onKeepBattling={jest.fn()}
+      />,
+    )
+    const winner = results.values[0]
+    const row = screen.getByLabelText(
+      `Rank 1, ${getValueDisplayName(winner.definition)}, Level 3, 4 total XP`,
+    )
+    expect(row).toBeOnTheScreen()
+    expect(getAnimatedStyle(row)).toMatchObject({
+      transform: [{ translateY: 8 }],
+    })
+    const cells = screen.container.queryAll(
+      (element) =>
+        StyleSheet.flatten(element.props.style)?.zIndex ===
+          results.values.length &&
+        typeof element.props.onLayout === "function" &&
+        typeof element.props.onFocusCapture === "function",
+    )
+    expect(cells.length).toBeGreaterThan(0)
+    expect(
+      cells.some(
+        (cell) =>
+          cell.queryAll(
+            (element) =>
+              element.props.accessibilityLabel === row.props.accessibilityLabel,
+          ).length > 0,
+      ),
+    ).toBe(true)
+    expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
+  })
+
   it("fills through intermediate Levels for 3.7 seconds without blocking actions", async () => {
     jest.useFakeTimers()
     try {
@@ -53,12 +97,49 @@ describe("Native Battle-exit Results", () => {
       await act(async () => jest.advanceTimersByTime(50))
       expect(screen.getByText("Profile Level 3")).toBeOnTheScreen()
       expect(screen.getByText(/Profile XP 4/)).toBeOnTheScreen()
-      fireEvent.press(screen.getByRole("button", { name: "See my values" }))
+      await fireEvent.press(
+        screen.getByRole("button", { name: "See my values" }),
+      )
       expect(onSeeValues).toHaveBeenCalledTimes(1)
     } finally {
       jest.useRealTimers()
     }
   })
+
+  it.each(["scrollBeginDrag", "touchStart", "focus"])(
+    "keeps the XP clock running after %s",
+    async (interaction) => {
+      jest.useFakeTimers()
+      try {
+        await render(
+          <NativeResults
+            results={createResults()}
+            runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+            shouldReduceMotion={false}
+            isMenuOpen={false}
+            onOpenMenu={jest.fn()}
+            onSeeValues={jest.fn()}
+            onKeepBattling={jest.fn()}
+          />,
+        )
+        await act(async () => jest.advanceTimersByTime(900))
+        await fireEvent(
+          interaction === "focus"
+            ? screen.getByRole("button", { name: "See my values" })
+            : screen.getByLabelText("Your value results"),
+          interaction,
+        )
+        expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
+        await act(async () => jest.advanceTimersByTime(950))
+        expect(screen.getByText("Profile Level 2")).toBeOnTheScreen()
+        await act(async () => jest.advanceTimersByTime(1_850))
+        expect(screen.getByText("Profile Level 3")).toBeOnTheScreen()
+        expect(screen.getByText(/Profile XP 4/)).toBeOnTheScreen()
+      } finally {
+        jest.useRealTimers()
+      }
+    },
+  )
 
   it("shows exact profile progress and keeps both safe-area actions available", async () => {
     const user = userEvent.setup()
