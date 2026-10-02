@@ -5,13 +5,16 @@ import {
   getExactLevelProgressFromXP,
   getExactLevelStartingXp,
 } from "@game/utils/src/LevelMath"
+import {
+  BATTLE_RESULTS_REORDER_MOTION_MS,
+  projectBattleExitResultsMotion,
+  type BattleExitResultsMotion,
+} from "./BattleExitResultsMotion"
 import type { BattleProfile } from "./BattleProfile"
 
 const MIN_LEVEL_BAR_FILL_DURATION_MS = 900
 const MIN_XP_PROGRESSION_DURATION_MS = 3_700
 export const BATTLE_RESULTS_PRESENTATION_TICK_MS = 50
-export const BATTLE_RESULTS_REORDER_MOTION_MS = 3_700
-const MAX_RESULTS_ROW_ENTRANCE_OFFSET_PX = 8
 
 export type BattleExitResultsValue = {
   readonly definition: RankedValue["definition"]
@@ -41,7 +44,7 @@ export type BattleExitResultsFrameValue = {
   readonly totalXp: number
   readonly levelBarPercentage: number
   readonly didCrossLevel: boolean
-  readonly positionOffsetY: number
+  readonly motion: BattleExitResultsMotion
 }
 
 function didValueProgressChange(
@@ -229,41 +232,41 @@ export function projectBattleExitResultsFrame(
     throw new Error(`Invalid Results presentation time: ${elapsedMs}`)
   }
 
-  const remainingPositionProgress = areRowPositionsSettled
-    ? 0
-    : Math.max(0, 1 - elapsedMs / BATTLE_RESULTS_REORDER_MOTION_MS)
-  const values = results.values
-    .map((value) => {
-      const progress = projectPresentationProgress(
-        BigInt(value.entryProgress.totalXp),
-        BigInt(value.exitProgress.totalXp),
+  const values = results.values.map((value) => {
+    const progress = projectPresentationProgress(
+      BigInt(value.entryProgress.totalXp),
+      BigInt(value.exitProgress.totalXp),
+      elapsedMs,
+      value.presentationDurationMs,
+    )
+    const previousProgress =
+      previousElapsedMs === elapsedMs
+        ? progress
+        : projectPresentationProgress(
+            BigInt(value.entryProgress.totalXp),
+            BigInt(value.exitProgress.totalXp),
+            previousElapsedMs,
+            value.presentationDurationMs,
+          )
+    return Object.freeze({
+      value,
+      rank:
+        areRowPositionsSettled || elapsedMs >= BATTLE_RESULTS_REORDER_MOTION_MS
+          ? value.exitRank
+          : value.entryRank,
+      stackingOrder: results.values.length + 1 - value.exitRank,
+      motion: projectBattleExitResultsMotion(
+        value.entryRank,
+        value.exitRank,
         elapsedMs,
-        value.presentationDurationMs,
-      )
-      const previousProgress =
-        previousElapsedMs === elapsedMs
-          ? progress
-          : projectPresentationProgress(
-              BigInt(value.entryProgress.totalXp),
-              BigInt(value.exitProgress.totalXp),
-              previousElapsedMs,
-              value.presentationDurationMs,
-            )
-      return Object.freeze({
-        value,
-        rank: value.exitRank,
-        stackingOrder: results.values.length + 1 - value.exitRank,
-        positionOffsetY:
-          Math.sign(value.entryRank - value.exitRank) *
-          MAX_RESULTS_ROW_ENTRANCE_OFFSET_PX *
-          remainingPositionProgress,
-        totalXp: Number(progress.totalXp),
-        levelBarPercentage: progress.levelBarPercentage,
-        didCrossLevel:
-          progress.levelProgress.level !== previousProgress.levelProgress.level,
-      }) satisfies BattleExitResultsFrameValue
-    })
-    .sort((first, second) => first.rank - second.rank)
+        areRowPositionsSettled,
+      ),
+      totalXp: Number(progress.totalXp),
+      levelBarPercentage: progress.levelBarPercentage,
+      didCrossLevel:
+        progress.levelProgress.level !== previousProgress.levelProgress.level,
+    }) satisfies BattleExitResultsFrameValue
+  })
   const profileProgress = projectPresentationProgress(
     results.entryProfileXp,
     results.exitProfileXp,

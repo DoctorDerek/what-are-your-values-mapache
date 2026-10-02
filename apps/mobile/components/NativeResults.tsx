@@ -15,71 +15,28 @@ import {
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import {
-  BackHandler,
-  FlatList,
-  View,
-  type CellRendererProps,
-} from "react-native"
-import Animated, {
-  cancelAnimation,
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated"
+import { BackHandler, FlatList, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
+import NativeResultsValueCell from "@/components/NativeResultsValueCell"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
-
-function NativeResultsValueCell({
-  children,
-  item,
-  onFocusCapture,
-  onLayout,
-  style,
-}: CellRendererProps<BattleExitResultsFrameValue>) {
-  const cellCallbacks = { onFocusCapture, onLayout }
-  return (
-    <View {...cellCallbacks} style={[style, { zIndex: item.stackingOrder }]}>
-      {children}
-    </View>
-  )
-}
 
 function NativeResultsValueRow({
   frameValue,
   runtimeClipCatalog,
   shouldReduceMotion,
-  animatePosition,
   onFocus,
 }: {
   frameValue: BattleExitResultsFrameValue
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
   shouldReduceMotion: boolean
-  animatePosition: boolean
   onFocus: () => void
 }) {
   const { value, rank, totalXp } = frameValue
   const { level, earnedXpTowardNextLevel, requiredXpForNextLevel } =
     getLevelProgressFromXP(totalXp)
   const finalLevel = getLevelProgressFromXP(value.exitProgress.totalXp).level
-  const positionOffset = useSharedValue(frameValue.positionOffsetY)
-  const positionStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: positionOffset.get() }],
-  }))
-  useEffect(() => {
-    positionOffset.set(
-      animatePosition
-        ? withTiming(frameValue.positionOffsetY, {
-            duration: BATTLE_RESULTS_PRESENTATION_TICK_MS,
-            easing: Easing.linear,
-          })
-        : 0,
-    )
-    return () => cancelAnimation(positionOffset)
-  }, [animatePosition, frameValue.positionOffsetY, positionOffset])
   const valuePresentation = resolveValueAnimalPresentation(
     value.definition,
     runtimeClipCatalog,
@@ -90,12 +47,11 @@ function NativeResultsValueRow({
       : null
 
   return (
-    <Animated.View
+    <View
       accessible
       accessibilityLabel={`Rank ${value.exitRank}, ${getValueDisplayName(value.definition)}, Level ${finalLevel}, ${value.exitProgress.totalXp} total XP`}
       onFocus={onFocus}
-      style={positionStyle}
-      className={`mb-1 flex-row flex-wrap items-center gap-2 border-2 border-black bg-white p-1 shadow-[3px_3px_0px_0px_#000000] ${rank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
+      className={`mb-1 flex-row flex-wrap items-center gap-2 border-2 border-black bg-white p-1 shadow-[3px_3px_0px_0px_#000000] ${value.exitRank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
     >
       <Text className="w-8 text-center text-lg font-black text-black">
         #{rank}
@@ -136,7 +92,7 @@ function NativeResultsValueRow({
           {earnedXpTowardNextLevel}/{requiredXpForNextLevel} XP
         </Text>
       </View>
-    </Animated.View>
+    </View>
   )
 }
 
@@ -228,6 +184,15 @@ export default function NativeResults({
         .profileLevelProgress,
     [results],
   )
+  const positionedValues = useMemo(
+    () =>
+      displayedElapsedMs === 0 && !areRowPositionsSettled
+        ? frame.values.toSorted(
+            (first, second) => first.value.entryRank - second.value.entryRank,
+          )
+        : frame.values,
+    [areRowPositionsSettled, displayedElapsedMs, frame.values],
+  )
   const profileProgress = frame.profileLevelProgress
   const change = results.profileXpChange
   const changeLabel =
@@ -257,18 +222,17 @@ export default function NativeResults({
       </View>
       <FlatList
         className="min-h-0 flex-1"
-        data={frame.values}
+        data={positionedValues}
         CellRendererComponent={NativeResultsValueCell}
         keyExtractor={({ value }) => value.definition.id}
         onScrollBeginDrag={settleRowPositions}
-        onTouchStart={settleRowPositions}
+        removeClippedSubviews={false}
         accessibilityLabel={RESULTS_COPY.rosterLabel}
         renderItem={({ item }) => (
           <NativeResultsValueRow
             frameValue={item}
             runtimeClipCatalog={runtimeClipCatalog}
             shouldReduceMotion={shouldReduceMotion}
-            animatePosition={!shouldReduceMotion && !areRowPositionsSettled}
             onFocus={settleRowPositions}
           />
         )}
