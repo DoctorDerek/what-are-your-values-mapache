@@ -53,9 +53,14 @@ function NativeResultsValueRow({
       onFocus={onFocus}
       className={`mb-1 flex-row flex-wrap items-center gap-2 border-2 border-black bg-white p-1 shadow-[3px_3px_0px_0px_#000000] ${value.exitRank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
     >
-      <Text className="w-8 text-center text-lg font-black text-black">
-        #{rank}
-      </Text>
+      <View className="relative shrink-0">
+        <Text className="invisible font-mono text-lg font-black text-black">
+          {frameValue.rankLabelPlaceholder}
+        </Text>
+        <Text className="absolute inset-0 text-center font-mono text-lg font-black text-black">
+          #{rank}
+        </Text>
+      </View>
       {valuePresentation.kind === "animal" && geometry ? (
         <View
           accessibilityElementsHidden

@@ -97,8 +97,9 @@ function ResultsValueRow({
         aria-hidden="true"
         className="flex min-w-0 flex-wrap items-center gap-2"
       >
-        <span className="text-mapache-vivid-dark w-8 shrink-0 text-center text-lg font-black">
-          #{rank}
+        <span className="text-mapache-vivid-dark relative shrink-0 text-center font-mono text-lg font-black tabular-nums">
+          <span className="invisible">{frameValue.rankLabelPlaceholder}</span>
+          <span className="absolute inset-0">#{rank}</span>
         </span>
         <ValueAnimalPresentation
           rank={rank}
