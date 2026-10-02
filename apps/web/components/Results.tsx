@@ -12,7 +12,6 @@ import {
   type BattleExitResultsFrameValue,
 } from "@game/machines/src/BattleExitResults"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
-import { motion } from "motion/react"
 import type { StaticImageData } from "next/image"
 import {
   useCallback,
@@ -46,8 +45,23 @@ function ResultsValueRow({
   const { level, earnedXpTowardNextLevel, requiredXpForNextLevel } =
     getLevelProgressFromXP(totalXp)
   const finalLevel = getLevelProgressFromXP(value.exitProgress.totalXp).level
-  const rowStyle: CSSProperties & { "--results-row-stacking-order": number } = {
+  const rowStyle: CSSProperties & {
+    "--results-row-stacking-order": number
+    "--results-entry-slot": number
+    "--results-final-slot": number
+    "--results-travel": number
+    "--results-lateral": string
+    "--results-scale": number
+    "--results-tick-duration": string
+  } = {
     "--results-row-stacking-order": frameValue.stackingOrder,
+    "--results-entry-slot": value.entryRank - 1,
+    "--results-final-slot": value.exitRank - 1,
+    "--results-travel": frameValue.motion.travel,
+    "--results-lateral": `${frameValue.motion.lateralPercentage}%`,
+    "--results-scale": frameValue.motion.scale,
+    "--results-tick-duration": `${BATTLE_RESULTS_PRESENTATION_TICK_MS}ms`,
+    gridRow: value.exitRank,
   }
 
   useEffect(() => {
@@ -66,20 +80,14 @@ function ResultsValueRow({
   }, [])
 
   return (
-    <motion.li
+    <li
       ref={elementRef}
       {...attentionHandlers}
-      initial={false}
       style={rowStyle}
-      animate={{ y: frameValue.positionOffsetY }}
-      transformTemplate={areRowPositionsSettled ? () => "none" : undefined}
-      transition={{
-        duration: areRowPositionsSettled
-          ? 0
-          : BATTLE_RESULTS_PRESENTATION_TICK_MS / 1_000,
-        ease: "linear",
-      }}
-      className={`relative z-(--results-row-stacking-order) min-w-0 border-2 border-black bg-white p-1 shadow-[3px_3px_0_#000] ${rank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
+      data-results-value={value.definition.id}
+      data-results-promoted={value.exitRank < value.entryRank || undefined}
+      data-results-settled={areRowPositionsSettled || undefined}
+      className={`results-card-motion relative z-(--results-row-stacking-order) min-h-28 min-w-0 content-center border-2 border-black bg-white p-1 shadow-[3px_3px_0_#000] ${value.exitRank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
     >
       <span className="sr-only">
         Rank {value.exitRank}, {getValueDisplayName(value.definition)}, Level{" "}
@@ -123,7 +131,7 @@ function ResultsValueRow({
           </span>
         </div>
       </div>
-    </motion.li>
+    </li>
   )
 }
 
@@ -247,26 +255,30 @@ export default function Results({
           {changeSummary}. Profile XP {results.exitProfileXp.toString()},
           {changeLabel}. Profile Level {finalProfileProgress.level.toString()}.
         </p>
-        <ol
-          aria-label={RESULTS_COPY.rosterLabel}
-          className="isolate min-h-24 flex-1 space-y-1 overflow-y-auto overscroll-contain pr-1"
+        <div
+          className="[container-type:size] relative isolate min-h-24 flex-1 overflow-y-auto overscroll-contain"
           onWheelCapture={settleRowPositions}
-          onTouchStartCapture={settleRowPositions}
+          onScroll={settleRowPositions}
           onFocusCapture={settleRowPositions}
           onKeyDownCapture={settleRowPositions}
         >
-          {frame.values.map((frameValue) => (
-            <ResultsValueRow
-              key={frameValue.value.definition.id}
-              frameValue={frameValue}
-              runtimeClipCatalog={runtimeClipCatalog}
-              shouldReduceMotion={shouldReduceMotion}
-              areRowPositionsSettled={
-                areRowPositionsSettled || shouldReduceMotion
-              }
-            />
-          ))}
-        </ol>
+          <ol
+            aria-label={RESULTS_COPY.rosterLabel}
+            className="mx-[6%] my-2 grid auto-rows-fr grid-cols-1 gap-y-1"
+          >
+            {frame.values.map((frameValue) => (
+              <ResultsValueRow
+                key={frameValue.value.definition.id}
+                frameValue={frameValue}
+                runtimeClipCatalog={runtimeClipCatalog}
+                shouldReduceMotion={shouldReduceMotion}
+                areRowPositionsSettled={
+                  areRowPositionsSettled || shouldReduceMotion
+                }
+              />
+            ))}
+          </ol>
+        </div>
         <section
           className="border-2 border-black bg-white p-2 text-black shadow-[3px_3px_0_#000]"
           aria-label="Profile progress"

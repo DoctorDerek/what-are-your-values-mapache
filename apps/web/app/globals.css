@@ -1,6 +1,59 @@
 @import "tailwindcss";
 @import "@game/design-tokens/mapachito-vivid.css";
 
+@property --results-travel {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --results-scale {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;
+}
+
+@property --results-lateral {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+@utility results-card-motion {
+  --results-row-pitch: calc(100% + 0.25rem);
+  --results-start-offset: calc(
+    (var(--results-entry-slot) - var(--results-final-slot)) *
+      var(--results-row-pitch)
+  );
+  transform: translate(
+      var(--results-lateral),
+      calc(var(--results-start-offset) * (1 - var(--results-travel)))
+    )
+    scale(var(--results-scale));
+  transition:
+    --results-travel var(--results-tick-duration) linear,
+    --results-scale var(--results-tick-duration) linear,
+    --results-lateral var(--results-tick-duration) linear;
+
+  &[data-results-promoted] {
+    --results-start-offset: calc(
+      min(
+          calc(var(--results-entry-slot) * var(--results-row-pitch)),
+          max(
+            min(calc(var(--results-row-pitch) * 0.5), 50cqh),
+            calc(100cqh - 100% - 2rem)
+          )
+        ) -
+        var(--results-final-slot) * var(--results-row-pitch)
+    );
+  }
+
+  &[data-results-settled] {
+    transform: none;
+    transition: none;
+  }
+}
+
 @position-try --battle-achievement-over-controls {
   top: anchor(--battle-actions top);
   bottom: auto;
