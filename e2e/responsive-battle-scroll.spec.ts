@@ -562,6 +562,9 @@ for (const viewport of [
       battle.locator("[data-choreography-identity]"),
     ).not.toHaveAttribute("data-choreography-identity", identity!)
     await expect(undoAction).toBeEnabled()
+    await page
+      .getByRole("button", { name: "Dismiss achievement: First Battle" })
+      .click()
     const nextChoiceLabels = await choices.evaluateAll((buttons) =>
       buttons.map((button) => button.getAttribute("aria-label")!),
     )
