@@ -252,12 +252,12 @@ export function projectBattleExitResultsFrame(
     return Object.freeze({
       value,
       rank:
-        Math.round(
-          value.entryRank +
-            (value.exitRank - value.entryRank) *
-              (areRowPositionsSettled
-                ? 1
-                : Math.min(1, elapsedMs / BATTLE_RESULTS_REORDER_MOTION_MS)),
+        value.entryRank +
+        Math.trunc(
+          (value.exitRank - value.entryRank) *
+            (areRowPositionsSettled
+              ? 1
+              : Math.min(1, elapsedMs / BATTLE_RESULTS_REORDER_MOTION_MS)),
         ),
       rankLabelPlaceholder: `#${results.values.length}`,
       stackingOrder: results.values.length + 1 - value.exitRank,
