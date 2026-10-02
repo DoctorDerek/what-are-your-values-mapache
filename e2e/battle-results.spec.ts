@@ -26,6 +26,8 @@ test("battle results show committed progress without delaying either exit", asyn
   await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled()
   await page.evaluate(() => {
     let firstPosition: number | undefined
+    let firstRank: number | undefined
+    let rankWidth: string | undefined
     let startedAt: number | undefined
     let visibleSamples = 0
     let lastVisibleSampleAt = 0
@@ -49,6 +51,17 @@ test("battle results show committed progress without delaying either exit", asyn
       const roster = row.closest("ol")!.parentElement!
       const rosterBounds = roster.getBoundingClientRect()
       const identity = row.querySelector('div[aria-hidden="true"]')!
+      const rankCounter = identity.querySelector("span.absolute")!
+      const rank = Number(rankCounter.textContent?.replace("#", ""))
+      firstRank ??= rank
+      const currentRankWidth = getComputedStyle(
+        rankCounter.parentElement!,
+      ).width
+      rankWidth ??= currentRankWidth
+      if (rankWidth !== currentRankWidth)
+        document.documentElement.dataset.resultsRankShifted = "true"
+      if (rank !== firstRank && rank !== 1)
+        document.documentElement.dataset.resultsRankCounted = "true"
       const rewardElements = [
         identity.querySelector("span")!,
         ...identity.querySelectorAll("div.flex-wrap > span"),
@@ -104,6 +117,14 @@ test("battle results show committed progress without delaying either exit", asyn
   await page.getByRole("button", { name: /Stop/ }).click()
 
   await expect(page.getByRole("heading", { name: "Results" })).toBeVisible()
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-results-rank-counted",
+    "true",
+  )
+  await expect(page.locator("html")).not.toHaveAttribute(
+    "data-results-rank-shifted",
+    "true",
+  )
   await expect(page.locator("html")).toHaveAttribute(
     "data-results-bar-moved",
     "true",
