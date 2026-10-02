@@ -10,7 +10,7 @@ import {
   projectBattleExitResultsMotion,
   projectResultsQuadraticEaseOut,
   type BattleExitResultsMotion,
-} from "@game/machines/src/BattleExitResultsMotion"
+} from "./BattleExitResultsMotion"
 import type { BattleProfile } from "./BattleProfile"
 
 const MIN_LEVEL_BAR_FILL_DURATION_MS = 900
