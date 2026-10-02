@@ -1,6 +1,8 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
 import { createCustomValueId } from "@game/data/src/Value"
 import { createInitialValueProgress } from "@game/data/src/ValueProgress"
+import { MAX_SUPPORTED_TOTAL_XP } from "@game/utils/src/LevelMath"
+import { describe, expect, it } from "vitest"
 import {
   createBattleExitResults,
   projectBattleExitResultsFrame,
@@ -11,8 +13,6 @@ import {
   createInitialBattleProfile,
 } from "./BattleProfile"
 import { projectBattlePair } from "./BattleScheduler"
-import { MAX_SUPPORTED_TOTAL_XP } from "@game/utils/src/LevelMath"
-import { describe, expect, it } from "vitest"
 
 describe("Battle-exit Results", () => {
   it("keeps final XP-ranked paint priority stable through fills and position settlement", () => {
