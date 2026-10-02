@@ -39,4 +39,35 @@ describe("Shared animal attention input", () => {
     fireEvent.pointerEnter(screen.getByRole("region"), { pointerType: "touch" })
     expect(screen.getByRole("status")).toHaveTextContent("Calm")
   })
+
+  it("acknowledges completed touch taps but not drag, focus or cancelled scrolling", () => {
+    render(<AttentionRow />)
+    const row = screen.getByRole("region")
+    const touch = {
+      pointerType: "touch",
+      pointerId: 1,
+      clientX: 10,
+      clientY: 10,
+    }
+    fireEvent.pointerDown(row, touch)
+    fireEvent.focus(screen.getByRole("button", { name: "First action" }))
+    expect(screen.getByRole("status")).toHaveTextContent("Calm")
+    fireEvent.pointerUp(row, touch)
+    expect(screen.getByRole("status")).toHaveTextContent("Attended")
+    fireEvent.pointerDown(row, touch)
+    expect(screen.getByRole("status")).toHaveTextContent("Calm")
+    fireEvent.pointerMove(row, { ...touch, clientY: 30 })
+    fireEvent.pointerUp(row, touch)
+    expect(screen.getByRole("status")).toHaveTextContent("Calm")
+    fireEvent.pointerDown(row, touch)
+    fireEvent.pointerCancel(row)
+    fireEvent.pointerUp(row, touch)
+    expect(screen.getByRole("status")).toHaveTextContent("Calm")
+    fireEvent.pointerDown(row, touch)
+    fireEvent.pointerUp(row, { ...touch, clientY: 30 })
+    expect(screen.getByRole("status")).toHaveTextContent("Calm")
+    fireEvent.pointerDown(row, touch)
+    fireEvent.pointerUp(row, touch)
+    expect(screen.getByRole("status")).toHaveTextContent("Attended")
+  })
 })

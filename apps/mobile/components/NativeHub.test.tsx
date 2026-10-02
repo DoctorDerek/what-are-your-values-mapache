@@ -21,6 +21,7 @@ import { ZOO_ANIMALS } from "@game/data/src/ZooAnimals"
 import { describe, expect, it, jest } from "@jest/globals"
 import {
   act,
+  fireEvent,
   render,
   screen,
   userEvent,
@@ -157,12 +158,73 @@ function createHubCallbacks() {
     onOpenAchievements: jest.fn(),
     onOpenDataManagement: jest.fn(),
     onOpenMenu: jest.fn(),
-    onOpenValue: jest.fn(),
     onStartBattle: jest.fn(),
   }
 }
 
 describe("NativeHub", () => {
+  it("admits attention after a completed press while retaining decoded calm art", async () => {
+    const rankedValues = createRankedValuesWithEvidence()
+    const catalog = {
+      ...licensedRuntimeClipCatalog,
+      animals: licensedRuntimeClipCatalog.animals.map((animal) => ({
+        ...animal,
+        characterClips: ["idle", "crouch", "jump", "fall", "land"].map(
+          (animationId, index) => ({
+            ...animal.characterClips[0],
+            animationId,
+            relativePath: `${animal.animalId}/${animationId}.png`,
+            asset: animal.characterClips[0].asset * 10 + index,
+          }),
+        ),
+      })),
+      characterClipCount: licensedRuntimeClipCatalog.characterClipCount * 5,
+    } satisfies SeethingSwarmRuntimeClipCatalog<number>
+    await render(
+      <NativeHub
+        {...createHubCallbacks()}
+        rankedValues={rankedValues}
+        runtimeClipCatalog={catalog}
+        dataNotice={null}
+        shouldReduceMotion={false}
+      />,
+    )
+    const animalId = resolveValueAnimalId(rankedValues[0].definition.id)
+    const row = screen.getByLabelText(
+      `Rank 1, gold medal. ${getValueDisplayName(rankedValues[0].definition)}`,
+    )
+    await act(async () => {
+      for (const [props] of nativeAnimalRendererMock.mock.calls)
+        props.onReady?.()
+    })
+    await fireEvent(row, "pressIn")
+    expect(
+      nativeAnimalRendererMock.mock.calls
+        .filter(([props]) => props.clip.animalId === animalId)
+        .at(-1)?.[0].playbackIdentity,
+    ).toContain(":false")
+    await fireEvent(row, "pressOut")
+    await fireEvent.press(row)
+    const attended = nativeAnimalRendererMock.mock.calls
+      .filter(
+        ([props]) =>
+          props.clip.animalId === animalId &&
+          props.clip.animationId === "crouch",
+      )
+      .at(-1)?.[0]
+    expect(attended?.playbackMode).toBe("one-shot")
+    expect(attended?.frameDurationMs).toBe(100)
+    await act(async () => attended?.onPlaybackComplete?.())
+    const calm = nativeAnimalRendererMock.mock.calls
+      .filter(
+        ([props]) =>
+          props.clip.animalId === animalId && props.clip.animationId === "idle",
+      )
+      .at(-1)?.[0]
+    expect(calm?.playbackMode).toBe("loop")
+    expect(calm?.frameDurationMs).toBe(160)
+  })
+
   it("supports first-run discovery without presenting source order as a ranking", async () => {
     const callbacks = createHubCallbacks()
     const user = userEvent.setup()
@@ -191,19 +253,20 @@ describe("NativeHub", () => {
       }),
     ).not.toBeOnTheScreen()
 
-    const visibleValueButtons = screen.getAllByRole("button", {
-      name: /^Open .* in All Values$/,
-    })
+    const visibleValueButtons = rankedValues
+      .toSorted((a, b) =>
+        getValueDisplayName(a.definition).localeCompare(
+          getValueDisplayName(b.definition),
+        ),
+      )
+      .slice(0, 3)
+      .map(({ definition }) =>
+        screen.getByLabelText(getValueDisplayName(definition)),
+      )
 
-    expect(visibleValueButtons[0]).toHaveAccessibleName(
-      "Open Acceptance in All Values",
-    )
-    expect(visibleValueButtons[1]).toHaveAccessibleName(
-      "Open Accuracy in All Values",
-    )
-    expect(visibleValueButtons[2]).toHaveAccessibleName(
-      "Open Achievement in All Values",
-    )
+    expect(visibleValueButtons[0]).toHaveAccessibleName("Acceptance")
+    expect(visibleValueButtons[1]).toHaveAccessibleName("Accuracy")
+    expect(visibleValueButtons[2]).toHaveAccessibleName("Achievement")
 
     await user.press(screen.getByRole("button", { name: "Browse All Values" }))
     await user.press(screen.getByRole("button", { name: "Add Custom Value" }))
@@ -213,11 +276,6 @@ describe("NativeHub", () => {
     expect(callbacks.onBrowseAllValues).toHaveBeenCalledTimes(1)
     expect(callbacks.onAddCustomValue).toHaveBeenCalledTimes(1)
     expect(callbacks.onOpenMenu).toHaveBeenCalledTimes(1)
-    expect(callbacks.onOpenValue).toHaveBeenCalledWith(
-      rankedValues.find(
-        ({ definition }) => getValueDisplayName(definition) === "Acceptance",
-      )?.definition.id,
-    )
   })
 
   it("presents committed evidence as Top Five followed by all other values", async () => {
@@ -252,15 +310,10 @@ describe("NativeHub", () => {
     expect(nativeAnimalRendererMock).not.toHaveBeenCalled()
 
     await user.press(
-      screen.getByRole("button", {
-        name: `Rank 1, gold medal. Open ${firstRankedValueName} in All Values`,
-      }),
+      screen.getByLabelText(`Rank 1, gold medal. ${firstRankedValueName}`),
     )
     await user.press(screen.getByRole("button", { name: "Battle" }))
 
-    expect(callbacks.onOpenValue).toHaveBeenCalledWith(
-      firstRankedValue.definition.id,
-    )
     expect(callbacks.onStartBattle).toHaveBeenCalledTimes(1)
   })
 
@@ -312,9 +365,9 @@ describe("NativeHub", () => {
     ).not.toBeOnTheScreen()
     const firstRankedValue = rankedValues[0]
     expect(
-      screen.getByRole("button", {
-        name: `Rank 1, gold medal. Open ${getValueDisplayName(firstRankedValue.definition)} in All Values`,
-      }),
+      screen.getByLabelText(
+        `Rank 1, gold medal. ${getValueDisplayName(firstRankedValue.definition)}`,
+      ),
     ).toBeOnTheScreen()
     await act(async () =>
       nativeAnimalRendererMock.mock.calls[0][0].onLoadError?.(),
@@ -330,10 +383,10 @@ describe("NativeHub", () => {
     })
   })
 
-  it("renders the battle-assigned Custom Value animal while preserving its row action", async () => {
+  it("renders the battle-assigned Custom Value animal without incidental navigation", async () => {
     const callbacks = createHubCallbacks()
     const user = userEvent.setup()
-    const { customValue, rankedValues } = createCustomRankedValues()
+    const { rankedValues } = createCustomRankedValues()
     await render(
       <NativeHub
         {...callbacks}
@@ -372,11 +425,7 @@ describe("NativeHub", () => {
         .map(({ definition }) => resolveValueAnimalId(definition.id)),
     )
 
-    await user.press(
-      screen.getByRole("button", {
-        name: "Rank 1, gold medal. Open 🧠 Curiosity in All Values",
-      }),
-    )
-    expect(callbacks.onOpenValue).toHaveBeenCalledWith(customValue.id)
+    await user.press(screen.getByLabelText("Rank 1, gold medal. 🧠 Curiosity"))
+    expect(callbacks.onBrowseAllValues).not.toHaveBeenCalled()
   })
 })
