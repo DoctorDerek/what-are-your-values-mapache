@@ -173,6 +173,41 @@ export function createBattleExitResults(
   })
 }
 
+function projectEasedLevelSpanDistance(
+  entryLevelFraction: number,
+  signedLevelDistance: number,
+  traveledLevelDistance: number,
+) {
+  const distance = Math.abs(signedLevelDistance)
+  const firstSpanDistance = Math.min(
+    distance,
+    signedLevelDistance > 0 ? 1 - entryLevelFraction : entryLevelFraction || 1,
+  )
+
+  if (traveledLevelDistance < firstSpanDistance)
+    return (
+      firstSpanDistance *
+      projectResultsQuadraticEaseOut(traveledLevelDistance / firstSpanDistance)
+    )
+
+  const completedWholeSpans = Math.floor(
+    traveledLevelDistance - firstSpanDistance,
+  )
+  const currentSpanDistance = Math.min(
+    1,
+    distance - firstSpanDistance - completedWholeSpans,
+  )
+  const currentSpanTravel =
+    traveledLevelDistance - firstSpanDistance - completedWholeSpans
+
+  return (
+    firstSpanDistance +
+    completedWholeSpans +
+    currentSpanDistance *
+      projectResultsQuadraticEaseOut(currentSpanTravel / currentSpanDistance)
+  )
+}
+
 function projectPresentationProgress(
   entryXp: bigint,
   exitXp: bigint,
@@ -202,7 +237,12 @@ function projectPresentationProgress(
 
   const relativeLevelPosition =
     getLevelFraction(entryProgress) +
-    Math.sign(signedDistance) * traveledLevelDistance
+    Math.sign(signedDistance) *
+      projectEasedLevelSpanDistance(
+        getLevelFraction(entryProgress),
+        signedDistance,
+        traveledLevelDistance,
+      )
   const crossedLevels = Math.floor(relativeLevelPosition)
   const level = entryProgress.level + BigInt(crossedLevels)
   const levelFraction = relativeLevelPosition - crossedLevels
