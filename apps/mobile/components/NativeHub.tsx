@@ -3,7 +3,6 @@ import { presentationLoadingCopy } from "@game/data/src/PresentationLoadingCopy"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
 import { resolveValueAnimalPresentation } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
-import type { ValueId } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { Fragment } from "react"
 import { FlatList, View } from "react-native"
@@ -23,7 +22,6 @@ export default function NativeHub({
   onOpenAchievements,
   onOpenDataManagement,
   onOpenMenu,
-  onOpenValue,
   onStartBattle,
 }: {
   isBattlePending?: boolean
@@ -36,7 +34,6 @@ export default function NativeHub({
   onOpenAchievements: () => void
   onOpenDataManagement: () => void
   onOpenMenu: () => void
-  onOpenValue: (valueId: ValueId) => void
   onStartBattle: () => void
 }) {
   const { hasComparisons, visibleValues } = projectHubValues(rankedValues)
@@ -155,7 +152,7 @@ export default function NativeHub({
                     : undefined
                 }
                 shouldReduceMotion={shouldReduceMotion}
-                onOpen={() => onOpenValue(item.definition.id)}
+                runtimeClipCatalog={runtimeClipCatalog}
               />
               {hasComparisons && index === 4 ? (
                 <View>

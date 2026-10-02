@@ -831,9 +831,9 @@ describe("GameClient Integration", () => {
     expect(
       await screen.findByRole("heading", { name: "Top Five" }),
     ).toBeVisible()
-    const winningValue = screen.getByRole("button", {
-      name: `Open ${winnerName} in All Values`,
-    })
+    const winningValue = screen
+      .getByText(winnerName)
+      .closest('[id$="-presentation"]')
     expect(winningValue).toBeVisible()
     expect(winningValue).toHaveAccessibleDescription("Rank 1, gold medal")
     expect(screen.getByText("Level 3")).toBeVisible()
@@ -1433,7 +1433,7 @@ describe("GameClient Integration", () => {
     expect(screen.getByRole("button", { name: "Undo" })).toBeEnabled()
   })
 
-  it("opens a specific Hub value in All Values and restores focus on return", async () => {
+  it("keeps Hub rows informational and restores the explicit Browse action on return", async () => {
     vi.spyOn(crypto, "randomUUID").mockReturnValue(
       "00000000-0000-4000-8000-000000000046",
     )
@@ -1441,25 +1441,26 @@ describe("GameClient Integration", () => {
     render(<GameClient />)
 
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
-    fireEvent.click(
-      await screen.findByRole("button", {
-        name: "Open Acceptance in All Values",
-      }),
-    )
+    fireEvent.click(await screen.findByText("Acceptance"))
+    expect(
+      screen.getByRole("heading", { name: "Your Values", level: 1 }),
+    ).toBeVisible()
+    expect(
+      screen.getByText("Acceptance").closest('[id$="-presentation"]'),
+    ).not.toHaveAttribute("tabindex")
+    fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
 
     expect(
       await screen.findByRole("heading", { name: "All Values", level: 1 }),
     ).toBeVisible()
-    expect(screen.getByText("Acceptance").closest("li")).toHaveClass("ring-8")
+    expect(screen.getByText("Acceptance")).toBeVisible()
 
     fireEvent.click(screen.getByRole("button", { name: "Close" }))
     expect(
       await screen.findByRole("heading", { name: "Your Values", level: 1 }),
     ).toBeVisible()
     expect(
-      screen.getByRole("button", {
-        name: "Open Acceptance in All Values",
-      }),
+      screen.getByRole("button", { name: "Browse All Values" }),
     ).toHaveFocus()
   })
 
@@ -1636,11 +1637,7 @@ describe("GameClient Integration", () => {
     expect(
       await screen.findByText(playerDataPortabilityCopy.importSuccess),
     ).toBeVisible()
-    expect(
-      screen.getByRole("button", {
-        name: "Open Ingenuity in All Values",
-      }),
-    ).toBeVisible()
+    expect(screen.getByText("Ingenuity", { selector: "span" })).toBeVisible()
     expect(screen.getAllByRole("listitem")).toHaveLength(101)
     expect(screen.getByRole("button", { name: "Menu" })).toHaveFocus()
   })
@@ -1776,9 +1773,7 @@ describe("GameClient Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
     expect(await screen.findAllByRole("listitem")).toHaveLength(100)
     expect(
-      screen.queryByRole("button", {
-        name: "Open Ingenuity in All Values",
-      }),
+      screen.queryByText("Ingenuity", { selector: "span" }),
     ).not.toBeInTheDocument()
   })
 

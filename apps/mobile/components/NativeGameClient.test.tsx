@@ -329,12 +329,9 @@ describe("NativeGameClient Menu navigation", () => {
     expect(await screen.findByText("All Values")).toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Close" }))
 
-    const valueDestination = screen.getAllByRole("button", {
-      name: /^Open .+ in All Values$/,
-    })[0]
-    await user.press(valueDestination)
-    expect(await screen.findByText("All Values")).toBeOnTheScreen()
-    await user.press(screen.getByRole("button", { name: "Close" }))
+    await user.press(screen.getByLabelText("Acceptance"))
+    expect(screen.getByText("Your Values")).toBeOnTheScreen()
+    expect(screen.queryByText("All Values")).not.toBeOnTheScreen()
 
     await user.press(screen.getByRole("button", { name: "Add Custom Value" }))
     expect(await screen.findByText("Custom Value Builder")).toBeOnTheScreen()

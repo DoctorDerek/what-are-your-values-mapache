@@ -102,7 +102,7 @@ for (const width of [390, 1100, 1440]) {
     await page.getByRole("button", { name: "Start", exact: true }).click()
     for (const hasComparisons of [false, true]) {
       const roster = page.getByRole("region", { name: "Value roster" })
-      const rows = page.getByRole("button", { name: /^Open .+ in All Values$/ })
+      const rows = page.locator("[data-value-row]")
       await expect(rows).toHaveCount(100)
       await rows.first().scrollIntoViewIfNeeded()
       await rows.first().hover()
@@ -145,6 +145,12 @@ for (const width of [390, 1100, 1440]) {
           identity!,
         )
         await page.getByRole("button", { name: "Stop", exact: true }).click()
+        await expect(
+          page.getByRole("heading", { name: "Results", exact: true }),
+        ).toBeVisible()
+        await page
+          .getByRole("button", { name: "See my values", exact: true })
+          .click()
         await expect(
           page.getByRole("heading", { name: "Your Values", level: 1 }),
         ).toBeVisible()
@@ -556,6 +562,9 @@ for (const viewport of [
       battle.locator("[data-choreography-identity]"),
     ).not.toHaveAttribute("data-choreography-identity", identity!)
     await expect(undoAction).toBeEnabled()
+    await page
+      .getByRole("button", { name: "Dismiss achievement: First Battle" })
+      .click()
     const nextChoiceLabels = await choices.evaluateAll((buttons) =>
       buttons.map((button) => button.getAttribute("aria-label")!),
     )
@@ -569,6 +578,12 @@ for (const viewport of [
     for (const [index, label] of nextChoiceLabels.entries())
       await expect(choices.nth(index)).toHaveAccessibleName(label)
     await stopAction.click()
+    await expect(
+      page.getByRole("heading", { name: "Results", exact: true }),
+    ).toBeVisible()
+    await page
+      .getByRole("button", { name: "See my values", exact: true })
+      .click()
     await expect(
       page.getByRole("heading", { name: "Top Five", exact: true }),
     ).toBeVisible()

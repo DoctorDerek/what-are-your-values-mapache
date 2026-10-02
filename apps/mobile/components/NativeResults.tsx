@@ -15,12 +15,13 @@ import {
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { BackHandler, FlatList, View } from "react-native"
+import { BackHandler, FlatList, Pressable, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeResultsValueCell from "@/components/NativeResultsValueCell"
-import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
+import NativeSeethingSwarmHubAnimal from "@/components/NativeSeethingSwarmHubAnimal"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
+import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
 
 function NativeResultsValueRow({
   frameValue,
@@ -34,6 +35,7 @@ function NativeResultsValueRow({
   onFocus: () => void
 }) {
   const { value, rank, totalXp } = frameValue
+  const { isAttended, attentionHandlers } = useAnimalAttentionInput()
   const { level, earnedXpTowardNextLevel, requiredXpForNextLevel } =
     getLevelProgressFromXP(totalXp)
   const finalLevel = getLevelProgressFromXP(value.exitProgress.totalXp).level
@@ -47,15 +49,21 @@ function NativeResultsValueRow({
       : null
 
   return (
-    <View
+    <Pressable
       accessible
+      {...attentionHandlers}
       accessibilityLabel={`Rank ${value.exitRank}, ${getValueDisplayName(value.definition)}, Level ${finalLevel}, ${value.exitProgress.totalXp} total XP`}
       onFocus={onFocus}
       className={`mb-1 flex-row flex-wrap items-center gap-2 border-2 border-black bg-white p-1 shadow-[3px_3px_0px_0px_#000000] ${value.exitRank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
     >
-      <Text className="w-8 text-center text-lg font-black text-black">
-        #{rank}
-      </Text>
+      <View className="relative shrink-0">
+        <Text className="invisible font-mono text-lg font-black text-black">
+          {frameValue.rankLabelPlaceholder}
+        </Text>
+        <Text className="absolute inset-0 text-center font-mono text-lg font-black text-black">
+          #{rank}
+        </Text>
+      </View>
       {valuePresentation.kind === "animal" && geometry ? (
         <View
           accessibilityElementsHidden
@@ -67,8 +75,10 @@ function NativeResultsValueRow({
             height: Math.max(SEETHING_SWARM_HUB_TILE_SIZE, geometry.height),
           }}
         >
-          <NativeSeethingSwarmAnimal
-            clip={valuePresentation.clip}
+          <NativeSeethingSwarmHubAnimal
+            calmClip={valuePresentation.clip}
+            catalog={runtimeClipCatalog}
+            isAttended={isAttended}
             geometry={geometry}
             shouldReduceMotion={shouldReduceMotion}
           />
@@ -92,7 +102,7 @@ function NativeResultsValueRow({
           {earnedXpTowardNextLevel}/{requiredXpForNextLevel} XP
         </Text>
       </View>
-    </View>
+    </Pressable>
   )
 }
 

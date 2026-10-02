@@ -95,10 +95,9 @@ test("a returning player keeps Undo and Redo across reloads", async ({
   await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled()
   await page.reload()
 
-  const winningValue = page.getByRole("button", {
-    name: `Open ${firstChoiceName} in All Values`,
-    exact: true,
-  })
+  const winningValue = page
+    .locator('[id$="-presentation"]')
+    .filter({ has: page.getByText(firstChoiceName, { exact: true }) })
   await expect(winningValue).toHaveAccessibleDescription("Rank 1, gold medal")
   const firstRankedValue = page
     .getByRole("listitem")
@@ -153,10 +152,9 @@ test("a secondary tab stays read-only then inherits released writer ownership", 
   await expect(
     secondaryPage.getByRole("heading", { level: 1, name: "Your Values" }),
   ).toBeVisible()
-  const inheritedWinningValue = secondaryPage.getByRole("button", {
-    name: `Open ${ownerChoiceName} in All Values`,
-    exact: true,
-  })
+  const inheritedWinningValue = secondaryPage
+    .locator('[id$="-presentation"]')
+    .filter({ has: secondaryPage.getByText(ownerChoiceName, { exact: true }) })
   await expect(inheritedWinningValue).toHaveAccessibleDescription(
     "Rank 1, gold medal",
   )

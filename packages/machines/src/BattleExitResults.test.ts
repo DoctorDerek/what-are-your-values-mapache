@@ -70,6 +70,19 @@ describe("Battle-exit Results", () => {
     expect(start.values[0]?.rank).toBe(75)
     expect(midway.values[0]?.motion.travel).toBeGreaterThan(0.5)
     expect(midway.values[0]?.motion.lateralPercentage).toBe(5)
+    expect(midway.values[0]?.rank).toBe(38)
+    expect(midway.values[0]?.rankLabelPlaceholder).toBe("#100")
+    for (const elapsedMs of [0, 925, 1_850, 2_775, 3_700]) {
+      const frame = projectBattleExitResultsFrame(results, elapsedMs)
+      for (const { rank, value } of frame.values) {
+        expect(rank).toBe(
+          value.entryRank +
+            Math.trunc(
+              ((value.exitRank - value.entryRank) * elapsedMs) / 3_700,
+            ),
+        )
+      }
+    }
     expect(settled.values[0]?.motion.travel).toBe(1)
     expect(settled.values[0]?.rank).toBe(1)
     expect(settled.values[0]?.totalXp).toBe(midway.values[0]?.totalXp)
@@ -78,6 +91,15 @@ describe("Battle-exit Results", () => {
       true,
     )
     expect(sortComplete.values[0]?.totalXp).toBeLessThan(12)
+    const nearlyComplete = projectBattleExitResultsFrame(results, 3_699)
+    expect(
+      nearlyComplete.values
+        .filter(({ value }) => value.entryRank !== value.exitRank)
+        .every(({ rank, value }) => rank !== value.exitRank),
+    ).toBe(true)
+    expect(
+      sortComplete.values.every(({ rank, value }) => rank === value.exitRank),
+    ).toBe(true)
     expect(
       start.values
         .filter(({ value }) => value.entryRank === value.exitRank)

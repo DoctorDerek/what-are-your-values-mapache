@@ -32,7 +32,7 @@ import {
 } from "@testing-library/react"
 import type { StaticImageData } from "next/image"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import Hub from "./Hub"
+import Hub from "@/components/Hub"
 
 const animalPresentationProps = Object.freeze({
   runtimeClipCatalog: createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
@@ -116,10 +116,18 @@ function createCustomRankedValues() {
   })
 }
 
+function getHubPresentation(name: string) {
+  const presentation = screen
+    .getByText(name)
+    .closest<HTMLElement>('[id$="-presentation"]')
+  if (!presentation) throw new Error("Hub value presentation is missing")
+  return presentation
+}
+
 describe("Hub Component Integration", () => {
   afterEach(() => vi.restoreAllMocks())
 
-  it("retains the loaded animal while focus attention loads, then returns to calm on blur", async () => {
+  it("retains the loaded animal while hover attention loads, then returns to calm", async () => {
     vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockReturnValue(
       false,
     )
@@ -155,12 +163,11 @@ describe("Hub Component Integration", () => {
         onBrowseAllValues={vi.fn()}
         onAddCustomValue={vi.fn()}
         onOpenMenu={vi.fn()}
-        onOpenValue={vi.fn()}
         onStartBattle={vi.fn()}
       />,
     )
     const row = screen.getAllByRole("listitem")[0]
-    const button = within(row).getByRole("button")
+    const button = row.querySelector<HTMLElement>('[id$="-presentation"]')!
     const images = row.querySelectorAll("img")
     const idle = [...images].find((image) =>
       image.getAttribute("src")?.includes("-idle.png"),
@@ -173,7 +180,7 @@ describe("Hub Component Integration", () => {
     fireEvent.load(idle)
     await waitFor(() => expect(crouch).toHaveAttribute("loading", "eager"))
     expect(idle).toHaveStyle({ "--animal-animation-duration": "160ms" })
-    fireEvent.focus(button)
+    fireEvent.pointerEnter(button, { pointerType: "mouse" })
     expect(idle.closest("[data-hub-active-clip]")).toHaveAttribute(
       "data-hub-active-clip",
       "true",
@@ -190,8 +197,6 @@ describe("Hub Component Integration", () => {
         "true",
       ),
     )
-    fireEvent.pointerEnter(button, { pointerType: "mouse" })
-    fireEvent.pointerLeave(button)
     expect(crouch.closest("[data-hub-active-clip]")).toHaveAttribute(
       "data-hub-active-clip",
       "true",
@@ -211,13 +216,14 @@ describe("Hub Component Integration", () => {
     )
     fireEvent.pointerCancel(button)
     expect(idle).toHaveStyle({ "--animal-animation-duration": "160ms" })
-    fireEvent.blur(button)
+    fireEvent.pointerLeave(button)
     expect(idle.closest("[data-hub-active-clip]")).toHaveAttribute(
       "data-hub-active-clip",
       "true",
     )
     fireEvent.error(crouch)
-    fireEvent.focus(button)
+    fireEvent.pointerLeave(button)
+    fireEvent.pointerEnter(button, { pointerType: "mouse" })
     expect(crouch.closest("[data-hub-active-clip]")).toHaveAttribute(
       "data-hub-active-clip",
       "false",
@@ -228,7 +234,6 @@ describe("Hub Component Integration", () => {
     const battleCycle = createInitialBattleCycle("empty-hub-seed")
     const onBrowseAllValues = vi.fn()
     const onAddCustomValue = vi.fn()
-    const onOpenValue = vi.fn()
 
     const hubProps = {
       ...animalPresentationProps,
@@ -236,7 +241,6 @@ describe("Hub Component Integration", () => {
       onBrowseAllValues,
       onAddCustomValue,
       onOpenMenu: vi.fn(),
-      onOpenValue,
       onStartBattle: vi.fn(),
     }
     const currentRanking = rankValues(
@@ -305,7 +309,6 @@ describe("Hub Component Integration", () => {
         onBrowseAllValues={vi.fn()}
         onAddCustomValue={vi.fn()}
         onOpenMenu={vi.fn()}
-        onOpenValue={vi.fn()}
         onStartBattle={vi.fn()}
       />,
     )
@@ -350,7 +353,6 @@ describe("Hub Component Integration", () => {
   it("renders the earned Top Five and full ranked list after a comparison", () => {
     const onBrowseAllValues = vi.fn()
     const onAddCustomValue = vi.fn()
-    const onOpenValue = vi.fn()
     const initialBattleCycle = createInitialBattleCycle("ranked-hub-seed")
     const [winnerId] = projectScheduledPair(
       initialBattleCycle.activeDeck,
@@ -379,7 +381,6 @@ describe("Hub Component Integration", () => {
         onBrowseAllValues={onBrowseAllValues}
         onAddCustomValue={onAddCustomValue}
         onOpenMenu={vi.fn()}
-        onOpenValue={onOpenValue}
         onStartBattle={vi.fn()}
       />,
     )
@@ -389,15 +390,9 @@ describe("Hub Component Integration", () => {
       screen.getByRole("heading", { name: "All Other Values" }),
     ).toBeVisible()
     expect(screen.getAllByRole("listitem")).toHaveLength(100)
+    expect(getHubPresentation(getValueDisplayName(winner))).toBeVisible()
     expect(
-      screen.getByRole("button", {
-        name: `Open ${getValueDisplayName(winner)} in All Values`,
-      }),
-    ).toBeVisible()
-    expect(
-      screen.getByRole("button", {
-        name: `Open ${getValueDisplayName(winner)} in All Values`,
-      }),
+      getHubPresentation(getValueDisplayName(winner)),
     ).toHaveAccessibleDescription("Rank 1, gold medal")
     for (const medal of ["🥇", "🥈", "🥉"]) {
       expect(screen.getAllByText(medal)).toHaveLength(5)
@@ -433,7 +428,6 @@ describe("Hub Component Integration", () => {
         onBrowseAllValues={vi.fn()}
         onAddCustomValue={vi.fn()}
         onOpenMenu={vi.fn()}
-        onOpenValue={vi.fn()}
         onStartBattle={vi.fn()}
       />,
     )
@@ -458,9 +452,9 @@ describe("Hub Component Integration", () => {
     ).toHaveLength(100)
     expect(screen.getAllByText(/^Rank \d+(, \w+ medal)?$/)).toHaveLength(100)
     const sixthValue = rankedValues[5]
-    const sixthValueButton = screen.getByRole("button", {
-      name: `Open ${getValueDisplayName(sixthValue.definition)} in All Values`,
-    })
+    const sixthValueButton = getHubPresentation(
+      getValueDisplayName(sixthValue.definition),
+    )
     expect(sixthValueButton).toHaveAccessibleDescription("Rank 6, silver medal")
     expect(within(sixthValueButton).getByText("🥈")).toBeVisible()
     expect(sixthValueButton.querySelector("[data-animal-id]")).not.toBeNull()
@@ -474,8 +468,7 @@ describe("Hub Component Integration", () => {
     expect(screen.getAllByText("🥇")).toHaveLength(5)
   })
 
-  it("renders the battle-assigned animal for a Custom Value without changing its rank or navigation", () => {
-    const onOpenValue = vi.fn()
+  it("renders the battle-assigned animal for a Custom Value without incidental navigation", () => {
     const { customValue, rankedValues } = createCustomRankedValues()
     const { container } = render(
       <Hub
@@ -486,14 +479,11 @@ describe("Hub Component Integration", () => {
         onBrowseAllValues={vi.fn()}
         onAddCustomValue={vi.fn()}
         onOpenMenu={vi.fn()}
-        onOpenValue={onOpenValue}
         onStartBattle={vi.fn()}
       />,
     )
 
-    const customValueButton = screen.getByRole("button", {
-      name: "Open 🧠 Curiosity in All Values",
-    })
+    const customValueButton = getHubPresentation("🧠 Curiosity")
     const customValueTile = customValueButton.querySelector<HTMLElement>(
       '[data-value-presentation="animal"]',
     )
@@ -514,17 +504,15 @@ describe("Hub Component Integration", () => {
     ).toHaveLength(101)
 
     fireEvent.click(customValueButton)
-    expect(onOpenValue).toHaveBeenCalledWith(
-      customValue.id,
-      `hub-value-${customValue.id}-button`,
-    )
+    expect(
+      screen.queryByRole("button", { name: /^Open .* in All Values$/ }),
+    ).toBeNull()
   })
 
-  it("routes action and row presses with stable focus target identifiers", () => {
+  it("routes explicit actions while value rows remain informational", () => {
     const onBrowseAllValues = vi.fn()
     const onAddCustomValue = vi.fn()
     const onOpenMenu = vi.fn()
-    const onOpenValue = vi.fn()
     const battleCycle = createInitialBattleCycle("action-hub-seed")
 
     render(
@@ -538,7 +526,6 @@ describe("Hub Component Integration", () => {
         onBrowseAllValues={onBrowseAllValues}
         onAddCustomValue={onAddCustomValue}
         onOpenMenu={onOpenMenu}
-        onOpenValue={onOpenValue}
         onStartBattle={vi.fn()}
       />,
     )
@@ -546,19 +533,16 @@ describe("Hub Component Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
     fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
     fireEvent.click(screen.getByRole("button", { name: "Menu" }))
-    fireEvent.click(
-      screen.getByRole("button", { name: "Open Acceptance in All Values" }),
-    )
+    fireEvent.click(getHubPresentation("Acceptance"))
 
     expect(onBrowseAllValues).toHaveBeenCalledWith(
       "hub-browse-all-values-button",
     )
     expect(onAddCustomValue).toHaveBeenCalledWith("hub-add-custom-value-button")
     expect(onOpenMenu).toHaveBeenCalledOnce()
-    expect(onOpenValue).toHaveBeenCalledWith(
-      "pvcs-2011:acceptance",
-      "hub-value-pvcs-2011:acceptance-button",
-    )
+    expect(
+      screen.queryByRole("button", { name: /^Open .* in All Values$/ }),
+    ).toBeNull()
   })
 
   it("announces a restored backup while keeping every value visible", () => {
@@ -575,7 +559,6 @@ describe("Hub Component Integration", () => {
         onBrowseAllValues={vi.fn()}
         onAddCustomValue={vi.fn()}
         onOpenMenu={vi.fn()}
-        onOpenValue={vi.fn()}
         onStartBattle={vi.fn()}
       />,
     )

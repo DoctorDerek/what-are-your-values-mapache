@@ -2,26 +2,32 @@ import {
   SEETHING_SWARM_HUB_TILE_SIZE,
   type ValueAnimalPresentation,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
+import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import { getValueDisplayName } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { useState } from "react"
 import { Pressable, View } from "react-native"
-import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
 import { useNativeSeethingSwarmAssetStatus } from "@/components/NativeSeethingSwarmAssetPreparation"
+import NativeSeethingSwarmHubAnimal from "@/components/NativeSeethingSwarmHubAnimal"
 import NativeValueLevelProgress from "@/components/NativeValueLevelProgress"
 import { Text } from "@/components/ui/text"
+import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
 import { cn } from "@/lib/utils"
 
 function NativeValueRankPresentation({
   rank,
   valuePresentation,
   shouldReduceMotion,
+  runtimeClipCatalog,
+  isAttended,
 }: {
   rank: number
   valuePresentation: ValueAnimalPresentation<number> | undefined
   shouldReduceMotion: boolean
+  runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
+  isAttended: boolean
 }) {
   const imagePath =
     valuePresentation?.kind === "animal"
@@ -78,8 +84,10 @@ function NativeValueRankPresentation({
           {valuePresentation.kind === "animal" &&
           geometry &&
           !hasImageFailed ? (
-            <NativeSeethingSwarmAnimal
-              clip={valuePresentation.clip}
+            <NativeSeethingSwarmHubAnimal
+              calmClip={valuePresentation.clip}
+              catalog={runtimeClipCatalog}
+              isAttended={isAttended}
               geometry={geometry}
               onLoadError={() => setFailedImagePath(imagePath)}
               shouldReduceMotion={shouldReduceMotion}
@@ -98,33 +106,31 @@ export default function NativeHubValueRow({
   isTopFive,
   valuePresentation,
   shouldReduceMotion,
-  onOpen,
+  runtimeClipCatalog,
 }: {
   rankedValue: RankedValue
   showRank: boolean
   isTopFive: boolean
   valuePresentation?: ValueAnimalPresentation<number>
   shouldReduceMotion: boolean
-  onOpen: () => void
+  runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
 }) {
   const { definition, progress, rank } = rankedValue
   const displayName = getValueDisplayName(definition)
   const { accessibleLabel } = getValueRankPresentation(rank)
+  const { isAttended, attentionHandlers } = useAnimalAttentionInput()
 
   return (
     <Pressable
-      accessibilityHint="Opens the complete value definition without changing your ranking."
       accessibilityLabel={
-        showRank
-          ? `${accessibleLabel}. Open ${displayName} in All Values`
-          : `Open ${displayName} in All Values`
+        showRank ? `${accessibleLabel}. ${displayName}` : displayName
       }
-      accessibilityRole="button"
+      accessible
       className={cn(
-        "mb-4 border-4 border-black p-4 shadow-[5px_5px_0px_0px_#000000] active:translate-x-[5px] active:translate-y-[5px] active:shadow-none",
+        "mb-4 border-4 border-black p-4 shadow-[5px_5px_0px_0px_#000000]",
         isTopFive ? "bg-mapache-vivid-secondary-gold" : "bg-white",
       )}
-      onPress={onOpen}
+      {...attentionHandlers}
     >
       <View className="flex-row items-center gap-3">
         {showRank ? (
@@ -132,6 +138,8 @@ export default function NativeHubValueRow({
             rank={rank}
             valuePresentation={valuePresentation}
             shouldReduceMotion={shouldReduceMotion}
+            runtimeClipCatalog={runtimeClipCatalog}
+            isAttended={isAttended}
           />
         ) : null}
         <Text

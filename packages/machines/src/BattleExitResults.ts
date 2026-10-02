@@ -40,6 +40,7 @@ export type BattleExitResults = {
 export type BattleExitResultsFrameValue = {
   readonly value: BattleExitResultsValue
   readonly rank: number
+  readonly rankLabelPlaceholder: string
   readonly stackingOrder: number
   readonly totalXp: number
   readonly levelBarPercentage: number
@@ -251,9 +252,14 @@ export function projectBattleExitResultsFrame(
     return Object.freeze({
       value,
       rank:
-        areRowPositionsSettled || elapsedMs >= BATTLE_RESULTS_REORDER_MOTION_MS
-          ? value.exitRank
-          : value.entryRank,
+        value.entryRank +
+        Math.trunc(
+          (value.exitRank - value.entryRank) *
+            (areRowPositionsSettled
+              ? 1
+              : Math.min(1, elapsedMs / BATTLE_RESULTS_REORDER_MOTION_MS)),
+        ),
+      rankLabelPlaceholder: `#${results.values.length}`,
       stackingOrder: results.values.length + 1 - value.exitRank,
       motion: projectBattleExitResultsMotion(
         value.entryRank,
