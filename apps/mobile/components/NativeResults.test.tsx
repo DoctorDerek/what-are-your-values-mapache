@@ -15,7 +15,6 @@ import {
   userEvent,
 } from "@testing-library/react-native"
 import { StyleSheet } from "react-native"
-import { getAnimatedStyle } from "react-native-reanimated"
 import NativeResults from "@/components/NativeResults"
 
 function createResults() {
@@ -32,45 +31,50 @@ function createResults() {
 }
 
 describe("Native Battle-exit Results", () => {
-  it("mounts the canonical first reward with entry XP and a bounded entrance", async () => {
-    const results = createResults()
-    await render(
-      <NativeResults
-        results={results}
-        runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
-        shouldReduceMotion={false}
-        isMenuOpen={false}
-        onOpenMenu={jest.fn()}
-        onSeeValues={jest.fn()}
-        onKeepBattling={jest.fn()}
-      />,
-    )
-    const winner = results.values[0]
-    const row = screen.getByLabelText(
-      `Rank 1, ${getValueDisplayName(winner.definition)}, Level 3, 4 total XP`,
-    )
-    expect(row).toBeOnTheScreen()
-    expect(getAnimatedStyle(row)).toMatchObject({
-      transform: [{ translateY: 8 }],
-    })
-    const cells = screen.container.queryAll(
-      (element) =>
-        StyleSheet.flatten(element.props.style)?.zIndex ===
-          results.values.length &&
-        typeof element.props.onLayout === "function" &&
-        typeof element.props.onFocusCapture === "function",
-    )
-    expect(cells.length).toBeGreaterThan(0)
-    expect(
-      cells.some(
-        (cell) =>
-          cell.queryAll(
-            (element) =>
-              element.props.accessibilityLabel === row.props.accessibilityLabel,
-          ).length > 0,
-      ),
-    ).toBe(true)
-    expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
+  it("starts in entry order before bringing the canonical reward into the virtualized roster", async () => {
+    jest.useFakeTimers()
+    try {
+      const results = createResults()
+      await render(
+        <NativeResults
+          results={results}
+          runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+          shouldReduceMotion={false}
+          isMenuOpen={false}
+          onOpenMenu={jest.fn()}
+          onSeeValues={jest.fn()}
+          onKeepBattling={jest.fn()}
+        />,
+      )
+      expect(screen.getByLabelText(/Rank 2, Acceptance/)).toBeOnTheScreen()
+      await act(async () => jest.advanceTimersByTime(50))
+      const winner = results.values[0]
+      const row = screen.getByLabelText(
+        `Rank 1, ${getValueDisplayName(winner.definition)}, Level 3, 4 total XP`,
+      )
+      expect(row).toBeOnTheScreen()
+      const cells = screen.container.queryAll(
+        (element) =>
+          StyleSheet.flatten(element.props.style)?.zIndex ===
+            results.values.length &&
+          typeof element.props.onLayout === "function" &&
+          typeof element.props.onFocusCapture === "function",
+      )
+      expect(cells.length).toBeGreaterThan(0)
+      expect(
+        cells.some(
+          (cell) =>
+            cell.queryAll(
+              (element) =>
+                element.props.accessibilityLabel ===
+                row.props.accessibilityLabel,
+            ).length > 0,
+        ),
+      ).toBe(true)
+      expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
+    } finally {
+      jest.useRealTimers()
+    }
   })
 
   it("fills through intermediate Levels for 3.7 seconds without blocking actions", async () => {
@@ -106,7 +110,7 @@ describe("Native Battle-exit Results", () => {
     }
   })
 
-  it.each(["scrollBeginDrag", "touchStart", "focus"])(
+  it.each(["scrollBeginDrag", "focus"])(
     "keeps the XP clock running after %s",
     async (interaction) => {
       jest.useFakeTimers()

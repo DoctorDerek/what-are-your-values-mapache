@@ -66,24 +66,24 @@ describe("Battle-exit Results", () => {
     expect(start.values[0]?.value.definition.id).toBe(valueId)
     expect(start.values[0]?.value.entryRank).toBe(75)
     expect(start.values[0]?.totalXp).toBe(0)
-    expect(start.values[0]?.positionOffsetY).toBe(8)
-    expect(midway.values[0]?.positionOffsetY).toBe(4)
-    expect(settled.values[0]?.positionOffsetY).toBe(0)
+    expect(start.values[0]?.motion.travel).toBe(0)
+    expect(start.values[0]?.rank).toBe(75)
+    expect(midway.values[0]?.motion.travel).toBeGreaterThan(0.5)
+    expect(midway.values[0]?.motion.lateralPercentage).toBe(5)
+    expect(settled.values[0]?.motion.travel).toBe(1)
+    expect(settled.values[0]?.rank).toBe(1)
     expect(settled.values[0]?.totalXp).toBe(midway.values[0]?.totalXp)
     const sortComplete = projectBattleExitResultsFrame(results, 3_700)
-    expect(
-      sortComplete.values.every(({ positionOffsetY }) => positionOffsetY === 0),
-    ).toBe(true)
+    expect(sortComplete.values.every(({ motion }) => motion.travel === 1)).toBe(
+      true,
+    )
     expect(sortComplete.values[0]?.totalXp).toBeLessThan(12)
-    expect(
-      start.values.every(
-        ({ positionOffsetY }) => Math.abs(positionOffsetY) <= 8,
-      ),
-    ).toBe(true)
     expect(
       start.values
         .filter(({ value }) => value.entryRank === value.exitRank)
-        .every(({ positionOffsetY }) => positionOffsetY === 0),
+        .every(
+          ({ motion }) => motion.lateralPercentage === 0 && motion.scale === 1,
+        ),
     ).toBe(true)
   })
 

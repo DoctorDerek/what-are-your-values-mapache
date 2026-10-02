@@ -24,7 +24,7 @@ function createResults() {
 }
 
 describe("Battle-exit Results presentation", () => {
-  it("mounts the promoted reward in the first visible slot without a decorative focus stop", () => {
+  it("keeps canonical accessible order while the visual reward starts in its before slot", () => {
     const results = createResults()
     render(
       <Results
@@ -123,7 +123,7 @@ describe("Battle-exit Results presentation", () => {
     expect(onKeepBattling).toHaveBeenCalledOnce()
   })
 
-  it.each(["keyboard", "wheel", "touch", "focus"])(
+  it.each(["keyboard", "wheel", "scroll", "focus"])(
     "settles row positions for %s while value and Profile fills continue",
     (interaction) => {
       vi.useFakeTimers()
@@ -150,8 +150,9 @@ describe("Battle-exit Results presentation", () => {
           .getAttribute("aria-valuenow")
         if (interaction === "keyboard")
           fireEvent.keyDown(window, { key: "Tab" })
-        else if (interaction === "wheel") fireEvent.wheel(roster)
-        else if (interaction === "touch") fireEvent.touchStart(roster)
+        else if (interaction === "wheel") fireEvent.wheel(roster.parentElement!)
+        else if (interaction === "scroll")
+          fireEvent.scroll(roster.parentElement!)
         else fireEvent.focus(roster)
         expect(within(profile).getByRole("progressbar")).toHaveAttribute(
           "aria-valuenow",
@@ -159,6 +160,7 @@ describe("Battle-exit Results presentation", () => {
         )
         expect(profile).toHaveTextContent("Profile Level 1")
         const firstRow = within(roster).getAllByRole("listitem")[0]
+        expect(firstRow).toHaveAttribute("data-results-settled", "true")
         expect(firstRow).toHaveTextContent(
           `Rank 1, ${getValueDisplayName(results.values[0].definition)}`,
         )
@@ -185,4 +187,24 @@ describe("Battle-exit Results presentation", () => {
       }
     },
   )
+
+  it("does not settle the deck merely because a touch starts on an animal", () => {
+    render(
+      <Results
+        results={createResults()}
+        runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+        shouldReduceMotion={false}
+        isMenuOpen={false}
+        onOpenMenu={vi.fn()}
+        onSeeValues={vi.fn()}
+        onKeepBattling={vi.fn()}
+      />,
+    )
+    const roster = screen.getByRole("list", { name: "Your value results" })
+    const row = within(roster).getAllByRole("listitem")[0]
+    fireEvent.touchStart(row)
+    expect(row).not.toHaveAttribute("data-results-settled")
+    fireEvent.scroll(roster.parentElement!)
+    expect(row).toHaveAttribute("data-results-settled", "true")
+  })
 })
