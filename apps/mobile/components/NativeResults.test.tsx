@@ -94,7 +94,17 @@ describe("Native Battle-exit Results", () => {
       )
 
       expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
-      await act(async () => jest.advanceTimersByTime(1_850))
+      await act(async () => jest.advanceTimersByTime(900))
+      const profile = screen.getByLabelText(/Profile Level 3, Profile XP 4/)
+      const profileFill = profile.queryAll(
+        (element) =>
+          typeof StyleSheet.flatten(element.props.style)?.flex === "number",
+      )[0]!
+      expect(StyleSheet.flatten(profileFill.props.style)?.flex).toBeCloseTo(
+        73.630387,
+      )
+      expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
+      await act(async () => jest.advanceTimersByTime(950))
       expect(screen.getByText("Profile Level 2")).toBeOnTheScreen()
       await act(async () => jest.advanceTimersByTime(1_800))
       expect(screen.getByText("Profile Level 2")).toBeOnTheScreen()
