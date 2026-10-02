@@ -552,7 +552,6 @@ function NativeGameClientContent() {
             send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
           }
           onOpenMenu={() => setIsProductMenuOpen(true)}
-          onOpenValue={(valueId) => openAllValues({ valueId })}
           isBattlePending={isBattleRequested}
           onStartBattle={handleStartBattle}
         />
