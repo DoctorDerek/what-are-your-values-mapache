@@ -1,10 +1,10 @@
+import { getExactLevelProgressFromXP } from "@game/utils/src/LevelMath"
+import { describe, expect, it } from "vitest"
 import {
   createBattleExitResults,
   projectBattleExitResultsFrame,
 } from "./BattleExitResults"
 import { createInitialBattleProfile } from "./BattleProfile"
-import { getExactLevelProgressFromXP } from "@game/utils/src/LevelMath"
-import { describe, expect, it } from "vitest"
 
 function createProgression(entryXp: number, exitXp: number) {
   const initial = createInitialBattleProfile("results-easing")
@@ -81,10 +81,7 @@ describe("Results quadratic Level-span progression", () => {
     const backward = createProgression(16, 12).results
     for (const results of [forward, backward]) {
       expect(results.profilePresentationDurationMs).toBe(3_700)
-      const firstPartialHalf = projectBattleExitResultsFrame(
-        results,
-        3_700 / 8,
-      )
+      const firstPartialHalf = projectBattleExitResultsFrame(results, 3_700 / 8)
       expect(firstPartialHalf.profileLevelBarPercentage).toBeCloseTo(
         results === forward ? 87.5 : 12.5,
       )
