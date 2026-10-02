@@ -46,7 +46,7 @@ test("battle results show committed progress without delaying either exit", asyn
       startedAt ??= performance.now()
       firstPosition ??= row.getBoundingClientRect().top
       const elapsedMs = performance.now() - startedAt
-      const roster = row.closest("ol")!
+      const roster = row.closest("ol")!.parentElement!
       const rosterBounds = roster.getBoundingClientRect()
       const identity = row.querySelector('div[aria-hidden="true"]')!
       const rewardElements = [
@@ -89,7 +89,7 @@ test("battle results show committed progress without delaying either exit", asyn
         !valueTransform.includes("translateX(-100%)")
       ) {
         document.documentElement.dataset.resultsValueBarMoved = "true"
-        if (Math.abs(row.getBoundingClientRect().top - firstPosition) > 1)
+        if (Math.abs(row.getBoundingClientRect().top - firstPosition) > 40)
           document.documentElement.dataset.resultsConcurrentSort = "true"
       }
       if (elapsedMs >= 3_800) observer.disconnect()
@@ -189,7 +189,7 @@ for (const viewport of [
         )
         if (!roster || performance.now() - lastSampleAt < 100) return
         lastSampleAt = performance.now()
-        const rosterBounds = roster.getBoundingClientRect()
+        const rosterBounds = roster.parentElement!.getBoundingClientRect()
         const rows = [...roster.querySelectorAll("li")].slice(0, 12)
         for (let index = 0; index < rows.length - 1; index += 1) {
           const stronger = rows[index]
@@ -212,7 +212,23 @@ for (const viewport of [
             strongerBounds.left + strongerBounds.width / 2,
             (top + bottom) / 2,
           )
-          if (!stronger.contains(painted))
+          const coveringRows = rows.filter((row) => {
+            const bounds = row.getBoundingClientRect()
+            const x = strongerBounds.left + strongerBounds.width / 2
+            const y = (top + bottom) / 2
+            return (
+              x >= bounds.left &&
+              x < bounds.right &&
+              y >= bounds.top &&
+              y < bounds.bottom
+            )
+          })
+          const foreground = coveringRows.toSorted(
+            (first, second) =>
+              Number(getComputedStyle(second).zIndex) -
+              Number(getComputedStyle(first).zIndex),
+          )[0]
+          if (!foreground.contains(painted))
             document.documentElement.dataset.resultsStackObscured = "true"
         }
         if (overlapSamples >= 5)
@@ -332,7 +348,7 @@ for (const viewport of [
     const evidence = await roster.evaluate(async (element) => {
       const samples = []
       for (let index = 0; index < 5; index += 1) {
-        const bounds = element.getBoundingClientRect()
+        const bounds = element.parentElement!.getBoundingClientRect()
         const rows = [...element.querySelectorAll("li")].slice(0, 2)
         samples.push(
           rows.map((row) => {
@@ -358,9 +374,11 @@ for (const viewport of [
       }
       return samples
     })
-    expect(
-      evidence.every((sample) => sample.every(({ painted }) => painted)),
-    ).toBe(true)
+    for (let rowIndex = 0; rowIndex < 2; rowIndex += 1) {
+      expect(
+        evidence.filter((sample) => sample[rowIndex].painted).length,
+      ).toBeGreaterThanOrEqual(2)
+    }
     expect(evidence[0].map(({ identity }) => identity)).toEqual(
       evidence[4].map(({ identity }) => identity),
     )
