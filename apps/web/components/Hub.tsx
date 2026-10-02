@@ -12,7 +12,6 @@ import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwa
 import {
   getValueDisplayDefinition,
   getValueDisplayName,
-  type ValueId,
 } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
@@ -32,7 +31,6 @@ function ValueRow({
   hasComparisons,
   valuePresentation,
   shouldReduceMotion,
-  onOpenValue,
   showDivider,
   catalog,
 }: {
@@ -40,7 +38,6 @@ function ValueRow({
   hasComparisons: boolean
   valuePresentation?: ValueAnimalPresentation<StaticImageData>
   shouldReduceMotion: boolean
-  onOpenValue: (valueId: ValueId, focusTargetId: string) => void
   showDivider: boolean
   catalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
 }) {
@@ -61,13 +58,10 @@ function ValueRow({
           All Other Values
         </h3>
       ) : null}
-      <button
-        id={`${rowId}-button`}
-        type="button"
-        onClick={(event) => onOpenValue(definition.id, event.currentTarget.id)}
+      <div
+        id={`${rowId}-presentation`}
         {...attentionHandlers}
-        className="hover:bg-mapache-vivid-primary-cyan/10 flex w-full min-w-0 cursor-pointer items-center gap-2 p-2 text-left focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-black xl:gap-3"
-        aria-label={`Open ${displayName} in All Values`}
+        className="hover:bg-mapache-vivid-primary-cyan/10 flex w-full min-w-0 items-center gap-2 p-2 text-left focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-black xl:gap-3"
         aria-describedby={hasComparisons ? `${rowId}-rank` : undefined}
       >
         <ValueAnimalPresentationTile
@@ -94,7 +88,7 @@ function ValueRow({
             {getValueDisplayDefinition(definition)}
           </span>
         </span>
-      </button>
+      </div>
     </li>
   )
 }
@@ -174,7 +168,6 @@ export default function Hub({
   onBrowseAllValues,
   onAddCustomValue,
   onOpenMenu,
-  onOpenValue,
   onStartBattle,
 }: {
   customValueInvitation?: {
@@ -196,7 +189,6 @@ export default function Hub({
   onBrowseAllValues: (focusTargetId: string) => void
   onAddCustomValue: (focusTargetId: string) => void
   onOpenMenu: () => void
-  onOpenValue: (valueId: ValueId, focusTargetId: string) => void
   onStartBattle: () => void
 }) {
   const { hasComparisons, visibleValues } = projectHubValues(rankedValues)
@@ -319,7 +311,6 @@ export default function Hub({
                   runtimeClipCatalog,
                 )}
                 shouldReduceMotion={shouldReduceMotion}
-                onOpenValue={onOpenValue}
                 showDivider={hasComparisons && index === 5}
               />
             ))}

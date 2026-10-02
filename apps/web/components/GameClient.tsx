@@ -774,9 +774,6 @@ function WritableGameClient({
           }
           onAddCustomValue={() => handleAddCustomValue()}
           onOpenMenu={handleProductMenuOpen}
-          onOpenValue={(valueId, focusTargetId) =>
-            openAllValues({ focusTargetId, valueId })
-          }
           isBattlePending={isBattleRequested}
           onStartBattle={handleStartBattle}
         />
