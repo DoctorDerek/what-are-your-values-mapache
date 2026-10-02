@@ -10,6 +10,12 @@ function smoothTravel(progress: number) {
   return progress * progress * (3 - 2 * progress)
 }
 
+export function projectResultsQuadraticEaseOut(
+  normalizedElapsedTime: number,
+): number {
+  return 1 - (1 - normalizedElapsedTime) ** 2
+}
+
 export function projectBattleExitResultsMotion(
   entryRank: number,
   exitRank: number,
@@ -23,7 +29,11 @@ export function projectBattleExitResultsMotion(
   const hasMoved = entryRank !== exitRank
   const lift = phase === 1 ? 0 : Math.sin(Math.PI * phase)
   const travel = smoothTravel(
-    isPromoted ? (exitRank === 1 ? 1 - (1 - phase) ** 2 : phase ** 1.3) : phase,
+    isPromoted
+      ? exitRank === 1
+        ? projectResultsQuadraticEaseOut(phase)
+        : phase ** 1.3
+      : phase,
   )
 
   return Object.freeze({
