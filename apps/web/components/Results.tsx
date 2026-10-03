@@ -11,6 +11,11 @@ import {
   type BattleExitResults,
   type BattleExitResultsFrameValue,
 } from "@game/machines/src/BattleExitResults"
+import {
+  getResultsSaveConfirmationRemainingMs,
+  RESULTS_SAVE_CONFIRMATION_COPY,
+  RESULTS_SAVE_CONFIRMATION_FADE_MS,
+} from "@game/machines/src/ResultsSaveStatus"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import type { StaticImageData } from "next/image"
 import {
@@ -138,6 +143,7 @@ function ResultsValueRow({
 
 export default function Results({
   results,
+  openedAt = null,
   runtimeClipCatalog,
   shouldReduceMotion,
   isMenuOpen,
@@ -146,6 +152,7 @@ export default function Results({
   onKeepBattling,
 }: {
   results: BattleExitResults
+  openedAt?: string | null
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   shouldReduceMotion: boolean
   isMenuOpen: boolean
@@ -153,6 +160,16 @@ export default function Results({
   onSeeValues: () => void
   onKeepBattling: () => void
 }) {
+  const [isSaveConfirmationVisible, setIsSaveConfirmationVisible] = useState(
+    () => getResultsSaveConfirmationRemainingMs(openedAt, Date.now()) > 0,
+  )
+  useEffect(() => {
+    const remainingMs = getResultsSaveConfirmationRemainingMs(openedAt, Date.now())
+    setIsSaveConfirmationVisible(remainingMs > 0)
+    if (remainingMs === 0) return
+    const timeout = window.setTimeout(() => setIsSaveConfirmationVisible(false), remainingMs)
+    return () => window.clearTimeout(timeout)
+  }, [openedAt])
   const [presentationTime, setPresentationTime] = useState(() => ({
     elapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
     previousElapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
@@ -245,9 +262,19 @@ export default function Results({
     >
       <div className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-2">
         <header className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-mapache-vivid-primary-cyan text-2xl font-black">
-            {RESULTS_COPY.heading}
-          </h1>
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2">
+            <h1 className="text-mapache-vivid-primary-cyan text-2xl font-black">
+              {RESULTS_COPY.heading}
+            </h1>
+            <span
+              role="status"
+              aria-hidden={!isSaveConfirmationVisible}
+              className="text-mapache-vivid-secondary-green pointer-events-none text-sm font-semibold transition-opacity motion-reduce:transition-none"
+              style={{ opacity: isSaveConfirmationVisible ? 1 : 0, transitionDuration: `${shouldReduceMotion ? 0 : RESULTS_SAVE_CONFIRMATION_FADE_MS}ms` }}
+            >
+              <span aria-hidden="true">✓ </span>{RESULTS_SAVE_CONFIRMATION_COPY}
+            </span>
+          </div>
           <Button size="sm" variant="secondary" onClick={onOpenMenu}>
             {PRODUCT_MENU_COPY.openAction}
           </Button>

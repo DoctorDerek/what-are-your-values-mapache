@@ -12,10 +12,16 @@ import {
   type BattleExitResults,
   type BattleExitResultsFrameValue,
 } from "@game/machines/src/BattleExitResults"
+import {
+  getResultsSaveConfirmationRemainingMs,
+  RESULTS_SAVE_CONFIRMATION_COPY,
+  RESULTS_SAVE_CONFIRMATION_FADE_MS,
+} from "@game/machines/src/ResultsSaveStatus"
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { BackHandler, FlatList, Pressable, View } from "react-native"
+import { FlatList, Pressable, View } from "react-native"
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeResultsValueCell from "@/components/NativeResultsValueCell"
 import NativeSeethingSwarmHubAnimal from "@/components/NativeSeethingSwarmHubAnimal"
@@ -108,6 +114,7 @@ function NativeResultsValueRow({
 
 export default function NativeResults({
   results,
+  openedAt = null,
   runtimeClipCatalog,
   shouldReduceMotion,
   isMenuOpen,
@@ -116,6 +123,7 @@ export default function NativeResults({
   onKeepBattling,
 }: {
   results: BattleExitResults
+  openedAt?: string | null
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
   shouldReduceMotion: boolean
   isMenuOpen: boolean
@@ -123,6 +131,22 @@ export default function NativeResults({
   onSeeValues: () => void
   onKeepBattling: () => void
 }) {
+  const [isSaveConfirmationVisible, setIsSaveConfirmationVisible] = useState(
+    () => getResultsSaveConfirmationRemainingMs(openedAt, Date.now()) > 0,
+  )
+  const saveConfirmationOpacity = useSharedValue(isSaveConfirmationVisible ? 1 : 0)
+  const saveConfirmationStyle = useAnimatedStyle(() => ({ opacity: saveConfirmationOpacity.value }))
+  useEffect(() => {
+    const remainingMs = getResultsSaveConfirmationRemainingMs(openedAt, Date.now())
+    setIsSaveConfirmationVisible(remainingMs > 0)
+    saveConfirmationOpacity.value = remainingMs > 0 ? 1 : 0
+    if (remainingMs === 0) return
+    const timeout = setTimeout(() => {
+      setIsSaveConfirmationVisible(false)
+      saveConfirmationOpacity.value = shouldReduceMotion ? 0 : withTiming(0, { duration: RESULTS_SAVE_CONFIRMATION_FADE_MS })
+    }, remainingMs)
+    return () => clearTimeout(timeout)
+  }, [openedAt, saveConfirmationOpacity, shouldReduceMotion])
   const [presentationTime, setPresentationTime] = useState(() => ({
     elapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
     previousElapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
@@ -160,18 +184,6 @@ export default function NativeResults({
     results.presentationDurationMs,
     shouldReduceMotion,
   ])
-
-  useEffect(() => {
-    const subscription = BackHandler.addEventListener(
-      "hardwareBackPress",
-      () => {
-        if (isMenuOpen) return false
-        onSeeValues()
-        return true
-      },
-    )
-    return () => subscription.remove()
-  }, [isMenuOpen, onSeeValues])
 
   const frame = useMemo(
     () =>
@@ -220,12 +232,17 @@ export default function NativeResults({
   return (
     <MapacheScreen className="p-3">
       <View className="flex-row flex-wrap items-center justify-between gap-2 pb-2">
+        <View className="min-w-0 flex-1 flex-row flex-wrap items-center gap-x-2">
         <Text
           accessibilityRole="header"
           className="text-mapache-vivid-primary-cyan text-2xl font-black"
         >
           {RESULTS_COPY.heading}
         </Text>
+        <Animated.View style={saveConfirmationStyle} pointerEvents="none" accessibilityElementsHidden={!isSaveConfirmationVisible} importantForAccessibility={isSaveConfirmationVisible ? "auto" : "no-hide-descendants"}>
+          <Text accessibilityLiveRegion="polite" className="text-mapache-vivid-secondary-green text-sm font-semibold">✓ {RESULTS_SAVE_CONFIRMATION_COPY}</Text>
+        </Animated.View>
+        </View>
         <Button size="compact" variant="secondary" onPress={onOpenMenu}>
           <Text>{PRODUCT_MENU_COPY.openAction}</Text>
         </Button>
