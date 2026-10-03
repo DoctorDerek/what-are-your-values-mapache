@@ -35,6 +35,13 @@ export const playerDataRecoveryCopy = Object.freeze({
     title: "Progress Cannot Be Saved Reliably",
     body: "WAYVM cannot currently write to device storage. Keep this screen open while you export a backup or free storage. Continuing without a reliable save could lose new progress.",
     currentBackupReady: "Your current data backup is ready.",
+    pendingBackupReady: "Your pending player data backup is ready.",
+  } as const),
+  pendingSave: Object.freeze({
+    title: "Local save error",
+    body: "Your pending change is retained, but it has not been saved. Keep this screen open while you retry or export a backup.",
+    retry: "Retry save",
+    export: "Export pending data",
   } as const),
   actions: Object.freeze({
     restoreLastKnownGoodSave: "Restore Last Known-Good Save",
