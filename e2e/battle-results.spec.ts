@@ -6,6 +6,82 @@ test.use({
   reducedMotion: "no-preference",
 })
 
+test("Saved locally fades without moving the Results composition", async ({
+  page,
+}) => {
+  await page.goto("/")
+  await page.getByRole("button", { name: "Start" }).click()
+  await page.getByRole("button", { name: "Battle", exact: true }).click()
+  await page
+    .getByRole("button", { name: /^Choose / })
+    .first()
+    .click()
+  await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled()
+  await page.getByRole("button", { name: /Stop/ }).click()
+  const confirmation = page
+    .getByRole("status")
+    .filter({ hasText: "Saved locally" })
+  await expect(confirmation).toBeVisible()
+  const roster = page.getByRole("list", { name: "Your value results" })
+  const before = await roster.boundingBox()
+  await expect(confirmation).not.toBeVisible({ timeout: 7000 })
+  expect(await roster.boundingBox()).toEqual(before)
+  await page.getByRole("button", { name: "Menu", exact: true }).click()
+  await page.getByRole("button", { name: "Settings", exact: true }).click()
+  await page.getByRole("button", { name: "Back", exact: true }).click()
+  await expect(
+    page.getByRole("heading", { name: "Results", exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole("status").filter({ hasText: "Saved locally" }),
+  ).toHaveCount(0)
+})
+
+test("browser Back closes actual parents, preserves drafts and permits Hub departure", async ({
+  page,
+}) => {
+  await page.goto("/robots.txt")
+  await page.goto("/")
+  await page.getByRole("button", { name: "Start" }).click()
+  await page.getByRole("button", { name: "Battle", exact: true }).waitFor()
+  await expect
+    .poll(() =>
+      page.evaluate(() => Boolean(history.state?.wayvmSemanticBackBoundary)),
+    )
+    .toBe(false)
+  await page
+    .getByRole("button", { name: "Browse All Values", exact: true })
+    .click()
+  await page.evaluate(() => history.back())
+  await expect(
+    page.getByRole("heading", { name: "Your Values", exact: true }),
+  ).toBeVisible()
+  await page
+    .getByRole("button", { name: "Add Custom Value", exact: true })
+    .click()
+  await page.getByLabel("Value name", { exact: true }).fill("Keep my draft")
+  await page.evaluate(() => history.back())
+  await expect(page.getByLabel("Value name", { exact: true })).toHaveValue(
+    "Keep my draft",
+  )
+  await page
+    .getByLabel("Definition", { exact: true })
+    .fill("to retain my considered choices")
+  await page.getByRole("button", { name: "Save", exact: true }).click()
+  await expect(
+    page.getByText("Your Custom Values are saved and ready to battle.", {
+      exact: true,
+    }),
+  ).toBeVisible()
+  await expect
+    .poll(() =>
+      page.evaluate(() => Boolean(history.state?.wayvmSemanticBackBoundary)),
+    )
+    .toBe(false)
+  await page.goBack()
+  await expect(page).toHaveURL(/\/robots\.txt$/)
+})
+
 test("battle results show committed progress without delaying either exit", async ({
   page,
 }) => {
