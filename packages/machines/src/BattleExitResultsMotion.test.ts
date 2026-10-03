@@ -8,8 +8,8 @@ describe("Results lift and insert", () => {
   it("lifts promoted and displaced cards in opposite directions while traveling", () => {
     const promoted = projectBattleExitResultsMotion(75, 1, 1_850, false)
     const displaced = projectBattleExitResultsMotion(1, 3, 1_850, false)
-    expect(promoted.travel).toBe(0.84375)
-    expect(displaced.travel).toBe(0.5)
+    expect(promoted.travel).toBe(0.75)
+    expect(displaced.travel).toBe(0.75)
     expect(promoted.lateralPercentage).toBe(5)
     expect(displaced.lateralPercentage).toBe(-5)
     expect(promoted.scale).toBe(0.955)
@@ -33,7 +33,7 @@ describe("Results lift and insert", () => {
       scale: 1,
     })
     expect(projectBattleExitResultsMotion(2, 2, 1_850, false)).toEqual({
-      travel: 0.5,
+      travel: 0.75,
       lateralPercentage: 0,
       scale: 1,
     })

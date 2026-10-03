@@ -21,6 +21,7 @@ import {
 import { createInMemoryDurableStore } from "./InMemoryDurableStore"
 import { createInitialPlayerData } from "./PlayerData"
 import {
+  createPendingBattleProfileExportActor,
   createWayvmExportActor,
   prepareWayvmImportActor,
 } from "./PlayerDataPortabilityActors"
@@ -32,6 +33,7 @@ import {
 } from "./PlayerDataResetActors"
 import { createPlayerSettings } from "./PlayerSettings"
 import { rootMachine } from "./RootMachine"
+import { projectRootBackDisposition } from "./RootNavigation"
 import {
   createWayvmExport,
   decodeWayvmExport,
@@ -39,6 +41,37 @@ import {
 } from "./WayvmExport"
 
 const TEST_TIMESTAMP = "2026-07-21T00:00:00.000Z"
+
+describe("Semantic Back through the root navigation owner", () => {
+  it("blocks Introduction, allows root departure and restores the actual secondary parent", async () => {
+    const { actor } = await bootRootActor({ skipIntroduction: true })
+    expect(projectRootBackDisposition(actor.getSnapshot())).toEqual({
+      kind: "blocked",
+    })
+    actor.send({ type: "INTRODUCTION.COMPLETED" })
+    await waitFor(actor, (snapshot) => snapshot.matches("Hub"))
+    expect(projectRootBackDisposition(actor.getSnapshot())).toEqual({
+      kind: "root",
+    })
+    actor.send({ type: "ALL_VALUES.OPEN_REQUESTED" })
+    actor.send({ type: "SETTINGS.OPEN_REQUESTED" })
+    const settingsBack = projectRootBackDisposition(actor.getSnapshot())
+    expect(settingsBack).toEqual({
+      kind: "event",
+      event: { type: "SETTINGS.CLOSE_REQUESTED" },
+    })
+    if (settingsBack.kind !== "event")
+      throw new Error("Expected Settings parent")
+    actor.send(settingsBack.event)
+    expect(actor.getSnapshot().matches("AllValues")).toBe(true)
+    const valuesBack = projectRootBackDisposition(actor.getSnapshot())
+    if (valuesBack.kind !== "event")
+      throw new Error("Expected All Values parent")
+    actor.send(valuesBack.event)
+    expect(actor.getSnapshot().matches("Hub")).toBe(true)
+    actor.stop()
+  })
+})
 
 describe("Hub atomic Custom Value batches", () => {
   const drafts = [
@@ -2128,7 +2161,7 @@ describe("Root Machine", () => {
     expect(snapshot.context.persistenceIssue).toBe("Battle commit failed")
     expect(snapshot.context.persistenceFailureOrigin).toBe("crucible")
     expect(snapshot.context.playerData?.profile).toBe(priorProfile)
-    expect(snapshot.context.pendingBattleProfileCommit).toBeNull()
+    expect(snapshot.context.pendingBattleProfileCommit).not.toBeNull()
 
     actor.send({ type: "STORAGE_RECOVERY.EXPORT_REQUESTED" })
     const exportedSnapshot = await waitFor(
@@ -2137,21 +2170,23 @@ describe("Root Machine", () => {
         candidate.matches({ PersistenceFailure: "Reviewing" }) &&
         candidate.context.preparedDownload !== null,
     )
-    await expect(
-      decodeWayvmExport(
-        exportedSnapshot.context.preparedDownload?.serialized ?? "",
-      ),
-    ).resolves.toMatchObject({
-      playerData: { profile: { scheduler: priorProfile.scheduler } },
-    })
+    const pendingBackup = await decodeWayvmExport(
+      exportedSnapshot.context.preparedDownload?.serialized ?? "",
+    )
+    expect(
+      pendingBackup.playerData.profile.progressById.get(winnerId)?.totalXp,
+    ).toBe(4)
+    expect(
+      pendingBackup.playerData.achievements.unlocks.map(({ id }) => id),
+    ).toContain("battle.first")
     actor.send({ type: "RECOVERY.EXPORT_CONSUMED" })
     actor.send({ type: "STORAGE_RECOVERY.RETURN_REQUESTED" })
 
-    expect(actor.getSnapshot().matches("Hub")).toBe(true)
+    expect(actor.getSnapshot().matches("PersistenceFailure")).toBe(true)
     expect(actor.getSnapshot().context.playerData?.profile).toBe(priorProfile)
   })
 
-  it("returns a failed Custom Value write to browsing without replacing the durable profile", async () => {
+  it("retains a failed Custom Value change and retries it without replacing the accepted profile", async () => {
     const memoryStore = createInMemoryDurableStore()
     let shouldFail = false
     const durableStore = Object.freeze({
@@ -2180,21 +2215,17 @@ describe("Root Machine", () => {
     const snapshot = await waitFor(
       actor,
       (candidate) =>
-        candidate.matches({ AllValues: "Browsing" }) &&
+        candidate.matches({ PersistenceFailure: "Reviewing" }) &&
         candidate.context.persistenceIssue === "Custom Value commit failed",
     )
     expect(snapshot.context.persistenceIssue).toBe("Custom Value commit failed")
     expect(
       snapshot.context.playerData?.profile?.activeDeck.customValues,
     ).toEqual([])
-    expect(snapshot.context.pendingBattleProfileCommit).toBeNull()
+    expect(snapshot.context.pendingBattleProfileCommit).not.toBeNull()
 
     shouldFail = false
-    actor.send({
-      type: "ALL_VALUES.ADD_REQUESTED",
-      name: "Ingenuity",
-      definition: "The disciplined practice of creating new solutions.",
-    })
+    actor.send({ type: "STORAGE_RECOVERY.RETRY_REQUESTED" })
 
     const retriedSnapshot = await waitFor(
       actor,
@@ -3263,7 +3294,7 @@ describe("Root Machine", () => {
     await expect(durableStore.readAll()).resolves.toEqual(entriesBeforeAttempt)
   })
 
-  it("returns a failed battle write to the unchanged pair so the player can retry the choice", async () => {
+  it("retries the held battle choice once and ignores a stale repeated selection", async () => {
     const memoryStore = createInMemoryDurableStore()
     let shouldFail = false
     const durableStore = Object.freeze({
@@ -3309,7 +3340,10 @@ describe("Root Machine", () => {
     actor.send({ type: "STORAGE_RECOVERY.RETRY_REQUESTED" })
     const retrySnapshot = await waitForReadyCrucible(actor)
 
-    expect(retrySnapshot.context.playerData?.profile).toBe(priorProfile)
+    expect(
+      retrySnapshot.context.playerData?.profile.progressById.get(winnerId)
+        ?.totalXp,
+    ).toBe(4)
     expect(
       projectBattlePair(priorProfile.activeDeck, priorScheduler),
     ).toContain(winnerId)
@@ -3683,9 +3717,9 @@ describe("Root Machine", () => {
     }) satisfies DurableStoreAdapter
     const failingWayvmExportActor = fromPromise(async () => {
       throw new Error("Current backup export failed")
-    }) as typeof createWayvmExportActor
+    }) as typeof createPendingBattleProfileExportActor
     const rootLogic = rootMachine.provide({
-      actors: { createWayvmExport: failingWayvmExportActor },
+      actors: { createPendingBattleProfileExport: failingWayvmExportActor },
     })
     const { actor } = await bootRootActor({
       durableStore,
