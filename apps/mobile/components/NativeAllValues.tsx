@@ -32,6 +32,7 @@ export default function NativeAllValues({
   openCustomValueBuilder = false,
   persistenceIssue = null,
   rankedValues,
+  onNavigationBlockedChange,
 }: {
   readonly initialValueId?: ValueId | null
   readonly isPersistencePending?: boolean
@@ -47,6 +48,7 @@ export default function NativeAllValues({
   readonly openCustomValueBuilder?: boolean
   readonly persistenceIssue?: string | null
   readonly rankedValues: readonly RankedValue[]
+  readonly onNavigationBlockedChange?: (isBlocked: boolean) => void
 }) {
   const listRef = useRef<FlatList<RankedValue>>(null)
   const [searchQuery, setSearchQuery] = useState("")
@@ -71,6 +73,11 @@ export default function NativeAllValues({
     () => projectAllValues({ rankedValues, searchQuery }),
     [rankedValues, searchQuery],
   )
+
+  useEffect(() => {
+    onNavigationBlockedChange?.(isNavigationBlocked)
+    return () => onNavigationBlockedChange?.(false)
+  }, [isNavigationBlocked, onNavigationBlockedChange])
 
   useEffect(() => {
     if (!highlightedValueId) return

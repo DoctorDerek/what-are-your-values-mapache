@@ -36,6 +36,7 @@ import {
   resolveShouldReduceMotion,
 } from "@game/machines/src/PlayerSettingsPresentation"
 import { rootMachine } from "@game/machines/src/RootMachine"
+import { projectRootBackDisposition } from "@game/machines/src/RootNavigation"
 import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPreparation"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { useMachine } from "@xstate/react"
@@ -57,6 +58,7 @@ import {
   readPlayerDataFile,
 } from "@/lib/PlayerDataFiles"
 import useWebExclusiveWriterLease from "@/lib/useWebExclusiveWriterLease"
+import useWebSemanticBack from "@/lib/useWebSemanticBack"
 import packageMetadata from "@/package.json"
 import AchievementBanner from "./AchievementBanner"
 import Achievements from "./Achievements"
@@ -225,6 +227,29 @@ function WritableGameClient({
   const [isBattleRequested, setIsBattleRequested] = useState(false)
   const [isCustomValueDraftActive, setIsCustomValueDraftActive] =
     useState(false)
+  const [isAllValuesNavigationBlocked, setIsAllValuesNavigationBlocked] = useState(false)
+  const backDisposition = projectRootBackDisposition(state)
+  const hasSemanticParent = backDisposition.kind !== "root" || isProductMenuOpen || isControlsOpen || activeInformationPanelId !== null || isCustomValueDraftActive
+  useWebSemanticBack({
+    hasParent: hasSemanticParent,
+    onBack: () => {
+      if (activeInformationPanelId !== null) {
+        setActiveInformationPanelId(null)
+        return true
+      }
+      if (isControlsOpen) {
+        setIsControlsOpen(false)
+        return true
+      }
+      if (isProductMenuOpen) {
+        setIsProductMenuOpen(false)
+        return true
+      }
+      if (isCustomValueDraftActive || isAllValuesNavigationBlocked || isReadingImportFile || isReadingRecoveryImportFile) return true
+      if (backDisposition.kind === "event") send(backDisposition.event)
+      return backDisposition.kind !== "root"
+    },
+  })
   const isHubReady = state.matches("Hub")
   const canAwaitBattle =
     isHubReady &&
@@ -628,12 +653,12 @@ function WritableGameClient({
       state.context.persistenceFailureOrigin !== "loading"
     const canReturnWithoutNewChanges =
       state.context.persistenceFailureOrigin === "initialization" ||
-      state.context.persistenceFailureOrigin === "crucible" ||
       state.context.persistenceFailureOrigin === "achievement-presentation"
 
     return (
       <PlayerDataRecovery
         mode="storage-unavailable"
+        hasPendingSave={state.context.pendingBattleProfileCommit !== null}
         activity={playerDataRecoveryActivity}
         canExportCurrentData={canExportCurrentData}
         canReturnWithoutNewChanges={canReturnWithoutNewChanges}
@@ -816,6 +841,7 @@ function WritableGameClient({
     return (
       <>
         <Results
+          openedAt={state.context.resultsOpenedAt}
           results={results}
           runtimeClipCatalog={SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG}
           shouldReduceMotion={shouldReduceMotion}
@@ -926,6 +952,7 @@ function WritableGameClient({
           isPersistencePending={state.matches({ AllValues: "Persisting" })}
           persistenceIssue={state.context.persistenceIssue}
           onClose={handleAllValuesClose}
+          onNavigationBlockedChange={setIsAllValuesNavigationBlocked}
           onAddCustomValue={handleAddCustomValue}
           onUpdateCustomValue={handleUpdateCustomValue}
           onDeleteCustomValue={(valueId) =>
