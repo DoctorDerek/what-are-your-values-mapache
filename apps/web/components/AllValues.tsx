@@ -39,6 +39,7 @@ export default function AllValues({
   onAddCustomValue,
   onUpdateCustomValue,
   onDeleteCustomValue,
+  onNavigationBlockedChange,
 }: {
   rankedValues: readonly RankedValue[]
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
@@ -56,6 +57,7 @@ export default function AllValues({
     definition: string,
   ) => void
   onDeleteCustomValue: (valueId: CustomValueId) => void
+  onNavigationBlockedChange?: (isBlocked: boolean) => void
 }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [editingValueId, setEditingValueId] = useState<CustomValueId | null>(
@@ -99,6 +101,11 @@ export default function AllValues({
     isPersistencePending || editingValueId !== null || deletingValueId !== null
 
   useEffect(() => {
+    onNavigationBlockedChange?.(isNavigationBlocked)
+    return () => onNavigationBlockedChange?.(false)
+  }, [isNavigationBlocked, onNavigationBlockedChange])
+
+  useEffect(() => {
     if (!highlightedValueId) {
       return
     }
@@ -114,7 +121,12 @@ export default function AllValues({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !isMenuOpen && !isNavigationBlocked) {
+      if (
+        !event.defaultPrevented &&
+        event.key === "Escape" &&
+        !isMenuOpen &&
+        !isNavigationBlocked
+      ) {
         onClose()
       }
     }

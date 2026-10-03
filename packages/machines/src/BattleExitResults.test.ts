@@ -70,7 +70,7 @@ describe("Battle-exit Results", () => {
     expect(start.values[0]?.rank).toBe(75)
     expect(midway.values[0]?.motion.travel).toBeGreaterThan(0.5)
     expect(midway.values[0]?.motion.lateralPercentage).toBe(5)
-    expect(midway.values[0]?.rank).toBe(38)
+    expect(midway.values[0]?.rank).toBe(20)
     expect(midway.values[0]?.rankLabelPlaceholder).toBe("#100")
     for (const elapsedMs of [0, 925, 1_850, 2_775, 3_700]) {
       const frame = projectBattleExitResultsFrame(results, elapsedMs)
@@ -78,7 +78,8 @@ describe("Battle-exit Results", () => {
         expect(rank).toBe(
           value.entryRank +
             Math.trunc(
-              ((value.exitRank - value.entryRank) * elapsedMs) / 3_700,
+              (value.exitRank - value.entryRank) *
+                (1 - (1 - elapsedMs / 3_700) ** 2),
             ),
         )
       }
@@ -140,14 +141,14 @@ describe("Battle-exit Results", () => {
         previousElapsedMs,
       ).values.find(({ value }) => value.definition.id === winnerId)
     expect(firstFill.profileLevelProgress.level).toBe(1n)
-    expect(firstFill.profileLevelBarPercentage).toBe(50)
-    expect(winnerAt(925)?.levelBarPercentage).toBe(50)
+    expect(firstFill.profileLevelBarPercentage).toBe(75)
+    expect(winnerAt(925)?.levelBarPercentage).toBe(75)
     expect(firstBoundary.profileLevelProgress.level).toBe(2n)
     expect(firstBoundary.profileLevelBarPercentage).toBe(0)
     expect(firstBoundary.profileDidCrossLevel).toBe(true)
     expect(winnerAt(1_850, 1_800)?.didCrossLevel).toBe(true)
     expect(secondFill.profileLevelProgress.level).toBe(2n)
-    expect(secondFill.profileLevelBarPercentage).toBe(50)
+    expect(secondFill.profileLevelBarPercentage).toBe(75)
     expect(
       firstFill.values
         .filter(({ value }) => !value.changed)
@@ -204,9 +205,9 @@ describe("Battle-exit Results", () => {
     expect(results?.profileXpChange).toBe(-4n)
     if (!results) throw new Error("Negative Results projection was unavailable")
     const descending = projectBattleExitResultsFrame(results, 925)
-    expect(descending.profileXp).toBe(3n)
+    expect(descending.profileXp).toBe(2n)
     expect(descending.profileLevelProgress.level).toBe(2n)
-    expect(descending.profileLevelBarPercentage).toBe(50)
+    expect(descending.profileLevelBarPercentage).toBe(25)
     expect(
       projectBattleExitResultsFrame(results, results.presentationDurationMs)
         .profileXp,
@@ -235,7 +236,7 @@ describe("Battle-exit Results", () => {
     ).toBe(3_700)
     expect(
       projectBattleExitResultsFrame(results, 925).profileLevelBarPercentage,
-    ).toBe(50)
+    ).toBe(75)
     expect(
       projectBattleExitResultsFrame(results, 3_650).profileLevelBarPercentage,
     ).toBeGreaterThan(95)
@@ -368,11 +369,11 @@ describe("Battle-exit Results", () => {
     expect(settled.values.map(({ totalXp }) => totalXp)).toEqual(
       moving.values.map(({ totalXp }) => totalXp),
     )
-    expect(settled.profileLevelBarPercentage).toBe(25)
+    expect(settled.profileLevelBarPercentage).toBe(43.75)
     expect(
       settled.values.find(({ value }) => value.definition.id === valueId)
         ?.levelBarPercentage,
-    ).toBe(25)
+    ).toBe(43.75)
     expect(
       projectBattleExitResultsFrame(results, 3_650).profileLevelBarPercentage,
     ).toBeLessThan(50)

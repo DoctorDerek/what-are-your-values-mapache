@@ -19,6 +19,7 @@ import {
   DurableStoreConflictError,
   type DurableStoreAdapter,
   type DurableStoreExpectation,
+  type DurableStoreTransaction,
 } from "./DurableStoreAdapter"
 import { serializePersistedJson } from "./PersistedJson"
 import type { PlayerData } from "./PlayerData"
@@ -158,6 +159,22 @@ export async function initializeBattleProfileStore({
   })
 }
 
+async function acceptBattleProfileTransaction(
+  store: DurableStoreAdapter,
+  transaction: DurableStoreTransaction,
+) {
+  try {
+    await store.compareAndSwapVerified(transaction)
+  } catch (error: unknown) {
+    const entries = await store.readAll()
+    const isAccepted =
+      transaction.putEntries.every(
+        ([key, value]) => entries.get(key) === value,
+      ) && transaction.deleteKeys.every((key) => !entries.has(key))
+    if (!isAccepted) throw error
+  }
+}
+
 export async function commitBattleProfileStoreEvent({
   store,
   state,
@@ -189,7 +206,7 @@ export async function commitBattleProfileStoreEvent({
     })
     const manifestBytes = serializeBattleProfileManifest(manifest)
 
-    await store.compareAndSwapVerified({
+    await acceptBattleProfileTransaction(store, {
       expectedEntries: [
         [BATTLE_PROFILE_MANIFEST_KEY, state.manifestBytes],
         [journalKey, null],
@@ -241,7 +258,7 @@ export async function commitBattleProfileStoreEvent({
     (key) => !retainedJournalKeySet.has(key),
   )
 
-  await store.compareAndSwapVerified({
+  await acceptBattleProfileTransaction(store, {
     expectedEntries: [
       [BATTLE_PROFILE_MANIFEST_KEY, state.manifestBytes],
       [journalKey, null],

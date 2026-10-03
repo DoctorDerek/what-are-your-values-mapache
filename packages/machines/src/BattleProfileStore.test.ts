@@ -135,7 +135,7 @@ describe("Battle Profile Store", () => {
     )
   })
 
-  it("appends one verified event and rejects a stale competing writer", async () => {
+  it("accepts an identical retry but rejects a different stale transaction", async () => {
     const store = createInMemoryDurableStore()
     const initialState = await initializeBattleProfileStore({
       store,
@@ -169,7 +169,54 @@ describe("Battle Profile Store", () => {
         event,
         committedAt: "2026-07-21T00:01:00.000Z",
       }),
+    ).resolves.toEqual(committedState)
+    await expect(
+      commitBattleProfileStoreEvent({
+        store,
+        state: initialState,
+        event,
+        committedAt: "2026-07-21T00:02:00.000Z",
+      }),
     ).rejects.toBeInstanceOf(DurableStoreConflictError)
+    expect(await store.readAll()).toEqual(entries)
+  })
+
+  it("reconciles a verified write whose completion reply failed without applying it twice", async () => {
+    const memoryStore = createInMemoryDurableStore()
+    const initialState = await initializeBattleProfileStore({
+      store: memoryStore,
+      playerData: createInitialPlayerData({
+        schedulerSeed: "uncertain-write",
+        createdAt: createCommitTimestamp(0),
+      }),
+      createdAt: createCommitTimestamp(0),
+      appVersion: "0.1.0",
+    })
+    const event = createChoiceEvent(initialState.head.playerData.profile)
+    const store = {
+      readAll: memoryStore.readAll,
+      compareAndSwapVerified: async (
+        transaction: Parameters<typeof memoryStore.compareAndSwapVerified>[0],
+      ) => {
+        await memoryStore.compareAndSwapVerified(transaction)
+        throw new Error("Completion reply failed")
+      },
+    }
+    const committed = await commitBattleProfileStoreEvent({
+      store,
+      state: initialState,
+      event,
+      committedAt: createCommitTimestamp(1),
+    })
+    expect(committed.head.generation).toBe(1)
+    const replay = await commitBattleProfileStoreEvent({
+      store: memoryStore,
+      state: initialState,
+      event,
+      committedAt: createCommitTimestamp(1),
+    })
+    expect(replay.head.playerData).toEqual(committed.head.playerData)
+    expect(replay.head.generation).toBe(1)
   })
 
   it("rotates checkpoint slots and retains only journals required by the fallback", async () => {

@@ -30,11 +30,12 @@ import {
   resolveShouldReduceMotion,
 } from "@game/machines/src/PlayerSettingsPresentation"
 import { rootMachine } from "@game/machines/src/RootMachine"
+import { projectRootBackDisposition } from "@game/machines/src/RootNavigation"
 import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPreparation"
 import { useMachine } from "@xstate/react"
 import * as ExpoCrypto from "expo-crypto"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { AppState, View } from "react-native"
+import { AppState, BackHandler, View } from "react-native"
 import { useReducedMotion } from "react-native-reanimated"
 import NativeAchievementBanner from "@/components/NativeAchievementBanner"
 import NativeAchievements from "@/components/NativeAchievements"
@@ -159,6 +160,40 @@ function NativeGameClientContent() {
   )
   usePreparedNativeSeethingSwarmClips(hubClips)
   const [isBattleRequested, setIsBattleRequested] = useState(false)
+  const [isAllValuesNavigationBlocked, setIsAllValuesNavigationBlocked] =
+    useState(false)
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        if (activeInformationPanelId !== null) {
+          setActiveInformationPanelId(null)
+          return true
+        }
+        if (isControlsOpen) {
+          setIsControlsOpen(false)
+          return true
+        }
+        if (isProductMenuOpen) {
+          setIsProductMenuOpen(false)
+          return true
+        }
+        if (isAllValuesNavigationBlocked || isReadingImportFile) return true
+        const disposition = projectRootBackDisposition(state)
+        if (disposition.kind === "event") send(disposition.event)
+        return disposition.kind !== "root"
+      },
+    )
+    return () => subscription.remove()
+  }, [
+    activeInformationPanelId,
+    isControlsOpen,
+    isProductMenuOpen,
+    isAllValuesNavigationBlocked,
+    isReadingImportFile,
+    send,
+    state,
+  ])
   const isHubReady = state.matches("Hub")
   const canAwaitBattle =
     isHubReady &&
@@ -359,7 +394,6 @@ function NativeGameClientContent() {
     const hasRecoveryEntries = state.context.recoveryEntries !== null
     const canReturnWithoutNewChanges =
       state.context.persistenceFailureOrigin === "initialization" ||
-      state.context.persistenceFailureOrigin === "crucible" ||
       state.context.persistenceFailureOrigin === "achievement-presentation"
 
     if (hasRecoveryEntries)
@@ -415,6 +449,7 @@ function NativeGameClientContent() {
     return (
       <NativePersistenceFailure
         mode="storage-unavailable"
+        hasPendingSave={state.context.pendingBattleProfileCommit !== null}
         activity={recoveryActivity}
         canExportCurrentData={canExportCurrentData}
         canReturnWithoutNewChanges={canReturnWithoutNewChanges}
@@ -592,6 +627,7 @@ function NativeGameClientContent() {
     return (
       <View className="flex-1">
         <NativeResults
+          openedAt={state.context.resultsOpenedAt}
           results={results}
           runtimeClipCatalog={SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG}
           shouldReduceMotion={shouldReduceMotion}
@@ -733,6 +769,7 @@ function NativeGameClientContent() {
           rankedValues={rankedValues}
           onAddCustomValue={handleAddCustomValue}
           onClose={() => send({ type: "ALL_VALUES.CLOSE_REQUESTED" })}
+          onNavigationBlockedChange={setIsAllValuesNavigationBlocked}
           onDeleteCustomValue={(valueId) =>
             send({ type: "ALL_VALUES.DELETE_REQUESTED", valueId })
           }

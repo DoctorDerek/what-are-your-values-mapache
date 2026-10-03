@@ -27,7 +27,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react-native"
-import { AppState, type AppStateStatus } from "react-native"
+import { AppState, BackHandler, type AppStateStatus } from "react-native"
 import NativeGameClient from "@/components/NativeGameClient"
 import useNativePlayerDataFiles from "@/components/useNativePlayerDataFiles"
 import { expoDurableStore } from "@/lib/ExpoDurableStore"
@@ -117,6 +117,45 @@ function getOpenDialog(label: string) {
 }
 
 describe("NativeGameClient Menu navigation", () => {
+  it("routes hardware Back through overlays and secondary parents, then permits Hub departure", async () => {
+    let hardwareBack:
+      Parameters<typeof BackHandler.addEventListener>[1] | undefined
+    const remove = jest.fn()
+    jest
+      .spyOn(BackHandler, "addEventListener")
+      .mockImplementation((_event, handler) => {
+        hardwareBack = handler
+        return { remove }
+      })
+    const pressBack = async () => {
+      if (!hardwareBack) throw new Error("Expected hardware Back listener")
+      let consumed: boolean | null | undefined
+      await act(async () => {
+        consumed = hardwareBack?.({
+          type: "hardwareBackPress",
+          timeStamp: Date.now(),
+        })
+      })
+      return consumed
+    }
+    const user = userEvent.setup()
+    const { unmount } = await render(<NativeGameClient />)
+    await screen.findByRole("button", { name: "Start" })
+    expect(await pressBack()).toBe(true)
+    await user.press(screen.getByRole("button", { name: "Start" }))
+    await screen.findByRole("button", { name: "Battle" })
+    expect(await pressBack()).toBe(false)
+    await openMenuDestination(user, "Settings")
+    expect(await pressBack()).toBe(true)
+    await screen.findByRole("button", { name: "Battle" })
+    await user.press(screen.getByRole("button", { name: "Browse All Values" }))
+    await screen.findByRole("button", { name: "Close" })
+    expect(await pressBack()).toBe(true)
+    await screen.findByRole("button", { name: "Battle" })
+    expect(await pressBack()).toBe(false)
+    unmount()
+    expect(remove).toHaveBeenCalled()
+  })
   it("prepares animals before Battle and cancels a cold intent when the Menu opens", async () => {
     const animals = ZOO_ANIMALS.map((animal, index) => ({
       animalId: animal.id,

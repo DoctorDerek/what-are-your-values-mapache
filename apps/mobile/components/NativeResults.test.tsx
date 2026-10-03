@@ -31,6 +31,35 @@ function createResults() {
 }
 
 describe("Native Battle-exit Results", () => {
+  it("expires Saved locally without removing its reserved content or restarting on remount", async () => {
+    jest.useFakeTimers()
+    try {
+      const openedAt = new Date().toISOString()
+      const props = {
+        results: createResults(),
+        openedAt,
+        runtimeClipCatalog:
+          createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
+        shouldReduceMotion: true,
+        isMenuOpen: false,
+        onOpenMenu: jest.fn(),
+        onSeeValues: jest.fn(),
+        onKeepBattling: jest.fn(),
+      }
+      const { unmount } = await render(<NativeResults {...props} />)
+      expect(screen.getByText("✓ Saved locally")).toBeOnTheScreen()
+      await act(async () => jest.advanceTimersByTime(5000))
+      expect(screen.queryByText("✓ Saved locally")).toBeNull()
+      expect(
+        screen.getByText("✓ Saved locally", { includeHiddenElements: true }),
+      ).toBeTruthy()
+      await unmount()
+      await render(<NativeResults {...props} />)
+      expect(screen.queryByText("✓ Saved locally")).toBeNull()
+    } finally {
+      jest.useRealTimers()
+    }
+  })
   it("starts in entry order before bringing the canonical reward into the virtualized roster", async () => {
     jest.useFakeTimers()
     try {
@@ -94,7 +123,17 @@ describe("Native Battle-exit Results", () => {
       )
 
       expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
-      await act(async () => jest.advanceTimersByTime(1_850))
+      await act(async () => jest.advanceTimersByTime(900))
+      const profile = screen.getByLabelText(/Profile Level 3, Profile XP 4/)
+      const profileFill = profile.queryAll(
+        (element) =>
+          typeof StyleSheet.flatten(element.props.style)?.flex === "number",
+      )[0]!
+      expect(StyleSheet.flatten(profileFill.props.style)?.flex).toBeCloseTo(
+        73.630387,
+      )
+      expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
+      await act(async () => jest.advanceTimersByTime(950))
       expect(screen.getByText("Profile Level 2")).toBeOnTheScreen()
       await act(async () => jest.advanceTimersByTime(1_800))
       expect(screen.getByText("Profile Level 2")).toBeOnTheScreen()

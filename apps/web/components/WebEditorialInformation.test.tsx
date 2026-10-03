@@ -80,7 +80,7 @@ describe("WebEditorialInformation", () => {
     )
     const resourceLinks = screen.getAllByRole("link")
 
-    expect(approvedResourceBlocks).toHaveLength(7)
+    expect(approvedResourceBlocks).toHaveLength(8)
     expect(resourceLinks).toHaveLength(approvedResourceBlocks.length)
 
     for (const resourceBlock of approvedResourceBlocks) {

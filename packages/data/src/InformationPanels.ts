@@ -383,10 +383,17 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "section",
-      heading: "Art and Audio",
+      heading: "Animal Art and Animation",
       paragraphs: Object.freeze([
-        "Phase 1 uses original typography, interface design, and silent game presentation. Complete open-source software notices are available in the project’s license records.",
+        "Animal pixel art and animations are by SeethingSwarm, used under the applicable animal-pack licenses. These commercial source assets are not covered by the application’s software license. Interface design is by Dr. Derek Austin. The current game presentation is silent. Complete open-source software notices are available in the project’s license records.",
       ]),
+    }),
+    Object.freeze({
+      kind: "resource",
+      title: "SeethingSwarm",
+      description: "Creator of WAYVM’s animal pixel art and animations.",
+      actionLabel: "Visit SeethingSwarm",
+      url: "https://seethingswarm.itch.io/",
     }),
     Object.freeze({
       kind: "section",

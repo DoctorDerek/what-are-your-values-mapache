@@ -45,6 +45,7 @@ import {
 } from "./DurableStoreAdapter"
 import { createInitialPlayerData, type PlayerData } from "./PlayerData"
 import {
+  createPendingBattleProfileExportActor,
   createWayvmExportActor,
   prepareWayvmImportActor,
   replacePlayerDataActor,
@@ -90,7 +91,11 @@ type SettingsReturnTarget =
 type BackgroundCheckpointReturnTarget = SettingsReturnTarget | "settings"
 
 type PersistenceFailureOrigin =
-  "loading" | "initialization" | "crucible" | "achievement-presentation"
+  | "loading"
+  | "initialization"
+  | "crucible"
+  | "all-values"
+  | "achievement-presentation"
 
 type RootMachineContext = {
   readonly durableStore: DurableStoreAdapter
@@ -101,8 +106,10 @@ type RootMachineContext = {
   playerData: PlayerData | null
   battleEntryProfile: BattleProfile | null
   resultsExitProfile: BattleProfile | null
+  resultsOpenedAt: string | null
   battleProfileStoreState: BattleProfileStoreState | null
   pendingBattleProfileCommit: BattleProfileCommit | null
+  pendingBattleProfileCommittedAt: string | null
   pendingCustomValueDrafts: readonly CustomValueDraft[]
   pendingAchievementPresentationIds: readonly AchievementId[]
   achievementPresentationReturnTarget: AchievementPresentationReturnTarget | null
@@ -240,6 +247,12 @@ const CLEARED_SETTINGS_TRANSIENT_CONTEXT = Object.freeze({
   portabilityIssue: null,
   portabilityNotice: null,
 } as const)
+
+function requirePendingBattleProfileCommittedAt(context: RootMachineContext) {
+  if (context.pendingBattleProfileCommittedAt === null)
+    throw new Error("Pending Battle Profile commit timestamp is unavailable")
+  return context.pendingBattleProfileCommittedAt
+}
 
 function requirePlayerData(context: RootMachineContext) {
   if (!context.playerData) {
@@ -403,6 +416,7 @@ export const rootMachine = setup({
     checkpointBattleProfile: checkpointBattleProfileActor,
     recordAchievementPresentation: recordAchievementPresentationActor,
     createWayvmExport: createWayvmExportActor,
+    createPendingBattleProfileExport: createPendingBattleProfileExportActor,
     prepareWayvmImport: prepareWayvmImportActor,
     replacePlayerData: replacePlayerDataActor,
     updatePlayerSettings: updatePlayerSettingsActor,
@@ -440,6 +454,7 @@ export const rootMachine = setup({
     clearResultsContext: assign({
       battleEntryProfile: null,
       resultsExitProfile: null,
+      resultsOpenedAt: null,
     }),
   },
   guards: {
@@ -519,6 +534,8 @@ export const rootMachine = setup({
       context.persistenceFailureOrigin === "initialization",
     isCrucibleStorageFailure: ({ context }) =>
       context.persistenceFailureOrigin === "crucible",
+    isAllValuesStorageFailure: ({ context }) =>
+      context.persistenceFailureOrigin === "all-values",
     isAchievementPresentationStorageFailure: ({ context }) =>
       context.persistenceFailureOrigin === "achievement-presentation",
     canRecordAchievementPresentation: ({ context, event }) =>
@@ -595,8 +612,10 @@ export const rootMachine = setup({
     playerData: null,
     battleEntryProfile: null,
     resultsExitProfile: null,
+    resultsOpenedAt: null,
     battleProfileStoreState: null,
     pendingBattleProfileCommit: null,
+    pendingBattleProfileCommittedAt: null,
     pendingCustomValueDrafts: [],
     pendingAchievementPresentationIds: [],
     achievementPresentationReturnTarget: null,
@@ -1141,6 +1160,7 @@ export const rootMachine = setup({
                   createFreshPlayerDataAfterDeletion(context),
                 battleProfileStoreState: null,
                 pendingBattleProfileCommit: null,
+                pendingBattleProfileCommittedAt: null,
                 pendingImport: null,
                 pendingImportBytes: null,
                 preImportBackupBytes: null,
@@ -1480,6 +1500,7 @@ export const rootMachine = setup({
                 battleProfileStoreState: null,
                 pendingBattleProfileCommit: null,
                 pendingResetReview: null,
+                pendingBattleProfileCommittedAt: null,
                 pendingImport: null,
                 pendingImportBytes: null,
                 preImportBackupBytes: null,
@@ -1631,13 +1652,17 @@ export const rootMachine = setup({
           },
         },
         Persisting: {
+          entry: assign({
+            pendingBattleProfileCommittedAt: ({ context }) =>
+              context.pendingBattleProfileCommittedAt ?? context.now(),
+          }),
           invoke: {
             src: "commitBattleProfileEvent",
             input: ({ context }) => ({
               store: context.durableStore,
               state: requireBattleProfileStoreState(context),
               event: requirePendingBattleProfileCommit(context).event,
-              committedAt: context.now(),
+              committedAt: requirePendingBattleProfileCommittedAt(context),
             }),
             onDone: {
               target: "Browsing",
@@ -1645,13 +1670,16 @@ export const rootMachine = setup({
                 playerData: ({ event }) => event.output.head.playerData,
                 battleProfileStoreState: ({ event }) => event.output,
                 pendingBattleProfileCommit: null,
+                pendingBattleProfileCommittedAt: null,
                 persistenceIssue: null,
               }),
             },
             onError: {
-              target: "Browsing",
+              target: "#root.PersistenceFailure",
               actions: assign({
-                pendingBattleProfileCommit: null,
+                recoveryEntries: null,
+                pendingRecoveryImportSource: null,
+                persistenceFailureOrigin: "all-values",
                 persistenceIssue: ({ event }) => getErrorMessage(event.error),
               }),
             },
@@ -1677,6 +1705,7 @@ export const rootMachine = setup({
                 actions: assign({
                   resultsExitProfile: ({ context }) =>
                     requireBattleProfile(context),
+                  resultsOpenedAt: ({ context }) => context.now(),
                 }),
               },
               { target: "#root.Hub", actions: "clearResultsContext" },
@@ -1745,6 +1774,10 @@ export const rootMachine = setup({
           },
         },
         Persisting: {
+          entry: assign({
+            pendingBattleProfileCommittedAt: ({ context }) =>
+              context.pendingBattleProfileCommittedAt ?? context.now(),
+          }),
           on: {
             "ACHIEVEMENT.PRESENTED": {
               guard: "canRecordAchievementPresentation",
@@ -1763,7 +1796,7 @@ export const rootMachine = setup({
               store: context.durableStore,
               state: requireBattleProfileStoreState(context),
               event: requirePendingBattleProfileCommit(context).event,
-              committedAt: context.now(),
+              committedAt: requirePendingBattleProfileCommittedAt(context),
             }),
             onDone: [
               {
@@ -1773,6 +1806,7 @@ export const rootMachine = setup({
                   playerData: ({ event }) => event.output.head.playerData,
                   battleProfileStoreState: ({ event }) => event.output,
                   pendingBattleProfileCommit: null,
+                  pendingBattleProfileCommittedAt: null,
                 }),
               },
               {
@@ -1781,13 +1815,13 @@ export const rootMachine = setup({
                   playerData: ({ event }) => event.output.head.playerData,
                   battleProfileStoreState: ({ event }) => event.output,
                   pendingBattleProfileCommit: null,
+                  pendingBattleProfileCommittedAt: null,
                 }),
               },
             ],
             onError: {
               target: "#root.PersistenceFailure",
               actions: assign({
-                pendingBattleProfileCommit: null,
                 recoveryEntries: null,
                 pendingRecoveryImportSource: null,
                 persistenceFailureOrigin: "crucible",
@@ -1809,6 +1843,7 @@ export const rootMachine = setup({
           actions: assign({
             battleEntryProfile: ({ context }) => requireBattleProfile(context),
             resultsExitProfile: null,
+            resultsOpenedAt: null,
           }),
         },
         "APP.BACKGROUND_CHECKPOINT_REQUESTED": {
@@ -2064,7 +2099,17 @@ export const rootMachine = setup({
               },
               {
                 guard: "isCrucibleStorageFailure",
-                target: "#root.Crucible.Ready",
+                target: "#root.Crucible.Persisting",
+                actions: assign({
+                  persistenceFailureOrigin: null,
+                  persistenceIssue: null,
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+              {
+                guard: "isAllValuesStorageFailure",
+                target: "#root.AllValues.Persisting",
                 actions: assign({
                   persistenceFailureOrigin: null,
                   persistenceIssue: null,
@@ -2089,16 +2134,6 @@ export const rootMachine = setup({
                 target: "#root.Splash",
                 actions: assign({
                   battleProfileStoreState: null,
-                  persistenceFailureOrigin: null,
-                  persistenceIssue: null,
-                  portabilityIssue: null,
-                  portabilityNotice: null,
-                }),
-              },
-              {
-                guard: "isCrucibleStorageFailure",
-                target: "#root.Hub",
-                actions: assign({
                   persistenceFailureOrigin: null,
                   persistenceIssue: null,
                   portabilityIssue: null,
@@ -2181,20 +2216,33 @@ export const rootMachine = setup({
         },
         ExportingCurrentData: {
           invoke: {
-            src: "createWayvmExport",
+            src: "createPendingBattleProfileExport",
             input: ({ context }) => ({
               exportedAt: context.now(),
               sourceAppVersion: context.appVersion,
               sourceBuild: context.sourceBuild,
               playerData: requirePlayerData(context),
+              pendingCommit:
+                context.pendingBattleProfileCommit === null
+                  ? null
+                  : {
+                      state: requireBattleProfileStoreState(context),
+                      event: context.pendingBattleProfileCommit.event,
+                      committedAt:
+                        requirePendingBattleProfileCommittedAt(context),
+                    },
             }),
             onDone: {
               target: "Reviewing",
               actions: assign({
                 preparedDownload: ({ event }) => event.output,
                 portabilityIssue: null,
-                portabilityNotice:
-                  playerDataRecoveryCopy.storageUnavailable.currentBackupReady,
+                portabilityNotice: ({ context }) =>
+                  context.pendingBattleProfileCommit
+                    ? playerDataRecoveryCopy.storageUnavailable
+                        .pendingBackupReady
+                    : playerDataRecoveryCopy.storageUnavailable
+                        .currentBackupReady,
               }),
             },
             onError: {
@@ -2339,6 +2387,7 @@ export const rootMachine = setup({
                 preImportBackupBytes: null,
                 preparedDownload: null,
                 pendingResetReview: null,
+                pendingBattleProfileCommittedAt: null,
                 recoveryEntries: null,
                 pendingRecoveryImportSource: null,
                 persistenceFailureOrigin: null,

@@ -3,6 +3,41 @@ import { test } from "./fixtures"
 
 test.use({ viewport: { width: 320, height: 720 } })
 
+test("Report a Problem remains inside its support card with enlarged text", async ({
+  page,
+}) => {
+  await page.goto("/")
+  await page.addStyleTag({ content: "html { font-size: 200%; }" })
+  const report = page.getByRole("link", {
+    name: "Report a Problem",
+    exact: true,
+  })
+  await report.scrollIntoViewIfNeeded()
+  await expect(report).toBeVisible()
+  await expect(report).toHaveAttribute(
+    "href",
+    "mailto:derekraustin+wayvm@gmail.com",
+  )
+  const bounds = await report.evaluate((element) => {
+    const link = element.getBoundingClientRect()
+    const parent = element.parentElement!.getBoundingClientRect()
+    return {
+      left: link.left,
+      right: link.right,
+      parentLeft: parent.left,
+      parentRight: parent.right,
+      width: element.clientWidth,
+      content: element.scrollWidth,
+    }
+  })
+  expect(bounds.left).toBeGreaterThanOrEqual(bounds.parentLeft)
+  expect(bounds.right).toBeLessThanOrEqual(bounds.parentRight)
+  expect(bounds.content).toBeLessThanOrEqual(bounds.width)
+  await page.screenshot({
+    path: test.info().outputPath("report-320-large.png"),
+  })
+})
+
 for (const width of [390, 1440]) {
   test(`Hub inline creation remains usable with enlarged text at ${width}px`, async ({
     page,

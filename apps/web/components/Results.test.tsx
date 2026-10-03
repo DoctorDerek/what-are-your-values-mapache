@@ -24,6 +24,35 @@ function createResults() {
 }
 
 describe("Battle-exit Results presentation", () => {
+  it("expires the accepted-save status once without removing its geometry or restarting on remount", () => {
+    vi.useFakeTimers()
+    try {
+      const openedAt = new Date().toISOString()
+      const props = {
+        results: createResults(),
+        openedAt,
+        runtimeClipCatalog:
+          createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
+        shouldReduceMotion: false,
+        isMenuOpen: false,
+        onOpenMenu: vi.fn(),
+        onSeeValues: vi.fn(),
+        onKeepBattling: vi.fn(),
+      }
+      const view = render(<Results {...props} />)
+      const status = screen.getByRole("status")
+      expect(status).toHaveTextContent("Saved locally")
+      act(() => vi.advanceTimersByTime(5_000))
+      expect(screen.queryByRole("status")).toBeNull()
+      expect(status).toBeInTheDocument()
+      expect(status).toHaveStyle({ opacity: "0" })
+      view.unmount()
+      render(<Results {...props} />)
+      expect(screen.queryByRole("status")).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
   it("keeps canonical accessible order while the visual reward starts in its before slot", () => {
     const results = createResults()
     render(
@@ -70,18 +99,19 @@ describe("Battle-exit Results presentation", () => {
       fireEvent.click(screen.getByRole("button", { name: "Keep battling" }))
       expect(onKeepBattling).toHaveBeenCalledOnce()
       act(() => vi.advanceTimersByTime(900))
-      expect(Number(bar.getAttribute("aria-valuenow"))).toBeGreaterThan(40)
+      expect(Number(bar.getAttribute("aria-valuenow"))).toBeCloseTo(73.630387)
       expect(profile).toHaveTextContent("Profile Level 1")
       act(() => vi.advanceTimersByTime(50))
-      expect(Number(bar.getAttribute("aria-valuenow"))).toBeGreaterThan(50)
+      expect(Number(bar.getAttribute("aria-valuenow"))).toBeCloseTo(76.33309)
       expect(profile).toHaveTextContent("Profile Level 1")
       act(() => vi.advanceTimersByTime(900))
       expect(bar).toHaveAttribute("aria-valuenow", "0")
       expect(profile).toHaveTextContent("Profile Level 2")
       act(() => vi.advanceTimersByTime(900))
-      expect(Number(bar.getAttribute("aria-valuenow"))).toBeGreaterThan(45)
+      expect(Number(bar.getAttribute("aria-valuenow"))).toBeCloseTo(73.630387)
       act(() => vi.advanceTimersByTime(900))
       expect(Number(bar.getAttribute("aria-valuenow"))).toBeGreaterThan(95)
+      expect(Number(bar.getAttribute("aria-valuenow"))).toBeLessThan(100)
       act(() => vi.advanceTimersByTime(50))
       expect(profile).toHaveTextContent("Profile Level 3")
       expect(profile).toHaveTextContent("Profile XP 4")
@@ -148,6 +178,7 @@ describe("Battle-exit Results presentation", () => {
         const before = within(profile)
           .getByRole("progressbar")
           .getAttribute("aria-valuenow")
+        expect(Number(before)).toBeCloseTo(73.630387)
         if (interaction === "keyboard")
           fireEvent.keyDown(window, { key: "Tab" })
         else if (interaction === "wheel") fireEvent.wheel(roster.parentElement!)
@@ -169,7 +200,7 @@ describe("Battle-exit Results presentation", () => {
         )
         expect(valueBar).toHaveAttribute(
           "style",
-          expect.stringContaining("translateX(-51"),
+          expect.stringContaining("translateX(-26.369"),
         )
         act(() => vi.advanceTimersByTime(950))
         expect(profile).toHaveTextContent("Profile Level 2")

@@ -26,6 +26,7 @@ type UnreadableDataRecoveryActions = SharedRecoveryActions & {
 
 type StorageUnavailableRecoveryActions = SharedRecoveryActions & {
   readonly mode: "storage-unavailable"
+  readonly hasPendingSave?: boolean
   readonly canExportCurrentData: boolean
   readonly canReturnWithoutNewChanges: boolean
   readonly onExportCurrentData: () => void
@@ -112,7 +113,9 @@ export default function PlayerDataRecoveryActions(
           onClick={props.onExportCurrentData}
           className="w-full whitespace-normal"
         >
-          {actions.exportCurrentData}
+          {props.hasPendingSave
+            ? playerDataRecoveryCopy.pendingSave.export
+            : actions.exportCurrentData}
         </Button>
       ) : null}
       <Button
@@ -122,7 +125,9 @@ export default function PlayerDataRecoveryActions(
         onClick={props.onTryAgain}
         className="w-full whitespace-normal"
       >
-        {actions.tryAgain}
+        {props.hasPendingSave
+          ? playerDataRecoveryCopy.pendingSave.retry
+          : actions.tryAgain}
       </Button>
       {props.canReturnWithoutNewChanges ? (
         <Button
