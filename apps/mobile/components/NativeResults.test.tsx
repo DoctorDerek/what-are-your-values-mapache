@@ -53,7 +53,7 @@ describe("Native Battle-exit Results", () => {
       expect(
         screen.getByText("✓ Saved locally", { includeHiddenElements: true }),
       ).toBeTruthy()
-      unmount()
+      await unmount()
       await render(<NativeResults {...props} />)
       expect(screen.queryByText("✓ Saved locally")).toBeNull()
     } finally {
