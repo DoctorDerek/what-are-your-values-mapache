@@ -721,7 +721,7 @@ describe("GameClient Integration", () => {
     ).toBeVisible()
   })
 
-  it("returns to the unchanged Hub when a battle result cannot become durable", async () => {
+  it("retains a failed Battle choice until Retry save accepts it exactly once", async () => {
     vi.spyOn(crypto, "randomUUID").mockReturnValue(
       "00000000-0000-4000-8000-000000000113",
     )
@@ -736,30 +736,40 @@ describe("GameClient Integration", () => {
 
     expect(
       await screen.findByRole("heading", {
-        name: "Progress Cannot Be Saved Reliably",
+        name: "Local save error",
       }),
     ).toBeVisible()
     expect(screen.getByRole("alert")).toHaveTextContent(
       "IndexedDB write failed",
     )
     expect(
-      screen.getByRole("button", { name: "Export Current Data" }),
+      screen.getByRole("button", { name: "Export pending data" }),
     ).toBeEnabled()
-    fireEvent.click(
-      screen.getByRole("button", { name: "Return Without New Changes" }),
-    )
-
     expect(
-      await screen.findByRole("heading", { name: "Your Values", level: 1 }),
-    ).toBeVisible()
-    expect(
-      screen.getByText(
-        "Not ranked yet. Browse the included values, then battle when you are ready.",
-      ),
-    ).toBeVisible()
-    expect(
-      screen.queryByRole("heading", { name: "Top Five" }),
+      screen.queryByRole("button", { name: "Return Without New Changes" }),
     ).not.toBeInTheDocument()
+    fireEvent.keyDown(window, { key: "Escape" })
+    expect(
+      screen.getByRole("heading", { name: "Local save error" }),
+    ).toBeVisible()
+    expect(screen.queryByText("Saved locally")).not.toBeInTheDocument()
+    durableStoreFailure.writeEnabled = false
+    fireEvent.click(screen.getByRole("button", { name: "Retry save" }))
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Undo" })).toBeEnabled(),
+    )
+    fireEvent.click(screen.getByRole("button", { name: /Stop/ }))
+    expect(
+      await screen.findByRole("heading", { name: "Results" }),
+    ).toBeVisible()
+    expect(screen.getByText("Saved locally")).toBeVisible()
+    await waitFor(
+      () =>
+        expect(
+          screen.getByRole("region", { name: "Profile progress" }),
+        ).toHaveTextContent("Profile XP 4"),
+      { timeout: 5000 },
+    )
   })
 
   it("preserves a Custom Value review after failed saving and commits on retry", async () => {
@@ -996,7 +1006,7 @@ describe("GameClient Integration", () => {
       })
     ).map((button) => button.getAttribute("aria-label"))
 
-    fireEvent.keyDown(window, { key: "Escape" })
+    fireEvent.click(screen.getByRole("button", { name: "Menu" }))
     expect(await screen.findByRole("dialog", { name: "Menu" })).toBeVisible()
     fireEvent.keyDown(window, { key: "1" })
     fireEvent.click(screen.getByRole("button", { name: "Resume Battle" }))

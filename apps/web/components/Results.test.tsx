@@ -24,6 +24,35 @@ function createResults() {
 }
 
 describe("Battle-exit Results presentation", () => {
+  it("expires the accepted-save status once without removing its geometry or restarting on remount", () => {
+    vi.useFakeTimers()
+    try {
+      const openedAt = new Date().toISOString()
+      const props = {
+        results: createResults(),
+        openedAt,
+        runtimeClipCatalog:
+          createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
+        shouldReduceMotion: false,
+        isMenuOpen: false,
+        onOpenMenu: vi.fn(),
+        onSeeValues: vi.fn(),
+        onKeepBattling: vi.fn(),
+      }
+      const view = render(<Results {...props} />)
+      const status = screen.getByRole("status")
+      expect(status).toHaveTextContent("Saved locally")
+      act(() => vi.advanceTimersByTime(5_000))
+      expect(screen.queryByRole("status")).toBeNull()
+      expect(status).toBeInTheDocument()
+      expect(status).toHaveStyle({ opacity: "0" })
+      view.unmount()
+      render(<Results {...props} />)
+      expect(screen.queryByRole("status")).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
   it("keeps canonical accessible order while the visual reward starts in its before slot", () => {
     const results = createResults()
     render(

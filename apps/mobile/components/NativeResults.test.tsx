@@ -31,6 +31,35 @@ function createResults() {
 }
 
 describe("Native Battle-exit Results", () => {
+  it("expires Saved locally without removing its reserved content or restarting on remount", async () => {
+    jest.useFakeTimers()
+    try {
+      const openedAt = new Date().toISOString()
+      const props = {
+        results: createResults(),
+        openedAt,
+        runtimeClipCatalog:
+          createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
+        shouldReduceMotion: true,
+        isMenuOpen: false,
+        onOpenMenu: jest.fn(),
+        onSeeValues: jest.fn(),
+        onKeepBattling: jest.fn(),
+      }
+      const { unmount } = await render(<NativeResults {...props} />)
+      expect(screen.getByText("✓ Saved locally")).toBeOnTheScreen()
+      await act(async () => jest.advanceTimersByTime(5000))
+      expect(screen.queryByText("✓ Saved locally")).toBeNull()
+      expect(
+        screen.getByText("✓ Saved locally", { includeHiddenElements: true }),
+      ).toBeTruthy()
+      unmount()
+      await render(<NativeResults {...props} />)
+      expect(screen.queryByText("✓ Saved locally")).toBeNull()
+    } finally {
+      jest.useRealTimers()
+    }
+  })
   it("starts in entry order before bringing the canonical reward into the virtualized roster", async () => {
     jest.useFakeTimers()
     try {
