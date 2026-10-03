@@ -44,6 +44,7 @@ type UnreadableDataRecoveryProps = SharedPlayerDataRecoveryProps & {
 
 type StorageUnavailableRecoveryProps = SharedPlayerDataRecoveryProps & {
   readonly mode: "storage-unavailable"
+  readonly hasPendingSave?: boolean
   readonly canExportCurrentData: boolean
   readonly canReturnWithoutNewChanges: boolean
   readonly onExportCurrentData: () => void
@@ -69,7 +70,7 @@ export default function PlayerDataRecovery(props: PlayerDataRecoveryProps) {
   const copy =
     props.mode === "unreadable-data"
       ? playerDataRecoveryCopy.unreadableData
-      : playerDataRecoveryCopy.storageUnavailable
+      : props.hasPendingSave ? playerDataRecoveryCopy.pendingSave : playerDataRecoveryCopy.storageUnavailable
 
   useEffect(() => {
     headingRef.current?.focus()
@@ -118,8 +119,9 @@ export default function PlayerDataRecovery(props: PlayerDataRecoveryProps) {
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="text-mapache-vivid-primary-cyan text-4xl font-black uppercase drop-shadow-[5px_5px_0px_#000000] outline-none sm:text-6xl"
+          className="text-mapache-vivid-primary-cyan text-4xl font-black drop-shadow-[5px_5px_0px_#000000] outline-none sm:text-6xl"
         >
+          {props.mode === "storage-unavailable" && props.hasPendingSave ? <span aria-hidden="true">✖ </span> : null}
           {copy.title}
         </h1>
 
@@ -250,6 +252,7 @@ export default function PlayerDataRecovery(props: PlayerDataRecoveryProps) {
         ) : (
           <PlayerDataRecoveryActions
             mode="storage-unavailable"
+            hasPendingSave={props.hasPendingSave}
             canExportCurrentData={props.canExportCurrentData}
             canReturnWithoutNewChanges={props.canReturnWithoutNewChanges}
             isBusy={isBusy}

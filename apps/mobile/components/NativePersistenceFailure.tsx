@@ -41,6 +41,7 @@ type UnreadableDataFailureProps = SharedNativePersistenceFailureProps & {
 
 type StorageUnavailableFailureProps = SharedNativePersistenceFailureProps & {
   readonly mode: "storage-unavailable"
+  readonly hasPendingSave?: boolean
   readonly canExportCurrentData: boolean
   readonly canReturnWithoutNewChanges: boolean
   readonly onExportCurrentData: () => void
@@ -57,11 +58,11 @@ export default function NativePersistenceFailure(
   const title =
     props.mode === "unreadable-data"
       ? playerDataRecoveryCopy.unreadableData.title
-      : playerDataRecoveryCopy.storageUnavailable.title
+      : props.hasPendingSave ? playerDataRecoveryCopy.pendingSave.title : playerDataRecoveryCopy.storageUnavailable.title
   const body =
     props.mode === "unreadable-data"
       ? playerDataRecoveryCopy.unreadableData.body
-      : [playerDataRecoveryCopy.storageUnavailable.body]
+      : [props.hasPendingSave ? playerDataRecoveryCopy.pendingSave.body : playerDataRecoveryCopy.storageUnavailable.body]
 
   return (
     <MapacheScreen>
@@ -77,8 +78,9 @@ export default function NativePersistenceFailure(
           <Text
             accessibilityRole="header"
             variant="h1"
-            className="text-mapache-vivid-secondary-red text-4xl uppercase"
+            className="text-mapache-vivid-secondary-red text-4xl"
           >
+            {props.mode === "storage-unavailable" && props.hasPendingSave ? <Text accessibilityElementsHidden>✖ </Text> : null}
             {title}
           </Text>
           <View className="mt-5 gap-4">
@@ -163,6 +165,7 @@ export default function NativePersistenceFailure(
             ) : (
               <NativePlayerDataRecoveryActions
                 mode="storage-unavailable"
+                hasPendingSave={props.hasPendingSave}
                 canExportCurrentData={props.canExportCurrentData}
                 canReturnWithoutNewChanges={props.canReturnWithoutNewChanges}
                 isBusy={isBusy}
