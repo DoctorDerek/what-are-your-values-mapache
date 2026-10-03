@@ -21,7 +21,11 @@ import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingS
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { FlatList, Pressable, View } from "react-native"
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated"
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeResultsValueCell from "@/components/NativeResultsValueCell"
 import NativeSeethingSwarmHubAnimal from "@/components/NativeSeethingSwarmHubAnimal"
@@ -134,16 +138,25 @@ export default function NativeResults({
   const [isSaveConfirmationVisible, setIsSaveConfirmationVisible] = useState(
     () => getResultsSaveConfirmationRemainingMs(openedAt, Date.now()) > 0,
   )
-  const saveConfirmationOpacity = useSharedValue(isSaveConfirmationVisible ? 1 : 0)
-  const saveConfirmationStyle = useAnimatedStyle(() => ({ opacity: saveConfirmationOpacity.value }))
+  const saveConfirmationOpacity = useSharedValue(
+    isSaveConfirmationVisible ? 1 : 0,
+  )
+  const saveConfirmationStyle = useAnimatedStyle(() => ({
+    opacity: saveConfirmationOpacity.value,
+  }))
   useEffect(() => {
-    const remainingMs = getResultsSaveConfirmationRemainingMs(openedAt, Date.now())
-    setIsSaveConfirmationVisible(remainingMs > 0)
-    saveConfirmationOpacity.value = remainingMs > 0 ? 1 : 0
+    const remainingMs = getResultsSaveConfirmationRemainingMs(
+      openedAt,
+      Date.now(),
+    )
     if (remainingMs === 0) return
     const timeout = setTimeout(() => {
       setIsSaveConfirmationVisible(false)
-      saveConfirmationOpacity.value = shouldReduceMotion ? 0 : withTiming(0, { duration: RESULTS_SAVE_CONFIRMATION_FADE_MS })
+      saveConfirmationOpacity.set(
+        shouldReduceMotion
+          ? 0
+          : withTiming(0, { duration: RESULTS_SAVE_CONFIRMATION_FADE_MS }),
+      )
     }, remainingMs)
     return () => clearTimeout(timeout)
   }, [openedAt, saveConfirmationOpacity, shouldReduceMotion])
@@ -233,15 +246,27 @@ export default function NativeResults({
     <MapacheScreen className="p-3">
       <View className="flex-row flex-wrap items-center justify-between gap-2 pb-2">
         <View className="min-w-0 flex-1 flex-row flex-wrap items-center gap-x-2">
-        <Text
-          accessibilityRole="header"
-          className="text-mapache-vivid-primary-cyan text-2xl font-black"
-        >
-          {RESULTS_COPY.heading}
-        </Text>
-        <Animated.View style={saveConfirmationStyle} pointerEvents="none" accessibilityElementsHidden={!isSaveConfirmationVisible} importantForAccessibility={isSaveConfirmationVisible ? "auto" : "no-hide-descendants"}>
-          <Text accessibilityLiveRegion="polite" className="text-mapache-vivid-secondary-green text-sm font-semibold">✓ {RESULTS_SAVE_CONFIRMATION_COPY}</Text>
-        </Animated.View>
+          <Text
+            accessibilityRole="header"
+            className="text-mapache-vivid-primary-cyan text-2xl font-black"
+          >
+            {RESULTS_COPY.heading}
+          </Text>
+          <Animated.View
+            style={saveConfirmationStyle}
+            pointerEvents="none"
+            accessibilityElementsHidden={!isSaveConfirmationVisible}
+            importantForAccessibility={
+              isSaveConfirmationVisible ? "auto" : "no-hide-descendants"
+            }
+          >
+            <Text
+              accessibilityLiveRegion="polite"
+              className="text-mapache-vivid-secondary-green text-sm font-semibold"
+            >
+              ✓ {RESULTS_SAVE_CONFIRMATION_COPY}
+            </Text>
+          </Animated.View>
         </View>
         <Button size="compact" variant="secondary" onPress={onOpenMenu}>
           <Text>{PRODUCT_MENU_COPY.openAction}</Text>

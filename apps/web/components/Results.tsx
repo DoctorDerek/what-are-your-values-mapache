@@ -164,10 +164,15 @@ export default function Results({
     () => getResultsSaveConfirmationRemainingMs(openedAt, Date.now()) > 0,
   )
   useEffect(() => {
-    const remainingMs = getResultsSaveConfirmationRemainingMs(openedAt, Date.now())
-    setIsSaveConfirmationVisible(remainingMs > 0)
+    const remainingMs = getResultsSaveConfirmationRemainingMs(
+      openedAt,
+      Date.now(),
+    )
     if (remainingMs === 0) return
-    const timeout = window.setTimeout(() => setIsSaveConfirmationVisible(false), remainingMs)
+    const timeout = window.setTimeout(
+      () => setIsSaveConfirmationVisible(false),
+      remainingMs,
+    )
     return () => window.clearTimeout(timeout)
   }, [openedAt])
   const [presentationTime, setPresentationTime] = useState(() => ({
@@ -270,9 +275,13 @@ export default function Results({
               role="status"
               aria-hidden={!isSaveConfirmationVisible}
               className="text-mapache-vivid-secondary-green pointer-events-none text-sm font-semibold transition-opacity motion-reduce:transition-none"
-              style={{ opacity: isSaveConfirmationVisible ? 1 : 0, transitionDuration: `${shouldReduceMotion ? 0 : RESULTS_SAVE_CONFIRMATION_FADE_MS}ms` }}
+              style={{
+                opacity: isSaveConfirmationVisible ? 1 : 0,
+                transitionDuration: `${shouldReduceMotion ? 0 : RESULTS_SAVE_CONFIRMATION_FADE_MS}ms`,
+              }}
             >
-              <span aria-hidden="true">✓ </span>{RESULTS_SAVE_CONFIRMATION_COPY}
+              <span aria-hidden="true">✓ </span>
+              {RESULTS_SAVE_CONFIRMATION_COPY}
             </span>
           </div>
           <Button size="sm" variant="secondary" onClick={onOpenMenu}>
