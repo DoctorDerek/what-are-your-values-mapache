@@ -32,7 +32,8 @@ export default function useWebSemanticBack({
       setHistoryRevision((revision) => revision + 1)
     }
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" || event.defaultPrevented || event.repeat) return
+      if (event.key !== "Escape" || event.defaultPrevented || event.repeat)
+        return
       if (handleBack()) {
         event.preventDefault()
         event.stopImmediatePropagation()

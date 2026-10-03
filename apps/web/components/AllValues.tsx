@@ -121,7 +121,12 @@ export default function AllValues({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!event.defaultPrevented && event.key === "Escape" && !isMenuOpen && !isNavigationBlocked) {
+      if (
+        !event.defaultPrevented &&
+        event.key === "Escape" &&
+        !isMenuOpen &&
+        !isNavigationBlocked
+      ) {
         onClose()
       }
     }

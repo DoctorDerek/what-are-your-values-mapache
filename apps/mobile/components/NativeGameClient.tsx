@@ -160,28 +160,40 @@ function NativeGameClientContent() {
   )
   usePreparedNativeSeethingSwarmClips(hubClips)
   const [isBattleRequested, setIsBattleRequested] = useState(false)
-  const [isAllValuesNavigationBlocked, setIsAllValuesNavigationBlocked] = useState(false)
+  const [isAllValuesNavigationBlocked, setIsAllValuesNavigationBlocked] =
+    useState(false)
   useEffect(() => {
-    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (activeInformationPanelId !== null) {
-        setActiveInformationPanelId(null)
-        return true
-      }
-      if (isControlsOpen) {
-        setIsControlsOpen(false)
-        return true
-      }
-      if (isProductMenuOpen) {
-        setIsProductMenuOpen(false)
-        return true
-      }
-      if (isAllValuesNavigationBlocked || isReadingImportFile) return true
-      const disposition = projectRootBackDisposition(state)
-      if (disposition.kind === "event") send(disposition.event)
-      return disposition.kind !== "root"
-    })
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        if (activeInformationPanelId !== null) {
+          setActiveInformationPanelId(null)
+          return true
+        }
+        if (isControlsOpen) {
+          setIsControlsOpen(false)
+          return true
+        }
+        if (isProductMenuOpen) {
+          setIsProductMenuOpen(false)
+          return true
+        }
+        if (isAllValuesNavigationBlocked || isReadingImportFile) return true
+        const disposition = projectRootBackDisposition(state)
+        if (disposition.kind === "event") send(disposition.event)
+        return disposition.kind !== "root"
+      },
+    )
     return () => subscription.remove()
-  }, [activeInformationPanelId, isControlsOpen, isProductMenuOpen, isAllValuesNavigationBlocked, isReadingImportFile, send, state])
+  }, [
+    activeInformationPanelId,
+    isControlsOpen,
+    isProductMenuOpen,
+    isAllValuesNavigationBlocked,
+    isReadingImportFile,
+    send,
+    state,
+  ])
   const isHubReady = state.matches("Hub")
   const canAwaitBattle =
     isHubReady &&

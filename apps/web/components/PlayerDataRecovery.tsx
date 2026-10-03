@@ -70,7 +70,9 @@ export default function PlayerDataRecovery(props: PlayerDataRecoveryProps) {
   const copy =
     props.mode === "unreadable-data"
       ? playerDataRecoveryCopy.unreadableData
-      : props.hasPendingSave ? playerDataRecoveryCopy.pendingSave : playerDataRecoveryCopy.storageUnavailable
+      : props.hasPendingSave
+        ? playerDataRecoveryCopy.pendingSave
+        : playerDataRecoveryCopy.storageUnavailable
 
   useEffect(() => {
     headingRef.current?.focus()
@@ -121,7 +123,9 @@ export default function PlayerDataRecovery(props: PlayerDataRecoveryProps) {
           tabIndex={-1}
           className="text-mapache-vivid-primary-cyan text-4xl font-black drop-shadow-[5px_5px_0px_#000000] outline-none sm:text-6xl"
         >
-          {props.mode === "storage-unavailable" && props.hasPendingSave ? <span aria-hidden="true">✖ </span> : null}
+          {props.mode === "storage-unavailable" && props.hasPendingSave ? (
+            <span aria-hidden="true">✖ </span>
+          ) : null}
           {copy.title}
         </h1>
 

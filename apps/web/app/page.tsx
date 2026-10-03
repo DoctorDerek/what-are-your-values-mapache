@@ -10,7 +10,7 @@ export default function Page() {
         aria-label="What Are Your Values, Mapache? information"
         className="noise-bg bg-mapache-vivid-dark text-mapache-vivid-dark px-[max(1rem,env(safe-area-inset-left,0px))] pt-[max(2.5rem,env(safe-area-inset-top,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pb-[max(2.5rem,env(safe-area-inset-bottom,0px))] xl:px-[max(2rem,env(safe-area-inset-left,0px))] xl:pr-[max(2rem,env(safe-area-inset-right,0px))] xl:pb-[max(4rem,env(safe-area-inset-bottom,0px))]"
       >
-        <div className="mx-auto grid min-w-0 max-w-7xl grid-cols-1 gap-10">
+        <div className="mx-auto grid max-w-7xl min-w-0 grid-cols-1 gap-10">
           <a
             href="#game"
             className="bg-mapache-vivid-secondary-green text-mapache-vivid-dark w-fit max-w-full border-4 border-black px-5 py-4 text-xl font-black uppercase shadow-[6px_6px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
@@ -32,7 +32,7 @@ export default function Page() {
             </h2>
             <a
               href="mailto:derekraustin+wayvm@gmail.com"
-              className="bg-mapache-vivid-primary-cyan text-mapache-vivid-black! mt-6 inline-block max-w-full border-4 border-black px-4 py-3 text-lg font-black uppercase [overflow-wrap:anywhere] shadow-[5px_5px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
+              className="bg-mapache-vivid-primary-cyan text-mapache-vivid-black! mt-6 inline-block max-w-full border-4 border-black px-4 py-3 text-lg font-black [overflow-wrap:anywhere] uppercase shadow-[5px_5px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
             >
               Report a Problem
             </a>

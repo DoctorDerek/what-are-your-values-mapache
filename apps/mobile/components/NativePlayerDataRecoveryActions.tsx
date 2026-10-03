@@ -90,11 +90,19 @@ export default function NativePlayerDataRecoveryActions(
           variant="secondary"
           onPress={props.onExportCurrentData}
         >
-          <Text>{props.hasPendingSave ? playerDataRecoveryCopy.pendingSave.export : actions.exportCurrentData}</Text>
+          <Text>
+            {props.hasPendingSave
+              ? playerDataRecoveryCopy.pendingSave.export
+              : actions.exportCurrentData}
+          </Text>
         </Button>
       ) : null}
       <Button disabled={props.isBusy} size="large" onPress={props.onTryAgain}>
-        <Text>{props.hasPendingSave ? playerDataRecoveryCopy.pendingSave.retry : actions.tryAgain}</Text>
+        <Text>
+          {props.hasPendingSave
+            ? playerDataRecoveryCopy.pendingSave.retry
+            : actions.tryAgain}
+        </Text>
       </Button>
       {props.canReturnWithoutNewChanges ? (
         <Button

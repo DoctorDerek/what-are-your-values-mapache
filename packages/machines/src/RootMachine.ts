@@ -45,8 +45,8 @@ import {
 } from "./DurableStoreAdapter"
 import { createInitialPlayerData, type PlayerData } from "./PlayerData"
 import {
-  createWayvmExportActor,
   createPendingBattleProfileExportActor,
+  createWayvmExportActor,
   prepareWayvmImportActor,
   replacePlayerDataActor,
   type PreparedWayvmDownload,
@@ -91,7 +91,11 @@ type SettingsReturnTarget =
 type BackgroundCheckpointReturnTarget = SettingsReturnTarget | "settings"
 
 type PersistenceFailureOrigin =
-  "loading" | "initialization" | "crucible" | "all-values" | "achievement-presentation"
+  | "loading"
+  | "initialization"
+  | "crucible"
+  | "all-values"
+  | "achievement-presentation"
 
 type RootMachineContext = {
   readonly durableStore: DurableStoreAdapter
@@ -2218,20 +2222,27 @@ export const rootMachine = setup({
               sourceAppVersion: context.appVersion,
               sourceBuild: context.sourceBuild,
               playerData: requirePlayerData(context),
-              pendingCommit: context.pendingBattleProfileCommit === null ? null : {
-                state: requireBattleProfileStoreState(context),
-                event: context.pendingBattleProfileCommit.event,
-                committedAt: requirePendingBattleProfileCommittedAt(context),
-              },
+              pendingCommit:
+                context.pendingBattleProfileCommit === null
+                  ? null
+                  : {
+                      state: requireBattleProfileStoreState(context),
+                      event: context.pendingBattleProfileCommit.event,
+                      committedAt:
+                        requirePendingBattleProfileCommittedAt(context),
+                    },
             }),
             onDone: {
               target: "Reviewing",
               actions: assign({
                 preparedDownload: ({ event }) => event.output,
                 portabilityIssue: null,
-                portabilityNotice: ({ context }) => context.pendingBattleProfileCommit
-                  ? playerDataRecoveryCopy.storageUnavailable.pendingBackupReady
-                  : playerDataRecoveryCopy.storageUnavailable.currentBackupReady,
+                portabilityNotice: ({ context }) =>
+                  context.pendingBattleProfileCommit
+                    ? playerDataRecoveryCopy.storageUnavailable
+                        .pendingBackupReady
+                    : playerDataRecoveryCopy.storageUnavailable
+                        .currentBackupReady,
               }),
             },
             onError: {

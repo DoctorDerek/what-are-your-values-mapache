@@ -227,9 +227,15 @@ function WritableGameClient({
   const [isBattleRequested, setIsBattleRequested] = useState(false)
   const [isCustomValueDraftActive, setIsCustomValueDraftActive] =
     useState(false)
-  const [isAllValuesNavigationBlocked, setIsAllValuesNavigationBlocked] = useState(false)
+  const [isAllValuesNavigationBlocked, setIsAllValuesNavigationBlocked] =
+    useState(false)
   const backDisposition = projectRootBackDisposition(state)
-  const hasSemanticParent = backDisposition.kind !== "root" || isProductMenuOpen || isControlsOpen || activeInformationPanelId !== null || isCustomValueDraftActive
+  const hasSemanticParent =
+    backDisposition.kind !== "root" ||
+    isProductMenuOpen ||
+    isControlsOpen ||
+    activeInformationPanelId !== null ||
+    isCustomValueDraftActive
   useWebSemanticBack({
     hasParent: hasSemanticParent,
     onBack: () => {
@@ -245,7 +251,13 @@ function WritableGameClient({
         setIsProductMenuOpen(false)
         return true
       }
-      if (isCustomValueDraftActive || isAllValuesNavigationBlocked || isReadingImportFile || isReadingRecoveryImportFile) return true
+      if (
+        isCustomValueDraftActive ||
+        isAllValuesNavigationBlocked ||
+        isReadingImportFile ||
+        isReadingRecoveryImportFile
+      )
+        return true
       if (backDisposition.kind === "event") send(backDisposition.event)
       return backDisposition.kind !== "root"
     },

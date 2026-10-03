@@ -167,9 +167,10 @@ async function acceptBattleProfileTransaction(
     await store.compareAndSwapVerified(transaction)
   } catch (error: unknown) {
     const entries = await store.readAll()
-    const isAccepted = transaction.putEntries.every(
-      ([key, value]) => entries.get(key) === value,
-    ) && transaction.deleteKeys.every((key) => !entries.has(key))
+    const isAccepted =
+      transaction.putEntries.every(
+        ([key, value]) => entries.get(key) === value,
+      ) && transaction.deleteKeys.every((key) => !entries.has(key))
     if (!isAccepted) throw error
   }
 }

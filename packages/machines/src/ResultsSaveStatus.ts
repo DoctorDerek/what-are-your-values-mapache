@@ -8,5 +8,8 @@ export function getResultsSaveConfirmationRemainingMs(
 ): number {
   return openedAt === null
     ? 0
-    : Math.max(0, Date.parse(openedAt) + RESULTS_SAVE_CONFIRMATION_MS - currentTimeMs)
+    : Math.max(
+        0,
+        Date.parse(openedAt) + RESULTS_SAVE_CONFIRMATION_MS - currentTimeMs,
+      )
 }

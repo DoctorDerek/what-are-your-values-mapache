@@ -113,7 +113,9 @@ export default function PlayerDataRecoveryActions(
           onClick={props.onExportCurrentData}
           className="w-full whitespace-normal"
         >
-          {props.hasPendingSave ? playerDataRecoveryCopy.pendingSave.export : actions.exportCurrentData}
+          {props.hasPendingSave
+            ? playerDataRecoveryCopy.pendingSave.export
+            : actions.exportCurrentData}
         </Button>
       ) : null}
       <Button
@@ -123,7 +125,9 @@ export default function PlayerDataRecoveryActions(
         onClick={props.onTryAgain}
         className="w-full whitespace-normal"
       >
-        {props.hasPendingSave ? playerDataRecoveryCopy.pendingSave.retry : actions.tryAgain}
+        {props.hasPendingSave
+          ? playerDataRecoveryCopy.pendingSave.retry
+          : actions.tryAgain}
       </Button>
       {props.canReturnWithoutNewChanges ? (
         <Button
