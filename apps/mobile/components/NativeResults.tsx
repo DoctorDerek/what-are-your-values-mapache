@@ -22,6 +22,7 @@ import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { FlatList, Pressable, View } from "react-native"
 import Animated, {
+  cancelAnimation,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -158,7 +159,10 @@ export default function NativeResults({
           : withTiming(0, { duration: RESULTS_SAVE_CONFIRMATION_FADE_MS }),
       )
     }, remainingMs)
-    return () => clearTimeout(timeout)
+    return () => {
+      clearTimeout(timeout)
+      cancelAnimation(saveConfirmationOpacity)
+    }
   }, [openedAt, saveConfirmationOpacity, shouldReduceMotion])
   const [presentationTime, setPresentationTime] = useState(() => ({
     elapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
