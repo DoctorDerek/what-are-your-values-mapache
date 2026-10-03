@@ -266,9 +266,10 @@ export default function NativeResults({
           >
             <Text
               accessibilityLiveRegion="polite"
-              className="text-mapache-vivid-secondary-green text-sm font-semibold"
+              className="text-sm font-semibold text-white"
             >
-              ✓ {RESULTS_SAVE_CONFIRMATION_COPY}
+              <Text className="text-mapache-vivid-secondary-green">✓ </Text>
+              {RESULTS_SAVE_CONFIRMATION_COPY}
             </Text>
           </Animated.View>
         </View>

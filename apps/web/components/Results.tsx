@@ -274,13 +274,18 @@ export default function Results({
             <span
               role="status"
               aria-hidden={!isSaveConfirmationVisible}
-              className="text-mapache-vivid-secondary-green pointer-events-none text-sm font-semibold transition-opacity motion-reduce:transition-none"
+              className="pointer-events-none text-sm font-semibold text-white transition-opacity motion-reduce:transition-none"
               style={{
                 opacity: isSaveConfirmationVisible ? 1 : 0,
                 transitionDuration: `${shouldReduceMotion ? 0 : RESULTS_SAVE_CONFIRMATION_FADE_MS}ms`,
               }}
             >
-              <span aria-hidden="true">✓ </span>
+              <span
+                aria-hidden="true"
+                className="text-mapache-vivid-secondary-green"
+              >
+                ✓{" "}
+              </span>
               {RESULTS_SAVE_CONFIRMATION_COPY}
             </span>
           </div>
