@@ -398,6 +398,7 @@ for (const viewport of [
         '[data-hub-active-clip="true"] [data-playback-ready="true"]',
       ),
     ).toHaveCount(1)
+    await page.mouse.move(0, 0)
     await firstRow.hover()
     await expect(
       firstRow.locator(
