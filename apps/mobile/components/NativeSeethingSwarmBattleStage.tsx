@@ -253,7 +253,7 @@ function NativeBattlePlayback({
     <View
       testID="seething-swarm-battle-stage"
       onLayout={() => setLayoutRevision((revision) => revision + 1)}
-      className="relative mx-3 mb-3 min-h-0 flex-1 flex-row"
+      className="relative mx-3 mt-3 min-h-0 flex-1 flex-row"
     >
       {children({ first: combatants[0], second: combatants[1] })}
     </View>
