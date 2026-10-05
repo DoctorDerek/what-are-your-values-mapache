@@ -12,11 +12,11 @@ import {
 } from "@game/machines/src/SeethingSwarmAttention"
 import { createSeethingSwarmAttentionAlternatives } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { createSeethingSwarmAttentionPlayback } from "@game/machines/src/SeethingSwarmBattlePlayback"
+import { cx } from "classix"
 import { useMemo, useState } from "react"
 import { View } from "react-native"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
 import { useNativeSeethingSwarmPreparedAssets } from "@/components/NativeSeethingSwarmAssetPreparation"
-import { cn } from "@/lib/utils"
 
 export default function NativeSeethingSwarmHubAnimal({
   calmClip,
@@ -112,7 +112,7 @@ export default function NativeSeethingSwarmHubAnimal({
         return (
           <View
             key={clip.relativePath}
-            className={cn(
+            className={cx(
               "absolute inset-0",
               visible ? "opacity-100" : "opacity-0",
             )}

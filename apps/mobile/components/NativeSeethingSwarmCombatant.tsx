@@ -16,12 +16,12 @@ import {
   getSeethingSwarmBattleClips,
 } from "@game/machines/src/SeethingSwarmBattlePlayback"
 import type { SeethingSwarmVariedRole } from "@game/machines/src/SeethingSwarmBattleVariation"
+import { cx } from "classix"
 import { useEffect, useMemo, useState } from "react"
 import { View } from "react-native"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
 import { useNativeSeethingSwarmPreparedAssets } from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSeethingSwarmPlaceholder from "@/components/NativeSeethingSwarmPlaceholder"
-import { cn } from "@/lib/utils"
 
 export default function NativeSeethingSwarmCombatant({
   combatant,
@@ -280,7 +280,7 @@ export default function NativeSeethingSwarmCombatant({
         return (
           <View
             key={clip.animationId}
-            className={cn(
+            className={cx(
               "absolute inset-0",
               isVisible ? "opacity-100" : "opacity-0",
             )}

@@ -14,6 +14,7 @@ import {
   REDUCED_MOTION_SETTING_OPTIONS,
   SETTINGS_PLAYER_DATA_RESET_KINDS,
 } from "@game/machines/src/PlayerSettingsPresentation"
+import { cx } from "classix"
 import { Pressable, ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeOperationMessages from "@/components/NativeOperationMessages"
@@ -21,7 +22,6 @@ import NativePlayerDataResetActions from "@/components/NativePlayerDataResetActi
 import NativePlayerDataResetReview from "@/components/NativePlayerDataResetReview"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
-import { cn } from "@/lib/utils"
 
 type NativeSettingsOption<TValue extends string> = {
   readonly value: TValue
@@ -67,7 +67,7 @@ function NativeSettingsRadioGroup<TValue extends string>({
               accessibilityState={{ checked: isSelected, disabled }}
               disabled={disabled}
               onPress={() => onValueChange(option.value)}
-              className={cn(
+              className={cx(
                 "min-w-0 flex-row items-start gap-4 border-4 border-black p-4 shadow-[5px_5px_0px_0px_#000000] xl:flex-1",
                 isSelected ? "bg-mapache-vivid-primary-cyan" : "bg-white",
                 disabled && "opacity-50",

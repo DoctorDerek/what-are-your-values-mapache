@@ -1,9 +1,10 @@
 import { Slot } from "@rn-primitives/slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { cx } from "classix"
 import * as React from "react"
 import { Pressable } from "react-native"
+import { twMerge } from "tailwind-merge"
 import { TextClassContext } from "@/components/ui/text"
-import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
   "items-center justify-center border-4 border-black shadow-[5px_5px_0px_0px_#000000] active:translate-x-[5px] active:translate-y-[5px] active:shadow-none disabled:opacity-50",
@@ -64,7 +65,7 @@ function Button({
     <TextClassContext.Provider value={buttonTextVariants({ variant, size })}>
       <Component
         accessibilityRole="button"
-        className={cn(buttonVariants({ variant, size }), className)}
+        className={twMerge(cx(buttonVariants({ variant, size }), className))}
         {...props}
       />
     </TextClassContext.Provider>

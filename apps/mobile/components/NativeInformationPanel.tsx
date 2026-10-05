@@ -1,9 +1,9 @@
+import { cx } from "classix"
 import type { ReactNode } from "react"
 import { Modal, ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
-import { cn } from "@/lib/utils"
 
 type NativeInformationPanelFrameProps = Readonly<{
   title: string
@@ -35,7 +35,7 @@ function NativeInformationPanelFrame({
           <View className="relative border-b-4 border-black p-5">
             <Text
               variant="h1"
-              className={cn(
+              className={cx(
                 "text-mapache-vivid-primary-raspberry text-4xl uppercase",
                 accessibleCloseLabel && "pr-14",
               )}

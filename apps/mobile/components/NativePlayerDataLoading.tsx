@@ -1,9 +1,9 @@
 import { STARTUP_INDICATOR_DELAY_MS } from "@game/data/src/PresentationLoadingCopy"
 import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
+import { cx } from "classix"
 import { useEffect, useState } from "react"
 import { View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
-import { cn } from "@/lib/utils"
 
 export default function NativePlayerDataLoading() {
   const [showIndicator, setShowIndicator] = useState(false)
@@ -25,7 +25,7 @@ export default function NativePlayerDataLoading() {
       <View
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
-        className={cn(
+        className={cx(
           "flex-row gap-2",
           showIndicator ? "opacity-100" : "opacity-0",
         )}

@@ -1,11 +1,12 @@
 import { Slot } from "@rn-primitives/slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { cx } from "classix"
 import * as React from "react"
 import { Platform, Text as ReactNativeText, type Role } from "react-native"
-import { cn } from "@/lib/utils"
+import { twMerge } from "tailwind-merge"
 
 const textVariants = cva(
-  cn(
+  cx(
     "text-base text-foreground",
     Platform.select({
       web: "select-text",
@@ -15,19 +16,19 @@ const textVariants = cva(
     variants: {
       variant: {
         default: "",
-        h1: cn(
+        h1: cx(
           "text-center text-4xl font-black tracking-tight",
           Platform.select({ web: "scroll-m-20 text-balance" }),
         ),
-        h2: cn(
+        h2: cx(
           "border-b border-border pb-2 text-3xl font-black tracking-tight",
           Platform.select({ web: "scroll-m-20 first:mt-0" }),
         ),
-        h3: cn(
+        h3: cx(
           "text-2xl font-black tracking-tight",
           Platform.select({ web: "scroll-m-20" }),
         ),
-        h4: cn(
+        h4: cx(
           "text-xl font-black tracking-tight",
           Platform.select({ web: "scroll-m-20" }),
         ),
@@ -82,10 +83,8 @@ function Text({
 
   return (
     <Component
-      className={cn(
-        textVariants({ variant }),
-        inheritedTextClassName,
-        className,
+      className={twMerge(
+        cx(textVariants({ variant }), inheritedTextClassName, className),
       )}
       role={variant ? ROLE[variant] : undefined}
       aria-level={variant ? ARIA_LEVEL[variant] : undefined}

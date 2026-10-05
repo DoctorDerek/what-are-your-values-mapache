@@ -6,10 +6,10 @@ import {
 } from "@game/data/src/Value"
 import { getValueChoiceAccessibilityLabel } from "@game/machines/src/BattleAccessibilityPresentation"
 import type { BattleRewardPresentation } from "@game/machines/src/BattleRewardPresentation"
+import { cx } from "classix"
 import { forwardRef, useState, type ForwardedRef, type ReactNode } from "react"
 import { Pressable, ScrollView, View } from "react-native"
 import { Text } from "@/components/ui/text"
-import { cn } from "@/lib/utils"
 
 type NativeValueChoiceCardProps = {
   position: "first" | "second"
@@ -60,7 +60,7 @@ function NativeValueChoiceCard(
         })}
         accessibilityRole="button"
         accessibilityState={{ disabled: !isEnabled, selected: isWinner }}
-        className={cn(
+        className={cx(
           "relative min-h-0 min-w-0 flex-1 flex-col items-center border-black xl:border-4",
           isWinner && "border-white",
           isFirst
@@ -92,7 +92,7 @@ function NativeValueChoiceCard(
             <View className="mt-2 w-full min-w-0 flex-row flex-wrap items-center justify-between gap-2 xl:gap-5">
               <Text
                 aria-hidden
-                className={cn(
+                className={cx(
                   "w-12 shrink-0 text-center text-sm font-black text-black/50 uppercase xl:w-24 xl:text-xl",
                   !controlHint && "opacity-0",
                 )}
@@ -130,7 +130,7 @@ function NativeValueChoiceCard(
           }}
           onPointerLeave={() => setIsHovered(false)}
           onPointerCancel={() => setIsHovered(false)}
-          className={cn(
+          className={cx(
             "absolute bottom-0 h-44 w-1/2 flex-col items-center justify-end border-black px-2 pb-2 xl:h-68 xl:border-x-4 xl:border-b-4 xl:px-4",
             isWinner ? "z-30" : "z-20",
             isFirst

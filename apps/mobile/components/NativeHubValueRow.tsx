@@ -7,6 +7,7 @@ import { getValueDisplayName } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
+import { cx } from "classix"
 import { useState } from "react"
 import { Pressable, View } from "react-native"
 import { useNativeSeethingSwarmAssetStatus } from "@/components/NativeSeethingSwarmAssetPreparation"
@@ -14,7 +15,6 @@ import NativeSeethingSwarmHubAnimal from "@/components/NativeSeethingSwarmHubAni
 import NativeValueLevelProgress from "@/components/NativeValueLevelProgress"
 import { Text } from "@/components/ui/text"
 import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
-import { cn } from "@/lib/utils"
 
 function NativeValueRankPresentation({
   rank,
@@ -126,7 +126,7 @@ export default function NativeHubValueRow({
         showRank ? `${accessibleLabel}. ${displayName}` : displayName
       }
       accessible
-      className={cn(
+      className={cx(
         "mb-4 border-4 border-black p-4 shadow-[5px_5px_0px_0px_#000000]",
         isTopFive ? "bg-mapache-vivid-secondary-gold" : "bg-white",
       )}
@@ -143,7 +143,7 @@ export default function NativeHubValueRow({
           />
         ) : null}
         <Text
-          className={cn(
+          className={cx(
             "min-w-0 flex-1 text-2xl font-black uppercase",
             isTopFive ? "text-white" : "text-black",
           )}

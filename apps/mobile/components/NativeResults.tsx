@@ -19,6 +19,7 @@ import {
 } from "@game/machines/src/ResultsSaveStatus"
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
+import { cx } from "classix"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { FlatList, Pressable, View } from "react-native"
 import Animated, {
@@ -33,7 +34,6 @@ import NativeSeethingSwarmHubAnimal from "@/components/NativeSeethingSwarmHubAni
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
-import { cn } from "@/lib/utils"
 
 function NativeResultsValueRow({
   frameValue,
@@ -66,11 +66,10 @@ function NativeResultsValueRow({
       {...attentionHandlers}
       accessibilityLabel={`Rank ${value.exitRank}, ${getValueDisplayName(value.definition)}, Level ${finalLevel}, ${value.exitProgress.totalXp} total XP`}
       onFocus={onFocus}
-      className={cn(
+      className={cx(
         "mb-1 flex-row flex-wrap items-center gap-2 border-2 border-black bg-white p-1 shadow-[3px_3px_0px_0px_#000000]",
-        value.exitRank <= 5
-          ? "border-l-mapache-vivid-secondary-gold border-l-8"
-          : "",
+        value.exitRank <= 5 &&
+          "border-l-mapache-vivid-secondary-gold border-l-8",
       )}
     >
       <View className="relative shrink-0">
