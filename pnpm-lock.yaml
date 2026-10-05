@@ -324,9 +324,9 @@ importers:
 
   packages/utils:
     dependencies:
-      clsx:
+      classix:
         specifier: ^2
-        version: 2.1.1
+        version: 2.2.19
       tailwind-merge:
         specifier: ^3
         version: 3.6.0
@@ -4012,6 +4012,9 @@ packages:
 
   class-variance-authority@0.7.1:
     resolution: {integrity: sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg==}
+
+  classix@2.2.19:
+    resolution: {integrity: sha512-pKHsmrmWkENjkB1kz1ho/umyldzgqb4b3WysMDiJk6MqimgAhd6jjDQBe2SHEUp2VLkhD7W2JtivLI8219/LNQ==}
 
   cli-cursor@2.1.0:
     resolution: {integrity: sha512-8lgKz8LmCRYZZQDpRyT2m5rKJ08TnU4tR9FFFW2rxpxR1FzWi4PQ/NfyODchAatHaUgnSPVcx/R5w6NuTBzFiw==}
@@ -11500,6 +11503,8 @@ snapshots:
   class-variance-authority@0.7.1:
     dependencies:
       clsx: 2.1.1
+
+  classix@2.2.19: {}
 
   cli-cursor@2.1.0:
     dependencies:
