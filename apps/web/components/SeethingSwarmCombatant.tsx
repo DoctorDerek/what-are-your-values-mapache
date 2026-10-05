@@ -1,5 +1,6 @@
 import { SEETHING_SWARM_CALM_FRAME_DURATION_MS } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { ValueId } from "@game/data/src/Value"
+import { DEFAULT_BATTLE_ANIMATION_SPEED, type BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
 import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
 import {
   createSeethingSwarmAttentionState,
@@ -28,6 +29,7 @@ export default function SeethingSwarmCombatant({
   onReady,
   onRoleEntered,
   isTravelReady = true,
+  animationSpeed = DEFAULT_BATTLE_ANIMATION_SPEED,
 }: {
   combatant: SeethingSwarmLicensedBattleCombatant<StaticImageData>
   winnerId: ValueId | null
@@ -38,6 +40,7 @@ export default function SeethingSwarmCombatant({
   onReady: (canPlaySequence: boolean) => void
   onRoleEntered?: (animalId: ZooAnimalId, role: SeethingSwarmVariedRole) => void
   isTravelReady?: boolean
+  animationSpeed?: BattleAnimationSpeed
 }) {
   const [attention, setAttention] = useState(createSeethingSwarmAttentionState)
   const nextAttention = updateSeethingSwarmAttention(
@@ -97,8 +100,9 @@ export default function SeethingSwarmCombatant({
         combatant: performanceCombatant,
         winnerId,
         cue,
+        speed: animationSpeed,
       }),
-    [performanceCombatant, winnerId, cue],
+    [performanceCombatant, winnerId, cue, animationSpeed],
   )
   const loadedClips = new Set([
     ...loadedImageClips,
