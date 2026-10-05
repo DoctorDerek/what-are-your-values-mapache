@@ -3,6 +3,7 @@ import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCop
 import { useEffect, useState } from "react"
 import { View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
+import { cn } from "@/lib/utils"
 
 export default function NativePlayerDataLoading() {
   const [showIndicator, setShowIndicator] = useState(false)
@@ -24,7 +25,10 @@ export default function NativePlayerDataLoading() {
       <View
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
-        className={`flex-row gap-2 ${showIndicator ? "opacity-100" : "opacity-0"}`}
+        className={cn(
+          "flex-row gap-2",
+          showIndicator ? "opacity-100" : "opacity-0",
+        )}
       >
         <View className="bg-mapache-vivid-primary-cyan size-6 border-2 border-black" />
         <View className="bg-mapache-vivid-primary-orange size-6 border-2 border-black" />

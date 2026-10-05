@@ -21,6 +21,7 @@ import { View } from "react-native"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
 import { useNativeSeethingSwarmPreparedAssets } from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSeethingSwarmPlaceholder from "@/components/NativeSeethingSwarmPlaceholder"
+import { cn } from "@/lib/utils"
 
 export default function NativeSeethingSwarmCombatant({
   combatant,
@@ -279,7 +280,10 @@ export default function NativeSeethingSwarmCombatant({
         return (
           <View
             key={clip.animationId}
-            className={`absolute inset-0 ${isVisible ? "opacity-100" : "opacity-0"}`}
+            className={cn(
+              "absolute inset-0",
+              isVisible ? "opacity-100" : "opacity-0",
+            )}
             testID={`battle-clip-${combatant.side}-${clip.animationId}`}
           >
             <NativeSeethingSwarmAnimal
