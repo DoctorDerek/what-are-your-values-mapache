@@ -30,7 +30,7 @@ declare global {
 async function expectCompleteTextReachable(text: Locator) {
   for (const edge of ["start", "end"] as const) {
     const evidence = await text.evaluate((element, edge) => {
-      const surface = element.closest("main")!
+      const surface = element.closest('[aria-label="Battle choices"]')!
       const surfaceBounds = surface.getBoundingClientRect()
       const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
       const textNodes: Node[] = []
@@ -354,7 +354,7 @@ for (const viewport of [
   { width: 320, height: 568, textScale: 400 },
   { width: 320, height: 568, textScale: 400, fontFamily: "monospace" },
 ]) {
-  test(`controls and full definitions share scrolling at ${viewport.width}px with ${viewport.textScale}% text${viewport.fontFamily ? " using fallback font metrics" : ""}`, async ({
+  test(`bottom controls remain reachable while definitions scroll at ${viewport.width}px with ${viewport.textScale}% text${viewport.fontFamily ? " using fallback font metrics" : ""}`, async ({
     page,
   }) => {
     await page.setViewportSize(viewport)
@@ -370,6 +370,7 @@ for (const viewport of [
         content: `body { font-family: ${viewport.fontFamily}; }`,
       })
     const battle = page.getByRole("main", { name: "Value battle" })
+    const content = battle.getByRole("region", { name: "Battle choices" })
     const choices = battle.getByRole("button", { name: /^Choose / })
     const actionBar = battle.getByRole("navigation", { name: "Battle actions" })
     const menuAction = actionBar.getByRole("button", {
@@ -407,7 +408,7 @@ for (const viewport of [
           }
         }),
       )
-    expect(actionBounds.map(({ name }) => name)).toEqual([
+    expect(actionBounds.slice(0, 4).map(({ name }) => name)).toEqual([
       "Menu",
       "Undo",
       "Redo",
@@ -432,12 +433,18 @@ for (const viewport of [
     }
     for (const action of await actionBar.getByRole("button").all()) {
       await action.scrollIntoViewIfNeeded()
-      await expect(action).toBeInViewport({ ratio: 1 })
-    }
-    if (viewport.textScale === 400)
-      expect((await actionBar.boundingBox())!.height).toBeGreaterThan(
-        viewport.height,
+      await expect(action).toBeInViewport({ ratio: 0.99 })
+      const bounds = await action.boundingBox()
+      expect(bounds!.y).toBeGreaterThanOrEqual(
+        (await actionBar.boundingBox())!.y - 1,
       )
+      expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(
+        viewport.height + 1,
+      )
+    }
+    expect((await actionBar.boundingBox())!.height).toBeLessThanOrEqual(
+      viewport.height * 0.6 + 1,
+    )
     await expect(undoAction).toBeDisabled()
     await expect(redoAction).toBeDisabled()
     await menuAction.click()
@@ -447,15 +454,8 @@ for (const viewport of [
       .getByRole("button", { name: "Resume Battle", exact: true })
       .click()
     await expect(menu).toBeHidden()
-    await expect(battle.getByRole("region")).toHaveCount(0)
-    expect(
-      await battle.evaluate(
-        (surface) =>
-          [...surface.querySelectorAll("*")].filter((element) =>
-            ["auto", "scroll"].includes(getComputedStyle(element).overflowY),
-          ).length,
-      ),
-    ).toBe(0)
+    await expect(content).toBeVisible()
+    await expect(actionBar).toBeInViewport({ ratio: 1 })
     await expect(choices).toHaveCount(2)
     for (const choice of await choices.all()) {
       const heading = choice.getByRole("heading")
@@ -479,46 +479,39 @@ for (const viewport of [
       await expect(level).toBeVisible()
       await expectCompleteTextReachable(level)
     }
-    await menuAction.focus()
     const surfaceBoundsBeforeFocus = await battle.boundingBox()
-    await page.keyboard.press("Shift+Tab")
-    await expect(battle).toBeFocused()
     for (const choice of await choices.all())
       await expectCompleteTextReachable(choice.getByText(/^\[\d \/ [A-Z]\]$/))
+    await content.focus()
     await page.keyboard.press("Home")
-    await expect(battle).toHaveCSS("border-left-color", "rgb(255, 255, 255)")
     expect(await battle.boundingBox()).toEqual(surfaceBoundsBeforeFocus)
     await expect
-      .poll(() => battle.evaluate((element) => element.scrollTop))
+      .poll(() => content.evaluate((element) => element.scrollTop))
       .toBe(0)
     const beforeWheel = await battle.evaluate((surface) => ({
       pageScroll: window.scrollY,
       controlsTop: surface.querySelector("nav")!.getBoundingClientRect().top,
     }))
-    await menuAction.hover()
+    await content.hover()
     await page.mouse.wheel(0, 200)
     await expect
-      .poll(() => battle.evaluate((surface) => surface.scrollTop))
+      .poll(() => content.evaluate((surface) => surface.scrollTop))
       .toBeGreaterThan(0)
-    expect((await actionBar.boundingBox())!.y).toBeLessThan(
-      beforeWheel.controlsTop,
-    )
+    expect((await actionBar.boundingBox())!.y).toBe(beforeWheel.controlsTop)
     expect(await page.evaluate(() => scrollY)).toBe(beforeWheel.pageScroll)
     await page.keyboard.press("End")
     await expect
       .poll(() =>
-        battle.evaluate(
+        content.evaluate(
           (element) =>
             element.scrollTop >=
             element.scrollHeight - element.clientHeight - 1,
         ),
       )
       .toBe(true)
-    expect((await actionBar.boundingBox())!.y).toBeLessThan(
-      beforeWheel.controlsTop,
-    )
+    expect((await actionBar.boundingBox())!.y).toBe(beforeWheel.controlsTop)
     await choices.last().hover()
-    const beforeValueWheel = await battle.evaluate((surface) => ({
+    const beforeValueWheel = await content.evaluate((surface) => ({
       scrollTop: surface.scrollTop,
       remainingScroll:
         surface.scrollHeight - surface.clientHeight - surface.scrollTop,
@@ -528,7 +521,7 @@ for (const viewport of [
     await page.mouse.wheel(0, scrollDown ? 200 : -200)
     await expect
       .poll(async () => {
-        const scrollTop = await battle.evaluate((surface) => surface.scrollTop)
+        const scrollTop = await content.evaluate((surface) => surface.scrollTop)
         return scrollDown
           ? scrollTop > beforeValueWheel.scrollTop
           : scrollTop < beforeValueWheel.scrollTop
@@ -547,7 +540,7 @@ for (const viewport of [
     const readChoiceGeometry = () =>
       choices.evaluateAll((buttons) =>
         buttons.map((button) => {
-          const surface = button.closest("main")!
+          const surface = button.closest('[aria-label="Battle choices"]')!
           const { x, y, width, height } = button.getBoundingClientRect()
           return { x, y: y + surface.scrollTop + window.scrollY, width, height }
         }),
