@@ -1,6 +1,10 @@
 import { SEETHING_SWARM_BATTLE_RESULT_DURATION_MS } from "@game/data/src/SeethingSwarmAnimalPresentation"
+import {
+  DEFAULT_BATTLE_ANIMATION_SPEED,
+  scaleBattleAnimationDuration,
+  type BattleAnimationSpeed,
+} from "@game/machines/src/BattleAnimationSpeed"
 import type { SeethingSwarmBattleCombatantSide } from "@game/machines/src/SeethingSwarmBattleChoreography"
-import { DEFAULT_BATTLE_ANIMATION_SPEED, scaleBattleAnimationDuration, type BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
 import { useEffect, useRef } from "react"
 import { View } from "react-native"
 import Animated, {
@@ -65,9 +69,13 @@ export default function NativeSeethingSwarmPlaceholder({
       return
     }
     const timing = {
-      duration: role === "rest"
-        ? SEETHING_SWARM_BATTLE_RESULT_DURATION_MS / 2
-        : scaleBattleAnimationDuration(SEETHING_SWARM_BATTLE_RESULT_DURATION_MS / 2, animationSpeed),
+      duration:
+        role === "rest"
+          ? SEETHING_SWARM_BATTLE_RESULT_DURATION_MS / 2
+          : scaleBattleAnimationDuration(
+              SEETHING_SWARM_BATTLE_RESULT_DURATION_MS / 2,
+              animationSpeed,
+            ),
       easing: Easing.inOut(Easing.quad),
       reduceMotion: ReduceMotion.Never,
     }

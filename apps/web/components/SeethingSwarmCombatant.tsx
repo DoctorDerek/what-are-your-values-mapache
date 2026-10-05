@@ -1,7 +1,10 @@
 import { SEETHING_SWARM_CALM_FRAME_DURATION_MS } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { ValueId } from "@game/data/src/Value"
-import { DEFAULT_BATTLE_ANIMATION_SPEED, type BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
 import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
+import {
+  DEFAULT_BATTLE_ANIMATION_SPEED,
+  type BattleAnimationSpeed,
+} from "@game/machines/src/BattleAnimationSpeed"
 import {
   createSeethingSwarmAttentionState,
   updateSeethingSwarmAttention,

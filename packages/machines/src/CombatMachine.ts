@@ -1,7 +1,10 @@
 import type { ValueId, ValuePair } from "@game/data/src/Value"
 import { assign, setup } from "xstate"
+import {
+  DEFAULT_BATTLE_ANIMATION_SPEED,
+  type BattleAnimationSpeed,
+} from "./BattleAnimationSpeed"
 import type { BattleSchedulerRestorePoint } from "./BattleScheduler"
-import { DEFAULT_BATTLE_ANIMATION_SPEED, type BattleAnimationSpeed } from "./BattleAnimationSpeed"
 import { areSchedulerIdentitiesEqual } from "./SchedulerIdentity"
 
 export type PresentedBattle = {
@@ -53,7 +56,10 @@ export const combatMachine = setup({
     hasPendingBattle: ({ context }) => context.pendingBattle !== null,
     isNextBattleProjection: ({ context, event }) =>
       event.type === "BATTLE.PROJECTED" &&
-      !areSchedulerIdentitiesEqual(context.currentBattle.scheduler, event.battle.scheduler),
+      !areSchedulerIdentitiesEqual(
+        context.currentBattle.scheduler,
+        event.battle.scheduler,
+      ),
   },
   actions: {
     notifyWinnerSelected: ({ context, event }) => {
@@ -72,8 +78,10 @@ export const combatMachine = setup({
     pendingBattle: null,
     winnerId: null,
     focusedId: null,
-    requestedAnimationSpeed: input.animationSpeed ?? DEFAULT_BATTLE_ANIMATION_SPEED,
-    activeAnimationSpeed: input.animationSpeed ?? DEFAULT_BATTLE_ANIMATION_SPEED,
+    requestedAnimationSpeed:
+      input.animationSpeed ?? DEFAULT_BATTLE_ANIMATION_SPEED,
+    activeAnimationSpeed:
+      input.animationSpeed ?? DEFAULT_BATTLE_ANIMATION_SPEED,
     shouldSkipCurrentAnimation: false,
     onWinnerSelected: input.onWinnerSelected,
   }),
@@ -122,8 +130,10 @@ export const combatMachine = setup({
           actions: [
             assign({
               winnerId: ({ event }) => event.valueId,
-              activeAnimationSpeed: ({ context }) => context.requestedAnimationSpeed,
-              shouldSkipCurrentAnimation: ({ context }) => context.requestedAnimationSpeed === "skip",
+              activeAnimationSpeed: ({ context }) =>
+                context.requestedAnimationSpeed,
+              shouldSkipCurrentAnimation: ({ context }) =>
+                context.requestedAnimationSpeed === "skip",
               focusedId: null,
             }),
             "notifyWinnerSelected",

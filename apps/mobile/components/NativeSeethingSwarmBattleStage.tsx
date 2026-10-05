@@ -2,8 +2,11 @@ import { createSeethingSwarmStageGeometry } from "@game/data/src/SeethingSwarmAn
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
+import {
+  DEFAULT_BATTLE_ANIMATION_SPEED,
+  type BattleAnimationSpeed,
+} from "@game/machines/src/BattleAnimationSpeed"
 import type { PresentedBattle } from "@game/machines/src/CombatMachine"
-import { DEFAULT_BATTLE_ANIMATION_SPEED, type BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
 import {
   type SeethingSwarmBattleChoreography,
   type SeethingSwarmBattleCombatantSide,
@@ -305,7 +308,12 @@ export default function NativeSeethingSwarmBattleStage({
       choreography={choreography}
       winnerId={winnerId}
       isNextBattleReady={isNextBattleReady}
-      shouldReduceMotion={shouldReduceMotion || isPaused || !isForeground || (winnerId !== null && shouldSkipAnimation)}
+      shouldReduceMotion={
+        shouldReduceMotion ||
+        isPaused ||
+        !isForeground ||
+        (winnerId !== null && shouldSkipAnimation)
+      }
       onResultComplete={onResultComplete}
       onRoleEntered={onRoleEntered}
     >

@@ -7,7 +7,11 @@ import {
 import { resolveSeethingSwarmAttackContact } from "@game/data/src/SeethingSwarmAttackContact"
 import type { SeethingSwarmRuntimeCharacterClip } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
-import { DEFAULT_BATTLE_ANIMATION_SPEED, scaleBattleAnimationDuration, type BattleAnimationSpeed } from "./BattleAnimationSpeed"
+import {
+  DEFAULT_BATTLE_ANIMATION_SPEED,
+  scaleBattleAnimationDuration,
+  type BattleAnimationSpeed,
+} from "./BattleAnimationSpeed"
 import type {
   SeethingSwarmBattleClipRole,
   SeethingSwarmBattleClipSelection,
@@ -70,7 +74,10 @@ export function createSeethingSwarmBattlePlayback<PlatformAsset>({
         semanticFamily: "entry-exit",
         clip,
         playbackMode: "one-shot",
-        frameDurationMs: scaleBattleAnimationDuration(SEETHING_SWARM_BATTLE_FRAME_DURATION_MS, speed),
+        frameDurationMs: scaleBattleAnimationDuration(
+          SEETHING_SWARM_BATTLE_FRAME_DURATION_MS,
+          speed,
+        ),
         blocksResult: true,
         startFrame: 0,
         endFrame: clip.frameCount,
@@ -102,13 +109,17 @@ export function createSeethingSwarmBattlePlayback<PlatformAsset>({
   const resolvedSteps = steps.length
     ? steps
     : createPlaybackSteps(combatant.clips, ["rest"], "rest")
-  return winnerId === null || cue === "introduction" || cue === "attention" || cue === "rest"
+  return winnerId === null ||
+    cue === "introduction" ||
+    cue === "attention" ||
+    cue === "rest"
     ? resolvedSteps
     : resolvedSteps.map((step) => ({
         ...step,
-        frameDurationMs: step.playbackMode === "loop"
-          ? step.frameDurationMs
-          : scaleBattleAnimationDuration(step.frameDurationMs, speed),
+        frameDurationMs:
+          step.playbackMode === "loop"
+            ? step.frameDurationMs
+            : scaleBattleAnimationDuration(step.frameDurationMs, speed),
       }))
 }
 

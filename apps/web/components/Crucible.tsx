@@ -10,9 +10,9 @@ import {
   getBattleAccessibilityAnnouncement,
   type PendingBattleAccessibilityAction,
 } from "@game/machines/src/BattleAccessibilityPresentation"
+import type { BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
 import { getBattleRewardPresentation } from "@game/machines/src/BattleRewardPresentation"
 import type { BattleSchedulerRestorePoint } from "@game/machines/src/BattleScheduler"
-import type { BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
 import {
   combatMachine,
   type PresentedBattle,

@@ -1,9 +1,9 @@
-import { readString, readTuple } from "./PersistenceValidation"
 import {
   BATTLE_ANIMATION_SPEED_MODES,
   DEFAULT_BATTLE_ANIMATION_SPEED,
   type BattleAnimationSpeed,
 } from "./BattleAnimationSpeed"
+import { readString, readTuple } from "./PersistenceValidation"
 
 export const PLAYER_SETTINGS_CODEC_VERSION = 2 as const
 
@@ -89,7 +89,13 @@ export function encodePlayerSettings(
   ] as const
   return validated.battleAnimationSpeed === DEFAULT_BATTLE_ANIMATION_SPEED
     ? legacySettings
-    : [PLAYER_SETTINGS_CODEC_VERSION, validated.locale, validated.reducedMotion, validated.controlHints, validated.battleAnimationSpeed]
+    : [
+        PLAYER_SETTINGS_CODEC_VERSION,
+        validated.locale,
+        validated.reducedMotion,
+        validated.controlHints,
+        validated.battleAnimationSpeed,
+      ]
 }
 
 export function decodePlayerSettings(value: unknown) {
@@ -113,9 +119,14 @@ export function decodePlayerSettings(value: unknown) {
       CONTROL_HINT_PREFERENCES,
       "control-hint preference",
     ),
-    battleAnimationSpeed: version === 1
-      ? DEFAULT_BATTLE_ANIMATION_SPEED
-      : readOption(tuple[4], BATTLE_ANIMATION_SPEED_MODES, "Battle animation speed"),
+    battleAnimationSpeed:
+      version === 1
+        ? DEFAULT_BATTLE_ANIMATION_SPEED
+        : readOption(
+            tuple[4],
+            BATTLE_ANIMATION_SPEED_MODES,
+            "Battle animation speed",
+          ),
   })
 
   if (
