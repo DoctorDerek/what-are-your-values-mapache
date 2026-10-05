@@ -1,3 +1,4 @@
+import { readTuple } from "./PersistenceValidation"
 import {
   FULL_CYCLE_SCHEDULE_KIND,
   JOIN_PASS_SCHEDULE_KIND,
@@ -37,12 +38,8 @@ export function readBattleId(value: unknown, label: string) {
 
   let parsed: unknown
   try {
-    parsed = JSON.parse(value) as unknown
+    parsed = JSON.parse(value)
   } catch {
-    throw new Error(`Invalid ${label}`)
-  }
-
-  if (!Array.isArray(parsed) || parsed.length !== 8) {
     throw new Error(`Invalid ${label}`)
   }
 
@@ -55,22 +52,26 @@ export function readBattleId(value: unknown, label: string) {
     scheduleKind,
     cycleIndex,
     cursor,
-  ] = parsed
+  ] = readTuple(parsed, 8, label)
   if (
     format !== "battle-v1" ||
+    typeof progressGeneration !== "number" ||
     !Number.isSafeInteger(progressGeneration) ||
-    (progressGeneration as number) < 0 ||
+    progressGeneration < 0 ||
+    typeof deckRevision !== "number" ||
     !Number.isSafeInteger(deckRevision) ||
-    (deckRevision as number) < 0 ||
+    deckRevision < 0 ||
     typeof activeDeckFingerprint !== "string" ||
     activeDeckFingerprint.length === 0 ||
     algorithmVersion !== PAIR_SCHEDULER_ALGORITHM_VERSION ||
     (scheduleKind !== FULL_CYCLE_SCHEDULE_KIND &&
       scheduleKind !== JOIN_PASS_SCHEDULE_KIND) ||
+    typeof cycleIndex !== "number" ||
     !Number.isSafeInteger(cycleIndex) ||
-    (cycleIndex as number) < 0 ||
+    cycleIndex < 0 ||
+    typeof cursor !== "number" ||
     !Number.isSafeInteger(cursor) ||
-    (cursor as number) < 0 ||
+    cursor < 0 ||
     JSON.stringify(parsed) !== value
   ) {
     throw new Error(`Invalid ${label}`)

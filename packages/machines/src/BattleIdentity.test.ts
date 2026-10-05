@@ -11,6 +11,22 @@ import {
 } from "./PairScheduler"
 
 describe("Battle Identity", () => {
+  it.each([1, 2, 6, 7])(
+    "rejects malformed persisted numeric identity field %i",
+    (fieldIndex) => {
+      const battleCycle = createInitialBattleCycle("identity-boundary-seed")
+      const battleId = createBattleId(battleCycle.scheduler)
+      const identityFields: unknown[] = JSON.parse(battleId)
+      for (const invalidValue of ["0", null, true, {}, -1, 0.5]) {
+        const malformedFields = [...identityFields]
+        malformedFields[fieldIndex] = invalidValue
+        expect(() =>
+          readBattleId(JSON.stringify(malformedFields), "Battle ID"),
+        ).toThrow("Invalid Battle ID")
+      }
+    },
+  )
+
   it("serializes the exact seed-independent v5.0 identity tuple", () => {
     const battleCycle = createInitialBattleCycle("battle-identity-seed")
     const schedulerWithDifferentSeed = createSchedulerRestorePoint({

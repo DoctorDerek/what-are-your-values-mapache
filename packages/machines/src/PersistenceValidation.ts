@@ -1,11 +1,15 @@
 import type { ActiveDeck } from "@game/data/src/ActiveDeck"
 
-export function readTuple(value: unknown, length: number, label: string) {
+export function readTuple(
+  value: unknown,
+  length: number,
+  label: string,
+): readonly unknown[] {
   if (!Array.isArray(value) || value.length !== length) {
     throw new Error(`Invalid ${label}`)
   }
 
-  return value as readonly unknown[]
+  return value
 }
 
 export function readString(value: unknown, label: string) {
@@ -39,11 +43,11 @@ export function readIsoTimestamp(value: unknown, label: string) {
 }
 
 export function readNonNegativeSafeInteger(value: unknown, label: string) {
-  if (!Number.isSafeInteger(value) || (value as number) < 0) {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) {
     throw new Error(`Invalid ${label}: ${String(value)}`)
   }
 
-  return value as number
+  return value
 }
 
 export function readPositiveSafeInteger(value: unknown, label: string) {
