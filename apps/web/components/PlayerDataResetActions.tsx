@@ -6,6 +6,7 @@ import {
 } from "@game/machines/src/PlayerDataReset"
 import { playerDataResetCopy } from "@game/machines/src/PlayerDataResetCopy"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 export default function PlayerDataResetActions({
   customValueCount,
@@ -44,7 +45,12 @@ export default function PlayerDataResetActions({
           return (
             <article
               key={resetKind}
-              className={`flex flex-col border-4 bg-white p-5 shadow-[8px_8px_0px_0px_#000000] sm:p-8 ${isCompleteErasure ? "border-mapache-vivid-secondary-red" : "border-black"}`}
+              className={cn(
+                "flex flex-col border-4 bg-white p-5 shadow-[8px_8px_0px_0px_#000000] sm:p-8",
+                isCompleteErasure
+                  ? "border-mapache-vivid-secondary-red"
+                  : "border-black",
+              )}
             >
               <h3 className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-2xl font-black uppercase sm:text-3xl">
                 {copy.actionLabel}

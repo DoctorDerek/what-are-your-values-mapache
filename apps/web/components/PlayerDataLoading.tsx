@@ -5,6 +5,7 @@ import { STARTUP_INDICATOR_DELAY_MS } from "@game/data/src/PresentationLoadingCo
 import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
 import { useEffect, useState } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
+import { cn } from "@/lib/utils"
 
 export default function PlayerDataLoading() {
   const [showIndicator, setShowIndicator] = useState(false)
@@ -25,7 +26,7 @@ export default function PlayerDataLoading() {
     >
       <div
         aria-hidden="true"
-        className={`flex gap-2 ${showIndicator ? "visible" : "invisible"}`}
+        className={cn("flex gap-2", showIndicator ? "visible" : "invisible")}
       >
         <span className="bg-mapache-vivid-primary-cyan size-6 border-2 border-black" />
         <span className="bg-mapache-vivid-primary-orange size-6 border-2 border-black" />

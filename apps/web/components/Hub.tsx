@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button"
 import ValueAnimalPresentationTile from "@/components/ValueAnimalPresentation"
 import ValueLevelProgress from "@/components/ValueLevelProgress"
 import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
+import { cn } from "@/lib/utils"
 
 export const HUB_MENU_BUTTON_ID = "hub-menu-button"
 
@@ -51,7 +52,12 @@ function ValueRow({
     <li
       id={rowId}
       data-value-row="true"
-      className={`text-mapache-vivid-dark border-2 border-black ${hasComparisons && rank <= 5 ? "bg-mapache-vivid-primary-cyan/10" : "bg-white"}`}
+      className={cn(
+        "text-mapache-vivid-dark border-2 border-black",
+        hasComparisons && rank <= 5
+          ? "bg-mapache-vivid-primary-cyan/10"
+          : "bg-white",
+      )}
     >
       {showDivider ? (
         <h3 className="bg-mapache-vivid-primary-cyan border-b-4 border-black p-3 text-center text-xl font-black uppercase">

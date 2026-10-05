@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import ValueAnimalPresentation from "@/components/ValueAnimalPresentation"
 import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
+import { cn } from "@/lib/utils"
 
 function ResultsValueRow({
   frameValue,
@@ -92,7 +93,12 @@ function ResultsValueRow({
       data-results-value={value.definition.id}
       data-results-promoted={value.exitRank < value.entryRank || undefined}
       data-results-settled={areRowPositionsSettled || undefined}
-      className={`results-card-motion relative z-(--results-row-stacking-order) min-h-28 min-w-0 content-center border-2 border-black bg-white p-1 shadow-[3px_3px_0_#000] ${value.exitRank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
+      className={cn(
+        "results-card-motion relative z-(--results-row-stacking-order) min-h-28 min-w-0 content-center border-2 border-black bg-white p-1 shadow-[3px_3px_0_#000]",
+        value.exitRank <= 5
+          ? "border-l-mapache-vivid-secondary-gold border-l-8"
+          : "",
+      )}
     >
       <span className="sr-only">
         Rank {value.exitRank}, {getValueDisplayName(value.definition)}, Level{" "}
