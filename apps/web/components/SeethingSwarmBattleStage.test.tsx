@@ -160,6 +160,37 @@ function finishReturn(
 afterEach(() => vi.restoreAllMocks())
 
 describe("SeethingSwarmBattleStage", () => {
+  it("settles Skip only after accepted next-pair readiness and reports once", () => {
+    const props = createStageProps("safe-skip")
+    const { rerender } = render(<SeethingSwarmBattleStage {...props} />)
+    rerender(
+      <SeethingSwarmBattleStage
+        {...props}
+        winnerId={props.battle.pair[0]}
+        shouldSkipAnimation
+      />,
+    )
+    expect(props.onResultAnimationComplete).not.toHaveBeenCalled()
+    rerender(
+      <SeethingSwarmBattleStage
+        {...props}
+        winnerId={props.battle.pair[0]}
+        shouldSkipAnimation
+        isNextBattleReady
+      />,
+    )
+    expect(props.onResultAnimationComplete).toHaveBeenCalledTimes(1)
+    rerender(
+      <SeethingSwarmBattleStage
+        {...props}
+        winnerId={props.battle.pair[0]}
+        shouldSkipAnimation
+        isNextBattleReady
+      />,
+    )
+    expect(props.onResultAnimationComplete).toHaveBeenCalledTimes(1)
+  })
+
   it("retains played roles across Hub visits without consuming preloads, rerenders, or skipped roles", async () => {
     const props = createStageProps("app-session-variation")
     const catalog = {

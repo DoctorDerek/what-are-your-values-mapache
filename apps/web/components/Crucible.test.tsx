@@ -68,6 +68,8 @@ function getPresentedCombatantIds(container: HTMLElement) {
 
 function createHistoryProps() {
   return {
+    animationSpeed: "1x" as const,
+    onAnimationSpeedChange: vi.fn(),
     achievements: [],
     canUndo: false,
     canRedo: false,
@@ -917,7 +919,7 @@ describe("Crucible Component Integration", () => {
     expect(onWinnerSelected).not.toHaveBeenCalled()
   })
 
-  it("disables every battle action while a durable write is pending", async () => {
+  it("blocks outcome and navigation actions while saving but keeps speed choices available", async () => {
     const onExit = vi.fn()
     const onOpenMenu = vi.fn()
     const onUndo = vi.fn()
@@ -951,10 +953,13 @@ describe("Crucible Component Integration", () => {
       "aria-busy",
       "true",
     )
-    screen.getAllByRole("button").forEach((button) => {
-      expect(button).toBeDisabled()
-      fireEvent.click(button)
-    })
+    screen
+      .getAllByRole("button")
+      .filter((button) => !button.hasAttribute("aria-pressed"))
+      .forEach((button) => {
+        expect(button).toBeDisabled()
+        fireEvent.click(button)
+      })
     fireEvent.keyDown(window, { key: "1" })
     fireEvent.keyDown(window, { key: "z" })
     fireEvent.keyDown(window, { key: "y" })

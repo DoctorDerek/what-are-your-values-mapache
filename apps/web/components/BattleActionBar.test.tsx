@@ -11,6 +11,9 @@ describe("Battle Action Bar", () => {
 
     const { rerender } = render(
       <BattleActionBar
+        animationSpeed="1x"
+        canChangeAnimationSpeed
+        onAnimationSpeedChange={vi.fn()}
         canOpenMenu
         canUndo={false}
         canRedo={false}
@@ -44,6 +47,9 @@ describe("Battle Action Bar", () => {
 
     rerender(
       <BattleActionBar
+        animationSpeed="1x"
+        canChangeAnimationSpeed
+        onAnimationSpeedChange={vi.fn()}
         canOpenMenu={false}
         canUndo
         canRedo
