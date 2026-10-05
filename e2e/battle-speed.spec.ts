@@ -12,17 +12,21 @@ for (const rate of [2, 3]) {
         "animationstart",
         (event) => {
           const target = event.target
-          if (!(target instanceof HTMLImageElement)) return
-          if (target.closest('[data-battle-cue="approach"]') === null) return
-          if (target.closest('[data-battle-role="attack"]') === null) return
-          const style = getComputedStyle(target)
+          if (
+            !(target instanceof HTMLElement) ||
+            event.animationName !== "seething-swarm-approach"
+          )
+            return
+          const image = target.querySelector(
+            '[data-battle-active-clip="true"] img',
+          )
+          if (!image) return
+          const style = getComputedStyle(image)
           const frameCount = Number(
             style.getPropertyValue("--animal-animation-step-count"),
           )
           document.documentElement.dataset.battleSpriteFrameMs = String(
-            Number.parseFloat(
-              style.getPropertyValue("--animal-animation-duration"),
-            ) / frameCount,
+            (Number.parseFloat(style.animationDuration) * 1000) / frameCount,
           )
         },
         true,
