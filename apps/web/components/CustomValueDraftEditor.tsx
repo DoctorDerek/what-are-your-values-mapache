@@ -42,12 +42,7 @@ export default function CustomValueDraftEditor({
     >
       <div className="flex flex-wrap items-center justify-between gap-2 xl:col-span-2">
         <h2 className="text-xl font-black uppercase">{copy.editorTitle}</h2>
-        <Button
-          type="button"
-          variant="link"
-          className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
-          onClick={onBack}
-        >
+        <Button type="button" variant="link" onClick={onBack}>
           {copy.back}
         </Button>
       </div>
@@ -56,7 +51,7 @@ export default function CustomValueDraftEditor({
           {copy.name}
         </label>
         <Input
-          className="border-2 px-3 py-2 text-base font-normal"
+          variant="compact"
           ref={nameRef}
           id="hub-custom-value-name"
           value={draft.name}
@@ -80,7 +75,7 @@ export default function CustomValueDraftEditor({
         </label>
         <Textarea
           rows={2}
-          className="min-h-16 border-2 px-3 py-2 text-base font-normal"
+          variant="compact"
           id="hub-custom-value-definition"
           value={draft.definition}
           onChange={(event) =>

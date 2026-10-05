@@ -1,9 +1,9 @@
+import { cx } from "classix"
 import type { ReactNode } from "react"
 import { Modal, ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
-import { cn } from "@/lib/utils"
 
 type NativeInformationPanelFrameProps = Readonly<{
   title: string
@@ -35,8 +35,8 @@ function NativeInformationPanelFrame({
           <View className="relative border-b-4 border-black p-5">
             <Text
               variant="h1"
-              className={cn(
-                "text-mapache-vivid-primary-raspberry text-4xl uppercase",
+              className={cx(
+                "text-mapache-vivid-primary-raspberry text-center text-4xl font-black tracking-tight uppercase",
                 accessibleCloseLabel && "pr-14",
               )}
             >
@@ -45,12 +45,12 @@ function NativeInformationPanelFrame({
             {accessibleCloseLabel ? (
               <Button
                 accessibilityLabel={accessibleCloseLabel}
-                size="compact"
+                size="icon"
                 variant="outline"
-                className="absolute top-3 right-3 h-12 w-12 p-0 shadow-none"
+                className="absolute top-3 right-3"
                 onPress={onPrimaryAction}
               >
-                <Text className="text-3xl leading-8">×</Text>
+                <Text>×</Text>
               </Button>
             ) : null}
           </View>

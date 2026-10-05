@@ -35,7 +35,8 @@ export default function ProductMenu({
           <Button
             type="button"
             size="lg"
-            className="w-full text-xl xl:text-2xl"
+            className="w-full"
+            typographyClassName="text-xl xl:text-2xl"
             onClick={() => onOpenChange(false)}
           >
             {contextActionLabel}
@@ -53,7 +54,10 @@ export default function ProductMenu({
                   type="button"
                   variant="outline"
                   size="lg"
-                  className="w-full justify-start text-left text-xl whitespace-normal xl:text-2xl"
+                  className="w-full"
+                  align="start"
+                  wrap
+                  typographyClassName="text-xl xl:text-2xl"
                   onClick={() => onDestinationSelect(destination)}
                 >
                   {destination.label}

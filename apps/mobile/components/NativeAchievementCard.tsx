@@ -1,7 +1,7 @@
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
+import { cx } from "classix"
 import { View } from "react-native"
 import { Text } from "@/components/ui/text"
-import { cn } from "@/lib/utils"
 
 export default function NativeAchievementCard({
   achievement,
@@ -12,7 +12,7 @@ export default function NativeAchievementCard({
 
   return (
     <View
-      className={cn(
+      className={cx(
         "min-w-0 border-4 border-black p-4 shadow-[5px_5px_0px_0px_#000000]",
         isUnlocked ? "bg-mapache-vivid-secondary-gold" : "bg-white",
       )}
@@ -33,13 +33,13 @@ export default function NativeAchievementCard({
       </Text>
       {achievement.progress ? (
         <View className="mt-4 border-t-4 border-black pt-3">
-          <Text className="font-black text-black">
+          <Text className="text-base font-black text-black">
             {achievement.progress.label}
           </Text>
         </View>
       ) : null}
       {achievement.unlockedAt && achievement.unlockedDate ? (
-        <Text className="mt-4 border-t-4 border-black pt-3 font-black text-black">
+        <Text className="mt-4 border-t-4 border-black pt-3 text-base font-black text-black">
           Unlocked {achievement.unlockedDate}
         </Text>
       ) : null}

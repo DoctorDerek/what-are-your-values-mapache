@@ -8,6 +8,7 @@ import {
 } from "@game/data/src/Value"
 import { getValueChoiceAccessibilityLabel } from "@game/machines/src/BattleAccessibilityPresentation"
 import type { BattleRewardPresentation } from "@game/machines/src/BattleRewardPresentation"
+import { cx } from "classix"
 import {
   forwardRef,
   useId,
@@ -87,12 +88,21 @@ export const ValueChoiceCard = forwardRef<
       className="group/choice contents [--choice-focus-width:8px]"
     >
       <div
-        className={`${positionClasses} relative row-start-1 flex min-h-0 min-w-0 flex-col items-center`}
+        className={cx(
+          positionClasses,
+          "relative row-start-1 flex min-h-0 min-w-0 flex-col items-center",
+        )}
       >
         <span
           aria-hidden="true"
           data-card-focus-outline="value"
-          className={`pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block ${isFirst ? "-right-[8px]" : ""} ${combatant ? "border-t-(length:--choice-focus-width)" : "border-y-(length:--choice-focus-width)"}`}
+          className={cx(
+            "pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block",
+            isFirst && "-right-[8px]",
+            combatant
+              ? "border-t-(length:--choice-focus-width)"
+              : "border-y-(length:--choice-focus-width)",
+          )}
         />
         <button
           ref={ref}
@@ -113,18 +123,29 @@ export const ValueChoiceCard = forwardRef<
               {controlHint ? (
                 <span
                   aria-hidden="true"
-                  className={`float-left max-w-[45%] min-w-0 border-2 border-transparent py-1 pr-2 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:border-4 xl:py-2 xl:pr-5 xl:text-2xl ${controlHintContrastClasses}`}
+                  className={cx(
+                    "float-left max-w-[45%] min-w-0 border-2 border-transparent py-1 pr-2 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:border-4 xl:py-2 xl:pr-5 xl:text-2xl",
+                    controlHintContrastClasses,
+                  )}
                 >
                   {controlHint}
                 </span>
               ) : null}
               <span
-                className={`block w-fit min-w-0 border-2 border-black bg-white px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000] ${controlHint ? "float-right ml-2 max-w-[55%] xl:ml-5" : "mx-auto max-w-full"}`}
+                className={cx(
+                  "block w-fit min-w-0 border-2 border-black bg-white px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000]",
+                  controlHint
+                    ? "float-right ml-2 max-w-[55%] xl:ml-5"
+                    : "mx-auto max-w-full",
+                )}
               >
                 Level {level}
               </span>
               <h2
-                className={`clear-both mx-auto flow-root w-max max-w-full min-w-0 pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words hyphens-auto text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000] ${controlHint ? "xl:clear-none xl:pt-0" : ""}`}
+                className={cx(
+                  "clear-both mx-auto flow-root w-max max-w-full min-w-0 pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words hyphens-auto text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000]",
+                  controlHint && "xl:clear-none xl:pt-0",
+                )}
               >
                 {displayName}
               </h2>
@@ -143,7 +164,14 @@ export const ValueChoiceCard = forwardRef<
           data-battle-arena-side={position}
           htmlFor={choiceId}
           aria-hidden="true"
-          className={`@container relative row-start-2 flex min-w-0 items-start justify-center pt-2 pb-12 ${isEnabled ? "cursor-pointer" : "cursor-default"} ${isWinner ? "z-30" : "z-20"} ${isFirst ? "bg-mapache-vivid-primary-cyan col-start-1 after:absolute after:inset-y-0 after:right-0 after:w-2 after:bg-black" : "bg-mapache-vivid-primary-raspberry col-start-2"}`}
+          className={cx(
+            "@container relative row-start-2 flex min-w-0 items-start justify-center pt-2 pb-12",
+            isEnabled ? "cursor-pointer" : "cursor-default",
+            isWinner ? "z-30" : "z-20",
+            isFirst
+              ? "bg-mapache-vivid-primary-cyan col-start-1 after:absolute after:inset-y-0 after:right-0 after:w-2 after:bg-black"
+              : "bg-mapache-vivid-primary-raspberry col-start-2",
+          )}
         >
           <span
             aria-hidden="true"

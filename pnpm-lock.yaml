@@ -129,6 +129,9 @@ importers:
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
+      classix:
+        specifier: ^2
+        version: 2.2.19
       expo:
         specifier: ~57.0.19
         version: 57.0.19(55966b0323c32e7ed087a7dedca1a24b)
@@ -235,6 +238,9 @@ importers:
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
+      classix:
+        specifier: ^2
+        version: 2.2.19
       motion:
         specifier: ^12
         version: 12.42.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -323,13 +329,6 @@ importers:
         version: 6.0.3
 
   packages/utils:
-    dependencies:
-      clsx:
-        specifier: ^2
-        version: 2.1.1
-      tailwind-merge:
-        specifier: ^3
-        version: 3.6.0
     devDependencies:
       typescript:
         specifier: ^6
@@ -4013,6 +4012,9 @@ packages:
   class-variance-authority@0.7.1:
     resolution: {integrity: sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg==}
 
+  classix@2.2.19:
+    resolution: {integrity: sha512-pKHsmrmWkENjkB1kz1ho/umyldzgqb4b3WysMDiJk6MqimgAhd6jjDQBe2SHEUp2VLkhD7W2JtivLI8219/LNQ==}
+
   cli-cursor@2.1.0:
     resolution: {integrity: sha512-8lgKz8LmCRYZZQDpRyT2m5rKJ08TnU4tR9FFFW2rxpxR1FzWi4PQ/NfyODchAatHaUgnSPVcx/R5w6NuTBzFiw==}
     engines: {node: '>=4'}
@@ -6997,9 +6999,6 @@ packages:
   tagged-tag@1.0.0:
     resolution: {integrity: sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==}
     engines: {node: '>=20'}
-
-  tailwind-merge@3.6.0:
-    resolution: {integrity: sha512-uxL7qAVQriqRQPAyK3pj66VqskWqoZ37PW94jwOTwNfq/z9oyu1V+eqrZqtR2+fCiXdYOZe/Modt8GtvqNzu+w==}
 
   tailwindcss@4.3.0:
     resolution: {integrity: sha512-y6nxMGB1nMW9R6k96e5gdIFzcfL/gTJRNaqGes1YvkLnPVXzWgbqFF2yLC0T8G774n24cx3Pe8XrKoniCOAH+Q==}
@@ -11501,6 +11500,8 @@ snapshots:
     dependencies:
       clsx: 2.1.1
 
+  classix@2.2.19: {}
+
   cli-cursor@2.1.0:
     dependencies:
       restore-cursor: 2.0.0
@@ -15121,8 +15122,6 @@ snapshots:
   symbol-tree@3.2.4: {}
 
   tagged-tag@1.0.0: {}
-
-  tailwind-merge@3.6.0: {}
 
   tailwindcss@4.3.0: {}
 

@@ -1,50 +1,36 @@
 import { Slot } from "@rn-primitives/slot"
 import { cva, type VariantProps } from "class-variance-authority"
-import * as React from "react"
+import { cx } from "classix"
+import {
+  createContext,
+  useContext,
+  type ComponentProps,
+  type RefAttributes,
+} from "react"
 import { Platform, Text as ReactNativeText, type Role } from "react-native"
-import { cn } from "@/lib/utils"
 
-const textVariants = cva(
-  cn(
-    "text-base text-foreground",
-    Platform.select({
-      web: "select-text",
-    }),
-  ),
-  {
-    variants: {
-      variant: {
-        default: "",
-        h1: cn(
-          "text-center text-4xl font-black tracking-tight",
-          Platform.select({ web: "scroll-m-20 text-balance" }),
-        ),
-        h2: cn(
-          "border-b border-border pb-2 text-3xl font-black tracking-tight",
-          Platform.select({ web: "scroll-m-20 first:mt-0" }),
-        ),
-        h3: cn(
-          "text-2xl font-black tracking-tight",
-          Platform.select({ web: "scroll-m-20" }),
-        ),
-        h4: cn(
-          "text-xl font-black tracking-tight",
-          Platform.select({ web: "scroll-m-20" }),
-        ),
-        p: "mt-3 leading-7 sm:mt-6",
-        blockquote: "mt-4 border-l-2 pl-3 italic sm:mt-6 sm:pl-6",
-        code: "relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold",
-        lead: "text-xl text-muted-foreground",
-        large: "text-lg font-semibold",
-        small: "text-sm leading-none font-medium",
-        muted: "text-sm text-muted-foreground",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
+const textVariants = cva("", {
+  variants: {
+    variant: {
+      default: "text-base text-foreground",
+      h1: "text-center text-4xl font-black tracking-tight text-foreground",
+      h2: "border-b border-border pb-2 text-3xl font-black tracking-tight text-foreground",
+      h3: "text-2xl font-black tracking-tight text-foreground",
+      h4: "text-xl font-black tracking-tight text-foreground",
+      p: "mt-3 text-base text-foreground leading-7 sm:mt-6",
+      blockquote:
+        "mt-4 border-l-2 pl-3 text-base text-foreground italic sm:mt-6 sm:pl-6",
+      code: "relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold text-foreground",
+      lead: "text-xl text-muted-foreground",
+      large: "text-lg font-semibold text-foreground",
+      small: "text-sm leading-none font-medium text-foreground",
+      muted: "text-sm text-muted-foreground",
     },
   },
-)
+  defaultVariants: {
+    variant: "default",
+  },
+})
 
 type TextVariantProps = VariantProps<typeof textVariants>
 type TextVariant = NonNullable<TextVariantProps["variant"]>
@@ -65,27 +51,39 @@ const ARIA_LEVEL: Partial<Record<TextVariant, string>> = {
   h4: "4",
 }
 
-const TextClassContext = React.createContext<string | undefined>(undefined)
+const TextClassContext = createContext<string | undefined>(undefined)
 
 function Text({
   className,
   asChild = false,
   variant = "default",
   ...props
-}: React.ComponentProps<typeof ReactNativeText> &
-  React.RefAttributes<typeof ReactNativeText> &
+}: ComponentProps<typeof ReactNativeText> &
+  RefAttributes<typeof ReactNativeText> &
   TextVariantProps & {
     asChild?: boolean
   }) {
-  const inheritedTextClassName = React.useContext(TextClassContext)
+  const inheritedTextClassName = useContext(TextClassContext)
   const Component = asChild ? Slot : ReactNativeText
 
   return (
     <Component
-      className={cn(
-        textVariants({ variant }),
-        inheritedTextClassName,
-        className,
+      className={cx(
+        Platform.select({
+          web: cx(
+            "select-text",
+            (variant === "h1" ||
+              variant === "h2" ||
+              variant === "h3" ||
+              variant === "h4") &&
+              "scroll-m-20",
+            variant === "h1" && "text-balance",
+            variant === "h2" && "first:mt-0",
+          ),
+        }),
+        className ??
+          inheritedTextClassName ??
+          textVariants({ variant: variant ?? "default" }),
       )}
       role={variant ? ROLE[variant] : undefined}
       aria-level={variant ? ARIA_LEVEL[variant] : undefined}

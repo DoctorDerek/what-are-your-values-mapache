@@ -16,10 +16,10 @@ import {
   REDUCED_MOTION_SETTING_OPTIONS,
   SETTINGS_PLAYER_DATA_RESET_KINDS,
 } from "@game/machines/src/PlayerSettingsPresentation"
+import { cx } from "classix"
 import { useEffect, useRef } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import PlayerDataResetActions from "./PlayerDataResetActions"
 import PlayerDataResetReview from "./PlayerDataResetReview"
 
@@ -60,7 +60,7 @@ function SettingsRadioGroup<TValue extends string>({
           return (
             <label
               key={option.value}
-              className={cn(
+              className={cx(
                 "flex min-w-0 cursor-pointer items-start gap-4 border-4 border-black p-4 shadow-[5px_5px_0px_0px_#000000]",
                 isSelected
                   ? "bg-mapache-vivid-primary-cyan text-black"
@@ -187,7 +187,8 @@ export default function Settings({
             variant="secondary"
             disabled={isNavigationBlocked}
             onClick={onOpenMenu}
-            className="flex-1 whitespace-normal"
+            wrap
+            className="flex-1"
           >
             {PRODUCT_MENU_COPY.openAction}
           </Button>
@@ -196,7 +197,8 @@ export default function Settings({
             variant="outline"
             disabled={isNavigationBlocked}
             onClick={onClose}
-            className="flex-1 whitespace-normal"
+            wrap
+            className="flex-1"
           >
             {PLAYER_SETTINGS_COPY.closeAction}
           </Button>

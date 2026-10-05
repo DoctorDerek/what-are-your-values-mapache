@@ -35,7 +35,7 @@ test("defers distant roster art and prepares animals when scrolling reaches them
   await expect(
     lastRow.locator('[data-hub-active-clip="true"] [data-playback-ready]'),
   ).toHaveAttribute("data-playback-ready", "true")
-  await lastRow.getByRole("button").focus()
+  await lastRow.hover()
   await expect
     .poll(() =>
       lastRow
@@ -669,7 +669,9 @@ for (const { width, height } of [
       true,
     )
     await expect(choices).toHaveCount(2)
-    await expect(battle.getByRole("region")).toHaveCount(0)
+    await expect(
+      battle.getByRole("region", { name: "Battle choices", exact: true }),
+    ).toBeVisible()
     for (const card of await stage.locator("[data-value-card]").all()) {
       const choice = card.getByRole("button", { name: /^Choose / })
       await choice.scrollIntoViewIfNeeded()

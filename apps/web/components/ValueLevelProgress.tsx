@@ -37,10 +37,10 @@ export default function ValueLevelProgress({
         max={requiredXpForNextLevel}
         className={
           compact
-            ? "mt-1 h-1.5 overflow-hidden border border-black bg-white"
-            : "mt-2 h-3 overflow-hidden border-2 border-black bg-white"
+            ? "mt-1 h-1.5 border border-black bg-white"
+            : "mt-2 h-3 border-2 border-black bg-white"
         }
-        indicatorClassName="bg-mapache-vivid-primary-raspberry"
+        indicatorClassName="bg-mapache-vivid-primary-raspberry transition-transform"
       />
     </div>
   )

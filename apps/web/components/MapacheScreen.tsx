@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority"
+import { cx } from "classix"
 import type { ComponentProps } from "react"
-import { cn } from "@/lib/utils"
 
 const mapacheScreenVariants = cva(
   "noise-bg bg-mapache-vivid-dark w-full pt-[max(var(--mapache-screen-spacing),env(safe-area-inset-top,0px))] pr-[max(var(--mapache-screen-spacing),env(safe-area-inset-right,0px))] pb-[max(var(--mapache-screen-spacing),env(safe-area-inset-bottom,0px))] pl-[max(var(--mapache-screen-spacing),env(safe-area-inset-left,0px))]",
@@ -36,7 +36,7 @@ export default function MapacheScreen({
   return (
     <main
       data-slot="mapache-screen"
-      className={cn(mapacheScreenVariants({ viewport, spacing, className }))}
+      className={cx(mapacheScreenVariants({ viewport, spacing }), className)}
       {...props}
     />
   )

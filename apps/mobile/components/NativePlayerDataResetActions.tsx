@@ -3,10 +3,10 @@ import {
   type PlayerDataResetKind,
 } from "@game/machines/src/PlayerDataReset"
 import { playerDataResetCopy } from "@game/machines/src/PlayerDataResetCopy"
+import { cx } from "classix"
 import { View } from "react-native"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
-import { cn } from "@/lib/utils"
 
 export default function NativePlayerDataResetActions({
   customValueCount,
@@ -23,7 +23,7 @@ export default function NativePlayerDataResetActions({
     <View className="gap-5">
       <Text
         variant="h2"
-        className="text-mapache-vivid-primary-cyan border-b-4 border-black text-left text-3xl uppercase"
+        className="text-mapache-vivid-primary-cyan border-b-4 border-black pb-2 text-left text-3xl font-black tracking-tight uppercase"
       >
         Reset or Delete
       </Text>
@@ -37,7 +37,7 @@ export default function NativePlayerDataResetActions({
         return (
           <View
             key={resetKind}
-            className={cn(
+            className={cx(
               "gap-4 border-4 bg-white p-5 shadow-[6px_6px_0px_0px_#000000]",
               isCompleteErasure
                 ? "border-mapache-vivid-secondary-red"

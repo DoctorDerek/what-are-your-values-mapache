@@ -1,4 +1,5 @@
 import type { BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
+import { cx } from "classix"
 import BattleSpeedControl from "@/components/BattleSpeedControl"
 
 function BattleActionLabel({
@@ -16,12 +17,18 @@ function BattleActionLabel({
       className="inline-grid items-center justify-items-center"
     >
       <span
-        className={`col-start-1 row-start-1 ${showKeyboardControlHints ? "xl:invisible" : ""}`}
+        className={cx(
+          "col-start-1 row-start-1",
+          showKeyboardControlHints && "xl:invisible",
+        )}
       >
         {label}
       </span>
       <span
-        className={`col-start-1 row-start-1 hidden xl:inline ${showKeyboardControlHints ? "" : "invisible"}`}
+        className={cx(
+          "col-start-1 row-start-1 hidden xl:inline",
+          !showKeyboardControlHints && "invisible",
+        )}
       >
         {label} <span>{shortcut}</span>
       </span>

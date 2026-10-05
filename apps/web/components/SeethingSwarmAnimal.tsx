@@ -5,6 +5,7 @@ import {
   type SeethingSwarmAnimalPresentationGeometry,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeCharacterClip } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import { cx } from "classix"
 import Image, { type StaticImageData } from "next/image"
 import {
   useCallback,
@@ -143,7 +144,10 @@ export default function SeethingSwarmAnimal({
   return (
     <span
       aria-hidden="true"
-      className={`pointer-events-none relative block h-(--animal-clearance-height) w-(--animal-clearance-width) shrink-0 overflow-hidden select-none ${facing === "left" ? "-scale-x-100" : ""}`}
+      className={cx(
+        "pointer-events-none relative block h-(--animal-clearance-height) w-(--animal-clearance-width) shrink-0 overflow-hidden select-none",
+        facing === "left" && "-scale-x-100",
+      )}
       data-animal-id={clip.animalId}
       data-facing={facing}
       data-frame-count={clip.frameCount}
@@ -159,7 +163,11 @@ export default function SeethingSwarmAnimal({
         <Image
           ref={imageRef}
           alt=""
-          className={`absolute top-0 left-0 h-(--animal-strip-height) w-(--animal-strip-width) max-w-none [image-rendering:pixelated] ${playbackClassName} ${isImageLoaded ? "" : "[animation-play-state:paused]"}`}
+          className={cx(
+            "absolute top-0 left-0 h-(--animal-strip-height) w-(--animal-strip-width) max-w-none [image-rendering:pixelated]",
+            playbackClassName,
+            !isImageLoaded && "[animation-play-state:paused]",
+          )}
           draggable={false}
           decoding="sync"
           height={scaledFrameHeight}

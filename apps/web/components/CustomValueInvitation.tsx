@@ -179,11 +179,7 @@ export default function CustomValueInvitation({
             onBack={backToSelection}
           />
         ) : hasUnfinishedDraft && drafts.length === 0 ? (
-          <Button
-            variant="link"
-            className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
-            onClick={() => setWriting(true)}
-          >
+          <Button variant="link" onClick={() => setWriting(true)}>
             {copy.continueDraft}
           </Button>
         ) : null}
@@ -225,7 +221,6 @@ export default function CustomValueInvitation({
             ))}
             <Button
               variant="link"
-              className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
               disabled={availableExamples.every((example) =>
                 drafts.some((draft) => draft.exampleName === example.name),
               )}
@@ -267,7 +262,6 @@ export default function CustomValueInvitation({
                     <h3 className="min-w-0 flex-1 font-bold">{draft.name}</h3>
                     <Button
                       variant="link"
-                      className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
                       disabled={hasUnfinishedDraft}
                       aria-label={`${copy.edit} ${draft.name}`}
                       onClick={() => {
@@ -284,7 +278,6 @@ export default function CustomValueInvitation({
                     </Button>
                     <Button
                       variant="link"
-                      className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
                       disabled={editingKey === draft.key}
                       aria-label={`${copy.remove} ${draft.name}`}
                       onClick={() => {
@@ -331,11 +324,7 @@ export default function CustomValueInvitation({
               >
                 {copy.another}
               </Button>
-              <Button
-                variant="link"
-                className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
-                onClick={exportData}
-              >
+              <Button variant="link" onClick={exportData}>
                 {isExporting ? copy.exporting : copy.export}
               </Button>
             </div>
@@ -344,7 +333,6 @@ export default function CustomValueInvitation({
         {hasUnfinishedDraft && (
           <Button
             variant="link"
-            className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
             onClick={() => {
               setEditorDraft(EMPTY_DRAFT)
               setEditingKey(null)
@@ -360,7 +348,6 @@ export default function CustomValueInvitation({
             {drafts.length > 0 && (
               <Button
                 variant="link"
-                className="text-mapache-vivid-dark min-h-11 p-0 text-base normal-case"
                 onClick={() => {
                   setDrafts([])
                   setEditorDraft(EMPTY_DRAFT)

@@ -37,69 +37,49 @@ export default function NativeBattleActionBar({
       <View className="min-w-0 flex-row gap-2 xl:gap-4">
         <Button
           accessibilityLabel="Menu"
-          className="min-w-0 flex-1 px-2 xl:px-4"
+          className="min-w-0 flex-1"
           disabled={!canOpenMenu}
-          size="compact"
+          size="battle"
           variant="secondary"
           onPress={onOpenMenu}
         >
-          <Text
-            adjustsFontSizeToFit
-            className="text-sm xl:text-base"
-            minimumFontScale={0.75}
-            numberOfLines={1}
-          >
+          <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1}>
             Menu
           </Text>
         </Button>
         <Button
           accessibilityLabel="Undo"
-          className="min-w-0 flex-1 px-2 xl:px-4"
+          className="min-w-0 flex-1"
           disabled={!canUndo}
-          size="compact"
+          size="battle"
           variant="outline"
           onPress={onUndo}
         >
-          <Text
-            adjustsFontSizeToFit
-            className="text-sm xl:text-base"
-            minimumFontScale={0.75}
-            numberOfLines={1}
-          >
+          <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1}>
             Undo
           </Text>
         </Button>
         <Button
           accessibilityLabel="Redo"
-          className="min-w-0 flex-1 px-2 xl:px-4"
+          className="min-w-0 flex-1"
           disabled={!canRedo}
-          size="compact"
+          size="battle"
           variant="outline"
           onPress={onRedo}
         >
-          <Text
-            adjustsFontSizeToFit
-            className="text-sm xl:text-base"
-            minimumFontScale={0.75}
-            numberOfLines={1}
-          >
+          <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1}>
             Redo
           </Text>
         </Button>
         <Button
           accessibilityLabel="Stop"
-          className="min-w-0 flex-1 px-2 xl:px-4"
+          className="min-w-0 flex-1"
           disabled={!canStop}
-          size="compact"
+          size="battle"
           variant="destructive"
           onPress={onStop}
         >
-          <Text
-            adjustsFontSizeToFit
-            className="text-sm xl:text-base"
-            minimumFontScale={0.75}
-            numberOfLines={1}
-          >
+          <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1}>
             Stop
           </Text>
         </Button>

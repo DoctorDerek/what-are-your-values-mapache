@@ -111,7 +111,7 @@ export default function NativeAllValues({
           <View className="min-w-0 flex-1">
             <Text
               variant="h1"
-              className="text-mapache-vivid-primary-cyan text-left text-4xl uppercase"
+              className="text-mapache-vivid-primary-cyan text-left text-4xl font-black tracking-tight uppercase"
             >
               All Values
             </Text>

@@ -4,6 +4,7 @@ import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
 import { resolveValueAnimalPresentation } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
+import { cx } from "classix"
 import { Fragment } from "react"
 import { FlatList, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
@@ -50,15 +51,17 @@ export default function NativeHub({
             : "Battle"
         }
       >
-        <Text className={isBattlePending ? "opacity-0" : undefined}>
-          Battle
-        </Text>
+        <View className={cx(isBattlePending && "opacity-0")}>
+          <Text>Battle</Text>
+        </View>
         {isBattlePending ? (
           <View
             pointerEvents="none"
             className="absolute inset-0 items-center justify-center"
           >
-            <Text className="text-lg">{presentationLoadingCopy.preparing}</Text>
+            <Text className="text-center text-lg font-black text-black uppercase">
+              {presentationLoadingCopy.preparing}
+            </Text>
           </View>
         ) : null}
       </Button>
@@ -68,11 +71,7 @@ export default function NativeHub({
       <Button variant="outline" onPress={onAddCustomValue}>
         <Text>Add Custom Value</Text>
       </Button>
-      <Button
-        className="bg-mapache-vivid-secondary-gold"
-        variant="outline"
-        onPress={onOpenAchievements}
-      >
+      <Button variant="achievement" onPress={onOpenAchievements}>
         <Text>Achievements</Text>
       </Button>
       <Button variant="outline" onPress={onOpenDataManagement}>
@@ -86,7 +85,7 @@ export default function NativeHub({
       <View className="flex-row items-center gap-4 border-b-4 border-black p-4">
         <Text
           variant="h1"
-          className="text-mapache-vivid-primary-cyan min-w-0 flex-1 text-left text-4xl uppercase xl:text-5xl"
+          className="text-mapache-vivid-primary-cyan min-w-0 flex-1 text-left text-4xl font-black tracking-tight uppercase xl:text-5xl"
         >
           Your Values
         </Text>
@@ -126,7 +125,7 @@ export default function NativeHub({
             {hasComparisons ? (
               <Text
                 variant="h2"
-                className="mt-7 border-b-4 border-black bg-white p-3 text-3xl text-black uppercase"
+                className="mt-7 border-b-4 border-black bg-white p-3 text-3xl font-black tracking-tight text-black uppercase"
               >
                 Top Five
               </Text>

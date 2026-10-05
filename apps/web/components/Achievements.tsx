@@ -96,7 +96,8 @@ export default function Achievements({
             size="lg"
             disabled={!canOpenMenu}
             onClick={onOpenMenu}
-            className="flex-1 whitespace-normal"
+            wrap
+            className="flex-1"
           >
             {PRODUCT_MENU_COPY.openAction}
           </Button>
@@ -106,7 +107,8 @@ export default function Achievements({
             size="lg"
             disabled={!canOpenMenu}
             onClick={onClose}
-            className="flex-1 whitespace-normal"
+            wrap
+            className="flex-1"
           >
             Back to Your Values
           </Button>

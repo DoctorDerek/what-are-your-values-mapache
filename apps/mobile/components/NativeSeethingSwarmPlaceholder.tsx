@@ -5,6 +5,7 @@ import {
   type BattleAnimationSpeed,
 } from "@game/machines/src/BattleAnimationSpeed"
 import type { SeethingSwarmBattleCombatantSide } from "@game/machines/src/SeethingSwarmBattleChoreography"
+import { cx } from "classix"
 import { useEffect, useRef } from "react"
 import { View } from "react-native"
 import Animated, {
@@ -18,7 +19,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated"
 import { scheduleOnRN } from "react-native-worklets"
-import { cn } from "@/lib/utils"
 
 export default function NativeSeethingSwarmPlaceholder({
   animationSpeed = DEFAULT_BATTLE_ANIMATION_SPEED,
@@ -114,7 +114,7 @@ export default function NativeSeethingSwarmPlaceholder({
         className="h-24 w-20"
       >
         <View
-          className={cn(
+          className={cx(
             "absolute top-0 left-1 h-7 w-6 border-4 border-black",
             side === "first"
               ? "bg-mapache-vivid-primary-cyan"
@@ -122,7 +122,7 @@ export default function NativeSeethingSwarmPlaceholder({
           )}
         />
         <View
-          className={cn(
+          className={cx(
             "absolute top-0 right-1 h-7 w-6 border-4 border-black",
             side === "first"
               ? "bg-mapache-vivid-primary-cyan"
@@ -130,7 +130,7 @@ export default function NativeSeethingSwarmPlaceholder({
           )}
         />
         <View
-          className={cn(
+          className={cx(
             "absolute right-0 bottom-0 left-0 h-20 items-center border-4 border-black",
             side === "first"
               ? "bg-mapache-vivid-primary-cyan"

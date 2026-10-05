@@ -12,6 +12,7 @@ import {
 } from "@game/machines/src/SeethingSwarmAttention"
 import { createSeethingSwarmAttentionAlternatives } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { createSeethingSwarmAttentionPlayback } from "@game/machines/src/SeethingSwarmBattlePlayback"
+import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import { useMemo, useState } from "react"
 import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
@@ -107,7 +108,10 @@ export default function SeethingSwarmHubAnimal({
         return (
           <span
             key={clip.relativePath}
-            className={`absolute inset-0 ${visible ? "visible" : "invisible"}`}
+            className={cx(
+              "absolute inset-0",
+              visible ? "visible" : "invisible",
+            )}
             data-hub-active-clip={visible}
           >
             <SeethingSwarmAnimal

@@ -3,7 +3,7 @@ import {
   BATTLE_ANIMATION_SPEED_OPTIONS,
   type BattleAnimationSpeed,
 } from "@game/machines/src/BattleAnimationSpeed"
-import { cn } from "@/lib/utils"
+import { cx } from "classix"
 
 export default function BattleSpeedControl({
   speed,
@@ -43,7 +43,7 @@ export default function BattleSpeedControl({
           aria-pressed={speed === option.value}
           disabled={disabled}
           onClick={() => onChange(option.value)}
-          className={cn(
+          className={cx(
             "focus-visible:outline-mapache-vivid-primary-raspberry inline-grid min-h-12 min-w-13 flex-auto cursor-pointer place-items-center px-3 py-2 text-base font-bold focus-visible:z-10 focus-visible:outline-4 focus-visible:-outline-offset-4 active:shadow-[inset_0_2px_5px_#0006] disabled:cursor-not-allowed disabled:opacity-50",
             speed === option.value
               ? "bg-[#006d7c] text-white underline decoration-3 underline-offset-4 hover:bg-[#005867]"

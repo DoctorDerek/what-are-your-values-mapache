@@ -51,7 +51,8 @@ export default function PlayerDataRecoveryActions(
             size="lg"
             disabled={props.isBusy}
             onClick={props.onRestoreLastKnownGoodSave}
-            className="w-full whitespace-normal"
+            wrap
+            className="w-full"
           >
             {actions.restoreLastKnownGoodSave}
           </Button>
@@ -63,7 +64,8 @@ export default function PlayerDataRecoveryActions(
           size="lg"
           disabled={props.isBusy}
           onClick={props.onImportBackup}
-          className="w-full whitespace-normal"
+          wrap
+          className="w-full"
         >
           {actions.importBackup}
         </Button>
@@ -73,7 +75,8 @@ export default function PlayerDataRecoveryActions(
           size="lg"
           disabled={props.isBusy}
           onClick={props.onExportUnreadableData}
-          className="w-full whitespace-normal"
+          wrap
+          className="w-full"
         >
           {actions.exportUnreadableData}
         </Button>
@@ -83,7 +86,8 @@ export default function PlayerDataRecoveryActions(
           size="lg"
           disabled={props.isBusy}
           onClick={props.onTryAgain}
-          className="w-full whitespace-normal"
+          wrap
+          className="w-full"
         >
           {actions.tryAgain}
         </Button>
@@ -94,7 +98,8 @@ export default function PlayerDataRecoveryActions(
           size="lg"
           disabled={props.isBusy}
           onClick={props.onDeleteAllData}
-          className="w-full whitespace-normal xl:col-span-2"
+          wrap
+          className="w-full xl:col-span-2"
         >
           {actions.deleteAllData}
         </Button>
@@ -111,7 +116,8 @@ export default function PlayerDataRecoveryActions(
           size="lg"
           disabled={props.isBusy}
           onClick={props.onExportCurrentData}
-          className="w-full whitespace-normal"
+          wrap
+          className="w-full"
         >
           {props.hasPendingSave
             ? playerDataRecoveryCopy.pendingSave.export
@@ -123,7 +129,8 @@ export default function PlayerDataRecoveryActions(
         size="lg"
         disabled={props.isBusy}
         onClick={props.onTryAgain}
-        className="w-full whitespace-normal"
+        wrap
+        className="w-full"
       >
         {props.hasPendingSave
           ? playerDataRecoveryCopy.pendingSave.retry
@@ -136,7 +143,8 @@ export default function PlayerDataRecoveryActions(
           size="lg"
           disabled={props.isBusy}
           onClick={props.onReturnWithoutNewChanges}
-          className="w-full whitespace-normal xl:col-span-2"
+          wrap
+          className="w-full xl:col-span-2"
         >
           {actions.returnWithoutNewChanges}
         </Button>

@@ -19,6 +19,7 @@ import {
 } from "@game/machines/src/ResultsSaveStatus"
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
+import { cx } from "classix"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { FlatList, Pressable, View } from "react-native"
 import Animated, {
@@ -65,7 +66,11 @@ function NativeResultsValueRow({
       {...attentionHandlers}
       accessibilityLabel={`Rank ${value.exitRank}, ${getValueDisplayName(value.definition)}, Level ${finalLevel}, ${value.exitProgress.totalXp} total XP`}
       onFocus={onFocus}
-      className={`mb-1 flex-row flex-wrap items-center gap-2 border-2 border-black bg-white p-1 shadow-[3px_3px_0px_0px_#000000] ${value.exitRank <= 5 ? "border-l-mapache-vivid-secondary-gold border-l-8" : ""}`}
+      className={cx(
+        "mb-1 flex-row flex-wrap items-center gap-2 border-2 border-black bg-white p-1 shadow-[3px_3px_0px_0px_#000000]",
+        value.exitRank <= 5 &&
+          "border-l-mapache-vivid-secondary-gold border-l-8",
+      )}
     >
       <View className="relative shrink-0">
         <Text className="invisible font-mono text-lg font-black text-black">
@@ -268,7 +273,9 @@ export default function NativeResults({
               accessibilityLiveRegion="polite"
               className="text-sm font-semibold text-white"
             >
-              <Text className="text-mapache-vivid-secondary-green">✓ </Text>
+              <Text className="text-mapache-vivid-secondary-green text-base">
+                ✓{" "}
+              </Text>
               {RESULTS_SAVE_CONFIRMATION_COPY}
             </Text>
           </Animated.View>
@@ -303,7 +310,7 @@ export default function NativeResults({
           <Text className="text-lg font-black text-black">
             {RESULTS_COPY.profileLevelLabel} {profileProgress.level.toString()}
           </Text>
-          <Text className="font-semibold text-black">
+          <Text className="text-base font-semibold text-black">
             {RESULTS_COPY.profileXpLabel} {frame.profileXp.toString()} ·{" "}
             {changeLabel}
           </Text>

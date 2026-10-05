@@ -1,7 +1,7 @@
+import { cx } from "classix"
 import type { ComponentProps } from "react"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { withUniwind } from "uniwind"
-import { cn } from "@/lib/utils"
 
 const UniwindSafeAreaView = withUniwind(SafeAreaView)
 
@@ -11,7 +11,7 @@ export default function MapacheScreen({
 }: ComponentProps<typeof UniwindSafeAreaView>) {
   return (
     <UniwindSafeAreaView
-      className={cn("bg-mapache-vivid-dark flex-1", className)}
+      className={cx("bg-mapache-vivid-dark flex-1", className)}
       {...props}
     />
   )
