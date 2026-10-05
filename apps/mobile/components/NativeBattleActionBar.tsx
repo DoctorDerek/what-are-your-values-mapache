@@ -32,14 +32,26 @@ export default function NativeBattleActionBar({
   return (
     <View
       accessibilityLabel="Battle actions"
-      className="gap-2 p-3 xl:flex-row xl:gap-3"
+      className="w-full max-w-3xl shrink-0 gap-3 self-center p-3 pb-6 xl:gap-4 xl:px-6"
     >
-      <NativeBattleSpeedControl
-        speed={animationSpeed}
-        disabled={!canChangeAnimationSpeed}
-        onChange={onAnimationSpeedChange}
-      />
-      <View className="min-w-0 flex-row gap-2 xl:flex-1">
+      <View className="min-w-0 flex-row gap-2 xl:gap-4">
+        <Button
+          accessibilityLabel="Menu"
+          className="min-w-0 flex-1 px-2 xl:px-4"
+          disabled={!canOpenMenu}
+          size="compact"
+          variant="secondary"
+          onPress={onOpenMenu}
+        >
+          <Text
+            adjustsFontSizeToFit
+            className="text-sm xl:text-base"
+            minimumFontScale={0.75}
+            numberOfLines={1}
+          >
+            Menu
+          </Text>
+        </Button>
         <Button
           accessibilityLabel="Undo"
           className="min-w-0 flex-1 px-2 xl:px-4"
@@ -91,24 +103,12 @@ export default function NativeBattleActionBar({
             Stop
           </Text>
         </Button>
-        <Button
-          accessibilityLabel="Menu"
-          className="min-w-0 flex-1 px-2 xl:px-4"
-          disabled={!canOpenMenu}
-          size="compact"
-          variant="secondary"
-          onPress={onOpenMenu}
-        >
-          <Text
-            adjustsFontSizeToFit
-            className="text-sm xl:text-base"
-            minimumFontScale={0.75}
-            numberOfLines={1}
-          >
-            Menu
-          </Text>
-        </Button>
       </View>
+      <NativeBattleSpeedControl
+        speed={animationSpeed}
+        disabled={!canChangeAnimationSpeed}
+        onChange={onAnimationSpeedChange}
+      />
     </View>
   )
 }
