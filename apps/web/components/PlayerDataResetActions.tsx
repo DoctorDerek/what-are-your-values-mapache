@@ -76,7 +76,8 @@ export default function PlayerDataResetActions({
                 onClick={(event) =>
                   onRequestReset(resetKind, event.currentTarget.id)
                 }
-                className="w-full whitespace-normal"
+                wrap
+                className="w-full"
               >
                 {copy.actionLabel}
               </Button>

@@ -119,7 +119,7 @@ function ValueActionRail({
   return (
     <nav
       aria-label="Value actions"
-      className="mb-5 grid w-full grid-cols-1 gap-3 xl:grid-cols-3 [&_button]:min-w-0 [&_button]:whitespace-normal"
+      className="mb-5 grid w-full grid-cols-1 gap-3 xl:grid-cols-3 [&_button]:min-w-0"
     >
       <Button
         disabled={isNavigationBlocked}
@@ -130,7 +130,10 @@ function ValueActionRail({
             ? presentationLoadingCopy.cancelBattlePreparation
             : undefined
         }
-        className="bg-mapache-vivid-primary-orange relative min-h-16 text-3xl text-white"
+        variant="battle"
+        size="featured"
+        wrap
+        className="relative"
       >
         <span className={isBattlePending ? "invisible" : undefined}>
           Battle
@@ -146,7 +149,8 @@ function ValueActionRail({
         ref={browseAllValuesButtonRef}
         id="hub-browse-all-values-button"
         variant="secondary"
-        className="min-h-14"
+        size="tall"
+        wrap
         onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
       >
         Browse All Values
@@ -154,7 +158,9 @@ function ValueActionRail({
       <Button
         disabled={isSaving}
         id="hub-add-custom-value-button"
-        className="bg-mapache-vivid-secondary-purple min-h-14 text-white"
+        variant="accent"
+        size="tall"
+        wrap
         onClick={(event) => onAddCustomValue(event.currentTarget.id)}
       >
         Add Custom Value

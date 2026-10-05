@@ -48,7 +48,7 @@ function InformationPanelContentBlock({
         <p className="text-lg leading-relaxed font-medium text-gray-800">
           {block.description}
         </p>
-        <Button asChild variant="outline" className="w-full whitespace-normal">
+        <Button asChild variant="outline" wrap className="w-full">
           <a href={block.url} target="_blank" rel="noopener noreferrer">
             {block.actionLabel}
           </a>

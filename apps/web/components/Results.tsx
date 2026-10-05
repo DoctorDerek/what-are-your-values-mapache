@@ -135,7 +135,12 @@ function ResultsValueRow({
           <Progress
             value={frameValue.levelBarPercentage}
             className="mt-1 h-2 border border-black bg-white"
-            indicatorClassName={`bg-mapache-vivid-primary-raspberry ${frameValue.didCrossLevel ? "transition-none" : "duration-75"}`}
+            indicatorClassName={cx(
+              "bg-mapache-vivid-primary-raspberry",
+              frameValue.didCrossLevel
+                ? "transition-none"
+                : "transition-transform duration-75",
+            )}
           />
           <span className="text-mapache-vivid-dark text-xs">
             {earnedXpTowardNextLevel}/{requiredXpForNextLevel} XP
@@ -344,8 +349,13 @@ export default function Results({
           </div>
           <Progress
             value={frame.profileLevelBarPercentage}
-            className="mt-1 h-3 border border-black"
-            indicatorClassName={`bg-mapache-vivid-primary-raspberry ${frame.profileDidCrossLevel ? "transition-none" : "duration-75"}`}
+            className="bg-card mt-1 h-3 border border-black"
+            indicatorClassName={cx(
+              "bg-mapache-vivid-primary-raspberry",
+              frame.profileDidCrossLevel
+                ? "transition-none"
+                : "transition-transform duration-75",
+            )}
             aria-label={`Profile XP toward Level ${(profileProgress.level + 1n).toString()}`}
             aria-valuetext={`${profileProgress.earnedXpTowardNextLevel}/${profileProgress.requiredXpForNextLevel} XP`}
           />
@@ -356,7 +366,8 @@ export default function Results({
         >
           <Button
             size="sm"
-            className="min-w-0 text-center leading-tight [overflow-wrap:anywhere] whitespace-normal"
+            wrap
+            className="min-w-0 text-center leading-tight [overflow-wrap:anywhere]"
             onClick={onSeeValues}
           >
             {RESULTS_COPY.seeValuesAction}
@@ -364,7 +375,8 @@ export default function Results({
           <Button
             size="sm"
             variant="outline"
-            className="min-w-0 text-center leading-tight [overflow-wrap:anywhere] whitespace-normal"
+            wrap
+            className="min-w-0 text-center leading-tight [overflow-wrap:anywhere]"
             onClick={onKeepBattling}
           >
             {RESULTS_COPY.keepBattlingAction}

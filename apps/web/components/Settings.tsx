@@ -187,7 +187,8 @@ export default function Settings({
             variant="secondary"
             disabled={isNavigationBlocked}
             onClick={onOpenMenu}
-            className="flex-1 whitespace-normal"
+            wrap
+            className="flex-1"
           >
             {PRODUCT_MENU_COPY.openAction}
           </Button>
@@ -196,7 +197,8 @@ export default function Settings({
             variant="outline"
             disabled={isNavigationBlocked}
             onClick={onClose}
-            className="flex-1 whitespace-normal"
+            wrap
+            className="flex-1"
           >
             {PLAYER_SETTINGS_COPY.closeAction}
           </Button>

@@ -74,7 +74,8 @@ export default function PlayerDataResetReview({
           size="lg"
           disabled={isBusy}
           onClick={onExport}
-          className="w-full whitespace-normal"
+          wrap
+          className="w-full"
         >
           Export Data
         </Button>
@@ -84,7 +85,8 @@ export default function PlayerDataResetReview({
           size="lg"
           disabled={isBusy}
           onClick={onCancel}
-          className="w-full whitespace-normal"
+          wrap
+          className="w-full"
         >
           Cancel
         </Button>
@@ -98,7 +100,8 @@ export default function PlayerDataResetReview({
               !acknowledgedCompleteErasure)
           }
           onClick={() => onConfirm(review)}
-          className="w-full whitespace-normal"
+          wrap
+          className="w-full"
         >
           {copy.actionLabel}
         </Button>

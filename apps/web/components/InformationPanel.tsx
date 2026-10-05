@@ -40,7 +40,9 @@ function InformationPanelFrame({
     >
       <header className="relative border-b-4 border-black px-5 py-5 sm:px-10 sm:py-7">
         {dialogTitle ? (
-          <DialogTitle className={titleClassName}>{title}</DialogTitle>
+          <DialogTitle className={cx(titleClassName, "xl:text-5xl")}>
+            {title}
+          </DialogTitle>
         ) : (
           <h1 id={titleId} className={titleClassName}>
             {title}
@@ -52,7 +54,7 @@ function InformationPanelFrame({
             type="button"
             variant="outline"
             size="icon"
-            className="absolute top-4 right-4 text-3xl leading-none"
+            className="absolute top-4 right-4"
             onClick={onPrimaryAction}
           >
             ×
@@ -75,7 +77,8 @@ function InformationPanelFrame({
           onClick={onPrimaryAction}
           disabled={isPrimaryActionPending}
           aria-busy={isPrimaryActionPending}
-          className="w-full text-4xl sm:text-5xl"
+          className="w-full"
+          typographyClassName="text-4xl sm:text-5xl"
         >
           {primaryActionLabel}
         </Button>
@@ -111,7 +114,8 @@ export function ReopenedInformationPanel({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         aria-describedby={undefined}
-        className="h-[calc(100dvh-2rem)] max-w-4xl grid-cols-1 grid-rows-1 border-0 bg-transparent p-0 shadow-none xl:max-w-4xl"
+        variant="panel"
+        className="grid-cols-1 grid-rows-1"
         onCloseAutoFocus={onCloseAutoFocus}
       >
         <InformationPanelFrame {...frameProps} dialogTitle />

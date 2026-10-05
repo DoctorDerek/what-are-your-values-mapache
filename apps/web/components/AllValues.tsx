@@ -296,7 +296,8 @@ export default function AllValues({
                   editValidation.name.validationCode !== null
                 }
                 aria-describedby={`custom-value-name-feedback-${definition.id}`}
-                className="mb-3 text-2xl focus-visible:ring-8"
+                variant="emphasized"
+                className="mb-3"
               />
               <CustomValueFieldFeedback
                 id={`custom-value-name-feedback-${definition.id}`}
@@ -326,7 +327,7 @@ export default function AllValues({
                 }
                 aria-describedby={`custom-value-definition-feedback-${definition.id}`}
                 rows={4}
-                className="text-xl focus-visible:ring-8"
+                variant="emphasized"
               />
               <CustomValueFieldFeedback
                 id={`custom-value-definition-feedback-${definition.id}`}
@@ -452,7 +453,7 @@ export default function AllValues({
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Search by value name or definition"
-          className="px-5 py-4 text-2xl shadow-[8px_8px_0px_0px_#000000] focus-visible:ring-8"
+          variant="search"
         />
         <p
           role="status"
