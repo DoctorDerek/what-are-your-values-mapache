@@ -1,7 +1,7 @@
 import { Slot } from "@rn-primitives/slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cx } from "classix"
-import * as React from "react"
+import type { ComponentProps } from "react"
 import { Pressable } from "react-native"
 import { twMerge } from "tailwind-merge"
 import { TextClassContext } from "@/components/ui/text"
@@ -55,7 +55,7 @@ function Button({
   variant = "default",
   size = "default",
   ...props
-}: React.ComponentProps<typeof Pressable> &
+}: ComponentProps<typeof Pressable> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
   }) {

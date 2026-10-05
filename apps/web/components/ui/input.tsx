@@ -1,8 +1,8 @@
 import { cx } from "classix"
-import * as React from "react"
+import type { ComponentProps } from "react"
 import { twMerge } from "tailwind-merge"
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+function Input({ className, type, ...props }: ComponentProps<"input">) {
   return (
     <input
       type={type}

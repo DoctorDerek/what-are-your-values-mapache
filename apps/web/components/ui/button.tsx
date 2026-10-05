@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority"
 import { cx } from "classix"
 import { Slot } from "radix-ui"
-import * as React from "react"
+import type { ComponentProps } from "react"
 import { twMerge } from "tailwind-merge"
 
 const buttonVariants = cva(
@@ -41,7 +41,7 @@ function Button({
   size = "default",
   asChild = false,
   ...props
-}: React.ComponentProps<"button"> &
+}: ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
   }) {

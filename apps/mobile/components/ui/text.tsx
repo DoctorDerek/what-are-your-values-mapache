@@ -1,7 +1,12 @@
 import { Slot } from "@rn-primitives/slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cx } from "classix"
-import * as React from "react"
+import {
+  createContext,
+  useContext,
+  type ComponentProps,
+  type RefAttributes,
+} from "react"
 import { Platform, Text as ReactNativeText, type Role } from "react-native"
 import { twMerge } from "tailwind-merge"
 
@@ -66,19 +71,19 @@ const ARIA_LEVEL: Partial<Record<TextVariant, string>> = {
   h4: "4",
 }
 
-const TextClassContext = React.createContext<string | undefined>(undefined)
+const TextClassContext = createContext<string | undefined>(undefined)
 
 function Text({
   className,
   asChild = false,
   variant = "default",
   ...props
-}: React.ComponentProps<typeof ReactNativeText> &
-  React.RefAttributes<typeof ReactNativeText> &
+}: ComponentProps<typeof ReactNativeText> &
+  RefAttributes<typeof ReactNativeText> &
   TextVariantProps & {
     asChild?: boolean
   }) {
-  const inheritedTextClassName = React.useContext(TextClassContext)
+  const inheritedTextClassName = useContext(TextClassContext)
   const Component = asChild ? Slot : ReactNativeText
 
   return (

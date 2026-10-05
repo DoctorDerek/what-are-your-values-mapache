@@ -1,8 +1,8 @@
 import { cx } from "classix"
-import * as React from "react"
+import type { ComponentProps } from "react"
 import { twMerge } from "tailwind-merge"
 
-function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
+function Textarea({ className, ...props }: ComponentProps<"textarea">) {
   return (
     <textarea
       data-slot="textarea"

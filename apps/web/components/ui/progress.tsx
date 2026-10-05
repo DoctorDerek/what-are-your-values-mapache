@@ -2,7 +2,7 @@
 
 import { cx } from "classix"
 import { Progress as ProgressPrimitive } from "radix-ui"
-import * as React from "react"
+import type { ComponentProps } from "react"
 import { twMerge } from "tailwind-merge"
 
 function Progress({
@@ -11,7 +11,7 @@ function Progress({
   value,
   max = 100,
   ...props
-}: React.ComponentProps<typeof ProgressPrimitive.Root> & {
+}: ComponentProps<typeof ProgressPrimitive.Root> & {
   indicatorClassName?: string
 }) {
   const progressPercentage = ((value ?? 0) / max) * 100
