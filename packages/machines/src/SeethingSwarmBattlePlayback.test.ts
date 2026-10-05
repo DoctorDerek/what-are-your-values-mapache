@@ -68,6 +68,56 @@ if (choreography.mode !== "licensed")
 const combatant = choreography.combatants[0]
 
 describe("SeethingSwarm battle playback", () => {
+  it.each(["2x", "3x"] as const)(
+    "coordinates combat frames and travel at %s without changing attention",
+    (speed) => {
+      const factor = speed === "2x" ? 2 : 3
+      for (const cue of [
+        "approach",
+        "strike",
+        "impact",
+        "recovery",
+        "settled",
+      ] as const) {
+        const normal = createSeethingSwarmBattlePlayback({
+          combatant,
+          winnerId: pair[0],
+          cue,
+        })
+        const accelerated = createSeethingSwarmBattlePlayback({
+          combatant,
+          winnerId: pair[0],
+          cue,
+          speed,
+        })
+        expect(
+          accelerated.map((step) => ({
+            ...step,
+            frameDurationMs:
+              step.frameDurationMs *
+              (step.playbackMode === "loop" ? 1 : factor),
+          })),
+        ).toEqual(normal)
+      }
+      expect(
+        resolveSeethingSwarmTravelDuration(choreography, pair[0], speed),
+      ).toBe(resolveSeethingSwarmTravelDuration(choreography, pair[0]) / factor)
+      expect(
+        createSeethingSwarmBattlePlayback({
+          combatant,
+          winnerId: null,
+          cue: "attention",
+          speed,
+        }),
+      ).toEqual(
+        createSeethingSwarmBattlePlayback({
+          combatant,
+          winnerId: null,
+          cue: "attention",
+        }),
+      )
+    },
+  )
   it("uses one complete retained locomotion cycle each way at the battle rate", () => {
     const outward = createSeethingSwarmBattlePlayback({
       combatant,

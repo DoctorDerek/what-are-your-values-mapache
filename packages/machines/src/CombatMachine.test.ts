@@ -16,6 +16,39 @@ function projectBattle(battleCycle: BattleCycleState): PresentedBattle {
 }
 
 describe("Combat Machine", () => {
+  it("freezes numerical rate, ignores same-pair save projections and latches Skip until accepted next pair", () => {
+    const cycle = createInitialBattleCycle("speed-boundary")
+    const battle = projectBattle(cycle)
+    const onWinnerSelected = vi.fn()
+    const actor = createActor(combatMachine, {
+      input: { initialBattle: battle, animationSpeed: "2x", onWinnerSelected },
+    }).start()
+    actor.send({ type: "VALUE.WINNER_SELECTED", valueId: battle.pair[0] })
+    actor.send({ type: "BATTLE.SPEED_CHANGED", speed: "3x" })
+    expect(actor.getSnapshot().context.activeAnimationSpeed).toBe("2x")
+    actor.send({ type: "BATTLE.PROJECTED", battle: { ...battle } })
+    expect(actor.getSnapshot().context.pendingBattle).toBeNull()
+    actor.send({ type: "BATTLE.SPEED_CHANGED", speed: "skip" })
+    actor.send({ type: "BATTLE.SPEED_CHANGED", speed: "1x" })
+    expect(actor.getSnapshot().context.shouldSkipCurrentAnimation).toBe(true)
+    expect(actor.getSnapshot().matches("AnimatingResult")).toBe(true)
+    const next = projectBattle(
+      createBattleCycleCandidate({
+        battleCycle: cycle,
+        winnerId: battle.pair[0],
+        expectedScheduler: battle.scheduler,
+      }),
+    )
+    actor.send({ type: "BATTLE.PROJECTED", battle: next })
+    actor.send({ type: "ANIMATION.RESULT_FINISHED" })
+    actor.send({ type: "ANIMATION.RESULT_FINISHED" })
+    expect(actor.getSnapshot().context.currentBattle).toBe(next)
+    expect(actor.getSnapshot().context.shouldSkipCurrentAnimation).toBe(false)
+    expect(onWinnerSelected).toHaveBeenCalledTimes(1)
+    actor.send({ type: "VALUE.WINNER_SELECTED", valueId: next.pair[0] })
+    expect(actor.getSnapshot().context.activeAnimationSpeed).toBe("1x")
+    actor.stop()
+  })
   it("accepts one semantic winner while rejecting rapid duplicate input", () => {
     const onWinnerSelected = vi.fn()
     const battleCycle = createInitialBattleCycle("combat-selection-seed")

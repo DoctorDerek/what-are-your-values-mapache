@@ -78,6 +78,7 @@ describe("WAYVM Export", () => {
       locale: "en",
       reducedMotion: "on",
       controlHints: "always",
+      battleAnimationSpeed: "1x",
     })
   })
 
