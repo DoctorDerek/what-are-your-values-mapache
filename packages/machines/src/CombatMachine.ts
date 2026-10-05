@@ -1,6 +1,8 @@
 import type { ValueId, ValuePair } from "@game/data/src/Value"
 import { assign, setup } from "xstate"
 import type { BattleSchedulerRestorePoint } from "./BattleScheduler"
+import { DEFAULT_BATTLE_ANIMATION_SPEED, type BattleAnimationSpeed } from "./BattleAnimationSpeed"
+import { areSchedulerIdentitiesEqual } from "./SchedulerIdentity"
 
 export type PresentedBattle = {
   readonly pair: ValuePair
@@ -14,6 +16,9 @@ export const combatMachine = setup({
       pendingBattle: PresentedBattle | null
       winnerId: ValueId | null
       focusedId: ValueId | null
+      requestedAnimationSpeed: BattleAnimationSpeed
+      activeAnimationSpeed: BattleAnimationSpeed
+      shouldSkipCurrentAnimation: boolean
       onWinnerSelected: (
         winnerId: ValueId,
         expectedScheduler: BattleSchedulerRestorePoint,
@@ -23,9 +28,11 @@ export const combatMachine = setup({
       | { type: "BATTLE.PROJECTED"; battle: PresentedBattle }
       | { type: "VALUE.FOCUS_REQUESTED"; valueId: ValueId }
       | { type: "VALUE.WINNER_SELECTED"; valueId: ValueId }
-      | { type: "ANIMATION.RESULT_FINISHED" },
+      | { type: "ANIMATION.RESULT_FINISHED" }
+      | { type: "BATTLE.SPEED_CHANGED"; speed: BattleAnimationSpeed },
     input: {} as {
       initialBattle: PresentedBattle
+      animationSpeed?: BattleAnimationSpeed
       onWinnerSelected: (
         winnerId: ValueId,
         expectedScheduler: BattleSchedulerRestorePoint,
@@ -44,6 +51,9 @@ export const combatMachine = setup({
       return context.currentBattle.pair.includes(event.valueId)
     },
     hasPendingBattle: ({ context }) => context.pendingBattle !== null,
+    isNextBattleProjection: ({ context, event }) =>
+      event.type === "BATTLE.PROJECTED" &&
+      !areSchedulerIdentitiesEqual(context.currentBattle.scheduler, event.battle.scheduler),
   },
   actions: {
     notifyWinnerSelected: ({ context, event }) => {
@@ -62,8 +72,21 @@ export const combatMachine = setup({
     pendingBattle: null,
     winnerId: null,
     focusedId: null,
+    requestedAnimationSpeed: input.animationSpeed ?? DEFAULT_BATTLE_ANIMATION_SPEED,
+    activeAnimationSpeed: input.animationSpeed ?? DEFAULT_BATTLE_ANIMATION_SPEED,
+    shouldSkipCurrentAnimation: false,
     onWinnerSelected: input.onWinnerSelected,
   }),
+  on: {
+    "BATTLE.SPEED_CHANGED": {
+      actions: assign({
+        requestedAnimationSpeed: ({ event }) => event.speed,
+        shouldSkipCurrentAnimation: ({ context, event }) =>
+          context.shouldSkipCurrentAnimation ||
+          (context.winnerId !== null && event.speed === "skip"),
+      }),
+    },
+  },
   states: {
     Preparing: {
       on: {
@@ -74,6 +97,7 @@ export const combatMachine = setup({
             pendingBattle: null,
             winnerId: null,
             focusedId: null,
+            shouldSkipCurrentAnimation: false,
           }),
         },
       },
@@ -98,6 +122,8 @@ export const combatMachine = setup({
           actions: [
             assign({
               winnerId: ({ event }) => event.valueId,
+              activeAnimationSpeed: ({ context }) => context.requestedAnimationSpeed,
+              shouldSkipCurrentAnimation: ({ context }) => context.requestedAnimationSpeed === "skip",
               focusedId: null,
             }),
             "notifyWinnerSelected",
@@ -108,6 +134,7 @@ export const combatMachine = setup({
     AnimatingResult: {
       on: {
         "BATTLE.PROJECTED": {
+          guard: "isNextBattleProjection",
           actions: assign({
             pendingBattle: ({ event }) => event.battle,
           }),
@@ -122,6 +149,7 @@ export const combatMachine = setup({
               pendingBattle: null,
               winnerId: null,
               focusedId: null,
+              shouldSkipCurrentAnimation: false,
             }),
           },
           {
@@ -129,6 +157,7 @@ export const combatMachine = setup({
             actions: assign({
               winnerId: null,
               focusedId: null,
+              shouldSkipCurrentAnimation: false,
             }),
           },
         ],
