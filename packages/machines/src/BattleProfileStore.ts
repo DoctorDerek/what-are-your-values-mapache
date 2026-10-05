@@ -411,7 +411,7 @@ async function replaceBattleProfileStorePlayerDataAtomically({
   })
   const manifestBytes = serializeBattleProfileManifest(manifest)
 
-  await store.compareAndSwapVerified({
+  await acceptBattleProfileTransaction(store, {
     expectedEntries: [
       [BATTLE_PROFILE_MANIFEST_KEY, state.manifestBytes],
       [checkpointKey, replacedCheckpointBytes],

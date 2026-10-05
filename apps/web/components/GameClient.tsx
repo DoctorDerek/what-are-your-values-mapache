@@ -990,6 +990,13 @@ function WritableGameClient({
     return (
       <>
         <Crucible
+          animationSpeed={
+            state.context.pendingPlayerSettings?.battleAnimationSpeed ??
+            playerData.settings.battleAnimationSpeed
+          }
+          onAnimationSpeedChange={(speed) =>
+            send({ type: "BATTLE.SPEED_CHANGE_REQUESTED", speed })
+          }
           activeDeck={battleProfile.activeDeck}
           achievements={pendingAchievementPresentations}
           battle={presentedBattle}

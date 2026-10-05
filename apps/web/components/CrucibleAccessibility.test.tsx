@@ -144,6 +144,8 @@ function createCrucibleProps(
     canUndo: false,
     canRedo: false,
     controlHintPreference: "auto",
+    animationSpeed: "1x",
+    onAnimationSpeedChange: vi.fn(),
     isAchievementAcknowledgementPending: false,
     isMenuOpen: false,
     isPersistencePending: false,

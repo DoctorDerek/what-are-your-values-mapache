@@ -10,6 +10,7 @@ import {
   getBattleAccessibilityAnnouncement,
   type PendingBattleAccessibilityAction,
 } from "@game/machines/src/BattleAccessibilityPresentation"
+import type { BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
 import { getBattleRewardPresentation } from "@game/machines/src/BattleRewardPresentation"
 import type { BattleSchedulerRestorePoint } from "@game/machines/src/BattleScheduler"
 import {
@@ -36,6 +37,8 @@ type BattleAccessibilityAnnouncement = Readonly<{
 }>
 
 export default function Crucible({
+  animationSpeed,
+  onAnimationSpeedChange,
   activeDeck,
   achievements,
   battle,
@@ -55,6 +58,8 @@ export default function Crucible({
   onRedo,
   onWinnerSelected,
 }: {
+  animationSpeed: BattleAnimationSpeed
+  onAnimationSpeedChange: (speed: BattleAnimationSpeed) => void
   activeDeck: ActiveDeck
   achievements: readonly AchievementPresentation[]
   battle: PresentedBattle
@@ -78,7 +83,7 @@ export default function Crucible({
   ) => void
 }) {
   const [state, send] = useMachine(combatMachine, {
-    input: { initialBattle: battle, onWinnerSelected },
+    input: { initialBattle: battle, animationSpeed, onWinnerSelected },
   })
   const isPresentationReady = usePreparedSeethingSwarmBattle(
     battle,
@@ -110,6 +115,9 @@ export default function Crucible({
   useEffect(() => {
     if (isPresentationReady) send({ type: "BATTLE.PROJECTED", battle })
   }, [battle, isPresentationReady, send])
+  useEffect(() => {
+    send({ type: "BATTLE.SPEED_CHANGED", speed: animationSpeed })
+  }, [animationSpeed, send])
 
   const isInteractive =
     state.matches("AwaitingInput") &&
@@ -372,6 +380,9 @@ export default function Crucible({
 
       <div className="pointer-events-none relative z-50 flex shrink-0 flex-col items-center [anchor-name:--battle-actions]">
         <BattleActionBar
+          animationSpeed={animationSpeed}
+          canChangeAnimationSpeed={!isMenuOpen}
+          onAnimationSpeedChange={onAnimationSpeedChange}
           canOpenMenu={canNavigate}
           canUndo={isInteractive && canUndo}
           canRedo={isInteractive && canRedo}
@@ -385,6 +396,8 @@ export default function Crucible({
       </div>
 
       <SeethingSwarmBattleStage
+        animationSpeed={state.context.activeAnimationSpeed}
+        shouldSkipAnimation={state.context.shouldSkipCurrentAnimation}
         battle={currentBattle}
         pendingBattle={state.context.pendingBattle}
         isNextBattleReady={state.context.pendingBattle !== null}

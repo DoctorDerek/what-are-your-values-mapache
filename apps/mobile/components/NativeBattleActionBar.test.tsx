@@ -6,6 +6,9 @@ describe("NativeBattleActionBar", () => {
   it("keeps every compact action label on one fitted line", async () => {
     await render(
       <NativeBattleActionBar
+        animationSpeed="1x"
+        canChangeAnimationSpeed
+        onAnimationSpeedChange={jest.fn()}
         canOpenMenu
         canRedo
         canStop
@@ -38,6 +41,9 @@ describe("NativeBattleActionBar", () => {
     const user = userEvent.setup()
     const { rerender } = await render(
       <NativeBattleActionBar
+        animationSpeed="1x"
+        canChangeAnimationSpeed
+        onAnimationSpeedChange={jest.fn()}
         canOpenMenu
         canRedo
         canStop
@@ -66,6 +72,9 @@ describe("NativeBattleActionBar", () => {
 
     await rerender(
       <NativeBattleActionBar
+        animationSpeed="1x"
+        canChangeAnimationSpeed
+        onAnimationSpeedChange={jest.fn()}
         canOpenMenu={false}
         canRedo={false}
         canStop={false}

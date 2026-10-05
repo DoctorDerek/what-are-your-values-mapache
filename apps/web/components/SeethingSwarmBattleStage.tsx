@@ -5,6 +5,11 @@ import {
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
+import {
+  DEFAULT_BATTLE_ANIMATION_SPEED,
+  scaleBattleAnimationDuration,
+  type BattleAnimationSpeed,
+} from "@game/machines/src/BattleAnimationSpeed"
 import type { PresentedBattle } from "@game/machines/src/CombatMachine"
 import {
   type SeethingSwarmBattleChoreography,
@@ -55,6 +60,7 @@ function getServerIsDocumentHidden() {
 }
 
 function BattlePlayback({
+  animationSpeed,
   choreography,
   winnerId,
   isNextBattleReady,
@@ -63,6 +69,7 @@ function BattlePlayback({
   onRoleEntered,
   children,
 }: {
+  animationSpeed: BattleAnimationSpeed
   choreography: SeethingSwarmBattleChoreography<StaticImageData>
   winnerId: ValueId | null
   isNextBattleReady: boolean
@@ -201,6 +208,7 @@ function BattlePlayback({
               >
                 {"clips" in combatant ? (
                   <SeethingSwarmCombatant
+                    animationSpeed={animationSpeed}
                     combatant={combatant}
                     isAttended={isAttended}
                     winnerId={winnerId}
@@ -240,6 +248,8 @@ function BattlePlayback({
 }
 
 export default function SeethingSwarmBattleStage({
+  animationSpeed = DEFAULT_BATTLE_ANIMATION_SPEED,
+  shouldSkipAnimation = false,
   battle,
   pendingBattle = null,
   isNextBattleReady,
@@ -250,6 +260,8 @@ export default function SeethingSwarmBattleStage({
   onResultAnimationComplete,
   children,
 }: {
+  animationSpeed?: BattleAnimationSpeed
+  shouldSkipAnimation?: boolean
   battle: PresentedBattle
   pendingBattle?: PresentedBattle | null
   isNextBattleReady: boolean
@@ -280,8 +292,8 @@ export default function SeethingSwarmBattleStage({
     ),
   )
   const stageStyle: SeethingSwarmBattleStageStyle = {
-    "--battle-result-duration": `${SEETHING_SWARM_BATTLE_RESULT_DURATION_MS}ms`,
-    "--battle-approach-duration": `${resolveSeethingSwarmTravelDuration(choreography, winnerId)}ms`,
+    "--battle-result-duration": `${scaleBattleAnimationDuration(SEETHING_SWARM_BATTLE_RESULT_DURATION_MS, animationSpeed)}ms`,
+    "--battle-approach-duration": `${resolveSeethingSwarmTravelDuration(choreography, winnerId, animationSpeed)}ms`,
     "--battle-tile-size": `${stageGeometry.width}px`,
     "--battle-below-anchor": `${stageGeometry.belowAnchor}px`,
     "--battle-visible-height": `${stageGeometry.height}px`,
@@ -296,11 +308,17 @@ export default function SeethingSwarmBattleStage({
       style={stageStyle}
     >
       <BattlePlayback
+        animationSpeed={animationSpeed}
         key={choreography.choreographyIdentity}
         choreography={choreography}
         winnerId={winnerId}
         isNextBattleReady={isNextBattleReady}
-        shouldReduceMotion={shouldReduceMotion || isPaused || isDocumentHidden}
+        shouldReduceMotion={
+          shouldReduceMotion ||
+          isPaused ||
+          isDocumentHidden ||
+          (winnerId !== null && shouldSkipAnimation)
+        }
         onResultComplete={onResultAnimationComplete}
         onRoleEntered={onRoleEntered}
       >

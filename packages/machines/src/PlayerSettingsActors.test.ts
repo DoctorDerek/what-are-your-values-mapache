@@ -4,6 +4,7 @@ import {
   initializeBattleProfileStore,
   replaceBattleProfileStorePlayerDataForLocalMutation,
 } from "./BattleProfileStore"
+import type { DurableStoreAdapter } from "./DurableStoreAdapter"
 import { createInMemoryDurableStore } from "./InMemoryDurableStore"
 import { createInitialPlayerData } from "./PlayerData"
 import {
@@ -33,6 +34,29 @@ async function createSettingsActorFixture() {
 }
 
 describe("Player Settings Actors", () => {
+  it("reconciles a committed speed change after a lost write acknowledgment", async () => {
+    const { playerData, state, store } = await createSettingsActorFixture()
+    const uncertainStore: DurableStoreAdapter = {
+      readAll: () => store.readAll(),
+      compareAndSwapVerified: async (transaction) => {
+        await store.compareAndSwapVerified(transaction)
+        throw new Error("Write acknowledgment was lost")
+      },
+    }
+    const settings = createPlayerSettings({
+      ...playerData.settings,
+      battleAnimationSpeed: "3x",
+    })
+    const actor = createActor(updatePlayerSettingsActor, {
+      input: { store: uncertainStore, state, settings, updatedAt: UPDATED_AT },
+    })
+    actor.start()
+    const accepted = await toPromise(actor)
+    expect(accepted.head.playerData.settings).toEqual(settings)
+    expect(accepted.head.playerData.profile).toEqual(playerData.profile)
+    expect(accepted.head.revision).toBe(state.head.revision + 1)
+  })
+
   it("saves changed settings in a verified next-generation checkpoint", async () => {
     const { playerData, state, store } = await createSettingsActorFixture()
     const settings = createPlayerSettings({

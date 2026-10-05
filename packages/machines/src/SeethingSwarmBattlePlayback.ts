@@ -7,6 +7,11 @@ import {
 import { resolveSeethingSwarmAttackContact } from "@game/data/src/SeethingSwarmAttackContact"
 import type { SeethingSwarmRuntimeCharacterClip } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
+import {
+  DEFAULT_BATTLE_ANIMATION_SPEED,
+  scaleBattleAnimationDuration,
+  type BattleAnimationSpeed,
+} from "./BattleAnimationSpeed"
 import type {
   SeethingSwarmBattleClipRole,
   SeethingSwarmBattleClipSelection,
@@ -53,10 +58,12 @@ export function createSeethingSwarmBattlePlayback<PlatformAsset>({
   combatant,
   winnerId,
   cue,
+  speed = DEFAULT_BATTLE_ANIMATION_SPEED,
 }: {
   readonly combatant: SeethingSwarmLicensedBattleCombatant<PlatformAsset>
   readonly winnerId: ValueId | null
   readonly cue: SeethingSwarmBattleExchangeCue
+  readonly speed?: BattleAnimationSpeed
 }): readonly SeethingSwarmBattlePlaybackStep<PlatformAsset>[] {
   const isWinner = combatant.valueId === winnerId
   if (isWinner && (cue === "approach" || cue === "recovery")) {
@@ -67,7 +74,10 @@ export function createSeethingSwarmBattlePlayback<PlatformAsset>({
         semanticFamily: "entry-exit",
         clip,
         playbackMode: "one-shot",
-        frameDurationMs: SEETHING_SWARM_BATTLE_FRAME_DURATION_MS,
+        frameDurationMs: scaleBattleAnimationDuration(
+          SEETHING_SWARM_BATTLE_FRAME_DURATION_MS,
+          speed,
+        ),
         blocksResult: true,
         startFrame: 0,
         endFrame: clip.frameCount,
@@ -96,9 +106,21 @@ export function createSeethingSwarmBattlePlayback<PlatformAsset>({
     cue,
     combatant.locomotion.animationId,
   )
-  return steps.length
+  const resolvedSteps = steps.length
     ? steps
     : createPlaybackSteps(combatant.clips, ["rest"], "rest")
+  return winnerId === null ||
+    cue === "introduction" ||
+    cue === "attention" ||
+    cue === "rest"
+    ? resolvedSteps
+    : resolvedSteps.map((step) => ({
+        ...step,
+        frameDurationMs:
+          step.playbackMode === "loop"
+            ? step.frameDurationMs
+            : scaleBattleAnimationDuration(step.frameDurationMs, speed),
+      }))
 }
 
 export function createSeethingSwarmAttentionPlayback<PlatformAsset>(

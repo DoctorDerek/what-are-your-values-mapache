@@ -155,6 +155,39 @@ afterEach(() => {
 })
 
 describe("NativeSeethingSwarmBattleStage", () => {
+  it("settles Skip only after accepted next-pair readiness and reports once", async () => {
+    const initial = props()
+    const { rerender } = await render(
+      <NativeSeethingSwarmBattleStage {...initial} />,
+    )
+    await rerender(
+      <NativeSeethingSwarmBattleStage
+        {...initial}
+        winnerId={pair[0]}
+        shouldSkipAnimation
+      />,
+    )
+    expect(initial.onResultComplete).not.toHaveBeenCalled()
+    await rerender(
+      <NativeSeethingSwarmBattleStage
+        {...initial}
+        winnerId={pair[0]}
+        shouldSkipAnimation
+        isNextBattleReady
+      />,
+    )
+    expect(initial.onResultComplete).toHaveBeenCalledTimes(1)
+    await rerender(
+      <NativeSeethingSwarmBattleStage
+        {...initial}
+        winnerId={pair[0]}
+        shouldSkipAnimation
+        isNextBattleReady
+      />,
+    )
+    expect(initial.onResultComplete).toHaveBeenCalledTimes(1)
+  })
+
   it("retains app-session entry rotation across Hub visits without consuming unseen or reduced-motion roles", async () => {
     const initial = props()
     const catalog = {

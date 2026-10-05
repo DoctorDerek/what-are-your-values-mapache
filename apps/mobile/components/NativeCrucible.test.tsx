@@ -46,6 +46,8 @@ function createCrucibleProps(isPersistencePending: boolean) {
     canUndo: true,
     canRedo: true,
     controlHintPreference: "auto" as const,
+    animationSpeed: "1x" as const,
+    onAnimationSpeedChange: jest.fn(),
     isAchievementAcknowledgementPending: false,
     isMenuOpen: false,
     isPersistencePending,

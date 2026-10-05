@@ -2,6 +2,10 @@ import { createSeethingSwarmStageGeometry } from "@game/data/src/SeethingSwarmAn
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
+import {
+  DEFAULT_BATTLE_ANIMATION_SPEED,
+  type BattleAnimationSpeed,
+} from "@game/machines/src/BattleAnimationSpeed"
 import type { PresentedBattle } from "@game/machines/src/CombatMachine"
 import {
   type SeethingSwarmBattleChoreography,
@@ -25,6 +29,7 @@ import NativeSeethingSwarmCombatant from "@/components/NativeSeethingSwarmCombat
 import NativeSeethingSwarmPlaceholder from "@/components/NativeSeethingSwarmPlaceholder"
 
 function NativeBattlePlayback({
+  animationSpeed,
   choreography,
   winnerId,
   isNextBattleReady,
@@ -33,6 +38,7 @@ function NativeBattlePlayback({
   onRoleEntered,
   children,
 }: {
+  animationSpeed: BattleAnimationSpeed
   choreography: SeethingSwarmBattleChoreography<number>
   winnerId: ValueId | null
   isNextBattleReady: boolean
@@ -196,6 +202,7 @@ function NativeBattlePlayback({
               durationMs={resolveSeethingSwarmTravelDuration(
                 choreography,
                 winnerId,
+                animationSpeed,
               )}
               onTravelComplete={handleTravelComplete}
             >
@@ -206,6 +213,7 @@ function NativeBattlePlayback({
               ) : null}
               {"clips" in combatant ? (
                 <NativeSeethingSwarmCombatant
+                  animationSpeed={animationSpeed}
                   combatant={combatant}
                   isAttended={isAttended}
                   winnerId={winnerId}
@@ -222,6 +230,7 @@ function NativeBattlePlayback({
                 />
               ) : (
                 <NativeSeethingSwarmPlaceholder
+                  animationSpeed={animationSpeed}
                   key={cue}
                   side={combatant.side}
                   role={resolveSeethingSwarmPlaceholderRole(
@@ -252,6 +261,8 @@ function NativeBattlePlayback({
 }
 
 export default function NativeSeethingSwarmBattleStage({
+  animationSpeed = DEFAULT_BATTLE_ANIMATION_SPEED,
+  shouldSkipAnimation = false,
   battle,
   catalog,
   winnerId,
@@ -261,6 +272,8 @@ export default function NativeSeethingSwarmBattleStage({
   onResultComplete,
   children,
 }: {
+  animationSpeed?: BattleAnimationSpeed
+  shouldSkipAnimation?: boolean
   battle: PresentedBattle
   catalog: SeethingSwarmRuntimeClipCatalog<number>
   winnerId: ValueId | null
@@ -290,11 +303,17 @@ export default function NativeSeethingSwarmBattleStage({
 
   return (
     <NativeBattlePlayback
+      animationSpeed={animationSpeed}
       key={choreography.choreographyIdentity}
       choreography={choreography}
       winnerId={winnerId}
       isNextBattleReady={isNextBattleReady}
-      shouldReduceMotion={shouldReduceMotion || isPaused || !isForeground}
+      shouldReduceMotion={
+        shouldReduceMotion ||
+        isPaused ||
+        !isForeground ||
+        (winnerId !== null && shouldSkipAnimation)
+      }
       onResultComplete={onResultComplete}
       onRoleEntered={onRoleEntered}
     >

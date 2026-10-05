@@ -12,6 +12,7 @@ describe("Player Settings", () => {
       locale: "en",
       reducedMotion: "system",
       controlHints: "auto",
+      battleAnimationSpeed: "1x",
     })
   })
 
@@ -30,7 +31,7 @@ describe("Player Settings", () => {
   it.each([
     {
       index: 0,
-      value: 2,
+      value: 99,
       issue: "Unsupported Player Settings codec version",
     },
     { index: 1, value: "es", issue: "Unsupported locale" },
@@ -58,5 +59,31 @@ describe("Player Settings", () => {
     expect(() =>
       decodePlayerSettings([1, "en", "system", "auto", null]),
     ).toThrow("Invalid Player Settings")
+  })
+  it("preserves legacy encodings and round-trips every Battle mode", () => {
+    expect(encodePlayerSettings(createInitialPlayerSettings())).toEqual([
+      1,
+      "en",
+      "system",
+      "auto",
+    ])
+    expect(
+      decodePlayerSettings([1, "en", "system", "auto"]).battleAnimationSpeed,
+    ).toBe("1x")
+    for (const battleAnimationSpeed of ["1x", "2x", "3x", "skip"] as const) {
+      const settings = createPlayerSettings({
+        ...createInitialPlayerSettings(),
+        battleAnimationSpeed,
+      })
+      expect(decodePlayerSettings(encodePlayerSettings(settings))).toEqual(
+        settings,
+      )
+    }
+    expect(() =>
+      decodePlayerSettings([2, "en", "system", "auto", "4x"]),
+    ).toThrow("Unsupported Battle animation speed")
+    expect(() =>
+      decodePlayerSettings([2, "en", "system", "auto", "1x"]),
+    ).toThrow("not canonical")
   })
 })
