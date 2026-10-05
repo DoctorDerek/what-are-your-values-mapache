@@ -70,7 +70,8 @@ import {
   playerDataResetBackupReadyNotice,
   playerDataResetCopy,
 } from "./PlayerDataResetCopy"
-import type { PlayerSettings } from "./PlayerSettings"
+import { createPlayerSettings, type PlayerSettings } from "./PlayerSettings"
+import type { BattleAnimationSpeed } from "./BattleAnimationSpeed"
 import { updatePlayerSettingsActor } from "./PlayerSettingsActors"
 import { areSchedulerIdentitiesEqual } from "./SchedulerIdentity"
 import type { PreparedWayvmImport } from "./WayvmImportPreview"
@@ -96,6 +97,7 @@ type PersistenceFailureOrigin =
   | "crucible"
   | "all-values"
   | "achievement-presentation"
+  | "battle-speed"
 
 type RootMachineContext = {
   readonly durableStore: DurableStoreAdapter
@@ -137,6 +139,7 @@ type RootMachineEvent =
   | { type: "APP.BACKGROUND_CHECKPOINT_REQUESTED" }
   | { type: "INTRODUCTION.COMPLETED" }
   | { type: "BATTLE.START_REQUESTED" }
+  | { type: "BATTLE.SPEED_CHANGE_REQUESTED"; speed: BattleAnimationSpeed }
   | { type: "ACHIEVEMENTS.OPEN_REQUESTED" }
   | { type: "ACHIEVEMENTS.CLOSE_REQUESTED" }
   | { type: "ACHIEVEMENT.PRESENTED"; achievementId: AchievementId }
@@ -534,6 +537,9 @@ export const rootMachine = setup({
       context.persistenceFailureOrigin === "initialization",
     isCrucibleStorageFailure: ({ context }) =>
       context.persistenceFailureOrigin === "crucible",
+    isBattleSpeedStorageFailure: ({ context }) =>
+      context.persistenceFailureOrigin === "battle-speed",
+    hasPendingBattleSpeed: ({ context }) => context.pendingPlayerSettings !== null,
     isAllValuesStorageFailure: ({ context }) =>
       context.persistenceFailureOrigin === "all-values",
     isAchievementPresentationStorageFailure: ({ context }) =>
@@ -1689,8 +1695,20 @@ export const rootMachine = setup({
     },
     Crucible: {
       initial: "Ready",
+      on: {
+        "BATTLE.SPEED_CHANGE_REQUESTED": {
+          actions: assign({
+            pendingPlayerSettings: ({ context, event }) =>
+              createPlayerSettings({
+                ...requirePlayerData(context).settings,
+                battleAnimationSpeed: event.speed,
+              }),
+          }),
+        },
+      },
       states: {
         Ready: {
+          always: { guard: "hasPendingBattleSpeed", target: "PersistingSpeed" },
           on: {
             "APP.BACKGROUND_CHECKPOINT_REQUESTED": {
               target: "#root.BackgroundCheckpointing",
@@ -1769,6 +1787,39 @@ export const rootMachine = setup({
 
                   return commit
                 },
+              }),
+            },
+          },
+        },
+        PersistingSpeed: {
+          invoke: {
+            src: "updatePlayerSettings",
+            input: ({ context }) => ({
+              store: context.durableStore,
+              state: requireBattleProfileStoreState(context),
+              settings: requirePendingPlayerSettings(context),
+              updatedAt: context.now(),
+            }),
+            onDone: {
+              target: "Ready",
+              actions: assign({
+                playerData: ({ event }) => event.output.head.playerData,
+                battleProfileStoreState: ({ event }) => event.output,
+                pendingPlayerSettings: ({ context, event }) =>
+                  context.pendingPlayerSettings?.battleAnimationSpeed ===
+                    event.output.head.playerData.settings.battleAnimationSpeed
+                    ? null
+                    : context.pendingPlayerSettings,
+                persistenceIssue: null,
+              }),
+            },
+            onError: {
+              target: "#root.PersistenceFailure",
+              actions: assign({
+                recoveryEntries: null,
+                pendingRecoveryImportSource: null,
+                persistenceFailureOrigin: "battle-speed",
+                persistenceIssue: ({ event }) => getErrorMessage(event.error),
               }),
             },
           },
@@ -2090,6 +2141,16 @@ export const rootMachine = setup({
               {
                 guard: "isInitializationStorageFailure",
                 target: "#root.InitializingProfile",
+                actions: assign({
+                  persistenceFailureOrigin: null,
+                  persistenceIssue: null,
+                  portabilityIssue: null,
+                  portabilityNotice: null,
+                }),
+              },
+              {
+                guard: "isBattleSpeedStorageFailure",
+                target: "#root.Crucible.PersistingSpeed",
                 actions: assign({
                   persistenceFailureOrigin: null,
                   persistenceIssue: null,
