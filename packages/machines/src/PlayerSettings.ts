@@ -37,11 +37,14 @@ function readOption<const TOption extends string>(
   label: string,
 ) {
   const candidate = readString(value, label)
-  if (!options.includes(candidate as TOption)) {
+  const option = options.find(
+    (supportedOption) => supportedOption === candidate,
+  )
+  if (option === undefined) {
     throw new Error(`Unsupported ${label}: ${candidate}`)
   }
 
-  return candidate as TOption
+  return option
 }
 
 export function createPlayerSettings(
