@@ -31,4 +31,11 @@ describe("getErrorMessage", () => {
     expect(typeof result).toBe("string")
     expect(result).toContain("404")
   })
+
+  it.each([null, 42, false])(
+    "serializes objects whose message is not a string: %s",
+    (message) => {
+      expect(getErrorMessage({ message })).toBe(JSON.stringify({ message }))
+    },
+  )
 })

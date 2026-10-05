@@ -59,4 +59,13 @@ describe("Persistence Validation", () => {
       readActiveValueId(activeDeck, "missing-value", "Value"),
     ).toThrow("Value is not in the Active Deck: missing-value")
   })
+
+  it.each(["0", null, undefined, true, {}, [], 0.5, NaN, Infinity])(
+    "rejects values that are not nonnegative safe integers: %s",
+    (value) => {
+      expect(() => readNonNegativeSafeInteger(value, "Generation")).toThrow(
+        "Invalid Generation",
+      )
+    },
+  )
 })
