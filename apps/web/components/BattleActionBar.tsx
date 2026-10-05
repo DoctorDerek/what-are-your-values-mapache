@@ -1,3 +1,6 @@
+import type { BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
+import BattleSpeedControl from "@/components/BattleSpeedControl"
+
 function BattleActionLabel({
   label,
   shortcut,
@@ -27,6 +30,9 @@ function BattleActionLabel({
 }
 
 export default function BattleActionBar({
+  animationSpeed,
+  canChangeAnimationSpeed,
+  onAnimationSpeedChange,
   canOpenMenu,
   canUndo,
   canRedo,
@@ -37,6 +43,9 @@ export default function BattleActionBar({
   onRedo,
   onStop,
 }: {
+  animationSpeed: BattleAnimationSpeed
+  canChangeAnimationSpeed: boolean
+  onAnimationSpeedChange: (speed: BattleAnimationSpeed) => void
   canOpenMenu: boolean
   canUndo: boolean
   canRedo: boolean
@@ -55,6 +64,9 @@ export default function BattleActionBar({
       aria-label="Battle actions"
       className="pointer-events-auto relative z-50 mx-auto flex w-full max-w-3xl shrink-0 flex-wrap gap-2 p-3 xl:gap-4 xl:p-6"
     >
+      <div className="w-full xl:order-last xl:w-auto">
+        <BattleSpeedControl speed={animationSpeed} disabled={!canChangeAnimationSpeed} onChange={onAnimationSpeedChange} />
+      </div>
       <button
         type="button"
         aria-label="Menu"
