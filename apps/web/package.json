@@ -18,11 +18,13 @@
     "@vercel/analytics": "^2",
     "@xstate/react": "^5",
     "class-variance-authority": "^0.7.1",
+    "classix": "^2",
     "motion": "^12",
     "next": "^16",
     "radix-ui": "^1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "tailwind-merge": "^3",
     "xstate": "^5"
   },
   "devDependencies": {
