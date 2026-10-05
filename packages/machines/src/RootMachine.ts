@@ -6,6 +6,7 @@ import { assign, setup } from "xstate"
 import type { AchievementId } from "./AchievementCatalog"
 import { recordAchievementPresentationActor } from "./AchievementPresentationActors"
 import { getPendingAchievementUnlocks } from "./AchievementState"
+import type { BattleAnimationSpeed } from "./BattleAnimationSpeed"
 import { createBattleExitResults } from "./BattleExitResults"
 import type { BattleProfile } from "./BattleProfile"
 import {
@@ -71,7 +72,6 @@ import {
   playerDataResetCopy,
 } from "./PlayerDataResetCopy"
 import { createPlayerSettings, type PlayerSettings } from "./PlayerSettings"
-import type { BattleAnimationSpeed } from "./BattleAnimationSpeed"
 import { updatePlayerSettingsActor } from "./PlayerSettingsActors"
 import { areSchedulerIdentitiesEqual } from "./SchedulerIdentity"
 import type { PreparedWayvmImport } from "./WayvmImportPreview"
@@ -430,6 +430,29 @@ export const rootMachine = setup({
     deleteUnrecoverablePlayerData: deleteUnrecoverablePlayerDataActor,
   },
   actions: {
+    requestBattleAnimationSpeed: assign({
+      pendingPlayerSettings: ({ context, event }) => {
+        if (event.type !== "BATTLE.SPEED_CHANGE_REQUESTED")
+          throw new Error("Battle speed request is missing its preference")
+        return createPlayerSettings({
+          ...requirePlayerData(context).settings,
+          battleAnimationSpeed: event.speed,
+        })
+      },
+    }),
+    queueBattleAchievementPresentation: assign({
+      pendingAchievementPresentationIds: ({ context, event }) => {
+        if (event.type !== "ACHIEVEMENT.PRESENTED")
+          throw new Error(
+            "Achievement presentation request is missing its identity",
+          )
+        return [
+          ...context.pendingAchievementPresentationIds,
+          event.achievementId,
+        ]
+      },
+      achievementPresentationReturnTarget: "crucible",
+    }),
     clearPortabilityFeedback: assign({
       portabilityIssue: null,
       portabilityNotice: null,
@@ -539,7 +562,8 @@ export const rootMachine = setup({
       context.persistenceFailureOrigin === "crucible",
     isBattleSpeedStorageFailure: ({ context }) =>
       context.persistenceFailureOrigin === "battle-speed",
-    hasPendingBattleSpeed: ({ context }) => context.pendingPlayerSettings !== null,
+    hasPendingBattleSpeed: ({ context }) =>
+      context.pendingPlayerSettings !== null,
     isAllValuesStorageFailure: ({ context }) =>
       context.persistenceFailureOrigin === "all-values",
     isAchievementPresentationStorageFailure: ({ context }) =>
@@ -1697,18 +1721,22 @@ export const rootMachine = setup({
       initial: "Ready",
       on: {
         "BATTLE.SPEED_CHANGE_REQUESTED": {
-          actions: assign({
-            pendingPlayerSettings: ({ context, event }) =>
-              createPlayerSettings({
-                ...requirePlayerData(context).settings,
-                battleAnimationSpeed: event.speed,
-              }),
-          }),
+          actions: "requestBattleAnimationSpeed",
+        },
+        "ACHIEVEMENT.PRESENTED": {
+          guard: "canRecordAchievementPresentation",
+          actions: "queueBattleAchievementPresentation",
         },
       },
       states: {
         Ready: {
-          always: { guard: "hasPendingBattleSpeed", target: "PersistingSpeed" },
+          always: [
+            {
+              guard: "hasPendingAchievementPresentation",
+              target: "#root.RecordingAchievementPresentation",
+            },
+            { guard: "hasPendingBattleSpeed", target: "PersistingSpeed" },
+          ],
           on: {
             "APP.BACKGROUND_CHECKPOINT_REQUESTED": {
               target: "#root.BackgroundCheckpointing",
@@ -1807,7 +1835,7 @@ export const rootMachine = setup({
                 battleProfileStoreState: ({ event }) => event.output,
                 pendingPlayerSettings: ({ context, event }) =>
                   context.pendingPlayerSettings?.battleAnimationSpeed ===
-                    event.output.head.playerData.settings.battleAnimationSpeed
+                  event.output.head.playerData.settings.battleAnimationSpeed
                     ? null
                     : context.pendingPlayerSettings,
                 persistenceIssue: null,
@@ -1832,13 +1860,7 @@ export const rootMachine = setup({
           on: {
             "ACHIEVEMENT.PRESENTED": {
               guard: "canRecordAchievementPresentation",
-              actions: assign({
-                pendingAchievementPresentationIds: ({ context, event }) => [
-                  ...context.pendingAchievementPresentationIds,
-                  event.achievementId,
-                ],
-                achievementPresentationReturnTarget: "crucible",
-              }),
+              actions: "queueBattleAchievementPresentation",
             },
           },
           invoke: {
@@ -1978,6 +2000,10 @@ export const rootMachine = setup({
     },
     RecordingAchievementPresentation: {
       on: {
+        "BATTLE.SPEED_CHANGE_REQUESTED": {
+          guard: "shouldReturnAchievementPresentationToCrucible",
+          actions: "requestBattleAnimationSpeed",
+        },
         "ACHIEVEMENT.PRESENTED": {
           guard: "canRecordAchievementPresentation",
           actions: assign({

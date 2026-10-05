@@ -42,6 +42,133 @@ import {
 
 const TEST_TIMESTAMP = "2026-07-21T00:00:00.000Z"
 
+describe("Battle animation speed persistence", () => {
+  it("retains speed choices and achievement acknowledgements across either held write", async () => {
+    const backing = createInMemoryDurableStore()
+    const heldWrite = Promise.withResolvers<void>()
+    let shouldHoldNextWrite = false
+    const durableStore: DurableStoreAdapter = {
+      readAll: backing.readAll,
+      compareAndSwapVerified: async (transaction) => {
+        if (shouldHoldNextWrite) {
+          shouldHoldNextWrite = false
+          await heldWrite.promise
+        }
+        await backing.compareAndSwapVerified(transaction)
+      },
+    }
+    const { actor } = await bootRootActor({ durableStore })
+    await commitOneBattle(actor)
+    const accepted = actor.getSnapshot().context.playerData!
+    const [unlock] = getPendingAchievementUnlocks(accepted.achievements)
+    shouldHoldNextWrite = true
+    actor.send({ type: "BATTLE.SPEED_CHANGE_REQUESTED", speed: "2x" })
+    actor.send({ type: "ACHIEVEMENT.PRESENTED", achievementId: unlock.id })
+    actor.send({ type: "BATTLE.SPEED_CHANGE_REQUESTED", speed: "3x" })
+    expect(actor.getSnapshot().matches({ Crucible: "PersistingSpeed" })).toBe(
+      true,
+    )
+    heldWrite.resolve()
+    await waitFor(actor, (snapshot) =>
+      snapshot.matches("RecordingAchievementPresentation"),
+    )
+    actor.send({ type: "BATTLE.SPEED_CHANGE_REQUESTED", speed: "skip" })
+    const saved = await waitForReadyCrucible(actor)
+    expect(saved.context.playerData?.settings.battleAnimationSpeed).toBe("skip")
+    expect(
+      saved.context.playerData?.achievements.presentedAchievementIds,
+    ).toContain(unlock.id)
+    expect(saved.context.playerData?.profile).toEqual(accepted.profile)
+    actor.stop()
+  })
+
+  it("serializes rapid choices behind the accepted Battle and restores the final preference", async () => {
+    const backing = createInMemoryDurableStore()
+    const heldWrite = Promise.withResolvers<void>()
+    let shouldHoldNextWrite = false
+    let activeWrites = 0
+    let maximumActiveWrites = 0
+    const durableStore: DurableStoreAdapter = {
+      readAll: backing.readAll,
+      compareAndSwapVerified: async (transaction) => {
+        activeWrites += 1
+        maximumActiveWrites = Math.max(maximumActiveWrites, activeWrites)
+        if (shouldHoldNextWrite) {
+          shouldHoldNextWrite = false
+          await heldWrite.promise
+        }
+        try {
+          await backing.compareAndSwapVerified(transaction)
+        } finally {
+          activeWrites -= 1
+        }
+      },
+    }
+    const { actor } = await bootRootActor({ durableStore })
+    actor.send({ type: "BATTLE.START_REQUESTED" })
+    const profile = actor.getSnapshot().context.playerData!.profile
+    const winnerId = projectBattlePair(profile.activeDeck, profile.scheduler)[0]
+    shouldHoldNextWrite = true
+    actor.send({
+      type: "BATTLE.WINNER_SELECTED",
+      winnerId,
+      expectedScheduler: profile.scheduler,
+    })
+    actor.send({ type: "BATTLE.SPEED_CHANGE_REQUESTED", speed: "2x" })
+    actor.send({ type: "BATTLE.SPEED_CHANGE_REQUESTED", speed: "skip" })
+    expect(actor.getSnapshot().matches({ Crucible: "Persisting" })).toBe(true)
+    expect(
+      actor.getSnapshot().context.pendingPlayerSettings?.battleAnimationSpeed,
+    ).toBe("skip")
+    heldWrite.resolve()
+    const saved = await waitForReadyCrucible(actor)
+    expect(saved.context.playerData?.profile.history).toHaveLength(1)
+    expect(saved.context.playerData?.settings.battleAnimationSpeed).toBe("skip")
+    expect(maximumActiveWrites).toBe(1)
+    const acceptedProfile = saved.context.playerData?.profile
+    actor.stop()
+    const restored = await bootRootActor({ durableStore })
+    expect(
+      restored.actor.getSnapshot().context.playerData?.settings
+        .battleAnimationSpeed,
+    ).toBe("skip")
+    expect(restored.actor.getSnapshot().context.playerData?.profile).toEqual(
+      acceptedProfile,
+    )
+    restored.actor.stop()
+  })
+
+  it("holds a failed preference save for retry without changing accepted XP or choices", async () => {
+    const backing = createInMemoryDurableStore()
+    let shouldRejectWrite = false
+    const durableStore: DurableStoreAdapter = {
+      readAll: backing.readAll,
+      compareAndSwapVerified: async (transaction) => {
+        if (shouldRejectWrite) {
+          shouldRejectWrite = false
+          throw new Error("Quota test")
+        }
+        await backing.compareAndSwapVerified(transaction)
+      },
+    }
+    const { actor } = await bootRootActor({ durableStore })
+    actor.send({ type: "BATTLE.START_REQUESTED" })
+    const before = actor.getSnapshot().context.playerData!.profile
+    shouldRejectWrite = true
+    actor.send({ type: "BATTLE.SPEED_CHANGE_REQUESTED", speed: "3x" })
+    await waitFor(actor, (snapshot) => snapshot.matches("PersistenceFailure"))
+    expect(
+      actor.getSnapshot().context.pendingPlayerSettings?.battleAnimationSpeed,
+    ).toBe("3x")
+    expect(actor.getSnapshot().context.playerData?.profile).toEqual(before)
+    actor.send({ type: "STORAGE_RECOVERY.RETRY_REQUESTED" })
+    const saved = await waitForReadyCrucible(actor)
+    expect(saved.context.playerData?.settings.battleAnimationSpeed).toBe("3x")
+    expect(saved.context.playerData?.profile).toEqual(before)
+    actor.stop()
+  })
+})
+
 describe("Semantic Back through the root navigation owner", () => {
   it("blocks Introduction, allows root departure and restores the actual secondary parent", async () => {
     const { actor } = await bootRootActor({ skipIntroduction: true })
