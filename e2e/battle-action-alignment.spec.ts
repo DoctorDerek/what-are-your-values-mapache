@@ -97,7 +97,9 @@ for (const width of [320, 390, 1440]) {
         path: testInfo.outputPath(`actions-${textScale}.png`),
       })
       if (textScale === 100)
-        await page.screenshot({ path: testInfo.outputPath("bottom-battle-dock.png") })
+        await page.screenshot({
+          path: testInfo.outputPath("bottom-battle-dock.png"),
+        })
     }
   })
 }
