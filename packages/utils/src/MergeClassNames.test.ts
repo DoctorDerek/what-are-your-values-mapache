@@ -4,10 +4,15 @@ import { cn, mergeClassNames } from "./MergeClassNames"
 describe("mergeClassNames", () => {
   it("combines conditional class values without rendering disabled entries", () => {
     expect(
-      mergeClassNames("font-black", ["uppercase", null], {
-        hidden: false,
-        "text-primary": true,
-      }),
+      mergeClassNames(
+        "font-black",
+        "uppercase",
+        null,
+        undefined,
+        false && "hidden",
+        true,
+        "text-primary",
+      ),
     ).toBe("font-black uppercase text-primary")
   })
 
