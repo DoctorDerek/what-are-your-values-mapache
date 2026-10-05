@@ -37,6 +37,7 @@ import { usePreparedSeethingSwarmBattle } from "@/components/SeethingSwarmAssetP
 import { useSeethingSwarmActiveBattle } from "@/components/SeethingSwarmBattleVariation"
 import SeethingSwarmCombatant from "@/components/SeethingSwarmCombatant"
 import SeethingSwarmPlaceholder from "@/components/SeethingSwarmPlaceholder"
+import { cn } from "@/lib/utils"
 
 type SeethingSwarmBattleStageStyle = CSSProperties & {
   "--battle-result-duration": string
@@ -183,7 +184,21 @@ function BattlePlayback({
             data-battle-cue={cue}
           >
             <div
-              className={`relative flex h-(--battle-visible-size) w-(--battle-combatant-size) shrink-0 items-end justify-center ${combatant.side === "first" ? "[--battle-travel-direction:1]" : "[--battle-travel-direction:-1]"} ${!shouldReduceMotion && canWinnerTravel && combatant.valueId === winnerId && readySides.size === 2 && cue !== "settled" ? (cue === "recovery" ? "animate-seething-swarm-return" : "animate-seething-swarm-approach") : ""}`}
+              className={cn(
+                "relative flex h-(--battle-visible-size) w-(--battle-combatant-size) shrink-0 items-end justify-center",
+                combatant.side === "first"
+                  ? "[--battle-travel-direction:1]"
+                  : "[--battle-travel-direction:-1]",
+                !shouldReduceMotion &&
+                  canWinnerTravel &&
+                  combatant.valueId === winnerId &&
+                  readySides.size === 2 &&
+                  cue !== "settled"
+                  ? cue === "recovery"
+                    ? "animate-seething-swarm-return"
+                    : "animate-seething-swarm-approach"
+                  : "",
+              )}
               data-combatant-traveler={combatant.side}
               onAnimationEnd={(event) => {
                 if (

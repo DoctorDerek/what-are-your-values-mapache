@@ -14,6 +14,7 @@ import {
   type CSSProperties,
 } from "react"
 import { useSeethingSwarmAssetStatus } from "@/components/SeethingSwarmAssetPreparation"
+import { cn } from "@/lib/utils"
 
 type SeethingSwarmAnimalStyle = CSSProperties & {
   "--animal-animation-duration": string
@@ -143,7 +144,10 @@ export default function SeethingSwarmAnimal({
   return (
     <span
       aria-hidden="true"
-      className={`pointer-events-none relative block h-(--animal-clearance-height) w-(--animal-clearance-width) shrink-0 overflow-hidden select-none ${facing === "left" ? "-scale-x-100" : ""}`}
+      className={cn(
+        "pointer-events-none relative block h-(--animal-clearance-height) w-(--animal-clearance-width) shrink-0 overflow-hidden select-none",
+        facing === "left" ? "-scale-x-100" : "",
+      )}
       data-animal-id={clip.animalId}
       data-facing={facing}
       data-frame-count={clip.frameCount}
@@ -159,7 +163,11 @@ export default function SeethingSwarmAnimal({
         <Image
           ref={imageRef}
           alt=""
-          className={`absolute top-0 left-0 h-(--animal-strip-height) w-(--animal-strip-width) max-w-none [image-rendering:pixelated] ${playbackClassName} ${isImageLoaded ? "" : "[animation-play-state:paused]"}`}
+          className={cn(
+            "absolute top-0 left-0 h-(--animal-strip-height) w-(--animal-strip-width) max-w-none [image-rendering:pixelated]",
+            playbackClassName,
+            isImageLoaded ? "" : "[animation-play-state:paused]",
+          )}
           draggable={false}
           decoding="sync"
           height={scaledFrameHeight}

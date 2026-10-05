@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react"
 import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
 import { useSeethingSwarmPreparedAssets } from "@/components/SeethingSwarmAssetPreparation"
 import SeethingSwarmPlaceholder from "@/components/SeethingSwarmPlaceholder"
+import { cn } from "@/lib/utils"
 
 export default function SeethingSwarmCombatant({
   combatant,
@@ -287,7 +288,10 @@ export default function SeethingSwarmCombatant({
         return (
           <span
             key={clip.animationId}
-            className={`absolute inset-0 ${isVisible ? "visible" : "invisible"}`}
+            className={cn(
+              "absolute inset-0",
+              isVisible ? "visible" : "invisible",
+            )}
             data-battle-active-clip={isVisible}
             data-battle-clip={clip.animationId}
           >

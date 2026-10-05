@@ -16,6 +16,7 @@ import type { StaticImageData } from "next/image"
 import { useMemo, useState } from "react"
 import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
 import { useSeethingSwarmPreparedAssets } from "@/components/SeethingSwarmAssetPreparation"
+import { cn } from "@/lib/utils"
 
 export default function SeethingSwarmHubAnimal({
   calmClip,
@@ -107,7 +108,10 @@ export default function SeethingSwarmHubAnimal({
         return (
           <span
             key={clip.relativePath}
-            className={`absolute inset-0 ${visible ? "visible" : "invisible"}`}
+            className={cn(
+              "absolute inset-0",
+              visible ? "visible" : "invisible",
+            )}
             data-hub-active-clip={visible}
           >
             <SeethingSwarmAnimal
