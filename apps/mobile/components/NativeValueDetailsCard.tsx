@@ -6,7 +6,6 @@ import type { RankedValue } from "@game/data/src/ValueRanking"
 import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { cx } from "classix"
 import { View } from "react-native"
-import { twMerge } from "tailwind-merge"
 import NativeValueLevelProgress from "@/components/NativeValueLevelProgress"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
@@ -33,11 +32,11 @@ export default function NativeValueDetailsCard({
   return (
     <View
       accessibilityLabel={`${displayName} details`}
-      className={twMerge(
-        cx(
-          "border-4 border-black bg-white p-4 shadow-[5px_5px_0px_0px_#000000]",
-          isHighlighted && "border-mapache-vivid-primary-cyan border-8",
-        ),
+      className={cx(
+        "bg-white p-4 shadow-[5px_5px_0px_0px_#000000]",
+        isHighlighted
+          ? "border-mapache-vivid-primary-cyan border-8"
+          : "border-4 border-black",
       )}
     >
       <View className="flex-row flex-wrap items-center gap-2">

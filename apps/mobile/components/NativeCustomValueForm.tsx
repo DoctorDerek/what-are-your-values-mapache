@@ -130,7 +130,7 @@ export default function NativeCustomValueForm({
                   <View className="items-center">
                     <Text>+ Start with {exampleName}</Text>
                     {label ? (
-                      <Text className="mt-1 text-xs font-bold text-black normal-case">
+                      <Text className="mt-1 text-center text-xs font-bold text-black normal-case">
                         {label}
                       </Text>
                     ) : null}

@@ -30,7 +30,10 @@ export default function NativeControls({
         </Text>
 
         <View className="gap-4">
-          <Text variant="h2" className="border-0 text-black">
+          <Text
+            variant="h2"
+            className="pb-2 text-3xl font-black tracking-tight text-black"
+          >
             {CONTROLS_COPY.semanticActionsHeading}
           </Text>
           {CONTROL_SEMANTIC_ACTIONS.map((action) => (
@@ -49,12 +52,18 @@ export default function NativeControls({
         </View>
 
         <View className="gap-5">
-          <Text variant="h2" className="border-0 text-black">
+          <Text
+            variant="h2"
+            className="pb-2 text-3xl font-black tracking-tight text-black"
+          >
             {CONTROLS_COPY.bindingsHeading}
           </Text>
           {NATIVE_CONTROL_GROUPS.map((group) => (
             <View key={group.id} className="gap-3">
-              <Text variant="h3" className="text-black">
+              <Text
+                variant="h3"
+                className="text-2xl font-black tracking-tight text-black"
+              >
                 {group.title}
               </Text>
               {group.bindings.map((binding) => (

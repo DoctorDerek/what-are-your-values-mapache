@@ -33,13 +33,13 @@ export default function NativeAchievementCard({
       </Text>
       {achievement.progress ? (
         <View className="mt-4 border-t-4 border-black pt-3">
-          <Text className="font-black text-black">
+          <Text className="text-base font-black text-black">
             {achievement.progress.label}
           </Text>
         </View>
       ) : null}
       {achievement.unlockedAt && achievement.unlockedDate ? (
-        <Text className="mt-4 border-t-4 border-black pt-3 font-black text-black">
+        <Text className="mt-4 border-t-4 border-black pt-3 text-base font-black text-black">
           Unlocked {achievement.unlockedDate}
         </Text>
       ) : null}

@@ -51,7 +51,7 @@ export default function NativePlayerDataImportPreview({
     <View className="gap-5 border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000]">
       <Text
         variant="h2"
-        className="border-b-4 border-black text-black uppercase"
+        className="border-b-4 border-black pb-2 text-3xl font-black tracking-tight text-black uppercase"
       >
         {title}
       </Text>

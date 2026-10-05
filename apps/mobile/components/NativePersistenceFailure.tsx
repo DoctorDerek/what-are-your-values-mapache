@@ -84,7 +84,7 @@ export default function NativePersistenceFailure(
           <Text
             accessibilityRole="header"
             variant="h1"
-            className="text-mapache-vivid-secondary-red text-4xl"
+            className="text-mapache-vivid-secondary-red text-center text-4xl font-black tracking-tight"
           >
             {props.mode === "storage-unavailable" && props.hasPendingSave ? (
               <Text accessibilityElementsHidden>✖ </Text>

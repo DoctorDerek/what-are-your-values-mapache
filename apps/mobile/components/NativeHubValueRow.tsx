@@ -95,7 +95,9 @@ function NativeValueRankPresentation({
           ) : null}
         </View>
       </View>
-      {medal ? <Text className="text-2xl">{medal.emoji}</Text> : null}
+      {medal ? (
+        <Text className="text-foreground text-2xl">{medal.emoji}</Text>
+      ) : null}
     </View>
   )
 }

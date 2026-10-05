@@ -26,7 +26,7 @@ export default function NativeAchievements({
       <View className="gap-4 border-b-4 border-black p-4">
         <Text
           variant="h1"
-          className="text-mapache-vivid-primary-cyan text-left text-4xl uppercase"
+          className="text-mapache-vivid-primary-cyan text-left text-4xl font-black tracking-tight uppercase"
         >
           Achievements
         </Text>

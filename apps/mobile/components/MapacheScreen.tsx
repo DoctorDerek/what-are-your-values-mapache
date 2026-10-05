@@ -1,7 +1,6 @@
 import { cx } from "classix"
 import type { ComponentProps } from "react"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { twMerge } from "tailwind-merge"
 import { withUniwind } from "uniwind"
 
 const UniwindSafeAreaView = withUniwind(SafeAreaView)
@@ -12,7 +11,7 @@ export default function MapacheScreen({
 }: ComponentProps<typeof UniwindSafeAreaView>) {
   return (
     <UniwindSafeAreaView
-      className={twMerge(cx("bg-mapache-vivid-dark flex-1", className))}
+      className={cx("bg-mapache-vivid-dark flex-1", className)}
       {...props}
     />
   )

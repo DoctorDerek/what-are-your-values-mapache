@@ -80,8 +80,7 @@ export default function NativeAchievementToast({
           accessibilityLabel={`Dismiss achievement: ${achievement.title}`}
           disabled={isDismissalPending}
           variant="outline"
-          size="compact"
-          className="min-h-[44px] min-w-[44px] border-2 px-2 py-0"
+          size="notification"
           onPress={() => onPresented(achievement.id)}
           onFocus={() => onInteraction("focus", true)}
           onBlur={() => onInteraction("focus", false)}

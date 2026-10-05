@@ -36,7 +36,7 @@ function NativeInformationPanelFrame({
             <Text
               variant="h1"
               className={cx(
-                "text-mapache-vivid-primary-raspberry text-4xl uppercase",
+                "text-mapache-vivid-primary-raspberry text-center text-4xl font-black tracking-tight uppercase",
                 accessibleCloseLabel && "pr-14",
               )}
             >
@@ -45,12 +45,12 @@ function NativeInformationPanelFrame({
             {accessibleCloseLabel ? (
               <Button
                 accessibilityLabel={accessibleCloseLabel}
-                size="compact"
+                size="icon"
                 variant="outline"
-                className="absolute top-3 right-3 h-12 w-12 p-0 shadow-none"
+                className="absolute top-3 right-3"
                 onPress={onPrimaryAction}
               >
-                <Text className="text-3xl leading-8">×</Text>
+                <Text>×</Text>
               </Button>
             ) : null}
           </View>

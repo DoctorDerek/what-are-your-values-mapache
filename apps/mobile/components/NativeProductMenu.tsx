@@ -36,7 +36,7 @@ export default function NativeProductMenu({
         <View className="border-b-4 border-black px-5 py-5 xl:px-8 xl:py-7">
           <Text
             variant="h1"
-            className="text-mapache-vivid-primary-cyan text-left text-5xl uppercase"
+            className="text-mapache-vivid-primary-cyan text-left text-5xl font-black tracking-tight uppercase"
           >
             {PRODUCT_MENU_COPY.title}
           </Text>
@@ -60,7 +60,9 @@ export default function NativeProductMenu({
               variant="outline"
               onPress={() => onDestinationSelect(destination)}
             >
-              <Text className="text-left">{destination.label}</Text>
+              <Text className="text-left text-2xl font-black text-black uppercase">
+                {destination.label}
+              </Text>
             </Button>
           ))}
         </ScrollView>

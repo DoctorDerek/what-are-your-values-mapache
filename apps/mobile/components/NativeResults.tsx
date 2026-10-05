@@ -273,7 +273,9 @@ export default function NativeResults({
               accessibilityLiveRegion="polite"
               className="text-sm font-semibold text-white"
             >
-              <Text className="text-mapache-vivid-secondary-green">✓ </Text>
+              <Text className="text-mapache-vivid-secondary-green text-base">
+                ✓{" "}
+              </Text>
               {RESULTS_SAVE_CONFIRMATION_COPY}
             </Text>
           </Animated.View>
@@ -308,7 +310,7 @@ export default function NativeResults({
           <Text className="text-lg font-black text-black">
             {RESULTS_COPY.profileLevelLabel} {profileProgress.level.toString()}
           </Text>
-          <Text className="font-semibold text-black">
+          <Text className="text-base font-semibold text-black">
             {RESULTS_COPY.profileXpLabel} {frame.profileXp.toString()} ·{" "}
             {changeLabel}
           </Text>

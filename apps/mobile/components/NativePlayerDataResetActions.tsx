@@ -23,7 +23,7 @@ export default function NativePlayerDataResetActions({
     <View className="gap-5">
       <Text
         variant="h2"
-        className="text-mapache-vivid-primary-cyan border-b-4 border-black text-left text-3xl uppercase"
+        className="text-mapache-vivid-primary-cyan border-b-4 border-black pb-2 text-left text-3xl font-black tracking-tight uppercase"
       >
         Reset or Delete
       </Text>

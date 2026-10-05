@@ -83,7 +83,7 @@ function NativeValueChoiceCard(
           <View className="w-full items-center">
             <Text
               variant="h2"
-              className="w-full min-w-0 border-0 pb-0 text-center text-2xl leading-8 text-white uppercase xl:text-5xl xl:leading-[56px]"
+              className="w-full min-w-0 text-center text-2xl leading-8 font-black tracking-tight text-white uppercase xl:text-5xl xl:leading-[56px]"
               lineBreakStrategyIOS="push-out"
               textBreakStrategy="balanced"
             >
