@@ -1,5 +1,6 @@
 import { SEETHING_SWARM_BATTLE_RESULT_DURATION_MS } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmBattleCombatantSide } from "@game/machines/src/SeethingSwarmBattleChoreography"
+import { DEFAULT_BATTLE_ANIMATION_SPEED, scaleBattleAnimationDuration, type BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
 import { useEffect, useRef } from "react"
 import { View } from "react-native"
 import Animated, {
@@ -16,12 +17,14 @@ import { scheduleOnRN } from "react-native-worklets"
 import { cn } from "@/lib/utils"
 
 export default function NativeSeethingSwarmPlaceholder({
+  animationSpeed = DEFAULT_BATTLE_ANIMATION_SPEED,
   side,
   role,
   shouldReduceMotion,
   onPlaybackComplete,
   onReady,
 }: {
+  animationSpeed?: BattleAnimationSpeed
   side: SeethingSwarmBattleCombatantSide
   role: "rest" | "attack" | "reaction" | "flourish"
   shouldReduceMotion: boolean
@@ -62,7 +65,9 @@ export default function NativeSeethingSwarmPlaceholder({
       return
     }
     const timing = {
-      duration: SEETHING_SWARM_BATTLE_RESULT_DURATION_MS / 2,
+      duration: role === "rest"
+        ? SEETHING_SWARM_BATTLE_RESULT_DURATION_MS / 2
+        : scaleBattleAnimationDuration(SEETHING_SWARM_BATTLE_RESULT_DURATION_MS / 2, animationSpeed),
       easing: Easing.inOut(Easing.quad),
       reduceMotion: ReduceMotion.Never,
     }
@@ -91,7 +96,7 @@ export default function NativeSeethingSwarmPlaceholder({
       isActive = false
       cancelAnimation(progress)
     }
-  }, [progress, role, shouldReduceMotion])
+  }, [progress, role, shouldReduceMotion, animationSpeed])
 
   return (
     <View className="h-28 w-28 shrink-0 items-center justify-end">
