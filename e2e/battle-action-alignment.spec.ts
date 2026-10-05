@@ -44,7 +44,7 @@ async function readActionAlignment(actions: Locator) {
   })
 }
 
-for (const width of [390, 1440]) {
+for (const width of [320, 390, 1440]) {
   test(`battle action text stays centered across input modes at ${width}px`, async ({
     page,
   }, testInfo) => {
@@ -70,6 +70,14 @@ for (const width of [390, 1440]) {
       const pointerAlignment = await readActionAlignment(actions)
       for (const alignment of [...keyboardAlignment, ...pointerAlignment]) {
         expect(
+          alignment.geometry.height,
+          `${alignment.name} target height`,
+        ).toBeGreaterThanOrEqual(48)
+        expect(
+          alignment.geometry.width,
+          `${alignment.name} target width`,
+        ).toBeGreaterThanOrEqual(48)
+        expect(
           alignment.visibleTextCount,
           `${alignment.name} has visible text`,
         ).toBeGreaterThan(0)
@@ -88,6 +96,10 @@ for (const width of [390, 1440]) {
       await actions.screenshot({
         path: testInfo.outputPath(`actions-${textScale}.png`),
       })
+      if (textScale === 100)
+        await page.screenshot({
+          path: testInfo.outputPath("bottom-battle-dock.png"),
+        })
     }
   })
 }

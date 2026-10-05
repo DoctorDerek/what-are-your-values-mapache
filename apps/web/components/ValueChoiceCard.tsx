@@ -109,9 +109,7 @@ export const ValueChoiceCard = forwardRef<
           className="flex w-full min-w-0 flex-1 cursor-pointer flex-col justify-start px-[min(0.75rem,8%)] pt-[clamp(2rem,10vh,6rem)] text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8"
         >
           <div className="w-full">
-            <div
-              className={`flow-root w-full min-w-0 ${isFirst ? "[anchor-name:--battle-first-value]" : "[anchor-name:--battle-second-value]"}`}
-            >
+            <div className="flow-root w-full min-w-0">
               {controlHint ? (
                 <span
                   aria-hidden="true"

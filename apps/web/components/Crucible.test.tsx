@@ -209,7 +209,7 @@ describe("Crucible Component Integration", () => {
     expect(battleSurface).toHaveAttribute("data-slot", "mapache-screen")
     expect(battleSurface).toHaveClass(
       "h-[100dvh]",
-      "overflow-y-auto",
+      "overflow-hidden",
       "[--mapache-screen-spacing:0px]",
     )
     expect(battleActions).toHaveClass("relative", "shrink-0")
@@ -217,7 +217,13 @@ describe("Crucible Component Integration", () => {
     expect(overlay).toHaveClass("pointer-events-none", "absolute")
     expect(overlay).not.toContainElement(battleActions)
     expect(battleSurface).toContainElement(battleActions)
-    expect(screen.queryByRole("region", { name: "Battle choices" })).toBeNull()
+    const choicesRegion = screen.getByRole("region", { name: "Battle choices" })
+    expect(choicesRegion).toHaveClass("overflow-y-auto", "min-h-0")
+    expect(choicesRegion).not.toContainElement(battleActions)
+    expect(
+      choicesRegion.compareDocumentPosition(battleActions) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
     expect(overlay?.parentElement).toBe(battleSurface)
     expect(battleSurface).toContainElement(
       screen.getAllByRole("button", {
@@ -795,7 +801,9 @@ describe("Crucible Component Integration", () => {
     )
 
     const battleSurface = screen.getByRole("main", { name: "Value battle" })
-    expect(screen.queryByRole("region", { name: "Battle choices" })).toBeNull()
+    expect(
+      screen.getByRole("region", { name: "Battle choices" }),
+    ).toHaveAttribute("tabindex", "0")
     expect(battleSurface).toHaveAttribute("tabindex", "0")
     expect(battleSurface).toContainElement(
       screen.getByRole("navigation", { name: "Battle actions" }),

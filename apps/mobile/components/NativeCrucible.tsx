@@ -208,19 +208,6 @@ export default function NativeCrucible({
       accessibilityLabel="Value battle"
       accessibilityState={{ busy: isPersistencePending }}
     >
-      <NativeBattleActionBar
-        animationSpeed={animationSpeed}
-        canChangeAnimationSpeed={!isMenuOpen}
-        onAnimationSpeedChange={onAnimationSpeedChange}
-        canOpenMenu={canNavigate}
-        canUndo={isInteractive && canUndo}
-        canRedo={isInteractive && canRedo}
-        canStop={canNavigate}
-        onOpenMenu={onOpenMenu}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        onStop={onExit}
-      />
       <View className="relative min-h-0 flex-1">
         <NativeSeethingSwarmBattleStage
           animationSpeed={state.context.activeAnimationSpeed}
@@ -273,6 +260,19 @@ export default function NativeCrucible({
           onPresented={onAchievementPresented}
         />
       </View>
+      <NativeBattleActionBar
+        animationSpeed={animationSpeed}
+        canChangeAnimationSpeed={!isMenuOpen}
+        onAnimationSpeedChange={onAnimationSpeedChange}
+        canOpenMenu={canNavigate}
+        canUndo={isInteractive && canUndo}
+        canRedo={isInteractive && canRedo}
+        canStop={canNavigate}
+        onOpenMenu={onOpenMenu}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        onStop={onExit}
+      />
     </MapacheScreen>
   )
 }

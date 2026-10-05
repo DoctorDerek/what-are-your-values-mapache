@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
-import BattleActionBar from "./BattleActionBar"
+import BattleActionBar from "@/components/BattleActionBar"
 
 describe("Battle Action Bar", () => {
   it("exposes real disabled history actions and an available Stop action", () => {
@@ -29,6 +29,16 @@ describe("Battle Action Bar", () => {
     const undo = screen.getByRole("button", { name: "Undo" })
     const redo = screen.getByRole("button", { name: "Redo" })
     const menu = screen.getByRole("button", { name: "Menu" })
+    expect(screen.getAllByRole("button").slice(0, 4)).toEqual([
+      menu,
+      undo,
+      redo,
+      screen.getByRole("button", { name: "Stop" }),
+    ])
+    expect(
+      menu.compareDocumentPosition(screen.getByRole("group")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
     expect(undo).toBeDisabled()
     expect(redo).toBeDisabled()
     for (const shortcut of ["[Z]", "[Y]", "[ESC]"]) {

@@ -54,12 +54,6 @@
   }
 }
 
-@position-try --battle-achievement-over-controls {
-  top: anchor(--battle-actions top);
-  bottom: auto;
-  align-self: start;
-}
-
 @theme inline {
   --animate-seething-swarm-strip: advance-seething-swarm-strip
     var(--animal-animation-duration)

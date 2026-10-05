@@ -363,7 +363,7 @@ export default function Crucible({
         )
           event.stopPropagation()
       }}
-      className="relative flex touch-manipulation flex-col overflow-y-auto overscroll-contain border-4 border-transparent outline-none select-none focus-visible:border-white"
+      className="relative flex touch-manipulation flex-col border-4 border-transparent outline-none select-none focus-visible:border-white"
     >
       <p
         role="status"
@@ -378,7 +378,61 @@ export default function Crucible({
         ) : null}
       </p>
 
-      <div className="pointer-events-none relative z-50 flex shrink-0 flex-col items-center [anchor-name:--battle-actions]">
+      <div
+        role="region"
+        aria-label="Battle choices"
+        tabIndex={0}
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white"
+      >
+        <SeethingSwarmBattleStage
+          animationSpeed={state.context.activeAnimationSpeed}
+          shouldSkipAnimation={state.context.shouldSkipCurrentAnimation}
+          battle={currentBattle}
+          pendingBattle={state.context.pendingBattle}
+          isNextBattleReady={state.context.pendingBattle !== null}
+          isPaused={isMenuOpen}
+          runtimeClipCatalog={runtimeClipCatalog}
+          shouldReduceMotion={shouldReduceMotion}
+          winnerId={winnerId}
+          onResultAnimationComplete={handleResultAnimationComplete}
+        >
+          {(combatants) => (
+            <>
+              <ValueChoiceCard
+                ref={firstChoiceRef}
+                key={`Card A: ${idA} vs. ${idB}`}
+                position="first"
+                value={valA}
+                level={levelA}
+                winnerId={winnerId}
+                isEnabled={isInteractive}
+                isAnimating={isAnimating}
+                controlHint={firstControlHint}
+                combatant={combatants.first}
+                reward={reward?.valueId === idA ? reward : null}
+                onActivate={handleSelect}
+                onFocus={handleCardFocus}
+              />
+              <ValueChoiceCard
+                ref={secondChoiceRef}
+                key={`Card B: ${idB} vs. ${idA}`}
+                position="second"
+                value={valB}
+                level={levelB}
+                winnerId={winnerId}
+                isEnabled={isInteractive}
+                isAnimating={isAnimating}
+                controlHint={secondControlHint}
+                combatant={combatants.second}
+                reward={reward?.valueId === idB ? reward : null}
+                onActivate={handleSelect}
+                onFocus={handleCardFocus}
+              />
+            </>
+          )}
+        </SeethingSwarmBattleStage>
+      </div>
+      <div className="pointer-events-none relative z-50 flex shrink-0 flex-col items-center">
         <BattleActionBar
           animationSpeed={animationSpeed}
           canChangeAnimationSpeed={!isMenuOpen}
@@ -394,55 +448,7 @@ export default function Crucible({
           onStop={onExit}
         />
       </div>
-
-      <SeethingSwarmBattleStage
-        animationSpeed={state.context.activeAnimationSpeed}
-        shouldSkipAnimation={state.context.shouldSkipCurrentAnimation}
-        battle={currentBattle}
-        pendingBattle={state.context.pendingBattle}
-        isNextBattleReady={state.context.pendingBattle !== null}
-        isPaused={isMenuOpen}
-        runtimeClipCatalog={runtimeClipCatalog}
-        shouldReduceMotion={shouldReduceMotion}
-        winnerId={winnerId}
-        onResultAnimationComplete={handleResultAnimationComplete}
-      >
-        {(combatants) => (
-          <>
-            <ValueChoiceCard
-              ref={firstChoiceRef}
-              key={`Card A: ${idA} vs. ${idB}`}
-              position="first"
-              value={valA}
-              level={levelA}
-              winnerId={winnerId}
-              isEnabled={isInteractive}
-              isAnimating={isAnimating}
-              controlHint={firstControlHint}
-              combatant={combatants.first}
-              reward={reward?.valueId === idA ? reward : null}
-              onActivate={handleSelect}
-              onFocus={handleCardFocus}
-            />
-            <ValueChoiceCard
-              ref={secondChoiceRef}
-              key={`Card B: ${idB} vs. ${idA}`}
-              position="second"
-              value={valB}
-              level={levelB}
-              winnerId={winnerId}
-              isEnabled={isInteractive}
-              isAnimating={isAnimating}
-              controlHint={secondControlHint}
-              combatant={combatants.second}
-              reward={reward?.valueId === idB ? reward : null}
-              onActivate={handleSelect}
-              onFocus={handleCardFocus}
-            />
-          </>
-        )}
-      </SeethingSwarmBattleStage>
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-60 flex h-max justify-center self-start [overflow-anchor:none] supports-[position-try-fallbacks:--battle-achievement-over-controls]:top-[anchor(--battle-actions_bottom)] supports-[position-try-fallbacks:--battle-achievement-over-controls]:bottom-[max(anchor(--battle-first-value_top),anchor(--battle-second-value_top))] supports-[position-try-fallbacks:--battle-achievement-over-controls]:self-center supports-[position-try-fallbacks:--battle-achievement-over-controls]:[position-try-fallbacks:--battle-achievement-over-controls]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-60 flex h-max justify-center [overflow-anchor:none]">
         <AchievementBanner
           achievements={achievements}
           isAcknowledgementPending={isAchievementAcknowledgementPending}
