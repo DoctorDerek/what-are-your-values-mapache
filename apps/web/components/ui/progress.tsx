@@ -1,8 +1,9 @@
 "use client"
 
+import { cx } from "classix"
 import { Progress as ProgressPrimitive } from "radix-ui"
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { twMerge } from "tailwind-merge"
 
 function Progress({
   className,
@@ -20,17 +21,21 @@ function Progress({
       data-slot="progress"
       value={value}
       max={max}
-      className={cn(
-        "border-border bg-card relative h-4 w-full overflow-hidden border-2",
-        className,
+      className={twMerge(
+        cx(
+          "border-border bg-card relative h-4 w-full overflow-hidden border-2",
+          className,
+        ),
       )}
       {...props}
     >
       <ProgressPrimitive.Indicator
         data-slot="progress-indicator"
-        className={cn(
-          "bg-primary h-full w-full transition-transform",
-          indicatorClassName,
+        className={twMerge(
+          cx(
+            "bg-primary h-full w-full transition-transform",
+            indicatorClassName,
+          ),
         )}
         style={{ transform: `translateX(-${100 - progressPercentage}%)` }}
       />

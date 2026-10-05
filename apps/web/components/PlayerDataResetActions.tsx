@@ -5,8 +5,8 @@ import {
   type PlayerDataResetKind,
 } from "@game/machines/src/PlayerDataReset"
 import { playerDataResetCopy } from "@game/machines/src/PlayerDataResetCopy"
+import { cx } from "classix"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
 export default function PlayerDataResetActions({
   customValueCount,
@@ -45,7 +45,7 @@ export default function PlayerDataResetActions({
           return (
             <article
               key={resetKind}
-              className={cn(
+              className={cx(
                 "flex flex-col border-4 bg-white p-5 shadow-[8px_8px_0px_0px_#000000] sm:p-8",
                 isCompleteErasure
                   ? "border-mapache-vivid-secondary-red"

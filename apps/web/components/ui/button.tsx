@@ -1,7 +1,8 @@
 import { cva, type VariantProps } from "class-variance-authority"
+import { cx } from "classix"
 import { Slot } from "radix-ui"
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { twMerge } from "tailwind-merge"
 
 const buttonVariants = cva(
   "inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap border-4 border-black text-lg font-black uppercase transition-[transform,box-shadow,color,background-color] outline-none focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-card disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
@@ -51,7 +52,7 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={twMerge(cx(buttonVariants({ variant, size, className })))}
       {...props}
     />
   )

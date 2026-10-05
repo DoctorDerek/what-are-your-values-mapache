@@ -1,11 +1,11 @@
 "use client"
 
+import { cx } from "classix"
 import type { ComponentProps, ReactNode } from "react"
 import { useId } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
-import { cn } from "@/lib/utils"
 
 type InformationPanelFrameProps = Readonly<{
   title: string
@@ -27,7 +27,7 @@ function InformationPanelFrame({
   dialogTitle = false,
 }: InformationPanelFrameProps) {
   const titleId = useId()
-  const titleClassName = cn(
+  const titleClassName = cx(
     "text-mapache-vivid-primary-cyan text-4xl leading-tight font-black [overflow-wrap:anywhere] uppercase sm:text-5xl lg:text-7xl",
     accessibleCloseLabel && "px-12",
   )

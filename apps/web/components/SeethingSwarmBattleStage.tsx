@@ -22,6 +22,7 @@ import {
   type SeethingSwarmBattleExchangeCue,
 } from "@game/machines/src/SeethingSwarmBattleExchange"
 import type { SeethingSwarmVariedRole } from "@game/machines/src/SeethingSwarmBattleVariation"
+import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import {
   useCallback,
@@ -37,7 +38,6 @@ import { usePreparedSeethingSwarmBattle } from "@/components/SeethingSwarmAssetP
 import { useSeethingSwarmActiveBattle } from "@/components/SeethingSwarmBattleVariation"
 import SeethingSwarmCombatant from "@/components/SeethingSwarmCombatant"
 import SeethingSwarmPlaceholder from "@/components/SeethingSwarmPlaceholder"
-import { cn } from "@/lib/utils"
 
 type SeethingSwarmBattleStageStyle = CSSProperties & {
   "--battle-result-duration": string
@@ -184,7 +184,7 @@ function BattlePlayback({
             data-battle-cue={cue}
           >
             <div
-              className={cn(
+              className={cx(
                 "relative flex h-(--battle-visible-size) w-(--battle-combatant-size) shrink-0 items-end justify-center",
                 combatant.side === "first"
                   ? "[--battle-travel-direction:1]"
@@ -193,11 +193,10 @@ function BattlePlayback({
                   canWinnerTravel &&
                   combatant.valueId === winnerId &&
                   readySides.size === 2 &&
-                  cue !== "settled"
-                  ? cue === "recovery"
+                  cue !== "settled" &&
+                  (cue === "recovery"
                     ? "animate-seething-swarm-return"
-                    : "animate-seething-swarm-approach"
-                  : "",
+                    : "animate-seething-swarm-approach"),
               )}
               data-combatant-traveler={combatant.side}
               onAnimationEnd={(event) => {

@@ -15,6 +15,7 @@ import {
 } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
+import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import { useCallback, useEffect, useRef, useState, type Ref } from "react"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
@@ -23,7 +24,6 @@ import { Button } from "@/components/ui/button"
 import ValueAnimalPresentationTile from "@/components/ValueAnimalPresentation"
 import ValueLevelProgress from "@/components/ValueLevelProgress"
 import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
-import { cn } from "@/lib/utils"
 
 export const HUB_MENU_BUTTON_ID = "hub-menu-button"
 
@@ -52,7 +52,7 @@ function ValueRow({
     <li
       id={rowId}
       data-value-row="true"
-      className={cn(
+      className={cx(
         "text-mapache-vivid-dark border-2 border-black",
         hasComparisons && rank <= 5
           ? "bg-mapache-vivid-primary-cyan/10"
