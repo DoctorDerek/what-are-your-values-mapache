@@ -88,6 +88,8 @@ function createNativeCrucibleProps(
     canUndo: false,
     canRedo: false,
     controlHintPreference: "auto",
+    animationSpeed: "1x",
+    onAnimationSpeedChange: jest.fn(),
     isAchievementAcknowledgementPending: false,
     isMenuOpen: false,
     isPersistencePending: false,
