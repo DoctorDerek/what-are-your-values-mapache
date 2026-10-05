@@ -10,6 +10,7 @@ import {
 } from "@game/machines/src/BattleAccessibilityPresentation"
 import { getBattleRewardPresentation } from "@game/machines/src/BattleRewardPresentation"
 import type { BattleSchedulerRestorePoint } from "@game/machines/src/BattleScheduler"
+import type { BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
 import {
   combatMachine,
   type PresentedBattle,
@@ -30,6 +31,8 @@ import NativeValueChoiceCard from "@/components/NativeValueChoiceCard"
 const NATIVE_CONTROL_HINT_INPUT_MODALITY = "touch-pointer" as const
 
 export default function NativeCrucible({
+  animationSpeed,
+  onAnimationSpeedChange,
   activeDeck,
   achievements,
   battle,
@@ -49,6 +52,8 @@ export default function NativeCrucible({
   onRedo,
   onWinnerSelected,
 }: {
+  animationSpeed: BattleAnimationSpeed
+  onAnimationSpeedChange: (speed: BattleAnimationSpeed) => void
   activeDeck: ActiveDeck
   achievements: readonly AchievementPresentation[]
   battle: PresentedBattle
@@ -72,7 +77,7 @@ export default function NativeCrucible({
   ) => void
 }) {
   const [state, send] = useMachine(combatMachine, {
-    input: { initialBattle: battle, onWinnerSelected },
+    input: { initialBattle: battle, animationSpeed, onWinnerSelected },
   })
   const isPresentationReady = usePreparedNativeSeethingSwarmBattle(
     battle,
@@ -87,6 +92,9 @@ export default function NativeCrucible({
   useEffect(() => {
     if (isPresentationReady) send({ type: "BATTLE.PROJECTED", battle })
   }, [battle, isPresentationReady, send])
+  useEffect(() => {
+    send({ type: "BATTLE.SPEED_CHANGED", speed: animationSpeed })
+  }, [animationSpeed, send])
 
   const isInteractive =
     state.matches("AwaitingInput") &&
@@ -201,6 +209,9 @@ export default function NativeCrucible({
       accessibilityState={{ busy: isPersistencePending }}
     >
       <NativeBattleActionBar
+        animationSpeed={animationSpeed}
+        canChangeAnimationSpeed={!isMenuOpen}
+        onAnimationSpeedChange={onAnimationSpeedChange}
         canOpenMenu={canNavigate}
         canUndo={isInteractive && canUndo}
         canRedo={isInteractive && canRedo}
@@ -212,6 +223,8 @@ export default function NativeCrucible({
       />
       <View className="relative min-h-0 flex-1">
         <NativeSeethingSwarmBattleStage
+          animationSpeed={state.context.activeAnimationSpeed}
+          shouldSkipAnimation={state.context.shouldSkipCurrentAnimation}
           battle={currentBattle}
           catalog={runtimeClipCatalog}
           winnerId={state.context.winnerId}

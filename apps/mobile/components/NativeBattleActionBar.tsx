@@ -1,8 +1,13 @@
 import { View } from "react-native"
+import type { BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
+import NativeBattleSpeedControl from "@/components/NativeBattleSpeedControl"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 
 export default function NativeBattleActionBar({
+  animationSpeed,
+  canChangeAnimationSpeed,
+  onAnimationSpeedChange,
   canOpenMenu,
   canUndo,
   canRedo,
@@ -12,6 +17,9 @@ export default function NativeBattleActionBar({
   onRedo,
   onStop,
 }: {
+  animationSpeed: BattleAnimationSpeed
+  canChangeAnimationSpeed: boolean
+  onAnimationSpeedChange: (speed: BattleAnimationSpeed) => void
   canOpenMenu: boolean
   canUndo: boolean
   canRedo: boolean
@@ -24,8 +32,10 @@ export default function NativeBattleActionBar({
   return (
     <View
       accessibilityLabel="Battle actions"
-      className="flex-row gap-2 p-3 xl:gap-3"
+      className="gap-2 p-3 xl:flex-row xl:gap-3"
     >
+      <NativeBattleSpeedControl speed={animationSpeed} disabled={!canChangeAnimationSpeed} onChange={onAnimationSpeedChange} />
+      <View className="min-w-0 flex-row gap-2 xl:flex-1">
       <Button
         accessibilityLabel="Undo"
         className="min-w-0 flex-1 px-2 xl:px-4"
@@ -94,6 +104,7 @@ export default function NativeBattleActionBar({
           Menu
         </Text>
       </Button>
+      </View>
     </View>
   )
 }
