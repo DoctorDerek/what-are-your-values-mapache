@@ -20,7 +20,13 @@ describe("NativeBattleActionBar", () => {
       />,
     )
 
-    for (const actionName of ["Undo", "Redo", "Stop", "Menu"]) {
+    expect(
+      screen
+        .getAllByRole("button")
+        .slice(0, 4)
+        .map((action) => action.props.accessibilityLabel),
+    ).toEqual(["Menu", "Undo", "Redo", "Stop"])
+    for (const actionName of ["Menu", "Undo", "Redo", "Stop"]) {
       const action = screen.getByRole("button", { name: actionName })
       const label = screen.getByText(actionName)
 
