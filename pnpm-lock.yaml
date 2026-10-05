@@ -335,13 +335,6 @@ importers:
         version: 6.0.3
 
   packages/utils:
-    dependencies:
-      classix:
-        specifier: ^2
-        version: 2.2.19
-      tailwind-merge:
-        specifier: ^3
-        version: 3.6.0
     devDependencies:
       typescript:
         specifier: ^6
