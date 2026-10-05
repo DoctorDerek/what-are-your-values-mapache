@@ -18,7 +18,8 @@ function arePlayerSettingsEqual(first: PlayerSettings, second: PlayerSettings) {
   return (
     first.locale === second.locale &&
     first.reducedMotion === second.reducedMotion &&
-    first.controlHints === second.controlHints
+    first.controlHints === second.controlHints &&
+    first.battleAnimationSpeed === second.battleAnimationSpeed
   )
 }
 
