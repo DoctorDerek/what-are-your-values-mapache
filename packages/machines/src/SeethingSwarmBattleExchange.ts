@@ -3,6 +3,7 @@ import {
   SEETHING_SWARM_BATTLE_TILE_SIZE,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { ValueId } from "@game/data/src/Value"
+import { DEFAULT_BATTLE_ANIMATION_SPEED, scaleBattleAnimationDuration, type BattleAnimationSpeed } from "./BattleAnimationSpeed"
 import type {
   SeethingSwarmBattleChoreography,
   SeethingSwarmBattleCombatantSide,
@@ -27,15 +28,16 @@ export function requiresSeethingSwarmReturnTravel<Asset>(
 export function resolveSeethingSwarmTravelDuration<Asset>(
   choreography: SeethingSwarmBattleChoreography<Asset>,
   winnerId: ValueId | null,
+  speed: BattleAnimationSpeed = DEFAULT_BATTLE_ANIMATION_SPEED,
 ) {
   if (choreography.mode !== "licensed")
-    return SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS
+    return scaleBattleAnimationDuration(SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS, speed)
   const winner = choreography.combatants.find(
     (combatant) => combatant.valueId === winnerId,
   )
-  return winner
+  return scaleBattleAnimationDuration(winner
     ? winner.locomotion.frameCount * SEETHING_SWARM_BATTLE_FRAME_DURATION_MS
-    : SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS
+    : SEETHING_SWARM_BATTLE_APPROACH_DURATION_MS, speed)
 }
 
 export type SeethingSwarmBattleExchangeCue =
