@@ -132,6 +132,8 @@ export default function NativeDressingRoom({
                       className="relative h-20 w-16 overflow-hidden"
                     >
                       <Image
+                        alt=""
+                        aria-hidden
                         source={assets.thumbnailAtlas}
                         className="absolute"
                         resizeMode="stretch"

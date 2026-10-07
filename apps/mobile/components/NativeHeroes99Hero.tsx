@@ -118,6 +118,8 @@ export default function NativeHeroes99Hero({
             ]}
           >
             <Image
+              alt=""
+              aria-hidden
               testID="heroes99-idle-image"
               fadeDuration={0}
               source={strip.source}
