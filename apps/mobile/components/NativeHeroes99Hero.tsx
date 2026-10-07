@@ -102,21 +102,27 @@ export default function NativeHeroes99Hero({
       style={{ width: stageWidth, height }}
     >
       {strip && !failed ? (
-        <Animated.View
-          testID="heroes99-idle-strip"
-          className="absolute"
-          style={[{ width: width * HEROES99_IDLE_FRAME_COUNT, height: imageHeight, top: height - imageHeight, left: (stageWidth - width) / 2 }, motion]}
+        <View
+          testID="heroes99-frame-viewport"
+          className="relative overflow-hidden"
+          style={{ width, height: imageHeight }}
         >
-          <Image
-            testID="heroes99-idle-image"
-            fadeDuration={0}
-            source={strip.source}
-            resizeMode="stretch"
-            style={{ width: width * HEROES99_IDLE_FRAME_COUNT, height: imageHeight }}
-            onLoad={() => setReadySource(strip.source.uri)}
-            onError={() => setFailed(true)}
-          />
-        </Animated.View>
+          <Animated.View
+            testID="heroes99-idle-strip"
+            className="absolute top-0 left-0"
+            style={[{ width: width * HEROES99_IDLE_FRAME_COUNT, height: imageHeight }, motion]}
+          >
+            <Image
+              testID="heroes99-idle-image"
+              fadeDuration={0}
+              source={strip.source}
+              resizeMode="stretch"
+              style={{ width: width * HEROES99_IDLE_FRAME_COUNT, height: imageHeight }}
+              onLoad={() => setReadySource(strip.source.uri)}
+              onError={() => setFailed(true)}
+            />
+          </Animated.View>
+        </View>
       ) : (
         <Text className="text-center text-sm text-black">
           {failed ? DRESSING_ROOM_COPY.placeholder : DRESSING_ROOM_COPY.loading}
