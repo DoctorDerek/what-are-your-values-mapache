@@ -1,4 +1,4 @@
-import { HEROES99_CHOICES } from "@game/data/src/Heroes99DressingRoom"
+import { DRESSING_ROOM_COPY, HEROES99_CHOICES } from "@game/data/src/Heroes99DressingRoom"
 import { avatarMachine } from "@game/machines/src/AvatarMachine"
 import { initializeBattleProfileStore } from "@game/machines/src/BattleProfileStore"
 import { createInMemoryDurableStore } from "@game/machines/src/InMemoryDurableStore"
@@ -64,6 +64,18 @@ async function mountEditor(reduceMotion = false) {
 }
 
 describe("native Dressing Room", () => {
+  it("retains a valid draft after a rejected choice and clears feedback on a valid choice", async () => {
+    const { actor } = await mountEditor()
+    await fireEvent.press(screen.getByRole("button", { name: "Skin 6" }))
+    await act(async () => actor.send({ type: "AVATAR.CHANGE", change: { skinPalette: 999 } }))
+    expect(screen.getByRole("alert")).toHaveTextContent(DRESSING_ROOM_COPY.editError)
+    expect(actor.getSnapshot().context.draft.skinPalette).toBe(6)
+    await fireEvent.press(screen.getByRole("button", { name: "Skin 4" }))
+    expect(screen.queryByText(DRESSING_ROOM_COPY.editError)).toBeNull()
+    expect(actor.getSnapshot().context.draft.skinPalette).toBe(4)
+    actor.stop()
+  })
+
   it("renders every category and applies choices and palettes through the shared editor", async () => {
     const { actor } = await mountEditor()
     for (const category of [
