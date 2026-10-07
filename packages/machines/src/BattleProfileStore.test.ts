@@ -27,7 +27,7 @@ import {
 import { projectBattlePair } from "./BattleScheduler"
 import { DurableStoreConflictError } from "./DurableStoreAdapter"
 import { createInMemoryDurableStore } from "./InMemoryDurableStore"
-import { createInitialPlayerData, type PlayerData } from "./PlayerData"
+import { createInitialPlayerData, createPlayerData, type PlayerData } from "./PlayerData"
 import { createWayvmExport, serializeWayvmExport } from "./WayvmExport"
 
 function createChoiceEvent(
@@ -528,9 +528,13 @@ describe("Battle Profile Store", () => {
       createdAt: "2026-07-21T00:00:00.000Z",
       appVersion: "0.1.0",
     })
-    const importedPlayerData = createInitialPlayerData({
+    const freshPlayerData = createInitialPlayerData({
       schedulerSeed: "continued-import-seed",
       createdAt: "2026-07-20T00:00:00.000Z",
+    })
+    const importedPlayerData = createPlayerData({
+      ...freshPlayerData,
+      appearance: { ...freshPlayerData.appearance, skinPalette: 6, hairStyle: null },
     })
     const preImportBackupBytes = await createPreImportBackupBytes(
       initialState.head.playerData,
@@ -548,6 +552,7 @@ describe("Battle Profile Store", () => {
       event: createChoiceEvent(replacedState.head.playerData.profile),
       committedAt: "2026-07-21T00:02:00.000Z",
     })
+    expect(committedState.head.playerData.appearance).toEqual(importedPlayerData.appearance)
 
     expect(committedState.head).toMatchObject({
       generation: 2,
