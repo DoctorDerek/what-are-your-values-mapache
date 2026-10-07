@@ -42,12 +42,12 @@ test("startup preserves its viewport while client code waits and opens the saved
     await expect(loading).toHaveCount(0)
     await game.getByRole("button", { name: "Start", exact: true }).click()
     await expect(
-      game.getByRole("heading", { name: "Your Values", exact: true }),
+      game.getByRole("heading", { name: /^My (?:Top Five )?Values$/, exact: true }),
     ).toBeVisible()
 
     await page.reload()
     await expect(
-      game.getByRole("heading", { name: "Your Values", exact: true }),
+      game.getByRole("heading", { name: /^My (?:Top Five )?Values$/, exact: true }),
     ).toBeVisible()
     await expect(
       game.getByRole("button", { name: "Start", exact: true }),

@@ -111,8 +111,8 @@ for (const width of [390, 1440]) {
     await page.emulateMedia({ reducedMotion: "no-preference" })
     await startAtHub(page)
     const hubRow = page
-      .getByRole("region", { name: "Value roster" })
-      .getByRole("button")
+      .getByRole("list", { name: "Included values preview" })
+      .getByRole("listitem")
       .first()
     const hubAnimal = hubRow.locator('[data-hub-active-clip="true"] img')
     await expect(hubAnimal).toBeVisible()
@@ -127,13 +127,18 @@ for (const width of [390, 1440]) {
     await expect(active.locator("img")).toHaveAttribute("src", source!)
     await expect(active.locator('[data-playback-ready="true"]')).toHaveCount(1)
     await row.scrollIntoViewIfNeeded()
-    const bounds = await row.boundingBox()
+    const readDocumentBounds = () =>
+      row.evaluate((element) => {
+        const { x, y, width, height } = element.getBoundingClientRect()
+        return { x: x + scrollX, y: y + scrollY, width, height }
+      })
+    const bounds = await readDocumentBounds()
     await row.hover()
     await expect
       .poll(() => active.locator("img").getAttribute("src"))
       .not.toBe(source)
     await expect(active.locator("img")).toBeVisible()
-    expect(await row.boundingBox()).toEqual(bounds)
+    expect(await readDocumentBounds()).toEqual(bounds)
     await row.focus()
     await page.mouse.move(0, 0)
     await expect(row).toBeFocused()
@@ -163,8 +168,8 @@ test("Hub attention displays each authored frame for one complete interval", asy
   await page.emulateMedia({ reducedMotion: "no-preference" })
   await startAtHub(page)
   const row = page
-    .getByRole("region", { name: "Value roster" })
-    .getByRole("button")
+    .getByRole("list", { name: "Included values preview" })
+    .getByRole("listitem")
     .first()
   await row.hover()
   const image = row.locator(
@@ -209,8 +214,8 @@ test("Hub hover completions retain the final authored frame across repeated atte
   await page.emulateMedia({ reducedMotion: "no-preference" })
   await startAtHub(page)
   const row = page
-    .getByRole("region", { name: "Value roster" })
-    .getByRole("button")
+    .getByRole("list", { name: "Included values preview" })
+    .getByRole("listitem")
     .first()
   const active = row.locator('[data-hub-active-clip="true"]')
   await expect(active.locator('[data-playback-ready="true"]')).toHaveCount(1)
@@ -274,8 +279,8 @@ test("Hub attention responds to hover and focus without shifting the row", async
   await page.emulateMedia({ reducedMotion: "no-preference" })
   await startAtHub(page)
   const row = page
-    .getByRole("region", { name: "Value roster" })
-    .getByRole("button")
+    .getByRole("list", { name: "Included values preview" })
+    .getByRole("listitem")
     .first()
   const active = row.locator('[data-hub-active-clip="true"]')
   await expect(active.locator('[data-playback-ready="true"]')).toHaveCount(1)
@@ -300,26 +305,17 @@ test("Hub attention responds to hover and focus without shifting the row", async
 })
 
 for (const width of [390, 1440]) {
-  test(`Hub roster scrolls independently with readable enlarged text at ${width}px`, async ({
+  test(`Personal Hub remains readable and reachable with enlarged text at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 })
     await page.emulateMedia({ reducedMotion: "reduce" })
     await startAtHub(page)
-    const roster = page.getByRole("region", { name: "Value roster" })
+    const roster = page.getByRole("list", { name: "Included values preview" })
     const actions = page.getByRole("navigation", { name: "Value actions" })
-    await expect(roster.getByRole("listitem")).toHaveCount(100)
-    await roster.hover()
-    const actionsBefore = await actions.boundingBox()
-    await page.mouse.wheel(0, 500)
-    await expect
-      .poll(() => roster.evaluate((element) => element.scrollTop))
-      .toBeGreaterThan(0)
-    expect(await actions.boundingBox()).toEqual(actionsBefore)
-    await roster.evaluate((element) => {
-      element.scrollTop = element.scrollHeight
-    })
-    await expect(roster.getByRole("button").last()).toBeInViewport()
+    await expect(roster.getByRole("listitem")).toHaveCount(5)
+    await roster.getByRole("listitem").last().scrollIntoViewIfNeeded()
+    await expect(roster.getByRole("listitem").last()).toBeInViewport()
     await page.addStyleTag({ content: "html { font-size: 200%; }" })
     const hubBounds = await page.getByRole("main").evaluate((element) => ({
       width: element.clientWidth,
@@ -425,7 +421,7 @@ async function startAtHub(page: Page) {
   ).toBeVisible()
   await page.getByRole("button", { name: "Start", exact: true }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: "Your Values" }),
+    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
   ).toBeVisible()
 }
 
@@ -557,7 +553,7 @@ test("Introduction Hub Crucible and achievement feedback reflow without document
 
   await page.getByRole("button", { name: "Start", exact: true }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: "Your Values" }),
+    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
   ).toBeVisible()
   await expectNoDocumentHorizontalOverflow(page, "first-run Hub")
 

@@ -93,7 +93,7 @@ async function expectCompleteTextReachable(text: Locator) {
 }
 
 for (const width of [390, 1100, 1440]) {
-  test(`Hub wheel scrolling works before and after ranking at ${width}px`, async ({
+  test(`Personal Hub preserves the complete ranking before and after comparisons at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 844 })
@@ -101,32 +101,14 @@ for (const width of [390, 1100, 1440]) {
     await page.goto("/")
     await page.getByRole("button", { name: "Start", exact: true }).click()
     for (const hasComparisons of [false, true]) {
-      const roster = page.getByRole("region", { name: "Value roster" })
-      const rows = page.locator("[data-value-row]")
+      const rows = page.getByRole("listitem")
+      await expect(rows).toHaveCount(5)
+      await rows.last().scrollIntoViewIfNeeded()
+      await expect(rows.last()).toBeInViewport()
+      await page.getByRole("button", { name: "Browse All Values", exact: true }).click()
       await expect(rows).toHaveCount(100)
-      await rows.first().scrollIntoViewIfNeeded()
-      await rows.first().hover()
-      const before = await page.evaluate(() => ({
-        scrollY,
-        height: document.documentElement.scrollHeight,
-      }))
-      const initialRosterScroll = await roster.evaluate(
-        (element) => element.scrollTop,
-      )
-      await page.mouse.wheel(0, 500)
-      await expect
-        .poll(() => roster.evaluate((element) => element.scrollTop))
-        .toBeGreaterThan(initialRosterScroll + 100)
-      const after = await roster.evaluate((element) => element.scrollTop)
-      await page.mouse.wheel(0, -250)
-      await expect
-        .poll(() => roster.evaluate((element) => element.scrollTop))
-        .toBeLessThan(after - 50)
-      expect(await page.evaluate(() => scrollY)).toBe(before.scrollY)
-      expect(
-        await page.evaluate(() => document.documentElement.scrollHeight),
-      ).toBe(before.height)
-      await expect(rows).toHaveCount(100)
+      await page.getByRole("button", { name: "Close", exact: true }).click()
+      await expect(rows).toHaveCount(5)
       await expect(
         page.getByRole("article", {
           name: "What Are Your Values, Mapache? information",
@@ -152,7 +134,7 @@ for (const width of [390, 1100, 1440]) {
           .getByRole("button", { name: "See my values", exact: true })
           .click()
         await expect(
-          page.getByRole("heading", { name: "Your Values", level: 1 }),
+          page.getByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
         ).toBeVisible()
       }
     }
@@ -578,7 +560,7 @@ for (const viewport of [
       .getByRole("button", { name: "See my values", exact: true })
       .click()
     await expect(
-      page.getByRole("heading", { name: "Top Five", exact: true }),
+      page.getByRole("heading", { name: "My Top Five Values", exact: true }),
     ).toBeVisible()
   })
 }

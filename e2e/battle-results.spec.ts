@@ -54,7 +54,7 @@ test("browser Back closes actual parents, preserves drafts and permits Hub depar
     .click()
   await page.evaluate(() => history.back())
   await expect(
-    page.getByRole("heading", { name: "Your Values", exact: true }),
+    page.getByRole("heading", { name: /^My (?:Top Five )?Values$/, exact: true }),
   ).toBeVisible()
   await page
     .getByRole("button", { name: "Add Custom Value", exact: true })
@@ -253,7 +253,7 @@ test("battle results show committed progress without delaying either exit", asyn
 
   await page.getByRole("button", { name: /Stop/ }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: "Your Values" }),
+    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
   ).toBeVisible()
   await expect(page.getByRole("heading", { name: "Results" })).toHaveCount(0)
 })
@@ -358,7 +358,7 @@ for (const viewport of [
     ).toBeVisible()
     await page.getByRole("button", { name: "See my values" }).click()
     await expect(
-      page.getByRole("heading", { name: "Your Values", level: 1 }),
+      page.getByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
     ).toBeVisible()
   })
 
@@ -424,7 +424,7 @@ for (const viewport of [
     ).toBe(true)
     await page.getByRole("button", { name: "See my values" }).click()
     await expect(
-      page.getByRole("heading", { name: "Your Values", level: 1 }),
+      page.getByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
     ).toBeVisible()
   })
 
@@ -488,7 +488,7 @@ for (const viewport of [
     })
     await page.getByRole("button", { name: "See my values" }).click()
     await expect(
-      page.getByRole("heading", { name: "Your Values", level: 1 }),
+      page.getByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
     ).toBeVisible()
   })
 }
