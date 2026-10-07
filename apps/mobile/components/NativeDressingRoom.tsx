@@ -197,6 +197,14 @@ export default function NativeDressingRoom({
           )}
         </View>
       </ScrollView>
+      {state.context.hasEditFailure && (
+        <Text
+          accessibilityRole="alert"
+          className="mx-3 border-4 border-black bg-white p-3 text-black"
+        >
+          {DRESSING_ROOM_COPY.editError}
+        </Text>
+      )}
       {state.matches("SaveFailed") && (
         <View
           accessibilityRole="alert"

@@ -18,7 +18,10 @@ type AvatarInput = Readonly<{
   now: () => string
   random: () => number
 }>
-type AvatarContext = AvatarInput & { draft: Heroes99Appearance }
+type AvatarContext = AvatarInput & {
+  draft: Heroes99Appearance
+  hasEditFailure: boolean
+}
 type AvatarEvent =
   | { type: "AVATAR.CHANGE"; change: Partial<Heroes99Appearance> }
   | { type: "AVATAR.RANDOMIZE" }
@@ -68,14 +71,18 @@ export const avatarMachine = setup({
       JSON.stringify(context.state.head.playerData.appearance),
   },
   actions: {
-    changeAppearance: assign({
-      draft: ({ context, event }) =>
-        event.type === "AVATAR.CHANGE"
-          ? applyHeroes99Choice(context.draft, event.change)
-          : context.draft,
-    }),
-    randomizeAppearance: assign({
-      draft: ({ context }) => randomizeHeroes99Appearance(context.random),
+    changeAppearance: assign(({ context, event }) => {
+      try {
+        const draft =
+          event.type === "AVATAR.CHANGE"
+            ? applyHeroes99Choice(context.draft, event.change)
+            : event.type === "AVATAR.RANDOMIZE"
+              ? randomizeHeroes99Appearance(context.random)
+              : context.draft
+        return { draft, hasEditFailure: false }
+      } catch {
+        return { hasEditFailure: true }
+      }
     }),
   },
 }).createMachine({
@@ -83,6 +90,7 @@ export const avatarMachine = setup({
   context: ({ input }) => ({
     ...input,
     draft: input.state.head.playerData.appearance,
+    hasEditFailure: false,
   }),
   initial: "Editing",
   output: ({ context }) => context.state,
@@ -90,7 +98,7 @@ export const avatarMachine = setup({
     Editing: {
       on: {
         "AVATAR.CHANGE": { actions: "changeAppearance" },
-        "AVATAR.RANDOMIZE": { actions: "randomizeAppearance" },
+        "AVATAR.RANDOMIZE": { actions: "changeAppearance" },
         "AVATAR.SAVE": "Saving",
         "AVATAR.CANCEL": "Done",
         "AVATAR.BACK_REQUESTED": [
@@ -121,11 +129,8 @@ export const avatarMachine = setup({
     SaveFailed: {
       on: {
         "AVATAR.SAVE": "Saving",
-        "AVATAR.CHANGE": { target: "Editing", actions: "changeAppearance" },
-        "AVATAR.RANDOMIZE": {
-          target: "Editing",
-          actions: "randomizeAppearance",
-        },
+        "AVATAR.CHANGE": { actions: "changeAppearance" },
+        "AVATAR.RANDOMIZE": { actions: "changeAppearance" },
         "AVATAR.CANCEL": "Done",
         "AVATAR.BACK_REQUESTED": "ConfirmingLeave",
       },

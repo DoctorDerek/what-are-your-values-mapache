@@ -173,6 +173,14 @@ export default function DressingRoom({
           )}
         </div>
       </div>
+      {state.context.hasEditFailure && (
+        <p
+          role="alert"
+          className="w-full max-w-7xl border-4 border-black bg-white p-4 text-black"
+        >
+          {DRESSING_ROOM_COPY.editError}
+        </p>
+      )}
       {state.matches("SaveFailed") && (
         <div
           role="alert"

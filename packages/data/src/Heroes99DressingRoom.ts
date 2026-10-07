@@ -135,6 +135,8 @@ export const DRESSING_ROOM_COPY = Object.freeze({
   errorDetail:
     "Your appearance changes are still here, but have not been saved.",
   retry: "Retry save",
+  editError:
+    "That appearance change could not be applied. Your previous selection is still here. Try another option.",
   keepTitle: "Keep your changes?",
   saveReturn: "Save and return",
   discard: "Discard changes",
