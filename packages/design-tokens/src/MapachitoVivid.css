@@ -1,4 +1,10 @@
 @theme {
+  --color-player-card-frame: #009dae;
+  --color-player-card-background: #71dfe7;
+  --color-player-card-values: #c2fff9;
+  --color-player-card-rank: #ffe652;
+  --color-player-card-ink: #18233e;
+  --color-player-card-muted: #384873;
   --color-mapache-vivid-primary-cyan: #008b8b;
   --color-mapache-vivid-primary-raspberry: #9c0052;
   --color-mapache-vivid-primary-blue: #008ec1;
