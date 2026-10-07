@@ -34,6 +34,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { webStorage } from "@/lib/WebStorage"
 import GameClient from "./GameClient"
 
+vi.mock("@/components/Heroes99Hero", () => ({ default: () => null }))
+
 const VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN =
   /^Choose .+\. Level \d+\. Choice [12]\.$/
 
@@ -592,7 +594,7 @@ describe("GameClient Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Restore Save" }))
 
     expect(
-      await screen.findByRole("heading", { name: "Your Values", level: 1 }),
+      await screen.findByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
     ).toBeVisible()
     expect(screen.getByText("Last known-good save restored.")).toBeVisible()
   })
@@ -633,7 +635,7 @@ describe("GameClient Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Import & Replace" }))
 
     expect(
-      await screen.findByRole("heading", { name: "Your Values", level: 1 }),
+      await screen.findByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
     ).toBeVisible()
     expect(
       screen.getByText("Your backup replaced the unreadable local data."),
@@ -815,7 +817,7 @@ describe("GameClient Integration", () => {
 
     expect(
       await screen.findByText(
-        "Not ranked yet. Browse the included values, then battle when you are ready.",
+        "Not ranked yet. Browse all values, then battle when you are ready.",
       ),
     ).toBeVisible()
     fireEvent.click(screen.getByRole("button", { name: "Battle" }))
@@ -839,14 +841,14 @@ describe("GameClient Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "See my values" }))
 
     expect(
-      await screen.findByRole("heading", { name: "Top Five" }),
+      await screen.findByRole("heading", { name: "My Top Five Values" }),
     ).toBeVisible()
     const winningValue = screen
       .getByText(winnerName)
-      .closest('[id$="-presentation"]')
+      .closest("li")
     expect(winningValue).toBeVisible()
-    expect(winningValue).toHaveAccessibleDescription("Rank 1, gold medal")
-    expect(screen.getByText("Level 3")).toBeVisible()
+    expect(winningValue).toHaveTextContent("#1")
+    expect(screen.getAllByText("Level 3")[0]).toBeVisible()
     expect(setItem).not.toHaveBeenCalled()
   })
 
@@ -894,7 +896,7 @@ describe("GameClient Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Start" }))
 
     expect(
-      await screen.findByRole("heading", { name: "Your Values", level: 1 }),
+      await screen.findByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
     ).toBeVisible()
   })
 
@@ -910,7 +912,7 @@ describe("GameClient Integration", () => {
 
     expect(
       await screen.findByText(
-        "Not ranked yet. Browse the included values, then battle when you are ready.",
+        "Not ranked yet. Browse all values, then battle when you are ready.",
       ),
     ).toBeVisible()
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
@@ -924,11 +926,11 @@ describe("GameClient Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Close" }))
 
     expect(
-      await screen.findByRole("heading", { name: "Your Values", level: 1 }),
+      await screen.findByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
     ).toBeVisible()
     expect(
       screen.getByText(
-        "Not ranked yet. Browse the included values, then battle when you are ready.",
+        "Not ranked yet. Browse all values, then battle when you are ready.",
       ),
     ).toBeVisible()
     expect(
@@ -1272,7 +1274,7 @@ describe("GameClient Integration", () => {
       screen.getAllByRole("form", { name: "Add Custom Value" }),
     ).toHaveLength(1)
     expect(
-      screen.getByRole("heading", { name: "Your Values", level: 1 }),
+      screen.getByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
     ).toBeVisible()
     expect(screen.getByRole("button", { name: "Battle" })).toBeDisabled()
   })
@@ -1453,11 +1455,11 @@ describe("GameClient Integration", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     fireEvent.click(await screen.findByText("Acceptance"))
     expect(
-      screen.getByRole("heading", { name: "Your Values", level: 1 }),
+      screen.getByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
     ).toBeVisible()
     expect(
-      screen.getByText("Acceptance").closest('[id$="-presentation"]'),
-    ).not.toHaveAttribute("tabindex")
+      screen.getByText("Acceptance").closest("li"),
+    ).toHaveAttribute("tabindex", "0")
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
 
     expect(
@@ -1467,7 +1469,7 @@ describe("GameClient Integration", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Close" }))
     expect(
-      await screen.findByRole("heading", { name: "Your Values", level: 1 }),
+      await screen.findByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
     ).toBeVisible()
     expect(
       screen.getByRole("button", { name: "Browse All Values" }),
@@ -1574,7 +1576,7 @@ describe("GameClient Integration", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
     expect(
-      await screen.findByRole("heading", { name: "Your Values", level: 1 }),
+      await screen.findByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
     ).toBeVisible()
     expect(screen.getByRole("button", { name: "Menu" })).toHaveFocus()
   })
@@ -1647,9 +1649,11 @@ describe("GameClient Integration", () => {
     expect(
       await screen.findByText(playerDataPortabilityCopy.importSuccess),
     ).toBeVisible()
-    expect(screen.getByText("Ingenuity", { selector: "span" })).toBeVisible()
-    expect(screen.getAllByRole("listitem")).toHaveLength(101)
+    expect(screen.getAllByRole("listitem")).toHaveLength(5)
     expect(screen.getByRole("button", { name: "Menu" })).toHaveFocus()
+    fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
+    expect(await screen.findByText("Ingenuity")).toBeVisible()
+    expect(screen.getAllByRole("listitem")).toHaveLength(101)
   })
 
   it("reports browser backup delivery failure without leaving private bytes pending", async () => {
@@ -1692,7 +1696,7 @@ describe("GameClient Integration", () => {
     expect(screen.getByRole("button", { name: "Choose Backup" })).toBeEnabled()
 
     fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
-    expect(await screen.findAllByRole("listitem")).toHaveLength(100)
+    expect(await screen.findAllByRole("listitem")).toHaveLength(5)
   })
 
   it("normalizes an unreadable browser file and keeps backup selection retryable", async () => {
@@ -1781,7 +1785,7 @@ describe("GameClient Integration", () => {
     ).toBeDisabled()
 
     fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
-    expect(await screen.findAllByRole("listitem")).toHaveLength(100)
+    expect(await screen.findAllByRole("listitem")).toHaveLength(5)
     expect(
       screen.queryByText("Ingenuity", { selector: "span" }),
     ).not.toBeInTheDocument()
@@ -1806,7 +1810,7 @@ describe("GameClient Integration", () => {
       await screen.findByRole("heading", { name: "Results" }),
     ).toBeVisible()
     fireEvent.click(screen.getByRole("button", { name: "See my values" }))
-    expect(await screen.findByText("Level 3")).toBeVisible()
+    expect((await screen.findAllByText("Level 3"))[0]).toBeVisible()
     await openProductMenuDestination("Import & Export")
 
     fireEvent.click(
@@ -1827,11 +1831,11 @@ describe("GameClient Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
     expect(
       await screen.findByText(
-        "Not ranked yet. Browse the included values, then battle when you are ready.",
+        "Not ranked yet. Browse all values, then battle when you are ready.",
       ),
     ).toBeVisible()
-    expect(screen.queryByRole("heading", { name: "Top Five" })).toBeNull()
-    expect(screen.getAllByText("Level 1")).toHaveLength(100)
+    expect(screen.queryByRole("heading", { name: "My Top Five Values" })).toBeNull()
+    expect(screen.getAllByRole("listitem")).toHaveLength(5)
   })
 
   it("exports a private backup without dismissing the reviewed reset", async () => {
@@ -1968,7 +1972,7 @@ describe("GameClient Integration", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Start" }))
     expect(
-      await screen.findByRole("heading", { name: "Your Values" }),
+      await screen.findByRole("heading", { name: /^My (?:Top Five )?Values$/ }),
     ).toBeVisible()
     expect(
       screen.queryByText(

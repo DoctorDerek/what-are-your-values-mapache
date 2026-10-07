@@ -1,4 +1,5 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
+import { DEFAULT_HEROES99_APPEARANCE } from "@game/data/src/Heroes99Appearance"
 import {
   createSeethingSwarmTypographyOnlyRuntimeClipCatalog,
   type SeethingSwarmRuntimeCharacterClip,
@@ -29,6 +30,8 @@ import {
 } from "@testing-library/react-native"
 import NativeHub from "@/components/NativeHub"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
+
+jest.mock("@/components/NativeHeroes99Hero", () => ({ __esModule: true, default: () => null }))
 
 jest.mock("@/components/NativeSeethingSwarmAnimal", () => {
   const { View } =
@@ -153,6 +156,8 @@ function createCustomRankedValues() {
 
 function createHubCallbacks() {
   return {
+    appearance: DEFAULT_HEROES99_APPEARANCE,
+    onCustomize: jest.fn(),
     onAddCustomValue: jest.fn(),
     onBrowseAllValues: jest.fn(),
     onOpenAchievements: jest.fn(),
@@ -190,9 +195,7 @@ describe("NativeHub", () => {
       />,
     )
     const animalId = resolveValueAnimalId(rankedValues[0].definition.id)
-    const row = screen.getByLabelText(
-      `Rank 1, gold medal. ${getValueDisplayName(rankedValues[0].definition)}`,
-    )
+    const row = screen.getByTestId(`hub-animal-${rankedValues[0].definition.id}`, { includeHiddenElements: true })
     await act(async () => {
       for (const [props] of nativeAnimalRendererMock.mock.calls)
         props.onReady?.()
@@ -225,207 +228,55 @@ describe("NativeHub", () => {
     expect(calm?.frameDurationMs).toBe(160)
   })
 
-  it("supports first-run discovery without presenting source order as a ranking", async () => {
+  it("previews five unranked values and exposes the explicit actions", async () => {
     const callbacks = createHubCallbacks()
     const user = userEvent.setup()
-    const rankedValues = createUnplayedRankedValues()
-    await render(
-      <NativeHub
-        {...callbacks}
-        {...animalPresentationProps}
-        dataNotice={null}
-        rankedValues={rankedValues}
-      />,
-    )
-
-    expect(screen.getByText("Not ranked yet.")).toBeOnTheScreen()
-    expect(
-      screen.getByText(
-        "Browse the included values, then battle when you are ready.",
-      ),
-    ).toBeOnTheScreen()
-    expect(screen.queryByText("Top Five")).not.toBeOnTheScreen()
-    expect(screen.queryByText("#1")).not.toBeOnTheScreen()
-    expect(nativeAnimalRendererMock).not.toHaveBeenCalled()
-    expect(
-      screen.queryByTestId(/^hub-top-five-rank-\d+-presentation$/, {
-        includeHiddenElements: true,
-      }),
-    ).not.toBeOnTheScreen()
-
-    const visibleValueButtons = rankedValues
-      .toSorted((a, b) =>
-        getValueDisplayName(a.definition).localeCompare(
-          getValueDisplayName(b.definition),
-        ),
-      )
-      .slice(0, 3)
-      .map(({ definition }) =>
-        screen.getByLabelText(getValueDisplayName(definition)),
-      )
-
-    expect(visibleValueButtons[0]).toHaveAccessibleName("Acceptance")
-    expect(visibleValueButtons[1]).toHaveAccessibleName("Accuracy")
-    expect(visibleValueButtons[2]).toHaveAccessibleName("Achievement")
-
-    await user.press(screen.getByRole("button", { name: "Browse All Values" }))
-    await user.press(screen.getByRole("button", { name: "Add Custom Value" }))
-    await user.press(screen.getByRole("button", { name: "Menu" }))
-    await user.press(visibleValueButtons[0])
-
-    expect(callbacks.onBrowseAllValues).toHaveBeenCalledTimes(1)
-    expect(callbacks.onAddCustomValue).toHaveBeenCalledTimes(1)
-    expect(callbacks.onOpenMenu).toHaveBeenCalledTimes(1)
+    await render(<NativeHub {...callbacks} {...animalPresentationProps} dataNotice={null} rankedValues={createUnplayedRankedValues()} />)
+    expect(screen.getByText("My Values")).toBeOnTheScreen()
+    expect(screen.getByText(/Not ranked yet/)).toBeOnTheScreen()
+    expect(screen.queryByText("#1")).toBeNull()
+    for (const name of ["Acceptance", "Accuracy", "Achievement"])
+      expect(screen.getByText(name)).toBeOnTheScreen()
+    for (const [label, callback] of [
+      ["Browse All Values", callbacks.onBrowseAllValues],
+      ["Add Custom Value", callbacks.onAddCustomValue],
+      ["Menu", callbacks.onOpenMenu],
+      ["Customize my card", callbacks.onCustomize],
+      ["Battle", callbacks.onStartBattle],
+    ] as const) {
+      await user.press(screen.getByRole("button", { name: label }))
+      expect(callback).toHaveBeenCalledTimes(1)
+    }
+    expect(screen.queryByRole("button", { name: /Share/ })).toBeNull()
   })
 
-  it("presents committed evidence as Top Five followed by all other values", async () => {
-    const callbacks = createHubCallbacks()
-    const user = userEvent.setup()
+  it("shows the earned five values and backup feedback", async () => {
     const rankedValues = createRankedValuesWithEvidence()
-    const firstRankedValue = rankedValues[0]
-    const firstRankedValueName = getValueDisplayName(
-      firstRankedValue.definition,
-    )
-    await render(
-      <NativeHub
-        {...callbacks}
-        {...animalPresentationProps}
-        dataNotice="Your imported data is ready."
-        rankedValues={rankedValues}
-      />,
-    )
-
-    expect(
-      screen.getByText("Your ranking is based on your committed battles."),
-    ).toBeOnTheScreen()
-    expect(screen.getByText("Top Five")).toBeOnTheScreen()
-    expect(screen.getByText("All Other Values")).toBeOnTheScreen()
+    await render(<NativeHub {...createHubCallbacks()} {...animalPresentationProps} dataNotice="Your imported data is ready." rankedValues={rankedValues} />)
+    expect(screen.getByText("My Top Five Values")).toBeOnTheScreen()
     expect(screen.getByText("Your imported data is ready.")).toBeOnTheScreen()
-    expect(
-      screen.getByText("#1 🥇", { includeHiddenElements: true }),
-    ).toBeOnTheScreen()
-    expect(
-      screen.getByText("#6 🥈", { includeHiddenElements: true }),
-    ).toBeOnTheScreen()
-    expect(nativeAnimalRendererMock).not.toHaveBeenCalled()
-
-    await user.press(
-      screen.getByLabelText(`Rank 1, gold medal. ${firstRankedValueName}`),
-    )
-    await user.press(screen.getByRole("button", { name: "Battle" }))
-
-    expect(callbacks.onStartBattle).toHaveBeenCalledTimes(1)
+    expect(screen.getByText("#1")).toBeOnTheScreen()
+    expect(screen.queryByText("#6")).toBeNull()
+    expect(screen.queryByText(getValueDisplayName(rankedValues[5].definition))).toBeNull()
   })
 
-  it("renders exactly five mapped canonical animals and propagates Reduced Motion", async () => {
-    const callbacks = createHubCallbacks()
+  it("retains readable values when animal delivery fails and respects Reduced Motion", async () => {
     const rankedValues = createRankedValuesWithEvidence()
-    await render(
-      <NativeHub
-        {...callbacks}
-        runtimeClipCatalog={licensedRuntimeClipCatalog}
-        dataNotice={null}
-        rankedValues={rankedValues}
-        shouldReduceMotion
-      />,
-    )
-
-    const animalPresentations = screen.getAllByTestId(
-      /^hub-top-five-rank-\d+-presentation$/,
-      {
-        includeHiddenElements: true,
-      },
-    )
-    expect(animalPresentations).toHaveLength(5)
-    expect(
-      screen.queryByTestId(/^hub-top-five-rank-\d+-presentation$/),
-    ).toBeNull()
-    expect(
-      Array.from(
-        new Set(
-          nativeAnimalRendererMock.mock.calls.map(
-            ([{ clip }]) => clip.animalId,
-          ),
-        ),
-      ),
-    ).toEqual(
-      rankedValues
-        .slice(0, 5)
-        .map(({ definition }) => getMappedAnimalId(definition.id)),
-    )
-    expect(
-      nativeAnimalRendererMock.mock.calls.every(
-        ([{ shouldReduceMotion }]) => shouldReduceMotion,
-      ),
-    ).toBe(true)
-    expect(
-      screen.queryByTestId("hub-top-five-rank-6-presentation", {
-        includeHiddenElements: true,
-      }),
-    ).not.toBeOnTheScreen()
-    const firstRankedValue = rankedValues[0]
-    expect(
-      screen.getByLabelText(
-        `Rank 1, gold medal. ${getValueDisplayName(firstRankedValue.definition)}`,
-      ),
-    ).toBeOnTheScreen()
-    await act(async () =>
-      nativeAnimalRendererMock.mock.calls[0][0].onLoadError?.(),
-    )
-    expect(
-      within(animalPresentations[0]).getByText("#1", {
-        includeHiddenElements: true,
-      }),
-    ).toBeOnTheScreen()
-    expect(animalPresentations[0].children[1]).toHaveStyle({
-      width: 72,
-      height: 72,
-    })
+    await render(<NativeHub {...createHubCallbacks()} runtimeClipCatalog={licensedRuntimeClipCatalog} dataNotice={null} rankedValues={rankedValues} shouldReduceMotion />)
+    expect(Array.from(new Set(nativeAnimalRendererMock.mock.calls.map(([{clip}]) => clip.animalId)))).toEqual(rankedValues.slice(0,5).map(({definition}) => getMappedAnimalId(definition.id)))
+    expect(nativeAnimalRendererMock.mock.calls.every(([props]) => props.shouldReduceMotion)).toBe(true)
+    await act(async () => nativeAnimalRendererMock.mock.calls[0][0].onLoadError?.())
+    expect(screen.getByText("#1")).toBeOnTheScreen()
+    expect(screen.getByText(getValueDisplayName(rankedValues[0].definition))).toBeOnTheScreen()
   })
 
-  it("renders the battle-assigned Custom Value animal without incidental navigation", async () => {
+  it("uses the battle-assigned Custom Value animal without incidental navigation", async () => {
     const callbacks = createHubCallbacks()
-    const user = userEvent.setup()
-    const { rankedValues } = createCustomRankedValues()
-    await render(
-      <NativeHub
-        {...callbacks}
-        runtimeClipCatalog={licensedRuntimeClipCatalog}
-        dataNotice={null}
-        rankedValues={rankedValues}
-        shouldReduceMotion={false}
-      />,
-    )
-
-    const customValueTile = screen.getByTestId(
-      "hub-top-five-rank-1-presentation",
-      { includeHiddenElements: true },
-    )
-    expect(customValueTile.children[1]).toHaveStyle({ width: 72, height: 72 })
-    expect(screen.queryByTestId("hub-top-five-rank-1-presentation")).toBeNull()
-    expect(
-      screen.queryByText("🧠", { includeHiddenElements: true }),
-    ).not.toBeOnTheScreen()
-    expect(
-      screen.getAllByTestId(/^hub-top-five-rank-\d+-presentation$/, {
-        includeHiddenElements: true,
-      }),
-    ).toHaveLength(5)
-    expect(
-      Array.from(
-        new Set(
-          nativeAnimalRendererMock.mock.calls.map(
-            ([{ clip }]) => clip.animalId,
-          ),
-        ),
-      ),
-    ).toEqual(
-      rankedValues
-        .slice(0, 5)
-        .map(({ definition }) => resolveValueAnimalId(definition.id)),
-    )
-
-    await user.press(screen.getByLabelText("Rank 1, gold medal. 🧠 Curiosity"))
+    const { rankedValues, customValue } = createCustomRankedValues()
+    await render(<NativeHub {...callbacks} runtimeClipCatalog={licensedRuntimeClipCatalog} dataNotice={null} rankedValues={rankedValues} shouldReduceMotion={false} />)
+    expect(screen.getByText("🧠 Curiosity")).toBeOnTheScreen()
+    expect(nativeAnimalRendererMock.mock.calls.some(([{clip}]) => clip.animalId === resolveValueAnimalId(customValue.id))).toBe(true)
+    await fireEvent.press(screen.getByTestId(`hub-animal-${customValue.id}`, { includeHiddenElements: true }))
     expect(callbacks.onBrowseAllValues).not.toHaveBeenCalled()
   })
 })

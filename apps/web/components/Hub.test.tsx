@@ -1,4 +1,5 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
+import { DEFAULT_HEROES99_APPEARANCE } from "@game/data/src/Heroes99Appearance"
 import {
   createSeethingSwarmTypographyOnlyRuntimeClipCatalog,
   type SeethingSwarmRuntimeClipCatalog,
@@ -34,7 +35,11 @@ import type { StaticImageData } from "next/image"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import Hub from "@/components/Hub"
 
+vi.mock("@/components/Heroes99Hero", () => ({ default: () => <span>Your hero</span> }))
+
 const animalPresentationProps = Object.freeze({
+  appearance: DEFAULT_HEROES99_APPEARANCE,
+  onCustomize: vi.fn(),
   runtimeClipCatalog: createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
   shouldReduceMotion: false,
 })
@@ -119,7 +124,7 @@ function createCustomRankedValues() {
 function getHubPresentation(name: string) {
   const presentation = screen
     .getByText(name)
-    .closest<HTMLElement>('[id$="-presentation"]')
+    .closest("li")?.querySelector<HTMLElement>('[id$="-presentation"]')
   if (!presentation) throw new Error("Hub value presentation is missing")
   return presentation
 }
@@ -156,6 +161,7 @@ describe("Hub Component Integration", () => {
     const cycle = createInitialBattleCycle("hub-attention")
     render(
       <Hub
+        {...animalPresentationProps}
         runtimeClipCatalog={runtimeClipCatalog}
         rankedValues={rankValues(cycle.activeDeck, cycle.progressById)}
         dataNotice={null}
@@ -230,7 +236,7 @@ describe("Hub Component Integration", () => {
     )
     expect(row.querySelector('[data-hub-active-clip="true"] img')).toBeVisible()
   })
-  it("shows every included value alphabetically before the first comparison", () => {
+  it("previews included values without ranks before the first comparison", () => {
     const battleCycle = createInitialBattleCycle("empty-hub-seed")
     const onBrowseAllValues = vi.fn()
     const onAddCustomValue = vi.fn()
@@ -261,11 +267,10 @@ describe("Hub Component Integration", () => {
       "xl:[--mapache-screen-spacing:2rem]",
     )
     expect(
-      screen.getByRole("heading", { name: "Your Values", level: 1 }),
+      screen.getByRole("heading", { name: "My Values", level: 1 }),
     ).toBeVisible()
-    expect(screen.getByText("Included Values")).toBeVisible()
+    expect(screen.getByRole("list", { name: "Included values preview" })).toBeVisible()
     expect(screen.getByText(/Not ranked yet\./)).toBeVisible()
-    expect(container.querySelector("[data-value-presentation]")).toBeNull()
     expect(container.querySelector("[data-animal-id]")).toBeNull()
     expect(screen.queryByText(/^Rank \d/)).not.toBeInTheDocument()
     expect(screen.queryByText(/🥇|🥈|🥉/)).not.toBeInTheDocument()
@@ -287,14 +292,14 @@ describe("Hub Component Integration", () => {
         )}
       />,
     )
-    expect(screen.getAllByText("🥇")).toHaveLength(5)
+    expect(screen.getByText("#1")).toBeVisible()
     rerender(<Hub {...hubProps} rankedValues={currentRanking} />)
     expect(screen.queryByText(/🥇|🥈|🥉/)).not.toBeInTheDocument()
     const firstRow = screen.getAllByRole("listitem")[0]
     expect(within(firstRow).getByText("Acceptance")).toBeVisible()
   })
 
-  it("renders all fresh rows without fabricated ranks and exposes the action rail", () => {
+  it("renders five fresh values and exposes explicit actions without a fake share control", () => {
     const battleCycle = createInitialBattleCycle("fresh-hub-seed")
 
     const { container } = render(
@@ -313,11 +318,11 @@ describe("Hub Component Integration", () => {
       />,
     )
 
-    const roster = screen.getByRole("region", { name: "Value roster" })
-    expect(within(roster).getAllByRole("listitem")).toHaveLength(100)
-    expect(container.querySelectorAll("[data-animal-id]")).toHaveLength(100)
+    const roster = screen.getByRole("list", { name: "Included values preview" })
+    expect(within(roster).getAllByRole("listitem")).toHaveLength(5)
+    expect(container.querySelectorAll("[data-animal-id]")).toHaveLength(5)
     expect(within(roster).queryByRole("button", { name: "Battle" })).toBeNull()
-    for (const definition of battleCycle.activeDeck.values) {
+    for (const definition of battleCycle.activeDeck.values.slice(0, 5)) {
       expect(
         within(roster).getByText(getValueDisplayDefinition(definition)),
       ).toBeVisible()
@@ -344,13 +349,14 @@ describe("Hub Component Integration", () => {
       within(valueActions)
         .getAllByRole("button")
         .map((button) => button.textContent),
-    ).toEqual(["Battle", "Browse All Values", "Add Custom Value"])
+    ).toEqual(["Battle", "Customize my card", "Browse All Values", "Add Custom Value"])
+    expect(screen.queryByRole("button", { name: /Share/ })).toBeNull()
     expect(
       within(valueActions).queryByRole("button", { name: "Menu" }),
     ).not.toBeInTheDocument()
   })
 
-  it("renders the earned Top Five and full ranked list after a comparison", () => {
+  it("renders the earned Top Five with value definitions and levels", () => {
     const onBrowseAllValues = vi.fn()
     const onAddCustomValue = vi.fn()
     const initialBattleCycle = createInitialBattleCycle("ranked-hub-seed")
@@ -385,22 +391,14 @@ describe("Hub Component Integration", () => {
       />,
     )
 
-    expect(screen.getByRole("heading", { name: "Top Five" })).toBeVisible()
-    expect(
-      screen.getByRole("heading", { name: "All Other Values" }),
-    ).toBeVisible()
-    expect(screen.getAllByRole("listitem")).toHaveLength(100)
+    expect(screen.getByRole("heading", { name: "My Top Five Values" })).toBeVisible()
+    expect(screen.getAllByRole("listitem")).toHaveLength(5)
     expect(getHubPresentation(getValueDisplayName(winner))).toBeVisible()
-    expect(
-      getHubPresentation(getValueDisplayName(winner)),
-    ).toHaveAccessibleDescription("Rank 1, gold medal")
-    for (const medal of ["🥇", "🥈", "🥉"]) {
-      expect(screen.getAllByText(medal)).toHaveLength(5)
-    }
-    expect(screen.getByText("Level 3")).toBeVisible()
+    expect(screen.getByText("#1")).toBeVisible()
+    expect(screen.getAllByText("Level 3").length).toBeGreaterThan(0)
     expect(
       container.querySelectorAll('[data-value-presentation="typography-only"]'),
-    ).toHaveLength(100)
+    ).toHaveLength(0)
     expect(container.querySelector("[data-animal-id]")).toBeNull()
   })
 
@@ -421,6 +419,7 @@ describe("Hub Component Integration", () => {
     )
     const { container } = render(
       <Hub
+        {...animalPresentationProps}
         rankedValues={rankedValues}
         runtimeClipCatalog={licensedRuntimeClipCatalog}
         dataNotice={null}
@@ -435,7 +434,7 @@ describe("Hub Component Integration", () => {
     const animalPresentations = [
       ...container.querySelectorAll('[data-value-presentation="animal"]'),
     ]
-    expect(animalPresentations).toHaveLength(100)
+    expect(animalPresentations).toHaveLength(5)
     for (const animalPresentation of animalPresentations) {
       expect(animalPresentation).toHaveAttribute("aria-hidden", "true")
       expect(animalPresentation).not.toHaveAttribute("tabindex")
@@ -445,33 +444,26 @@ describe("Hub Component Integration", () => {
         element.getAttribute("data-animal-id"),
       ),
     ).toEqual(
-      rankedValues.map(({ definition }) => getMappedAnimalId(definition.id)),
+      rankedValues.slice(0, 5).map(({ definition }) => getMappedAnimalId(definition.id)),
     )
     expect(
       container.querySelectorAll('[data-reduced-motion="true"]'),
-    ).toHaveLength(100)
-    expect(screen.getAllByText(/^Rank \d+(, \w+ medal)?$/)).toHaveLength(100)
-    const sixthValue = rankedValues[5]
-    const sixthValueButton = getHubPresentation(
-      getValueDisplayName(sixthValue.definition),
-    )
-    expect(sixthValueButton).toHaveAccessibleDescription("Rank 6, silver medal")
-    expect(within(sixthValueButton).getByText("🥈")).toBeVisible()
-    expect(sixthValueButton.querySelector("[data-animal-id]")).not.toBeNull()
+    ).toHaveLength(5)
+    expect(screen.queryByText(getValueDisplayName(rankedValues[5].definition))).toBeNull()
     const failedPresentation = animalPresentations[0]
     const failedImage = failedPresentation.querySelector("img")
     if (!failedImage) throw new Error("Expected the first ranked animal image")
     fireEvent.error(failedImage)
     expect(failedPresentation.querySelector("img")).toBeNull()
-    expect(failedPresentation).toHaveTextContent("#1")
-    expect(screen.getAllByText(/^Rank \d+(, \w+ medal)?$/)).toHaveLength(100)
-    expect(screen.getAllByText("🥇")).toHaveLength(5)
+    expect(screen.getByText("#1")).toBeVisible()
+    expect(screen.getByText(getValueDisplayName(rankedValues[0].definition))).toBeVisible()
   })
 
   it("renders the battle-assigned animal for a Custom Value without incidental navigation", () => {
     const { customValue, rankedValues } = createCustomRankedValues()
     const { container } = render(
       <Hub
+        {...animalPresentationProps}
         rankedValues={rankedValues}
         runtimeClipCatalog={licensedRuntimeClipCatalog}
         dataNotice={null}
@@ -493,15 +485,14 @@ describe("Hub Component Integration", () => {
       "--portrait-height": "72px",
     })
     expect(customValueTile).toHaveAttribute("aria-hidden", "true")
-    expect(customValueButton).toHaveAccessibleDescription("Rank 1, gold medal")
-    expect(within(customValueButton).getByText("🥇")).toBeVisible()
+    expect(screen.getByText("#1")).toBeVisible()
     expect(customValueTile.querySelector("[data-animal-id]")).toHaveAttribute(
       "data-animal-id",
       resolveValueAnimalId(customValue.id),
     )
     expect(
       container.querySelectorAll('[data-value-presentation="animal"]'),
-    ).toHaveLength(101)
+    ).toHaveLength(5)
 
     fireEvent.click(customValueButton)
     expect(
@@ -533,6 +524,7 @@ describe("Hub Component Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
     fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
     fireEvent.click(screen.getByRole("button", { name: "Menu" }))
+    fireEvent.click(screen.getByRole("button", { name: "Customize my card" }))
     fireEvent.click(getHubPresentation("Acceptance"))
 
     expect(onBrowseAllValues).toHaveBeenCalledWith(
@@ -540,12 +532,13 @@ describe("Hub Component Integration", () => {
     )
     expect(onAddCustomValue).toHaveBeenCalledWith("hub-add-custom-value-button")
     expect(onOpenMenu).toHaveBeenCalledOnce()
+    expect(animalPresentationProps.onCustomize).toHaveBeenCalledOnce()
     expect(
       screen.queryByRole("button", { name: /^Open .* in All Values$/ }),
     ).toBeNull()
   })
 
-  it("announces a restored backup while keeping every value visible", () => {
+  it("announces a restored backup while retaining the personal card", () => {
     const battleCycle = createInitialBattleCycle("restored-hub-seed")
 
     render(
@@ -566,6 +559,6 @@ describe("Hub Component Integration", () => {
     expect(
       screen.getByText("Backup restored. Your imported progress is ready."),
     ).toBeVisible()
-    expect(screen.getAllByRole("listitem")).toHaveLength(100)
+    expect(screen.getAllByRole("listitem")).toHaveLength(5)
   })
 })
