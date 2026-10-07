@@ -6,8 +6,8 @@ const dependencyMocks = vi.hoisted(() => ({
   createArchive: vi.fn(),
 }))
 
-vi.mock("./SeethingSwarmArchiveCreator", () => ({
-  createSeethingSwarmArchive: dependencyMocks.createArchive,
+vi.mock("./GhostAssetArchiveCreator", () => ({
+  createGhostAssetArchive: dependencyMocks.createArchive,
 }))
 
 const ASSET_KEY_ENVIRONMENT_VARIABLE_NAME =

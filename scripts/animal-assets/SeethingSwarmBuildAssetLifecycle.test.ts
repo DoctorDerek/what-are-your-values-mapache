@@ -4,9 +4,10 @@ import { readFile, rm } from "node:fs/promises"
 import { createRequire } from "node:module"
 import { join, resolve } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { createSeethingSwarmArchive } from "./SeethingSwarmArchiveCreator"
+import { createGhostAssetArchive } from "./GhostAssetArchiveCreator"
 import {
   getSeethingSwarmAssetCustodyPaths,
+  SEETHING_SWARM_ARCHIVE_CONTRACT,
   SEETHING_SWARM_ASSET_KEY_ENVIRONMENT_VARIABLE_NAME,
 } from "./SeethingSwarmAssetCustody"
 import { runSeethingSwarmAssetDecryption } from "./SeethingSwarmAssetDecryption"
@@ -134,7 +135,8 @@ describe("SeethingSwarm protected build asset lifecycle", () => {
       const custodyPaths = getSeethingSwarmAssetCustodyPaths(
         paths.repositoryRoot,
       )
-      await createSeethingSwarmArchive({
+      await createGhostAssetArchive({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath: custodyPaths.archivePath,
         assetKey: SYNTHETIC_ASSET_KEY,
         custodyDirectory: custodyPaths.custodyDirectory,

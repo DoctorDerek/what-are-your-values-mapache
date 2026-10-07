@@ -1,10 +1,13 @@
 import { relative, resolve, sep } from "node:path"
-import { SEETHING_SWARM_ARCHIVE_ENTRY_ROOT } from "./SeethingSwarmAssetCustody"
+import type { GhostAssetArchiveContract } from "./GhostAssetArchiveContract"
 
 const SAFE_ARCHIVE_ENTRY_NAME_PATTERN = /^[A-Za-z0-9._/-]+$/
 
-export function validateSeethingSwarmArchiveEntryName(entryName: string) {
-  const expectedPrefix = `${SEETHING_SWARM_ARCHIVE_ENTRY_ROOT}/`
+export function validateGhostAssetArchiveEntryName(
+  entryName: string,
+  contract: GhostAssetArchiveContract,
+) {
+  const expectedPrefix = `${contract.entryRoot}/`
   const entryPathSegments = entryName.split("/")
 
   if (
@@ -23,11 +26,15 @@ export function validateSeethingSwarmArchiveEntryName(entryName: string) {
   return entryPathSegments
 }
 
-export function resolveSeethingSwarmArchiveOutputPath(
+export function resolveGhostAssetArchiveOutputPath(
   extractionDirectory: string,
   entryName: string,
+  contract: GhostAssetArchiveContract,
 ) {
-  const entryPathSegments = validateSeethingSwarmArchiveEntryName(entryName)
+  const entryPathSegments = validateGhostAssetArchiveEntryName(
+    entryName,
+    contract,
+  )
   const resolvedExtractionDirectory = resolve(extractionDirectory)
   const outputPath = resolve(resolvedExtractionDirectory, ...entryPathSegments)
   const relativeOutputPath = relative(resolvedExtractionDirectory, outputPath)

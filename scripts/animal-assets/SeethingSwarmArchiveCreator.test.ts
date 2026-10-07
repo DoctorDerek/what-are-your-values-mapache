@@ -13,10 +13,11 @@ import { dirname, resolve } from "node:path"
 import { Uint8ArrayReader, ZipReader } from "@zip.js/zip.js/index-native.js"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { runSeethingSwarmArchiveCreatorCli } from "./createSeethingSwarmArchive.cli"
-import { createSeethingSwarmArchive } from "./SeethingSwarmArchiveCreator"
-import { extractSeethingSwarmArchive } from "./SeethingSwarmArchiveExtractor"
+import { createGhostAssetArchive } from "./GhostAssetArchiveCreator"
+import { extractGhostAssetArchive } from "./GhostAssetArchiveExtractor"
 import {
   getSeethingSwarmAssetCustodyPaths,
+  SEETHING_SWARM_ARCHIVE_CONTRACT,
   SEETHING_SWARM_ARCHIVE_ENTRY_ROOT,
   SEETHING_SWARM_ARCHIVE_LIMITS,
   SEETHING_SWARM_REQUIRED_ARCHIVE_ENTRY_NAMES,
@@ -83,7 +84,8 @@ describe("SeethingSwarm archive creation", () => {
     const paths = getSeethingSwarmAssetCustodyPaths(repositoryRoot)
     await createSyntheticCustody(paths.custodyDirectory)
 
-    const result = await createSeethingSwarmArchive({
+    const result = await createGhostAssetArchive({
+      contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
       archivePath: paths.archivePath,
       assetKey: TEST_ASSET_KEY,
       custodyDirectory: paths.custodyDirectory,
@@ -123,7 +125,8 @@ describe("SeethingSwarm archive creation", () => {
       verificationVendorDirectory,
       "seethingswarm",
     )
-    await extractSeethingSwarmArchive({
+    await extractGhostAssetArchive({
+      contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
       archivePath: paths.archivePath,
       assetKey: TEST_ASSET_KEY,
       custodyDirectory: verificationCustodyDirectory,
@@ -143,7 +146,8 @@ describe("SeethingSwarm archive creation", () => {
   it("rotates an existing archive without temporary or backup residue", async () => {
     const paths = getSeethingSwarmAssetCustodyPaths(repositoryRoot)
     const sentinelPath = await createSyntheticCustody(paths.custodyDirectory)
-    await createSeethingSwarmArchive({
+    await createGhostAssetArchive({
+      contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
       archivePath: paths.archivePath,
       assetKey: TEST_ASSET_KEY,
       custodyDirectory: paths.custodyDirectory,
@@ -151,7 +155,8 @@ describe("SeethingSwarm archive creation", () => {
     const firstArchive = await readFile(paths.archivePath)
 
     await writeFile(sentinelPath, `${LICENSED_SOURCE_SENTINEL}-rotated`)
-    await createSeethingSwarmArchive({
+    await createGhostAssetArchive({
+      contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
       archivePath: paths.archivePath,
       assetKey: TEST_ASSET_KEY,
       custodyDirectory: paths.custodyDirectory,
@@ -166,7 +171,8 @@ describe("SeethingSwarm archive creation", () => {
   it("preserves an existing archive when source custody becomes invalid", async () => {
     const paths = getSeethingSwarmAssetCustodyPaths(repositoryRoot)
     await createSyntheticCustody(paths.custodyDirectory)
-    await createSeethingSwarmArchive({
+    await createGhostAssetArchive({
+      contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
       archivePath: paths.archivePath,
       assetKey: TEST_ASSET_KEY,
       custodyDirectory: paths.custodyDirectory,
@@ -175,7 +181,8 @@ describe("SeethingSwarm archive creation", () => {
     await unlink(resolve(paths.custodyDirectory, "assets/staging-receipt.json"))
 
     await expect(
-      createSeethingSwarmArchive({
+      createGhostAssetArchive({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath: paths.archivePath,
         assetKey: TEST_ASSET_KEY,
         custodyDirectory: paths.custodyDirectory,
@@ -189,7 +196,8 @@ describe("SeethingSwarm archive creation", () => {
     await mkdir(paths.custodyDirectory, { recursive: true })
 
     await expect(
-      createSeethingSwarmArchive({
+      createGhostAssetArchive({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath: paths.archivePath,
         assetKey: TEST_ASSET_KEY,
         custodyDirectory: paths.custodyDirectory,
@@ -209,7 +217,8 @@ describe("SeethingSwarm archive creation", () => {
     )
 
     await expect(
-      createSeethingSwarmArchive({
+      createGhostAssetArchive({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath: paths.archivePath,
         assetKey: TEST_ASSET_KEY,
         custodyDirectory: paths.custodyDirectory,
@@ -232,7 +241,8 @@ describe("SeethingSwarm archive creation", () => {
       )
 
       await expect(
-        createSeethingSwarmArchive({
+        createGhostAssetArchive({
+          contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
           archivePath: paths.archivePath,
           assetKey: TEST_ASSET_KEY,
           custodyDirectory: paths.custodyDirectory,
@@ -250,7 +260,8 @@ describe("SeethingSwarm archive creation", () => {
     )
 
     await expect(
-      createSeethingSwarmArchive({
+      createGhostAssetArchive({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath: paths.archivePath,
         assetKey: TEST_ASSET_KEY,
         custodyDirectory: paths.custodyDirectory,
@@ -273,7 +284,8 @@ describe("SeethingSwarm archive creation", () => {
     }
 
     await expect(
-      createSeethingSwarmArchive({
+      createGhostAssetArchive({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath: paths.archivePath,
         assetKey: TEST_ASSET_KEY,
         custodyDirectory: paths.custodyDirectory,
@@ -281,19 +293,21 @@ describe("SeethingSwarm archive creation", () => {
     ).rejects.toThrow("Licensed custody payload exceeds its size limit.")
   })
 
-  it("rejects weak keys and archive output inside licensed custody", async () => {
+  it("rejects missing keys and archive output inside licensed custody", async () => {
     const paths = getSeethingSwarmAssetCustodyPaths(repositoryRoot)
     await createSyntheticCustody(paths.custodyDirectory)
 
     await expect(
-      createSeethingSwarmArchive({
+      createGhostAssetArchive({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath: paths.archivePath,
-        assetKey: "too-short",
+        assetKey: "",
         custodyDirectory: paths.custodyDirectory,
       }),
-    ).rejects.toThrow("must contain at least 32 characters")
+    ).rejects.toThrow("must not be empty")
     await expect(
-      createSeethingSwarmArchive({
+      createGhostAssetArchive({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath: resolve(paths.custodyDirectory, "exposed.zip"),
         assetKey: TEST_ASSET_KEY,
         custodyDirectory: paths.custodyDirectory,

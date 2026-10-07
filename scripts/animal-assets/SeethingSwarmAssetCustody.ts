@@ -1,4 +1,5 @@
 import { resolve } from "node:path"
+import type { GhostAssetArchiveContract } from "./GhostAssetArchiveContract"
 
 export const SEETHING_SWARM_ASSET_KEY_ENVIRONMENT_VARIABLE_NAME =
   "GHOST_ASSET_KEY_WHAT_ARE_YOUR_VALUES_MAPACHE"
@@ -15,6 +16,12 @@ export const SEETHING_SWARM_REQUIRED_ARCHIVE_ENTRY_NAMES = Object.freeze([
   "seethingswarm/assets/SeethingSwarmNativeStaticAssets.ts",
   "seethingswarm/assets/SeethingSwarmWebStaticAssets.ts",
 ] as const)
+
+export const SEETHING_SWARM_ARCHIVE_CONTRACT = Object.freeze({
+  entryRoot: SEETHING_SWARM_ARCHIVE_ENTRY_ROOT,
+  requiredEntryNames: SEETHING_SWARM_REQUIRED_ARCHIVE_ENTRY_NAMES,
+  limits: SEETHING_SWARM_ARCHIVE_LIMITS,
+}) satisfies GhostAssetArchiveContract
 
 export type SeethingSwarmAssetEnvironment = Readonly<{
   [SEETHING_SWARM_ASSET_KEY_ENVIRONMENT_VARIABLE_NAME]?: string

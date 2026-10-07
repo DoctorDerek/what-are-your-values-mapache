@@ -2,8 +2,9 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { dirname, resolve } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { createSeethingSwarmArchive } from "./SeethingSwarmArchiveCreator"
+import { createGhostAssetArchive } from "./GhostAssetArchiveCreator"
 import {
+  SEETHING_SWARM_ARCHIVE_CONTRACT,
   SEETHING_SWARM_ARCHIVE_ENTRY_ROOT,
   SEETHING_SWARM_REQUIRED_ARCHIVE_ENTRY_NAMES,
 } from "./SeethingSwarmAssetCustody"
@@ -16,8 +17,8 @@ const dependencyMocks = vi.hoisted(() => ({
   extractArchive: vi.fn<(options: ExtractArchiveOptions) => Promise<void>>(),
 }))
 
-vi.mock("./SeethingSwarmArchiveExtractor", () => ({
-  extractSeethingSwarmArchive: dependencyMocks.extractArchive,
+vi.mock("./GhostAssetArchiveExtractor", () => ({
+  extractGhostAssetArchive: dependencyMocks.extractArchive,
 }))
 
 const TEST_ASSET_KEY = "synthetic-verification-key-with-ample-length"
@@ -73,7 +74,8 @@ describe("SeethingSwarm archive creation verification", () => {
     )
 
     await expect(
-      createSeethingSwarmArchive({
+      createGhostAssetArchive({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath,
         assetKey: TEST_ASSET_KEY,
         custodyDirectory,
@@ -89,7 +91,8 @@ describe("SeethingSwarm archive creation verification", () => {
     )
 
     await expect(
-      createSeethingSwarmArchive({
+      createGhostAssetArchive({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath,
         assetKey: TEST_ASSET_KEY,
         custodyDirectory,
