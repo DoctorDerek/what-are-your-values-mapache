@@ -7,6 +7,7 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/ghost_assets/seethingswarm-assets.zip",
+        "$TURBO_ROOT$/ghost_assets/heroes99-assets.zip",
         "$TURBO_ROOT$/scripts/decrypt-assets.ts",
         "$TURBO_ROOT$/scripts/runTypeScript.mjs",
         "$TURBO_ROOT$/scripts/animal-assets/**",

@@ -1,4 +1,4 @@
-# Protected SeethingSwarm Asset Operations
+# Protected Art Asset Operations
 
 This directory is the tracked transport boundary for licensed SeethingSwarm animal assets. The repository may contain the encrypted `seethingswarm-assets.zip` build input, but it must never contain the raw source packs, decrypted `vendor/seethingswarm` custody, purchase records, private download links, or the encryption key.
 
@@ -12,7 +12,9 @@ Before creating or deploying an archive:
 2. Confirm the applicable current SeethingSwarm terms and the repository notice in `LICENSE.txt`.
 3. Keep receipts and purchase evidence in private records outside the repository.
 4. Verify that `vendor/seethingswarm` contains the validated registry, staging receipt, generated static asset modules, and licensed PNG files produced by the staging pipeline.
-5. Create and retain one unique key of at least 32 characters in a password manager. Never paste it into chat, a commit, an issue, a pull request, a command argument, or a log.
+5. Retain the existing nonempty key exactly as configured in a password manager. There is no application-imposed minimum or maximum length, and whitespace is not trimmed. Never paste it into chat, a commit, an issue, a pull request, a command argument, or a log.
+
+Heroes99 uses the same protected key and build entry point, with a separate `ghost_assets/heroes99-assets.zip` archive and ignored `vendor/heroes99` custody. Its `animated` and `portrait` directories contain only the validated purchased PNG layers. Preparation verifies the full 761-layer animated and 1,146-layer portrait inventories, then generates surface-scoped runtime bindings and appearance thumbnails. Raw sources, generated PNG files and private purchase records remain ignored. Both archives use the same authenticated extractor and exact-byte round-trip verification.
 
 ## Create or rotate the encrypted archive
 

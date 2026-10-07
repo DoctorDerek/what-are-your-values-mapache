@@ -1,10 +1,12 @@
 import { runSeethingSwarmAssetDecryption } from "./animal-assets/SeethingSwarmAssetDecryption"
+import { decryptHeroes99Assets } from "./animal-assets/Heroes99AssetCustody"
 
 try {
   await runSeethingSwarmAssetDecryption()
+  await decryptHeroes99Assets()
 } catch (error: unknown) {
   process.stderr.write(
-    `${error instanceof Error ? error.message : "SeethingSwarm asset extraction failed."}\n`,
+    `${error instanceof Error ? error.message : "Protected asset extraction failed."}\n`,
   )
   process.exitCode = 1
 }
