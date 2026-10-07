@@ -68,6 +68,24 @@ function readBattleGeometry(page: Page) {
     })
 }
 
+function expectUnchangedBattleGeometry(
+  page: Page,
+  geometry: Awaited<ReturnType<typeof readBattleGeometry>>,
+) {
+  const withSubpixelPosition = (bounds: (typeof geometry.cards)[number]) => ({
+    ...bounds,
+    x: expect.closeTo(bounds.x, 3),
+    y: expect.closeTo(bounds.y, 3),
+  })
+  return expect
+    .poll(() => readBattleGeometry(page))
+    .toEqual({
+      ...geometry,
+      cards: geometry.cards.map(withSubpixelPosition),
+      arenas: geometry.arenas.map(withSubpixelPosition),
+    })
+}
+
 for (const textSize of [100, 200, 400]) {
   test(`stack arrival, independent dismissal and queued admission never change game geometry at ${textSize}% text`, async ({
     page,
@@ -95,7 +113,7 @@ for (const textSize of [100, 200, 400]) {
     await expect(cards).toHaveCount(2)
     await expect(cards.first().getByRole("heading")).toHaveText("5 Battles")
     await expect(cards.last().getByRole("heading")).toHaveText("First Battle")
-    await expect.poll(() => readBattleGeometry(page)).toEqual(beforeArrival)
+    await expectUnchangedBattleGeometry(page, beforeArrival)
     expect(await choices.evaluate((element) => element.scrollTop)).toBe(
       scrollBeforeArrival,
     )
@@ -116,9 +134,7 @@ for (const textSize of [100, 200, 400]) {
       "First Battle",
     )
     await expect(cards.last().getByRole("heading")).toHaveText("First Battle")
-    await expect
-      .poll(() => readBattleGeometry(page))
-      .toEqual(beforeFirstDismissal)
+    await expectUnchangedBattleGeometry(page, beforeFirstDismissal)
     const olderDismissButton = cards
       .last()
       .getByRole("button", { name: /^Dismiss achievement/ })
@@ -128,9 +144,7 @@ for (const textSize of [100, 200, 400]) {
     await expect(
       page.getByRole("button", { name: "Dismiss achievement: First Battle" }),
     ).toHaveCount(0)
-    await expect
-      .poll(() => readBattleGeometry(page))
-      .toEqual(beforeOlderDismissal)
+    await expectUnchangedBattleGeometry(page, beforeOlderDismissal)
   })
 }
 
@@ -175,7 +189,7 @@ test("the rainbow clock pauses for hover, focus and inactivity then expires with
   await page.evaluate(() => window.dispatchEvent(new Event("focus")))
   await page.clock.runFor(8_000)
   await expect(card).toHaveCount(0)
-  await expect.poll(() => readBattleGeometry(page)).toEqual(geometry)
+  await expectUnchangedBattleGeometry(page, geometry)
   await expect(
     page.getByRole("button", { name: /^Choose / }).first(),
   ).toBeEnabled()
