@@ -14,7 +14,7 @@ import {
   type Heroes99RuntimeAssets,
 } from "@game/data/src/Heroes99RuntimeAssets"
 import type { avatarMachine } from "@game/machines/src/AvatarMachine"
-import { useSelector } from "@xstate/react"
+import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import { useState } from "react"
@@ -34,7 +34,7 @@ export default function DressingRoom({
   actor: ActorRefFrom<typeof avatarMachine>
   shouldReduceMotion: boolean
 }) {
-  const state = useSelector(actor, (snapshot) => snapshot)
+  const state = useRecoverableActorSnapshot(actor)
   const [category, setCategory] = useState<Heroes99Category>("Skin")
   const { draft } = state.context
   const isSaving = state.matches("Saving")

@@ -2,7 +2,8 @@
 
 import { achievementNotificationMachine } from "@game/machines/src/AchievementNotificationMachine"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
-import { useMachine } from "@xstate/react"
+import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
+import { useActorRef } from "@xstate/react"
 import { useCallback, useEffect } from "react"
 import AchievementToast from "@/components/AchievementToast"
 
@@ -19,9 +20,11 @@ export default function AchievementBanner({
   shouldReduceMotion: boolean
   onPresented: (achievementId: AchievementPresentation["id"]) => void
 }) {
-  const [state, send] = useMachine(achievementNotificationMachine, {
+  const actor = useActorRef(achievementNotificationMachine, {
     input: { achievements, onPresented },
   })
+  const state = useRecoverableActorSnapshot(actor)
+  const send = actor.send
   useEffect(() => {
     send({ type: "NOTIFICATION.SYNC", achievements })
   }, [achievements, send])

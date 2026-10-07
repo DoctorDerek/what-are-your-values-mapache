@@ -20,7 +20,8 @@ import {
 import type { ControlHintPreference } from "@game/machines/src/PlayerSettings"
 import { getValueChoiceControlHint } from "@game/machines/src/PlayerSettingsPresentation"
 import { getLevelFromXP } from "@game/utils/src/LevelMath"
-import { useMachine } from "@xstate/react"
+import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
+import { useActorRef } from "@xstate/react"
 import type { StaticImageData } from "next/image"
 import {
   useCallback,
@@ -98,9 +99,11 @@ export default function Crucible({
     expectedScheduler: BattleSchedulerRestorePoint,
   ) => void
 }) {
-  const [state, send] = useMachine(combatMachine, {
+  const actor = useActorRef(combatMachine, {
     input: { initialBattle: battle, animationSpeed, onWinnerSelected },
   })
+  const state = useRecoverableActorSnapshot(actor)
+  const send = actor.send
   const isPresentationReady = usePreparedSeethingSwarmBattle(
     battle,
     runtimeClipCatalog,

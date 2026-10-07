@@ -1,6 +1,7 @@
 import { achievementNotificationMachine } from "@game/machines/src/AchievementNotificationMachine"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
-import { useMachine } from "@xstate/react"
+import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
+import { useActorRef } from "@xstate/react"
 import { useCallback, useEffect } from "react"
 import { AppState, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -20,9 +21,11 @@ export default function NativeAchievementBanner({
   onPresented: (achievementId: AchievementPresentation["id"]) => void
 }) {
   const safeAreaInsets = useSafeAreaInsets()
-  const [state, send] = useMachine(achievementNotificationMachine, {
+  const actor = useActorRef(achievementNotificationMachine, {
     input: { achievements, onPresented },
   })
+  const state = useRecoverableActorSnapshot(actor)
+  const send = actor.send
   useEffect(() => {
     send({ type: "NOTIFICATION.SYNC", achievements })
   }, [achievements, send])

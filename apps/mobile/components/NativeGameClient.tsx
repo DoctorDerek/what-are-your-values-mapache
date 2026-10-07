@@ -33,7 +33,7 @@ import { projectRootBackDisposition } from "@game/machines/src/RootNavigation"
 import type { RootActor } from "@game/machines/src/RuntimeRecovery"
 import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPreparation"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
-import { useSelector } from "@xstate/react"
+import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { AppState, BackHandler, View } from "react-native"
 import { useReducedMotion } from "react-native-reanimated"
@@ -103,7 +103,7 @@ function NativeGameClientContent({
     useState(false)
   const [customValueBuilderRequestId, setCustomValueBuilderRequestId] =
     useState(0)
-  const state = useSelector(gameActor, (snapshot) => snapshot)
+  const state = useRecoverableActorSnapshot(gameActor)
   const send = gameActor.send
   const { isReadingImportFile, chooseBackup } = useNativePlayerDataFiles({
     state,

@@ -40,7 +40,7 @@ import type { RootActor } from "@game/machines/src/RuntimeRecovery"
 import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPreparation"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
-import { useSelector } from "@xstate/react"
+import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { useReducedMotion } from "motion/react"
 import dynamic from "next/dynamic"
 import type { StaticImageData } from "next/image"
@@ -135,7 +135,7 @@ function ReadOnlyGameClient({
 }
 
 function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
-  const state = useSelector(gameActor, (snapshot) => snapshot)
+  const state = useRecoverableActorSnapshot(gameActor)
   const send = gameActor.send
   const systemShouldReduceMotion = useReducedMotion() === true
   const browseAllValuesButtonRef = useRef<HTMLButtonElement>(null)
