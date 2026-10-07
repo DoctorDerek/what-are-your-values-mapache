@@ -809,7 +809,14 @@ describe("Crucible Component Integration", () => {
     )
     for (const surface of [battleSurface, battleChoices]) {
       act(() => surface.focus())
-      for (const key of [" ", "Enter", "ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"])
+      for (const key of [
+        " ",
+        "Enter",
+        "ArrowDown",
+        "ArrowUp",
+        "ArrowLeft",
+        "ArrowRight",
+      ])
         expect(fireEvent.keyDown(surface, { key })).toBe(true)
       for (const key of ["Home", "End", "PageUp", "PageDown", "Tab"])
         expect(fireEvent.keyDown(surface, { key })).toBe(true)

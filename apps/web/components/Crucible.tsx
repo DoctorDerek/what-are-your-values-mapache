@@ -45,7 +45,9 @@ type BattleAccessibilityAnnouncement = Readonly<{
 function handleBattleSurfaceKeyDown(event: ReactKeyboardEvent<HTMLElement>) {
   if (
     event.target === event.currentTarget &&
-    (event.key === " " || event.key === "Enter" || event.key.startsWith("Arrow"))
+    (event.key === " " ||
+      event.key === "Enter" ||
+      event.key.startsWith("Arrow"))
   )
     event.stopPropagation()
 }

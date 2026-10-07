@@ -28,7 +28,9 @@ export async function expectCompleteBattleTextReachable(text: Locator) {
         behavior: "instant",
       })
       const characterBounds = character.getBoundingClientRect()
-      const cardBounds = element.closest("button, aside")!.getBoundingClientRect()
+      const cardBounds = element
+        .closest("button, aside")!
+        .getBoundingClientRect()
       const visibleTextRects = textNodes.flatMap((textNode) =>
         [...textNode.textContent!.matchAll(/\S+/gu)].flatMap((match) => {
           const textRun = document.createRange()

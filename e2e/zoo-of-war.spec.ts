@@ -18,7 +18,9 @@ test("defers distant roster art and prepares animals when scrolling reaches them
   })
   await page.goto("/", { waitUntil: "networkidle" })
   await page.getByRole("button", { name: "Start", exact: true }).click()
-  await page.getByRole("button", { name: "Browse All Values", exact: true }).click()
+  await page
+    .getByRole("button", { name: "Browse All Values", exact: true })
+    .click()
   const rows = page
     .getByRole("listitem")
     .filter({ has: page.locator("[data-hub-active-clip]") })

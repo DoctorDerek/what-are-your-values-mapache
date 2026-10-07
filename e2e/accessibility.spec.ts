@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect, type Page } from "@playwright/test"
-import { test } from "./fixtures"
 import { expectCompleteBattleTextReachable } from "./battle-text-reachability"
+import { test } from "./fixtures"
 
 const WCAG_AA_RULE_TAGS = Object.freeze([
   "wcag2a",
@@ -231,7 +231,9 @@ test("overflowing value cards remain keyboard-readable beside achievement feedba
   const identity = await stage.getAttribute("data-choreography-identity")
   await expect
     .poll(() =>
-      content.evaluate((element) => element.scrollHeight - element.clientHeight),
+      content.evaluate(
+        (element) => element.scrollHeight - element.clientHeight,
+      ),
     )
     .toBeGreaterThan(0)
   await content.focus()
@@ -314,7 +316,10 @@ for (const viewport of [
       banner.getByRole("heading", { name: "First Battle" }),
     ).toBeVisible()
     const dismiss = banner.getByRole("button", { name: /^Dismiss achievement/ })
-    for (const text of [banner.getByRole("heading"), banner.getByText("First pair compared.", { exact: true })]) {
+    for (const text of [
+      banner.getByRole("heading"),
+      banner.getByText("First pair compared.", { exact: true }),
+    ]) {
       await expectCompleteBattleTextReachable(text)
     }
     await dismiss.scrollIntoViewIfNeeded()
@@ -342,12 +347,16 @@ for (const viewport of [
       ),
       "The dismiss mark stays vertically centered in its target",
     ).toBeLessThanOrEqual(1)
-    await content.evaluate(element => { element.scrollTop = 0 })
+    await content.evaluate((element) => {
+      element.scrollTop = 0
+    })
     const overlayBounds = await banner.boundingBox()
     const contentBounds = await content.boundingBox()
     expect(Math.abs(overlayBounds!.y - contentBounds!.y)).toBeLessThanOrEqual(1)
     expect(overlayBounds!.x).toBeGreaterThanOrEqual(contentBounds!.x)
-    expect(overlayBounds!.x + overlayBounds!.width).toBeLessThanOrEqual(contentBounds!.x + contentBounds!.width)
+    expect(overlayBounds!.x + overlayBounds!.width).toBeLessThanOrEqual(
+      contentBounds!.x + contentBounds!.width,
+    )
     expect(await controls.boundingBox()).toEqual(controlsBefore)
     expect(
       await banner.evaluate((surface) =>

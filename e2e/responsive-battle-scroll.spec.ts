@@ -404,7 +404,9 @@ for (const viewport of [
     }
     const surfaceBoundsBeforeFocus = await battle.boundingBox()
     for (const choice of await choices.all())
-      await expectCompleteBattleTextReachable(choice.getByText(/^\[\d \/ [A-Z]\]$/))
+      await expectCompleteBattleTextReachable(
+        choice.getByText(/^\[\d \/ [A-Z]\]$/),
+      )
     await content.focus()
     await page.keyboard.press("Home")
     expect(await battle.boundingBox()).toEqual(surfaceBoundsBeforeFocus)
