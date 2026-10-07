@@ -10,7 +10,10 @@ import type { PlayerData } from "./PlayerData"
 import {
   decodePlayerData,
   encodePlayerData,
+  PLAYER_DATA_CODEC_VERSION,
+  readPlayerDataCodecVersion,
   type EncodedPlayerData,
+  type PlayerDataCodecVersion,
 } from "./PlayerDataCodec"
 import { createSha256Hex } from "./Sha256"
 
@@ -28,6 +31,7 @@ export type BattleProfileCheckpoint = {
   readonly canonicalCatalogVersion: typeof CANONICAL_CATALOG_VERSION
   readonly playerData: PlayerData
   readonly contentHash: string
+  readonly playerDataCodecVersion: PlayerDataCodecVersion
 }
 
 export type EncodedBattleProfileCheckpoint = readonly [
@@ -62,10 +66,17 @@ function createHashableCheckpoint({
   updatedAt,
   appVersion,
   playerData,
+  playerDataCodecVersion = PLAYER_DATA_CODEC_VERSION,
 }: Omit<
   BattleProfileCheckpoint,
-  "format" | "schemaVersion" | "canonicalCatalogVersion" | "contentHash"
->): HashableBattleProfileCheckpoint {
+  | "format"
+  | "schemaVersion"
+  | "canonicalCatalogVersion"
+  | "contentHash"
+  | "playerDataCodecVersion"
+> & {
+  playerDataCodecVersion?: PlayerDataCodecVersion
+}): HashableBattleProfileCheckpoint {
   return [
     BATTLE_PROFILE_CHECKPOINT_FORMAT,
     BATTLE_PROFILE_CHECKPOINT_SCHEMA_VERSION,
@@ -75,7 +86,7 @@ function createHashableCheckpoint({
     updatedAt,
     appVersion,
     playerData.profile.activeDeck.catalogVersion,
-    encodePlayerData(playerData),
+    encodePlayerData(playerData, playerDataCodecVersion),
   ]
 }
 
@@ -95,6 +106,7 @@ function freezeCheckpoint(
     canonicalCatalogVersion: CANONICAL_CATALOG_VERSION,
     playerData,
     contentHash,
+    playerDataCodecVersion: hashableCheckpoint[8][0],
   }) satisfies BattleProfileCheckpoint
 }
 
@@ -224,7 +236,11 @@ export async function decodeBattleProfileCheckpoint(serialized: string) {
 
   const playerData = decodePlayerData(tuple[8])
   const checkpoint = freezeCheckpoint(
-    createHashableCheckpoint({ ...metadata, playerData }),
+    createHashableCheckpoint({
+      ...metadata,
+      playerData,
+      playerDataCodecVersion: readPlayerDataCodecVersion(tuple[8]),
+    }),
     playerData,
     contentHash,
   )

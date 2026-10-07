@@ -1,3 +1,8 @@
+import {
+  DEFAULT_HEROES99_APPEARANCE,
+  readHeroes99Appearance,
+  type Heroes99Appearance,
+} from "@game/data/src/Heroes99Appearance"
 import { getAchievementDefinition } from "./AchievementCatalog"
 import {
   createAchievementState,
@@ -21,6 +26,7 @@ export type PlayerData = {
   readonly achievements: AchievementState
   readonly settings: PlayerSettings
   readonly progressGenerationStartedAt: string
+  readonly appearance: Heroes99Appearance
 }
 
 function validateAchievementTimeline(
@@ -59,7 +65,10 @@ export function createPlayerData({
   achievements,
   settings,
   progressGenerationStartedAt,
-}: PlayerData): PlayerData {
+  appearance = DEFAULT_HEROES99_APPEARANCE,
+}: Omit<PlayerData, "appearance"> & {
+  readonly appearance?: Heroes99Appearance
+}): PlayerData {
   const validatedProfile = validateBattleProfile(profile)
   const validatedAchievements = createAchievementState({
     activeDeck: validatedProfile.activeDeck,
@@ -76,6 +85,7 @@ export function createPlayerData({
     profile: validatedProfile,
     achievements: validatedAchievements,
     settings: validatedSettings,
+    appearance: readHeroes99Appearance(appearance),
     progressGenerationStartedAt: readIsoTimestamp(
       progressGenerationStartedAt,
       "Progress generation start timestamp",

@@ -115,6 +115,7 @@ export function createLevelsAndExperienceResetCandidate({
   }) satisfies BattleProfile
 
   return createPlayerData({
+    ...playerData,
     profile: resetProfile,
     achievements: createAchievementState({
       activeDeck: resetProfile.activeDeck,

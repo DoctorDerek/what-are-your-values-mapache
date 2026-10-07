@@ -11,7 +11,10 @@ import type { PlayerData } from "./PlayerData"
 import {
   decodePlayerData,
   encodePlayerData,
+  PLAYER_DATA_CODEC_VERSION,
+  readPlayerDataCodecVersion,
   type EncodedPlayerData,
+  type PlayerDataCodecVersion,
 } from "./PlayerDataCodec"
 import { createSha256Hex } from "./Sha256"
 
@@ -32,6 +35,7 @@ export type WayvmExport = {
   readonly progressGeneration: number
   readonly playerData: PlayerData
   readonly contentHash: string
+  readonly playerDataCodecVersion: PlayerDataCodecVersion
 }
 
 export type EncodedWayvmExport = readonly [
@@ -80,11 +84,13 @@ function createHashableWayvmExport({
   sourceAppVersion,
   sourceBuild,
   playerData,
+  playerDataCodecVersion = PLAYER_DATA_CODEC_VERSION,
 }: {
   readonly exportedAt: string
   readonly sourceAppVersion: string
   readonly sourceBuild: string
   readonly playerData: PlayerData
+  readonly playerDataCodecVersion?: PlayerDataCodecVersion
 }): HashableWayvmExport {
   return [
     WAYVM_EXPORT_FORMAT,
@@ -97,7 +103,7 @@ function createHashableWayvmExport({
     playerData.profile.activeDeck.fingerprint,
     playerData.profile.scheduler.deckRevision,
     playerData.profile.scheduler.progressGeneration,
-    encodePlayerData(playerData),
+    encodePlayerData(playerData, playerDataCodecVersion),
   ]
 }
 
@@ -119,6 +125,7 @@ function freezeWayvmExport(
     progressGeneration: hashableExport[9],
     playerData,
     contentHash,
+    playerDataCodecVersion: hashableExport[10][0],
   }) satisfies WayvmExport
 }
 
@@ -221,6 +228,7 @@ export async function decodeWayvmExport(serialized: string) {
       sourceAppVersion,
       sourceBuild,
       playerData,
+      playerDataCodecVersion: readPlayerDataCodecVersion(tuple[10]),
     }),
     playerData,
     contentHash,
