@@ -14,11 +14,13 @@ declare const self: ServiceWorkerGlobalScope
 
 const animalCacheName = "wayvm-animal-strips-v1"
 const animalStripPath = /^\/_next\/static\/media\/[^/]+_strip\d+\.[^/]+\.png$/
-const heroLayerPath = /^\/_next\/static\/media\/(?:skin_c\d+|face_c\d+|[mf]\d+_c\d+_(?:top|bot)|cloth\d+_c\d+_(?:top|bot)|weapon\d+(?:_c\d+)?_(?:top|bot))\.[^/]+\.png$/
+const heroLayerPath =
+  /^\/_next\/static\/media\/(?:skin_c\d+|face_c\d+|[mf]\d+_c\d+_(?:top|bot)|cloth\d+_c\d+_(?:top|bot)|weapon\d+(?:_c\d+)?_(?:top|bot))\.[^/]+\.png$/
 
 function isOnDemandArtwork(url: URL) {
   return (
-    url.origin === self.location.origin && (animalStripPath.test(url.pathname) || heroLayerPath.test(url.pathname))
+    url.origin === self.location.origin &&
+    (animalStripPath.test(url.pathname) || heroLayerPath.test(url.pathname))
   )
 }
 

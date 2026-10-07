@@ -1,17 +1,27 @@
-import { describe, expect, it } from "vitest"
 import { DEFAULT_HEROES99_APPEARANCE } from "@game/data/src/Heroes99Appearance"
-import { createPlayerData } from "./PlayerData"
-import { createInitialPlayerData } from "./PlayerData"
+import { describe, expect, it } from "vitest"
+import { createInitialPlayerData, createPlayerData } from "./PlayerData"
 import { decodePlayerData, encodePlayerData } from "./PlayerDataCodec"
 
 describe("Player Data Codec", () => {
   it("migrates the released five-field payload without changing its legacy bytes", () => {
-    const original = createInitialPlayerData({ schedulerSeed: "legacy-appearance", createdAt: "2026-07-29T00:00:00.000Z" })
+    const original = createInitialPlayerData({
+      schedulerSeed: "legacy-appearance",
+      createdAt: "2026-07-29T00:00:00.000Z",
+    })
     const legacy = encodePlayerData(original, 1)
     const migrated = decodePlayerData(legacy)
     expect(migrated.appearance).toEqual(DEFAULT_HEROES99_APPEARANCE)
     expect(encodePlayerData(migrated, 1)).toEqual(legacy)
-    const customized = createPlayerData({ ...migrated, appearance: { ...migrated.appearance, hairStyle: null, weaponStyle: "dagger", weaponPalette: 4 } })
+    const customized = createPlayerData({
+      ...migrated,
+      appearance: {
+        ...migrated.appearance,
+        hairStyle: null,
+        weaponStyle: "dagger",
+        weaponPalette: 4,
+      },
+    })
     expect(decodePlayerData(encodePlayerData(customized))).toEqual(customized)
   })
   it("round-trips one complete canonical player-owned payload", () => {
@@ -35,7 +45,11 @@ describe("Player Data Codec", () => {
       "Unsupported Player Data codec version",
     )
     expect(() =>
-      decodePlayerData([...encoded.slice(0, 4), "2026-07-29", ...encoded.slice(5)]),
+      decodePlayerData([
+        ...encoded.slice(0, 4),
+        "2026-07-29",
+        ...encoded.slice(5),
+      ]),
     ).toThrow("Invalid Progress generation start timestamp")
   })
 

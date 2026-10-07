@@ -773,7 +773,9 @@ function WritableGameClient({
   if (state.matches("DressingRoom")) {
     const avatar = state.children.avatar
     if (!avatar) throw new Error("Expected the appearance editor actor")
-    return <DressingRoom actor={avatar} shouldReduceMotion={shouldReduceMotion} />
+    return (
+      <DressingRoom actor={avatar} shouldReduceMotion={shouldReduceMotion} />
+    )
   }
 
   if (isHubSurface) {

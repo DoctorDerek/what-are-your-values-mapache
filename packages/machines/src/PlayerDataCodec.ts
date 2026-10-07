@@ -35,17 +35,35 @@ type EncodedHeroes99Appearance = readonly [
   weaponPalette: number,
 ]
 
-function encodeAppearance(appearance: Heroes99Appearance): EncodedHeroes99Appearance {
-  return [appearance.packVersion, appearance.skinPalette, appearance.facePalette,
-    appearance.hairStyle, appearance.hairPalette, appearance.clothingStyle,
-    appearance.clothingPalette, appearance.weaponStyle, appearance.weaponPalette]
+function encodeAppearance(
+  appearance: Heroes99Appearance,
+): EncodedHeroes99Appearance {
+  return [
+    appearance.packVersion,
+    appearance.skinPalette,
+    appearance.facePalette,
+    appearance.hairStyle,
+    appearance.hairPalette,
+    appearance.clothingStyle,
+    appearance.clothingPalette,
+    appearance.weaponStyle,
+    appearance.weaponPalette,
+  ]
 }
 
 function decodeAppearance(value: unknown): Heroes99Appearance {
   const tuple = readTuple(value, 9, "Heroes99 appearance")
-  return readHeroes99Appearance({ packVersion: tuple[0], skinPalette: tuple[1],
-    facePalette: tuple[2], hairStyle: tuple[3], hairPalette: tuple[4],
-    clothingStyle: tuple[5], clothingPalette: tuple[6], weaponStyle: tuple[7], weaponPalette: tuple[8] })
+  return readHeroes99Appearance({
+    packVersion: tuple[0],
+    skinPalette: tuple[1],
+    facePalette: tuple[2],
+    hairStyle: tuple[3],
+    hairPalette: tuple[4],
+    clothingStyle: tuple[5],
+    clothingPalette: tuple[6],
+    weaponStyle: tuple[7],
+    weaponPalette: tuple[8],
+  })
 }
 
 export type EncodedPlayerData =
@@ -79,7 +97,11 @@ export function encodePlayerData(
   ] as const
   return version === 1
     ? [1, ...fields]
-    : [PLAYER_DATA_CODEC_VERSION, ...fields, encodeAppearance(validated.appearance)]
+    : [
+        PLAYER_DATA_CODEC_VERSION,
+        ...fields,
+        encodeAppearance(validated.appearance),
+      ]
 }
 
 export function readPlayerDataCodecVersion(
@@ -108,9 +130,7 @@ export function decodePlayerData(value: unknown) {
       "Progress generation start timestamp",
     ),
     appearance:
-      version === 1
-        ? DEFAULT_HEROES99_APPEARANCE
-        : decodeAppearance(tuple[5]),
+      version === 1 ? DEFAULT_HEROES99_APPEARANCE : decodeAppearance(tuple[5]),
   })
 
   if (

@@ -39,7 +39,9 @@ export default function NativeHeroes99Hero({
   const [readySource, setReadySource] = useState<string | null>(null)
   const [isActive, setIsActive] = useState(AppState.currentState === "active")
   const progress = useSharedValue(0)
-  const scale = strip ? Math.min(stageWidth / strip.width, height / strip.height) : 1
+  const scale = strip
+    ? Math.min(stageWidth / strip.width, height / strip.height)
+    : 1
   const width = strip ? strip.width * scale : stageWidth
   const imageHeight = strip ? strip.height * scale : height
   const motion = useAnimatedStyle(() => ({
@@ -110,14 +112,20 @@ export default function NativeHeroes99Hero({
           <Animated.View
             testID="heroes99-idle-strip"
             className="absolute top-0 left-0"
-            style={[{ width: width * HEROES99_IDLE_FRAME_COUNT, height: imageHeight }, motion]}
+            style={[
+              { width: width * HEROES99_IDLE_FRAME_COUNT, height: imageHeight },
+              motion,
+            ]}
           >
             <Image
               testID="heroes99-idle-image"
               fadeDuration={0}
               source={strip.source}
               resizeMode="stretch"
-              style={{ width: width * HEROES99_IDLE_FRAME_COUNT, height: imageHeight }}
+              style={{
+                width: width * HEROES99_IDLE_FRAME_COUNT,
+                height: imageHeight,
+              }}
               onLoad={() => setReadySource(strip.source.uri)}
               onError={() => setFailed(true)}
             />

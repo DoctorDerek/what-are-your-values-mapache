@@ -35,7 +35,9 @@ import type { StaticImageData } from "next/image"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import Hub from "@/components/Hub"
 
-vi.mock("@/components/Heroes99Hero", () => ({ default: () => <span>Your hero</span> }))
+vi.mock("@/components/Heroes99Hero", () => ({
+  default: () => <span>Your hero</span>,
+}))
 
 const animalPresentationProps = Object.freeze({
   appearance: DEFAULT_HEROES99_APPEARANCE,
@@ -124,7 +126,8 @@ function createCustomRankedValues() {
 function getHubPresentation(name: string) {
   const presentation = screen
     .getByText(name)
-    .closest("li")?.querySelector<HTMLElement>('[id$="-presentation"]')
+    .closest("li")
+    ?.querySelector<HTMLElement>('[id$="-presentation"]')
   if (!presentation) throw new Error("Hub value presentation is missing")
   return presentation
 }
@@ -269,7 +272,9 @@ describe("Hub Component Integration", () => {
     expect(
       screen.getByRole("heading", { name: "My Values", level: 1 }),
     ).toBeVisible()
-    expect(screen.getByRole("list", { name: "Included values preview" })).toBeVisible()
+    expect(
+      screen.getByRole("list", { name: "Included values preview" }),
+    ).toBeVisible()
     expect(screen.getByText(/Not ranked yet\./)).toBeVisible()
     expect(container.querySelector("[data-animal-id]")).toBeNull()
     expect(screen.queryByText(/^Rank \d/)).not.toBeInTheDocument()
@@ -349,7 +354,12 @@ describe("Hub Component Integration", () => {
       within(valueActions)
         .getAllByRole("button")
         .map((button) => button.textContent),
-    ).toEqual(["Battle", "Customize my card", "Browse All Values", "Add Custom Value"])
+    ).toEqual([
+      "Battle",
+      "Customize my card",
+      "Browse All Values",
+      "Add Custom Value",
+    ])
     expect(screen.queryByRole("button", { name: /Share/ })).toBeNull()
     expect(
       within(valueActions).queryByRole("button", { name: "Menu" }),
@@ -391,7 +401,9 @@ describe("Hub Component Integration", () => {
       />,
     )
 
-    expect(screen.getByRole("heading", { name: "My Top Five Values" })).toBeVisible()
+    expect(
+      screen.getByRole("heading", { name: "My Top Five Values" }),
+    ).toBeVisible()
     expect(screen.getAllByRole("listitem")).toHaveLength(5)
     expect(getHubPresentation(getValueDisplayName(winner))).toBeVisible()
     expect(screen.getByText("#1")).toBeVisible()
@@ -444,19 +456,25 @@ describe("Hub Component Integration", () => {
         element.getAttribute("data-animal-id"),
       ),
     ).toEqual(
-      rankedValues.slice(0, 5).map(({ definition }) => getMappedAnimalId(definition.id)),
+      rankedValues
+        .slice(0, 5)
+        .map(({ definition }) => getMappedAnimalId(definition.id)),
     )
     expect(
       container.querySelectorAll('[data-reduced-motion="true"]'),
     ).toHaveLength(5)
-    expect(screen.queryByText(getValueDisplayName(rankedValues[5].definition))).toBeNull()
+    expect(
+      screen.queryByText(getValueDisplayName(rankedValues[5].definition)),
+    ).toBeNull()
     const failedPresentation = animalPresentations[0]
     const failedImage = failedPresentation.querySelector("img")
     if (!failedImage) throw new Error("Expected the first ranked animal image")
     fireEvent.error(failedImage)
     expect(failedPresentation.querySelector("img")).toBeNull()
     expect(screen.getByText("#1")).toBeVisible()
-    expect(screen.getByText(getValueDisplayName(rankedValues[0].definition))).toBeVisible()
+    expect(
+      screen.getByText(getValueDisplayName(rankedValues[0].definition)),
+    ).toBeVisible()
   })
 
   it("renders the battle-assigned animal for a Custom Value without incidental navigation", () => {

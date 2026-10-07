@@ -93,16 +93,27 @@ test("Menu and guidance meet automated accessibility rules", async ({
     .click()
 })
 
-test("Dressing Room choices and unsaved-change confirmation meet accessibility rules", async ({ page }) => {
+test("Dressing Room choices and unsaved-change confirmation meet accessibility rules", async ({
+  page,
+}) => {
   await startAtHub(page)
-  await page.getByRole("button", { name: "Customize my card", exact: true }).click()
-  await expect(page.getByRole("heading", { name: "Dressing Room", exact: true })).toBeVisible()
+  await page
+    .getByRole("button", { name: "Customize my card", exact: true })
+    .click()
+  await expect(
+    page.getByRole("heading", { name: "Dressing Room", exact: true }),
+  ).toBeVisible()
   await expectNoAccessibilityViolations(page, "Dressing Room skin choices")
   await page.getByRole("button", { name: "Clothing", exact: true }).click()
-  await expectNoAccessibilityViolations(page, "Dressing Room clothing and palettes")
+  await expectNoAccessibilityViolations(
+    page,
+    "Dressing Room clothing and palettes",
+  )
   await page.getByRole("button", { name: "Outfit 17", exact: true }).click()
   await page.getByRole("button", { name: "Back", exact: true }).click()
-  await expect(page.getByRole("button", { name: "Keep editing", exact: true })).toBeVisible()
+  await expect(
+    page.getByRole("button", { name: "Keep editing", exact: true }),
+  ).toBeVisible()
   await expectNoAccessibilityViolations(page, "Dressing Room unsaved changes")
 })
 

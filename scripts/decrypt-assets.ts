@@ -1,5 +1,5 @@
-import { runSeethingSwarmAssetDecryption } from "./animal-assets/SeethingSwarmAssetDecryption"
 import { decryptHeroes99Assets } from "./animal-assets/Heroes99AssetCustody"
+import { runSeethingSwarmAssetDecryption } from "./animal-assets/SeethingSwarmAssetDecryption"
 
 try {
   await runSeethingSwarmAssetDecryption()

@@ -54,7 +54,10 @@ test("browser Back closes actual parents, preserves drafts and permits Hub depar
     .click()
   await page.evaluate(() => history.back())
   await expect(
-    page.getByRole("heading", { name: /^My (?:Top Five )?Values$/, exact: true }),
+    page.getByRole("heading", {
+      name: /^My (?:Top Five )?Values$/,
+      exact: true,
+    }),
   ).toBeVisible()
   await page
     .getByRole("button", { name: "Add Custom Value", exact: true })
@@ -358,7 +361,10 @@ for (const viewport of [
     ).toBeVisible()
     await page.getByRole("button", { name: "See my values" }).click()
     await expect(
-      page.getByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
+      page.getByRole("heading", {
+        name: /^My (?:Top Five )?Values$/,
+        level: 1,
+      }),
     ).toBeVisible()
   })
 
@@ -424,7 +430,10 @@ for (const viewport of [
     ).toBe(true)
     await page.getByRole("button", { name: "See my values" }).click()
     await expect(
-      page.getByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
+      page.getByRole("heading", {
+        name: /^My (?:Top Five )?Values$/,
+        level: 1,
+      }),
     ).toBeVisible()
   })
 
@@ -488,7 +497,10 @@ for (const viewport of [
     })
     await page.getByRole("button", { name: "See my values" }).click()
     await expect(
-      page.getByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
+      page.getByRole("heading", {
+        name: /^My (?:Top Five )?Values$/,
+        level: 1,
+      }),
     ).toBeVisible()
   })
 }

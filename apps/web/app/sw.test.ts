@@ -52,10 +52,16 @@ beforeEach(() => {
       { url: animalPath, revision: null },
       { url: "/_next/static/media/skin_c1.herohash.png", revision: null },
       { url: "/_next/static/media/m4_c4_top.herohash.png", revision: null },
-      { url: "/_next/static/media/cloth14_c4_bot.herohash.png", revision: null },
+      {
+        url: "/_next/static/media/cloth14_c4_bot.herohash.png",
+        revision: null,
+      },
       { url: "/_next/static/media/face_c2.herohash.png", revision: null },
       { url: "/_next/static/media/weapon1_top.herohash.png", revision: null },
-      { url: "/_next/static/media/weapon5_c4_bot.herohash.png", revision: null },
+      {
+        url: "/_next/static/media/weapon5_c4_bot.herohash.png",
+        revision: null,
+      },
       `${origin}${existingPath}`,
       "/icons/icon-192.png",
       `https://other.example${animalPath}`,

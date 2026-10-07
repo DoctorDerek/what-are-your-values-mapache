@@ -45,8 +45,8 @@ import NativeCrucible from "@/components/NativeCrucible"
 import NativeDataManagement, {
   type NativeDataManagementActivity,
 } from "@/components/NativeDataManagement"
-import NativeHub from "@/components/NativeHub"
 import NativeDressingRoom from "@/components/NativeDressingRoom"
+import NativeHub from "@/components/NativeHub"
 import { ReopenedNativeInformationPanel } from "@/components/NativeInformationPanel"
 import NativeInformationPanelContent from "@/components/NativeInformationPanelContent"
 import NativeIntroduction from "@/components/NativeIntroduction"
@@ -572,7 +572,12 @@ function NativeGameClientContent() {
   if (state.matches("DressingRoom")) {
     const avatar = state.children.avatar
     if (!avatar) throw new Error("Expected the appearance editor actor")
-    return <NativeDressingRoom actor={avatar} shouldReduceMotion={shouldReduceMotion} />
+    return (
+      <NativeDressingRoom
+        actor={avatar}
+        shouldReduceMotion={shouldReduceMotion}
+      />
+    )
   }
 
   if (isHubSurface)

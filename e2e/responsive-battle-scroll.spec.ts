@@ -105,7 +105,9 @@ for (const width of [390, 1100, 1440]) {
       await expect(rows).toHaveCount(5)
       await rows.last().scrollIntoViewIfNeeded()
       await expect(rows.last()).toBeInViewport()
-      await page.getByRole("button", { name: "Browse All Values", exact: true }).click()
+      await page
+        .getByRole("button", { name: "Browse All Values", exact: true })
+        .click()
       await expect(rows).toHaveCount(100)
       await page.getByRole("button", { name: "Close", exact: true }).click()
       await expect(rows).toHaveCount(5)
@@ -134,7 +136,10 @@ for (const width of [390, 1100, 1440]) {
           .getByRole("button", { name: "See my values", exact: true })
           .click()
         await expect(
-          page.getByRole("heading", { name: /^My (?:Top Five )?Values$/, level: 1 }),
+          page.getByRole("heading", {
+            name: /^My (?:Top Five )?Values$/,
+            level: 1,
+          }),
         ).toBeVisible()
       }
     }

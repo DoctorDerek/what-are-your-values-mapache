@@ -398,7 +398,8 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
     Object.freeze({
       kind: "resource",
       title: "Heroes99 by AU_pixel",
-      description: "Creator of WAYVM’s customizable hero art and animations, used under the Heroes99 license.",
+      description:
+        "Creator of WAYVM’s customizable hero art and animations, used under the Heroes99 license.",
       actionLabel: "Visit Heroes99",
       url: "https://au-pixel.itch.io/heroes99",
     }),

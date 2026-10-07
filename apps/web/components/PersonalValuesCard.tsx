@@ -39,9 +39,7 @@ function PersonalValueRow({
       <span className="bg-player-card-rank text-player-card-ink min-w-8 text-center text-xl tabular-nums xl:min-w-12 xl:text-3xl">
         {hasComparisons && `#${value.rank}`}
       </span>
-      <span
-        id={`hub-value-${value.definition.id}-presentation`}
-      >
+      <span id={`hub-value-${value.definition.id}-presentation`}>
         <ValueAnimalPresentation
           rank={value.rank}
           showRank={false}

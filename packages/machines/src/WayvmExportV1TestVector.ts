@@ -8,16 +8,20 @@ import {
 } from "./BattleProfileCommit"
 import { projectBattlePair } from "./BattleScheduler"
 import { createCustomValueAddCommit } from "./CustomValueCommands"
+import { serializePersistedJson } from "./PersistedJson"
 import {
   createInitialPlayerData,
   createPlayerData,
   type PlayerData,
 } from "./PlayerData"
-import { createPlayerSettings } from "./PlayerSettings"
 import { encodePlayerData } from "./PlayerDataCodec"
-import { serializePersistedJson } from "./PersistedJson"
+import { createPlayerSettings } from "./PlayerSettings"
 import { createSha256Hex } from "./Sha256"
-import { createWayvmExport, decodeWayvmExport, encodeWayvmExport } from "./WayvmExport"
+import {
+  createWayvmExport,
+  decodeWayvmExport,
+  encodeWayvmExport,
+} from "./WayvmExport"
 
 const CREATED_AT = "2026-08-01T10:00:00.000Z"
 const CUSTOM_VALUE_CREATED_AT = "2026-08-01T10:01:00.000Z"
@@ -132,7 +136,10 @@ export async function createWayvmExportV1TestVector() {
     playerData,
   })
 
-  const hashable = [...encodeWayvmExport(currentExport).slice(0, 10), encodePlayerData(playerData, 1)]
+  const hashable = [
+    ...encodeWayvmExport(currentExport).slice(0, 10),
+    encodePlayerData(playerData, 1),
+  ]
   const contentHash = await createSha256Hex(serializePersistedJson(hashable))
   const serialized = serializePersistedJson([...hashable, contentHash])
   return Object.freeze({

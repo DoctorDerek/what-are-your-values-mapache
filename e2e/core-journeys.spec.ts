@@ -11,14 +11,28 @@ const getChoiceValueName = async (choice: Locator) => {
   return valueName
 }
 
-test("a player previews every appearance category and retains only saved choices", async ({ page }) => {
+test("a player previews every appearance category and retains only saved choices", async ({
+  page,
+}) => {
   await page.goto("/")
   await page.getByRole("button", { name: "Start", exact: true }).click()
-  await page.getByRole("button", { name: "Customize my card", exact: true }).click()
-  await expect(page.getByRole("heading", { name: "Dressing Room", exact: true })).toBeVisible()
-  await expect(page.getByRole("img", { name: "Your Heroes99 character" }).locator("canvas")).toBeVisible()
-  const heroCanvas = page.getByRole("img", { name: "Your Heroes99 character" }).locator("canvas")
-  const initialAppearance = await heroCanvas.evaluate((canvas: HTMLCanvasElement) => canvas.toDataURL())
+  await page
+    .getByRole("button", { name: "Customize my card", exact: true })
+    .click()
+  await expect(
+    page.getByRole("heading", { name: "Dressing Room", exact: true }),
+  ).toBeVisible()
+  await expect(
+    page
+      .getByRole("img", { name: "Your Heroes99 character" })
+      .locator("canvas"),
+  ).toBeVisible()
+  const heroCanvas = page
+    .getByRole("img", { name: "Your Heroes99 character" })
+    .locator("canvas")
+  const initialAppearance = await heroCanvas.evaluate(
+    (canvas: HTMLCanvasElement) => canvas.toDataURL(),
+  )
   await page.getByRole("button", { name: "Skin 6", exact: true }).click()
   await page.getByRole("button", { name: "Face", exact: true }).click()
   await page.getByRole("button", { name: "Face 7", exact: true }).click()
@@ -31,18 +45,34 @@ test("a player previews every appearance category and retains only saved choices
   await page.getByRole("button", { name: "Weapon", exact: true }).click()
   await page.getByRole("button", { name: "Dagger", exact: true }).click()
   await page.getByRole("button", { name: "Palette 4", exact: true }).click()
-  await expect.poll(() => heroCanvas.evaluate((canvas: HTMLCanvasElement) => canvas.toDataURL())).not.toBe(initialAppearance)
+  await expect
+    .poll(() =>
+      heroCanvas.evaluate((canvas: HTMLCanvasElement) => canvas.toDataURL()),
+    )
+    .not.toBe(initialAppearance)
   await page.getByRole("button", { name: "Back", exact: true }).click()
   await page.getByRole("button", { name: "Keep editing", exact: true }).click()
-  await page.getByRole("button", { name: "Save appearance", exact: true }).click()
-  await expect(page.getByRole("heading", { name: "My Values", exact: true })).toBeVisible()
+  await page
+    .getByRole("button", { name: "Save appearance", exact: true })
+    .click()
+  await expect(
+    page.getByRole("heading", { name: "My Values", exact: true }),
+  ).toBeVisible()
   await page.reload()
-  await page.getByRole("button", { name: "Customize my card", exact: true }).click()
-  await expect(page.getByRole("button", { name: "Skin 6", exact: true })).toHaveAttribute("aria-pressed", "true")
+  await page
+    .getByRole("button", { name: "Customize my card", exact: true })
+    .click()
+  await expect(
+    page.getByRole("button", { name: "Skin 6", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true")
   await page.getByRole("button", { name: "Randomize", exact: true }).click()
   await page.getByRole("button", { name: "Cancel", exact: true }).click()
-  await page.getByRole("button", { name: "Customize my card", exact: true }).click()
-  await expect(page.getByRole("button", { name: "Skin 6", exact: true })).toHaveAttribute("aria-pressed", "true")
+  await page
+    .getByRole("button", { name: "Customize my card", exact: true })
+    .click()
+  await expect(
+    page.getByRole("button", { name: "Skin 6", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true")
 })
 
 test("a new player starts immediately and reviews the complete ranking", async ({
@@ -180,7 +210,10 @@ test("a secondary tab stays read-only then inherits released writer ownership", 
 
   await secondaryPage.getByRole("button", { name: "Load Latest" }).click()
   await expect(
-    secondaryPage.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
+    secondaryPage.getByRole("heading", {
+      level: 1,
+      name: /^My (?:Top Five )?Values$/,
+    }),
   ).toBeVisible()
   const inheritedWinningValue = secondaryPage
     .getByRole("listitem")

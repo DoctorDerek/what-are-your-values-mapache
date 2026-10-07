@@ -53,10 +53,18 @@ async function createCheckpoint() {
 describe("Battle Profile Checkpoint", () => {
   it("retains a released checkpoint checksum while adding the default appearance", async () => {
     const current = await createCheckpoint()
-    const encoded = parsePersistedJson(serializeBattleProfileCheckpoint(current))
+    const encoded = parsePersistedJson(
+      serializeBattleProfileCheckpoint(current),
+    )
     if (!Array.isArray(encoded)) throw new Error("Expected checkpoint tuple")
-    const hashable = [...encoded.slice(0, 8), encodePlayerData(current.playerData, 1)]
-    const legacy = serializePersistedJson([...hashable, await createSha256Hex(serializePersistedJson(hashable))])
+    const hashable = [
+      ...encoded.slice(0, 8),
+      encodePlayerData(current.playerData, 1),
+    ]
+    const legacy = serializePersistedJson([
+      ...hashable,
+      await createSha256Hex(serializePersistedJson(hashable)),
+    ])
     const migrated = await decodeBattleProfileCheckpoint(legacy)
     expect(migrated.playerData).toEqual(current.playerData)
     expect(migrated.playerDataCodecVersion).toBe(1)
