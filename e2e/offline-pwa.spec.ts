@@ -40,6 +40,7 @@ test("the web runtime follows its deployment offline policy", async ({
 }, testInfo) => {
   if (browserName === "chromium")
     await page.route("**/*", (route) => route.continue())
+  await page.emulateMedia({ reducedMotion: "reduce" })
   await page.goto("/")
   await expect(
     page.getByRole("heading", { name: "What Are Your Values, Mapache?" }),

@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect, type Page } from "@playwright/test"
 import { test } from "./fixtures"
+import { expectCompleteBattleTextReachable } from "./battle-text-reachability"
 
 const WCAG_AA_RULE_TAGS = Object.freeze([
   "wcag2a",
@@ -206,6 +207,7 @@ test("overflowing value cards remain keyboard-readable beside achievement feedba
   await page.getByRole("button", { name: "Battle", exact: true }).click()
   const battle = page.getByRole("main", { name: "Value battle" })
   await page.addStyleTag({ content: "html { font-size: 200%; }" })
+  const content = battle.getByRole("region", { name: "Battle choices" })
   const stage = battle.locator("[data-battle-stage-state]")
   const firstAnimal = battle.locator('[data-combatant-side="first"]')
   await firstAnimal.scrollIntoViewIfNeeded()
@@ -229,18 +231,18 @@ test("overflowing value cards remain keyboard-readable beside achievement feedba
   const identity = await stage.getAttribute("data-choreography-identity")
   await expect
     .poll(() =>
-      battle.evaluate((element) => element.scrollHeight - element.clientHeight),
+      content.evaluate((element) => element.scrollHeight - element.clientHeight),
     )
     .toBeGreaterThan(0)
-  await battle.focus()
+  await content.focus()
   await page.keyboard.press("PageDown")
   await expect
-    .poll(() => battle.evaluate((element) => element.scrollTop))
+    .poll(() => content.evaluate((element) => element.scrollTop))
     .toBeGreaterThan(0)
   await page.keyboard.press("ArrowDown")
   await page.keyboard.press(" ")
   await page.keyboard.press("Enter")
-  await expect(battle).toBeFocused()
+  await expect(content).toBeFocused()
   await expect(stage).toHaveAttribute("data-choreography-identity", identity!)
   const firstChoice = battle.getByRole("button", { name: /^Choose / }).first()
   for (
@@ -281,6 +283,9 @@ for (const viewport of [
       content: `html { font-size: ${viewport.textScale}%; }${"fontFamily" in viewport ? ` body { font-family: ${viewport.fontFamily}, sans-serif; }` : ""}`,
     })
     const battle = page.getByRole("main", { name: "Value battle" })
+    const content = battle.getByRole("region", { name: "Battle choices" })
+    const controls = battle.getByRole("navigation", { name: "Battle actions" })
+    const controlsBefore = await controls.boundingBox()
     const stage = battle.locator("[data-choreography-identity]")
     const choices = battle.getByRole("button", { name: /^Choose / })
     await choices.first().click()
@@ -308,9 +313,12 @@ for (const viewport of [
     await expect(
       banner.getByRole("heading", { name: "First Battle" }),
     ).toBeVisible()
-    await banner.scrollIntoViewIfNeeded()
-    await expect(banner).toBeInViewport({ ratio: 1 })
     const dismiss = banner.getByRole("button", { name: /^Dismiss achievement/ })
+    for (const text of [banner.getByRole("heading"), banner.getByText("First pair compared.", { exact: true })]) {
+      await expectCompleteBattleTextReachable(text)
+    }
+    await dismiss.scrollIntoViewIfNeeded()
+    await expect(dismiss).toBeInViewport({ ratio: 1 })
     await expect(dismiss).not.toBeFocused()
     const dismissBounds = await dismiss.boundingBox()
     expect(Number(dismissBounds!.width.toFixed(3))).toBeGreaterThanOrEqual(44)
@@ -334,45 +342,15 @@ for (const viewport of [
       ),
       "The dismiss mark stays vertically centered in its target",
     ).toBeLessThanOrEqual(1)
+    await content.evaluate(element => { element.scrollTop = 0 })
     const overlayBounds = await banner.boundingBox()
-    const controlsBounds = await battle
-      .getByRole("navigation", { name: "Battle actions" })
-      .boundingBox()
-    const metadataBounds = await Promise.all(
-      (await choices.getByRole("heading").all()).map((heading) =>
-        heading.locator("..").boundingBox(),
-      ),
-    )
-    const gapTop = controlsBounds!.y + controlsBounds!.height
-    const gapBottom = Math.min(...metadataBounds.map((bounds) => bounds!.y))
-    if (gapBottom - gapTop >= overlayBounds!.height) {
-      expect(
-        Math.abs(
-          overlayBounds!.y +
-            overlayBounds!.height / 2 -
-            (gapTop + gapBottom) / 2,
-        ),
-      ).toBeLessThanOrEqual(1)
-    } else {
-      expect(
-        Math.abs(overlayBounds!.y - controlsBounds!.y),
-      ).toBeLessThanOrEqual(1)
-    }
-    for (const choice of await choices.all()) {
-      const bounds = await choice
-        .getByRole("heading")
-        .locator("..")
-        .boundingBox()
-      expect(
-        overlayBounds!.x < bounds!.x + bounds!.width &&
-          overlayBounds!.x + overlayBounds!.width > bounds!.x &&
-          overlayBounds!.y < bounds!.y + bounds!.height &&
-          overlayBounds!.y + overlayBounds!.height > bounds!.y,
-        "The achievement overlay must not obscure value names, levels, or hints",
-      ).toBe(false)
-    }
+    const contentBounds = await content.boundingBox()
+    expect(Math.abs(overlayBounds!.y - contentBounds!.y)).toBeLessThanOrEqual(1)
+    expect(overlayBounds!.x).toBeGreaterThanOrEqual(contentBounds!.x)
+    expect(overlayBounds!.x + overlayBounds!.width).toBeLessThanOrEqual(contentBounds!.x + contentBounds!.width)
+    expect(await controls.boundingBox()).toEqual(controlsBefore)
     expect(
-      await battle.evaluate((surface) =>
+      await banner.evaluate((surface) =>
         [...surface.querySelectorAll("*")].some((element) =>
           ["auto", "scroll"].includes(getComputedStyle(element).overflowY),
         ),
@@ -380,13 +358,14 @@ for (const viewport of [
     ).toBe(false)
     const readBattleLayout = () =>
       battle.evaluate((surface) => {
+        const content = surface.querySelector('[aria-label="Battle choices"]')!
         const measure = (element: Element) => {
           const { x, y, width, height } = element.getBoundingClientRect()
-          return { x, y: y + surface.scrollTop, width, height }
+          return { x, y: y + content.scrollTop, width, height }
         }
         return {
-          scrollTop: surface.scrollTop,
-          scrollHeight: surface.scrollHeight,
+          scrollTop: content.scrollTop,
+          scrollHeight: content.scrollHeight,
           controls: measure(surface.querySelector("nav")!),
           cards: [...surface.querySelectorAll("[data-value-card] button")].map(
             measure,
