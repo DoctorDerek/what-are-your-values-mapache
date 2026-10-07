@@ -50,6 +50,8 @@ apps/mobile/.expo/
 # Generated licensed or typography-only SeethingSwarm presentation bindings
 apps/web/generated/seethingswarm/
 apps/mobile/generated/seethingswarm/
+apps/web/generated/heroes99/
+apps/mobile/generated/heroes99/
 
 # Other Next.js
 node_modules

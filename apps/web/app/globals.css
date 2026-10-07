@@ -55,6 +55,13 @@
 }
 
 @theme inline {
+  --animate-heroes99-idle: heroes99-idle var(--hero-idle-duration)
+    steps(var(--hero-frame-count), end) infinite;
+  @keyframes heroes99-idle {
+    to {
+      transform: translateX(-100%);
+    }
+  }
   --animate-seething-swarm-strip: advance-seething-swarm-strip
     var(--animal-animation-duration)
     steps(

@@ -14,9 +14,10 @@ import {
   ZipWriter,
 } from "@zip.js/zip.js/index-native.js"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { extractSeethingSwarmArchive } from "./SeethingSwarmArchiveExtractor"
+import { extractGhostAssetArchive } from "./GhostAssetArchiveExtractor"
 import {
   getSeethingSwarmAssetCustodyPaths,
+  SEETHING_SWARM_ARCHIVE_CONTRACT,
   SEETHING_SWARM_ARCHIVE_LIMITS,
   SEETHING_SWARM_REQUIRED_ARCHIVE_ENTRY_NAMES,
 } from "./SeethingSwarmAssetCustody"
@@ -115,7 +116,8 @@ describe("SeethingSwarm archive extraction", () => {
       },
     ])
 
-    await extractSeethingSwarmArchive({
+    await extractGhostAssetArchive({
+      contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
       archivePath: paths.archivePath,
       assetKey: TEST_ASSET_KEY,
       custodyDirectory: paths.custodyDirectory,
@@ -151,7 +153,8 @@ describe("SeethingSwarm archive extraction", () => {
     await writeTestArchive(paths.archivePath, getRequiredTestArchiveEntries())
 
     await expect(
-      extractSeethingSwarmArchive({
+      extractGhostAssetArchive({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath: paths.archivePath,
         assetKey: "incorrect-key",
         custodyDirectory: paths.custodyDirectory,
@@ -172,7 +175,8 @@ describe("SeethingSwarm archive extraction", () => {
     )
 
     await expect(
-      extractSeethingSwarmArchive({
+      extractGhostAssetArchive({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath: paths.archivePath,
         assetKey: TEST_ASSET_KEY,
         custodyDirectory: paths.custodyDirectory,
@@ -217,7 +221,8 @@ describe("SeethingSwarm archive extraction", () => {
     for (const invalidArchive of invalidArchives) {
       await writeTestArchive(paths.archivePath, invalidArchive.entries)
       await expect(
-        extractSeethingSwarmArchive({
+        extractGhostAssetArchive({
+          contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
           archivePath: paths.archivePath,
           assetKey: TEST_ASSET_KEY,
           custodyDirectory: paths.custodyDirectory,
@@ -240,7 +245,8 @@ describe("SeethingSwarm archive extraction", () => {
       await writeTestArchive(paths.archivePath, entries)
 
       await expect(
-        extractSeethingSwarmArchive({
+        extractGhostAssetArchive({
+          contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
           archivePath: paths.archivePath,
           assetKey: TEST_ASSET_KEY,
           custodyDirectory: paths.custodyDirectory,
@@ -266,7 +272,8 @@ describe("SeethingSwarm archive extraction", () => {
     ])
 
     await expect(
-      extractSeethingSwarmArchive({
+      extractGhostAssetArchive({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath: paths.archivePath,
         assetKey: TEST_ASSET_KEY,
         custodyDirectory: paths.custodyDirectory,
@@ -300,7 +307,8 @@ describe("SeethingSwarm archive extraction", () => {
       ])
 
       await expect(
-        extractSeethingSwarmArchive({
+        extractGhostAssetArchive({
+          contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
           archivePath: paths.archivePath,
           assetKey: TEST_ASSET_KEY,
           custodyDirectory: paths.custodyDirectory,

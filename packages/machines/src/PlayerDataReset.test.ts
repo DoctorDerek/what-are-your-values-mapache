@@ -337,12 +337,17 @@ describe("Player Data Reset", () => {
       deckRevisionDelta,
       achievementDelta,
     ) => {
-      const playerData = createPlayedCustomPlayerData()
+      const played = createPlayedCustomPlayerData()
+      const playerData = createPlayerData({
+        ...played,
+        appearance: { ...played.appearance, skinPalette: 6, weaponStyle: null },
+      })
       const candidate = createScopedPlayerDataResetCandidate({
         playerData,
         resetAt: RESET_AT,
         resetKind,
       })
+      expect(candidate.appearance).toEqual(playerData.appearance)
 
       expect(candidate.profile.scheduler.progressGeneration).toBe(
         playerData.profile.scheduler.progressGeneration +

@@ -11,6 +11,7 @@ export function projectRootBackDisposition(
 ): RootBackDisposition {
   if (snapshot.matches("Hub")) return { kind: "root" }
   const candidates = [
+    { type: "AVATAR.BACK_REQUESTED" },
     { type: "RECOVERY.IMPORT_CANCEL_REQUESTED" },
     { type: "RECOVERY.DELETE_ALL_CANCEL_REQUESTED" },
     { type: "DATA_MANAGEMENT.IMPORT_CANCEL_REQUESTED" },

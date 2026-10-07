@@ -1,18 +1,21 @@
+import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
+import { DRESSING_ROOM_COPY } from "@game/data/src/Heroes99DressingRoom"
 import { projectHubValues } from "@game/data/src/HubValueProjection"
+import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
 import { presentationLoadingCopy } from "@game/data/src/PresentationLoadingCopy"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
-import { resolveValueAnimalPresentation } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { cx } from "classix"
-import { Fragment } from "react"
-import { FlatList, View } from "react-native"
+import { ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
+import NativeHeroes99Hero from "@/components/NativeHeroes99Hero"
 import NativeHubValueRow from "@/components/NativeHubValueRow"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 
 export default function NativeHub({
+  appearance,
   isBattlePending = false,
   rankedValues,
   runtimeClipCatalog,
@@ -20,11 +23,11 @@ export default function NativeHub({
   shouldReduceMotion,
   onAddCustomValue,
   onBrowseAllValues,
-  onOpenAchievements,
-  onOpenDataManagement,
   onOpenMenu,
   onStartBattle,
+  onCustomize,
 }: {
+  appearance: Heroes99Appearance
   isBattlePending?: boolean
   rankedValues: readonly RankedValue[]
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
@@ -32,139 +35,114 @@ export default function NativeHub({
   shouldReduceMotion: boolean
   onAddCustomValue: () => void
   onBrowseAllValues: () => void
-  onOpenAchievements: () => void
-  onOpenDataManagement: () => void
   onOpenMenu: () => void
   onStartBattle: () => void
+  onCustomize: () => void
 }) {
-  const { hasComparisons, visibleValues } = projectHubValues(rankedValues)
-
-  const hubActionRail = (
-    <View className="my-5 gap-3">
-      <Button
-        size="large"
-        onPress={onStartBattle}
-        accessibilityState={{ busy: isBattlePending }}
-        accessibilityLabel={
-          isBattlePending
-            ? presentationLoadingCopy.cancelBattlePreparation
-            : "Battle"
-        }
-      >
-        <View className={cx(isBattlePending && "opacity-0")}>
-          <Text>Battle</Text>
-        </View>
-        {isBattlePending ? (
-          <View
-            pointerEvents="none"
-            className="absolute inset-0 items-center justify-center"
-          >
-            <Text className="text-center text-lg font-black text-black uppercase">
-              {presentationLoadingCopy.preparing}
-            </Text>
-          </View>
-        ) : null}
-      </Button>
-      <Button variant="secondary" onPress={onBrowseAllValues}>
-        <Text>Browse All Values</Text>
-      </Button>
-      <Button variant="outline" onPress={onAddCustomValue}>
-        <Text>Add Custom Value</Text>
-      </Button>
-      <Button variant="achievement" onPress={onOpenAchievements}>
-        <Text>Achievements</Text>
-      </Button>
-      <Button variant="outline" onPress={onOpenDataManagement}>
-        <Text>Import &amp; Export</Text>
-      </Button>
-    </View>
-  )
-
+  const { hasComparisons, topFive } = projectHubValues(rankedValues)
   return (
     <MapacheScreen>
-      <View className="flex-row items-center gap-4 border-b-4 border-black p-4">
-        <Text
-          variant="h1"
-          className="text-mapache-vivid-primary-cyan min-w-0 flex-1 text-left text-4xl font-black tracking-tight uppercase xl:text-5xl"
-        >
-          Your Values
-        </Text>
-        <Button size="compact" variant="secondary" onPress={onOpenMenu}>
-          <Text>{PRODUCT_MENU_COPY.openAction}</Text>
-        </Button>
-      </View>
-      <FlatList
-        data={visibleValues}
-        keyExtractor={({ definition }) => definition.id}
-        contentContainerClassName="p-5 pb-10"
-        ListHeaderComponent={
-          <View>
-            <View className="border-4 border-black bg-white p-4 shadow-[7px_7px_0px_0px_#000000]">
-              <Text
-                accessibilityLiveRegion="polite"
-                className="text-xl font-black text-black uppercase"
-              >
-                {hasComparisons
-                  ? "Your ranking is based on your committed battles."
-                  : "Not ranked yet."}
-              </Text>
-              {!hasComparisons ? (
-                <Text className="mt-2 text-base font-medium text-black">
-                  Browse the included values, then battle when you are ready.
-                </Text>
-              ) : null}
-              {dataNotice ? (
-                <Text
-                  accessibilityLiveRegion="polite"
-                  className="bg-mapache-vivid-secondary-green mt-4 border-4 border-black p-3 text-base font-black text-black"
-                >
-                  {dataNotice}
-                </Text>
-              ) : null}
-            </View>
-            {hasComparisons ? (
-              <Text
-                variant="h2"
-                className="mt-7 border-b-4 border-black bg-white p-3 text-3xl font-black tracking-tight text-black uppercase"
-              >
-                Top Five
-              </Text>
-            ) : (
-              hubActionRail
-            )}
+      <ScrollView contentContainerClassName="items-center gap-5 p-3 pb-10 xl:p-6">
+        <View className="w-full max-w-7xl items-end">
+          <Button size="compact" variant="secondary" onPress={onOpenMenu}>
+            <Text>{PRODUCT_MENU_COPY.openAction}</Text>
+          </Button>
+        </View>
+        {dataNotice && (
+          <Text
+            accessibilityLiveRegion="polite"
+            className="bg-mapache-vivid-secondary-green w-full max-w-7xl border-4 border-black p-4 font-bold text-white"
+          >
+            {dataNotice}
+          </Text>
+        )}
+        <View className="border-player-card-frame bg-player-card-background w-full max-w-7xl flex-row flex-wrap overflow-hidden border-4">
+          <Text
+            accessibilityRole="header"
+            className="text-player-card-ink w-2/3 self-center px-3 py-5 text-3xl font-black xl:w-full xl:text-center xl:text-5xl"
+          >
+            {hasComparisons
+              ? PERSONAL_HUB_COPY.rankedTitle
+              : PERSONAL_HUB_COPY.unrankedTitle}
+          </Text>
+          <View className="xl:bg-player-card-values w-1/3 items-center justify-center py-3">
+            <NativeHeroes99Hero
+              appearance={appearance}
+              shouldReduceMotion={shouldReduceMotion}
+              sizeClassName="h-28 w-20 xl:h-96 xl:w-64"
+            />
           </View>
-        }
-        renderItem={({ item, index }) => {
-          const isTopFive = hasComparisons && index < 5
-          return (
-            <Fragment>
+          <View className="bg-player-card-values w-full xl:w-2/3">
+            {topFive.map((value) => (
               <NativeHubValueRow
-                rankedValue={item}
+                key={value.definition.id}
+                rankedValue={value}
                 showRank={hasComparisons}
-                isTopFive={isTopFive}
-                valuePresentation={
-                  isTopFive
-                    ? resolveValueAnimalPresentation(
-                        item.definition,
-                        runtimeClipCatalog,
-                      )
-                    : undefined
-                }
                 shouldReduceMotion={shouldReduceMotion}
                 runtimeClipCatalog={runtimeClipCatalog}
               />
-              {hasComparisons && index === 4 ? (
-                <View>
-                  {hubActionRail}
-                  <Text className="bg-mapache-vivid-primary-cyan mb-5 border-y-8 border-black px-4 py-3 text-center text-2xl font-black text-black uppercase">
-                    All Other Values
-                  </Text>
+            ))}
+          </View>
+          {!hasComparisons && (
+            <Text className="bg-player-card-values text-player-card-muted w-full p-3 text-sm">
+              {PERSONAL_HUB_COPY.unrankedNotice}
+            </Text>
+          )}
+        </View>
+        <View className="w-full max-w-7xl gap-4">
+          <View className="flex-row gap-4">
+            <Button
+              className="min-w-0 flex-1"
+              size="compact"
+              onPress={onStartBattle}
+              accessibilityState={{ busy: isBattlePending }}
+              accessibilityLabel={
+                isBattlePending
+                  ? presentationLoadingCopy.cancelBattlePreparation
+                  : PERSONAL_HUB_COPY.battle
+              }
+            >
+              <View className={cx(isBattlePending && "opacity-0")}>
+                <Text>{PERSONAL_HUB_COPY.battle}</Text>
+              </View>
+              {isBattlePending && (
+                <View
+                  pointerEvents="none"
+                  className="absolute inset-0 items-center justify-center"
+                >
+                  <Text>{presentationLoadingCopy.preparing}</Text>
                 </View>
-              ) : null}
-            </Fragment>
-          )
-        }}
-      />
+              )}
+            </Button>
+            <Button
+              className="min-w-0 flex-1"
+              variant="secondary"
+              size="compact"
+              onPress={onCustomize}
+            >
+              <Text>{DRESSING_ROOM_COPY.customize}</Text>
+            </Button>
+          </View>
+          <View className="flex-row gap-4">
+            <Button
+              className="min-w-0 flex-1"
+              variant="outline"
+              size="compact"
+              onPress={onBrowseAllValues}
+            >
+              <Text>{PERSONAL_HUB_COPY.browse}</Text>
+            </Button>
+            <Button
+              className="min-w-0 flex-1"
+              variant="outline"
+              size="compact"
+              onPress={onAddCustomValue}
+            >
+              <Text>{PERSONAL_HUB_COPY.add}</Text>
+            </Button>
+          </View>
+        </View>
+      </ScrollView>
     </MapacheScreen>
   )
 }

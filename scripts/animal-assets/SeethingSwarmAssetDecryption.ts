@@ -1,8 +1,9 @@
 import { access } from "node:fs/promises"
-import { extractSeethingSwarmArchive } from "./SeethingSwarmArchiveExtractor"
+import { extractGhostAssetArchive } from "./GhostAssetArchiveExtractor"
 import {
   getSeethingSwarmAssetCustodyPaths,
   getSeethingSwarmAssetKey,
+  SEETHING_SWARM_ARCHIVE_CONTRACT,
   SEETHING_SWARM_ARCHIVE_FILE_NAME,
   SEETHING_SWARM_ASSET_KEY_ENVIRONMENT_VARIABLE_NAME,
   type SeethingSwarmAssetEnvironment,
@@ -44,7 +45,8 @@ export async function runSeethingSwarmAssetDecryption({
     )
 
   try {
-    await extractSeethingSwarmArchive({
+    await extractGhostAssetArchive({
+      contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
       archivePath: paths.archivePath,
       assetKey,
       custodyDirectory: paths.custodyDirectory,

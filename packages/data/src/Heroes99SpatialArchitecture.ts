@@ -27,7 +27,7 @@ export type Heroes99SpatialArchitecture = {
   compound_state_machine: CompoundStateMachine
 }
 
-export const HEROES99_SPATIAL_ARCHITECTURE: Heroes99SpatialArchitecture = {
+export const HEROES99_SPATIAL_ARCHITECTURE = {
   grid_metrics: {
     frame_width_px: 100,
     frame_height_px: 40,
@@ -171,4 +171,11 @@ export const HEROES99_SPATIAL_ARCHITECTURE: Heroes99SpatialArchitecture = {
       cols: [1, 8],
     },
   },
-}
+} satisfies Heroes99SpatialArchitecture
+
+export const HEROES99_IDLE_FRAME_COUNT =
+  HEROES99_SPATIAL_ARCHITECTURE.compound_state_machine.Idle1.cols[1] -
+  HEROES99_SPATIAL_ARCHITECTURE.compound_state_machine.Idle1.cols[0] +
+  1
+
+export const HEROES99_REPRESENTATIVE_FRAME = 1

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { parsePersistedJson, serializePersistedJson } from "./PersistedJson"
-import { createInitialPlayerData } from "./PlayerData"
+import { createInitialPlayerData, createPlayerData } from "./PlayerData"
 import { createSha256Hex } from "./Sha256"
 import {
   createWayvmExport,
@@ -38,6 +38,32 @@ describe("WAYVM Export", () => {
     expect(wayvmExport.activeDeckFingerprint).toBe(
       wayvmExport.playerData.profile.activeDeck.fingerprint,
     )
+  })
+
+  it("round-trips a customized appearance alongside every existing player field", async () => {
+    const original = (await createExportFixture()).playerData
+    const playerData = createPlayerData({
+      ...original,
+      appearance: {
+        ...original.appearance,
+        skinPalette: 6,
+        facePalette: 7,
+        hairStyle: "f9",
+        hairPalette: 10,
+        clothingStyle: 17,
+        clothingPalette: 8,
+        weaponStyle: "dagger",
+        weaponPalette: 4,
+      },
+    })
+    const exported = await createWayvmExport({
+      exportedAt: EXPORTED_AT,
+      sourceAppVersion: "0.1.0",
+      sourceBuild: "appearance-roundtrip",
+      playerData,
+    })
+    const imported = await decodeWayvmExport(serializeWayvmExport(exported))
+    expect(imported.playerData).toEqual(playerData)
   })
 
   it("freezes representative schema-one bytes and every portable semantic field", async () => {

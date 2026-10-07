@@ -45,6 +45,7 @@ import NativeCrucible from "@/components/NativeCrucible"
 import NativeDataManagement, {
   type NativeDataManagementActivity,
 } from "@/components/NativeDataManagement"
+import NativeDressingRoom from "@/components/NativeDressingRoom"
 import NativeHub from "@/components/NativeHub"
 import { ReopenedNativeInformationPanel } from "@/components/NativeInformationPanel"
 import NativeInformationPanelContent from "@/components/NativeInformationPanelContent"
@@ -568,10 +569,23 @@ function NativeGameClientContent() {
   const isProductOverlayOpen =
     isProductMenuOpen || activeInformationPanelId !== null || isControlsOpen
 
+  if (state.matches("DressingRoom")) {
+    const avatar = state.children.avatar
+    if (!avatar) throw new Error("Expected the appearance editor actor")
+    return (
+      <NativeDressingRoom
+        actor={avatar}
+        shouldReduceMotion={shouldReduceMotion}
+      />
+    )
+  }
+
   if (isHubSurface)
     return (
       <View className="flex-1">
         <NativeHub
+          appearance={playerData.appearance}
+          onCustomize={() => send({ type: "AVATAR.OPEN_REQUESTED" })}
           rankedValues={rankedValues}
           runtimeClipCatalog={SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG}
           dataNotice={state.context.portabilityNotice}
@@ -580,12 +594,6 @@ function NativeGameClientContent() {
             openAllValues({ openCustomValueBuilder: true })
           }
           onBrowseAllValues={() => openAllValues({})}
-          onOpenAchievements={() =>
-            send({ type: "ACHIEVEMENTS.OPEN_REQUESTED" })
-          }
-          onOpenDataManagement={() =>
-            send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
-          }
           onOpenMenu={() => setIsProductMenuOpen(true)}
           isBattlePending={isBattleRequested}
           onStartBattle={handleStartBattle}

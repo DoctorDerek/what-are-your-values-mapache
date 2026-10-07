@@ -1,9 +1,10 @@
 import { resolve } from "node:path"
 import { fileURLToPath } from "node:url"
-import { createSeethingSwarmArchive } from "./SeethingSwarmArchiveCreator"
+import { createGhostAssetArchive } from "./GhostAssetArchiveCreator"
 import {
   getSeethingSwarmAssetCustodyPaths,
   getSeethingSwarmAssetKey,
+  SEETHING_SWARM_ARCHIVE_CONTRACT,
   SEETHING_SWARM_ARCHIVE_FILE_NAME,
   SEETHING_SWARM_ASSET_KEY_ENVIRONMENT_VARIABLE_NAME,
   type SeethingSwarmAssetEnvironment,
@@ -27,7 +28,8 @@ export async function runSeethingSwarmArchiveCreatorCli({
     )
 
   const paths = getSeethingSwarmAssetCustodyPaths(repositoryRoot)
-  const result = await createSeethingSwarmArchive({
+  const result = await createGhostAssetArchive({
+    contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
     archivePath: paths.archivePath,
     assetKey,
     custodyDirectory: paths.custodyDirectory,

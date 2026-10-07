@@ -7,6 +7,7 @@ import {
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
+import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import { useState, type CSSProperties } from "react"
 import { useSeethingSwarmAssetStatus } from "@/components/SeethingSwarmAssetPreparation"
@@ -20,6 +21,7 @@ export default function ValueAnimalPresentation({
   valuePresentation,
   shouldReduceMotion,
   showAnimal = true,
+  surface = "tile",
 }: {
   rank: number
   showRank: boolean
@@ -28,6 +30,7 @@ export default function ValueAnimalPresentation({
   valuePresentation: ValueAnimalPresentationData<StaticImageData> | undefined
   shouldReduceMotion: boolean
   showAnimal?: boolean
+  surface?: "tile" | "card"
 }) {
   const imagePath =
     valuePresentation?.kind === "animal"
@@ -72,7 +75,10 @@ export default function ValueAnimalPresentation({
       <span
         aria-hidden="true"
         data-value-presentation={valuePresentation.kind}
-        className="relative flex flex-none flex-col items-center bg-white shadow-[inset_0_0_0_4px_#000000]"
+        className={cx(
+          "relative flex flex-none flex-col items-center",
+          surface === "tile" && "bg-white shadow-[inset_0_0_0_4px_#000000]",
+        )}
       >
         {showRank ? (
           <span className="bg-mapache-vivid-secondary-purple self-start border-r-4 border-b-4 border-black px-1.5 py-1 text-sm leading-none font-black text-white uppercase">
@@ -80,7 +86,10 @@ export default function ValueAnimalPresentation({
           </span>
         ) : null}
         <span
-          className="m-1 flex h-(--portrait-height) w-(--portrait-width) items-center justify-center"
+          className={cx(
+            "flex h-(--portrait-height) w-(--portrait-width) items-center justify-center",
+            surface === "tile" && "m-1",
+          )}
           style={portraitStyle}
         >
           {valuePresentation.kind === "animal" &&

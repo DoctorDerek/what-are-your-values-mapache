@@ -341,7 +341,7 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
       kind: "section",
       heading: "Private. Offline. Account-free.",
       paragraphs: Object.freeze([
-        "This app uses storage on your device to save your progress, Custom Values, achievements, language, and settings and to work offline. It does not use this storage for analytics, advertising, or tracking.",
+        "This app uses storage on your device to save your progress, Custom Values, achievements, avatar appearance, language, and settings and to work offline. It does not use this storage for analytics, advertising, or tracking.",
         "WAYVM has no account, cloud sync, global leaderboard, advertising, or analytics about your game choices. The app does not send your comparisons, canonical or Custom Values, definitions, ranking, Top Five, achievements, or settings to us.",
         "The production website uses cookieless Vercel Web Analytics for aggregate page views, referral sources, approximate location, and browser and device information. Reported page URLs exclude query strings and fragments. No game state is included, and native apps do not load this analytics service.",
         "WAYVM does not set tracking or advertising cookies.",
@@ -394,6 +394,14 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
       description: "Creator of WAYVM’s animal pixel art and animations.",
       actionLabel: "Visit SeethingSwarm",
       url: "https://seethingswarm.itch.io/",
+    }),
+    Object.freeze({
+      kind: "resource",
+      title: "Heroes99 by AU_pixel",
+      description:
+        "Creator of WAYVM’s customizable hero art and animations, used under the Heroes99 license.",
+      actionLabel: "Visit Heroes99",
+      url: "https://au-pixel.itch.io/heroes99",
     }),
     Object.freeze({
       kind: "section",

@@ -41,6 +41,7 @@ import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPre
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { useMachine } from "@xstate/react"
 import { useReducedMotion } from "motion/react"
+import dynamic from "next/dynamic"
 import type { StaticImageData } from "next/image"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Controls from "@/components/Controls"
@@ -79,6 +80,7 @@ const SOURCE_APP_VERSION = packageMetadata.version
 const SOURCE_BUILD =
   process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? "development"
 const WEB_REDUCED_MOTION_ATTRIBUTE = "data-wayvm-reduced-motion"
+const DressingRoom = dynamic(() => import("@/components/DressingRoom"))
 
 function ReadOnlyGameClient({
   durableStore,
@@ -768,10 +770,24 @@ function WritableGameClient({
         )
       : null
 
+  if (state.matches("DressingRoom")) {
+    const avatar = state.children.avatar
+    if (!avatar) throw new Error("Expected the appearance editor actor")
+    return (
+      <DressingRoom actor={avatar} shouldReduceMotion={shouldReduceMotion} />
+    )
+  }
+
   if (isHubSurface) {
     return (
       <>
         <Hub
+          appearance={playerData.appearance}
+          onCustomize={() => {
+            shouldRestoreHubFocusRef.current = true
+            returnFocusTargetIdRef.current = "hub-customize-button"
+            send({ type: "AVATAR.OPEN_REQUESTED" })
+          }}
           customValueInvitation={
             state.context.playerData
               ? {

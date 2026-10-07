@@ -1,177 +1,26 @@
 "use client"
 
 import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
-import { projectHubValues } from "@game/data/src/HubValueProjection"
+import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
+import { DRESSING_ROOM_COPY } from "@game/data/src/Heroes99DressingRoom"
+import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
 import { presentationLoadingCopy } from "@game/data/src/PresentationLoadingCopy"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
-import {
-  resolveValueAnimalPresentation,
-  type ValueAnimalPresentation,
-} from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
-import {
-  getValueDisplayDefinition,
-  getValueDisplayName,
-} from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
-import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
-import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import { useCallback, useEffect, useRef, useState, type Ref } from "react"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
 import MapacheScreen from "@/components/MapacheScreen"
+import PersonalValuesCard from "@/components/PersonalValuesCard"
 import { Button } from "@/components/ui/button"
-import ValueAnimalPresentationTile from "@/components/ValueAnimalPresentation"
-import ValueLevelProgress from "@/components/ValueLevelProgress"
-import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
 
 export const HUB_MENU_BUTTON_ID = "hub-menu-button"
-
-function ValueRow({
-  rankedValue,
-  hasComparisons,
-  valuePresentation,
-  shouldReduceMotion,
-  showDivider,
-  catalog,
-}: {
-  rankedValue: RankedValue
-  hasComparisons: boolean
-  valuePresentation?: ValueAnimalPresentation<StaticImageData>
-  shouldReduceMotion: boolean
-  showDivider: boolean
-  catalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
-}) {
-  const { isAttended, attentionHandlers } = useAnimalAttentionInput()
-  const { definition, progress, rank } = rankedValue
-  const displayName = getValueDisplayName(definition)
-  const rowId = `hub-value-${definition.id}`
-  const { accessibleLabel } = getValueRankPresentation(rank)
-
-  return (
-    <li
-      id={rowId}
-      data-value-row="true"
-      className={cx(
-        "text-mapache-vivid-dark border-2 border-black",
-        hasComparisons && rank <= 5
-          ? "bg-mapache-vivid-primary-cyan/10"
-          : "bg-white",
-      )}
-    >
-      {showDivider ? (
-        <h3 className="bg-mapache-vivid-primary-cyan border-b-4 border-black p-3 text-center text-xl font-black uppercase">
-          All Other Values
-        </h3>
-      ) : null}
-      <div
-        id={`${rowId}-presentation`}
-        {...attentionHandlers}
-        className="hover:bg-mapache-vivid-primary-cyan/10 flex w-full min-w-0 items-center gap-2 p-2 text-left focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-black xl:gap-3"
-        aria-describedby={hasComparisons ? `${rowId}-rank` : undefined}
-      >
-        <ValueAnimalPresentationTile
-          rank={rank}
-          showRank={hasComparisons}
-          catalog={catalog}
-          isAttended={isAttended}
-          valuePresentation={valuePresentation}
-          shouldReduceMotion={shouldReduceMotion}
-        />
-        {hasComparisons ? (
-          <span id={`${rowId}-rank`} className="sr-only">
-            {accessibleLabel}
-          </span>
-        ) : null}
-        <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="flex flex-wrap items-center justify-between gap-2">
-            <span className="min-w-0 text-base font-black [overflow-wrap:anywhere] uppercase xl:text-lg">
-              {displayName}
-            </span>
-            <ValueLevelProgress totalXp={progress.totalXp} compact />
-          </span>
-          <span className="text-sm [overflow-wrap:anywhere]">
-            {getValueDisplayDefinition(definition)}
-          </span>
-        </span>
-      </div>
-    </li>
-  )
-}
-
-function ValueActionRail({
-  isNavigationBlocked,
-  isSaving,
-  isBattlePending,
-  browseAllValuesButtonRef,
-  onBrowseAllValues,
-  onAddCustomValue,
-  onStartBattle,
-}: {
-  isNavigationBlocked: boolean
-  isSaving: boolean
-  isBattlePending: boolean
-  browseAllValuesButtonRef?: Ref<HTMLButtonElement>
-  onBrowseAllValues: (focusTargetId: string) => void
-  onAddCustomValue: (focusTargetId: string) => void
-  onStartBattle: () => void
-}) {
-  return (
-    <nav
-      aria-label="Value actions"
-      className="mb-5 grid w-full grid-cols-1 gap-3 xl:grid-cols-3 [&_button]:min-w-0"
-    >
-      <Button
-        disabled={isNavigationBlocked}
-        onClick={onStartBattle}
-        aria-busy={isBattlePending}
-        aria-label={
-          isBattlePending
-            ? presentationLoadingCopy.cancelBattlePreparation
-            : undefined
-        }
-        variant="battle"
-        size="featured"
-        wrap
-        className="relative"
-      >
-        <span className={isBattlePending ? "invisible" : undefined}>
-          Battle
-        </span>
-        {isBattlePending && (
-          <span className="absolute inset-0 flex items-center justify-center text-lg">
-            {presentationLoadingCopy.preparing}
-          </span>
-        )}
-      </Button>
-      <Button
-        disabled={isNavigationBlocked}
-        ref={browseAllValuesButtonRef}
-        id="hub-browse-all-values-button"
-        variant="secondary"
-        size="tall"
-        wrap
-        onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
-      >
-        Browse All Values
-      </Button>
-      <Button
-        disabled={isSaving}
-        id="hub-add-custom-value-button"
-        variant="accent"
-        size="tall"
-        wrap
-        onClick={(event) => onAddCustomValue(event.currentTarget.id)}
-      >
-        Add Custom Value
-      </Button>
-    </nav>
-  )
-}
 
 export default function Hub({
   customValueInvitation,
   isBattlePending = false,
+  appearance,
   rankedValues,
   runtimeClipCatalog,
   browseAllValuesButtonRef,
@@ -181,6 +30,7 @@ export default function Hub({
   onAddCustomValue,
   onOpenMenu,
   onStartBattle,
+  onCustomize,
 }: {
   customValueInvitation?: {
     editorRequestId?: number
@@ -193,6 +43,7 @@ export default function Hub({
     onNavigationBlockedChange: (blocked: boolean) => void
   }
   isBattlePending?: boolean
+  appearance: Heroes99Appearance
   rankedValues: readonly RankedValue[]
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   browseAllValuesButtonRef?: Ref<HTMLButtonElement>
@@ -202,12 +53,12 @@ export default function Hub({
   onAddCustomValue: (focusTargetId: string) => void
   onOpenMenu: () => void
   onStartBattle: () => void
+  onCustomize: () => void
 }) {
-  const { hasComparisons, visibleValues } = projectHubValues(rankedValues)
   const [isDraftNavigationBlocked, setIsDraftNavigationBlocked] =
     useState(false)
   const isNavigationBlocked =
-    isDraftNavigationBlocked || customValueInvitation?.isSaving
+    isDraftNavigationBlocked || customValueInvitation?.isSaving === true
   const onNavigationBlockedChange =
     customValueInvitation?.onNavigationBlockedChange
   const handleDraftNavigationBlockedChange = useCallback(
@@ -229,37 +80,26 @@ export default function Hub({
     <MapacheScreen
       spacing="standard-xl"
       viewport="scrollable"
-      className="flex min-w-0 flex-col items-center [overflow-wrap:anywhere]"
+      className="flex min-w-0 flex-col items-center gap-5 [overflow-wrap:anywhere]"
     >
-      <div className="mb-3 flex w-full max-w-7xl flex-wrap items-center justify-between gap-3">
-        <h1
-          id="your-values-heading"
-          className="text-mapache-vivid-primary-cyan text-3xl font-black uppercase xl:text-4xl"
-        >
-          Your Values
-        </h1>
+      <header className="flex w-full max-w-7xl justify-end">
         <Button
           id={HUB_MENU_BUTTON_ID}
-          type="button"
           variant="secondary"
           onClick={onOpenMenu}
           disabled={isNavigationBlocked}
         >
           {PRODUCT_MENU_COPY.openAction}
         </Button>
-      </div>
-
-      <div className="w-full max-w-7xl">
-        <ValueActionRail
-          isNavigationBlocked={Boolean(isNavigationBlocked)}
-          isSaving={customValueInvitation?.isSaving === true}
-          isBattlePending={isBattlePending}
-          browseAllValuesButtonRef={browseAllValuesButtonRef}
-          onBrowseAllValues={onBrowseAllValues}
-          onAddCustomValue={onAddCustomValue}
-          onStartBattle={onStartBattle}
-        />
-      </div>
+      </header>
+      {dataNotice && (
+        <p
+          role="status"
+          className="bg-mapache-vivid-secondary-green w-full max-w-7xl border-4 border-black p-4 font-bold text-white"
+        >
+          {dataNotice}
+        </p>
+      )}
       {customValueInvitation && (
         <CustomValueInvitation
           key={customValueInvitation.deckRevision}
@@ -275,60 +115,76 @@ export default function Hub({
           onNavigationBlockedChange={handleDraftNavigationBlockedChange}
         />
       )}
-      <section
+      <PersonalValuesCard
+        appearance={appearance}
+        rankedValues={rankedValues}
+        catalog={runtimeClipCatalog}
+        shouldReduceMotion={shouldReduceMotion}
         inert={isNavigationBlocked}
-        aria-labelledby="your-values-heading"
-        className="flex min-h-0 w-full max-w-7xl min-w-0 flex-col border-4 border-black bg-white p-3 shadow-[6px_6px_0px_0px_#000000] inert:opacity-50 xl:p-4"
+      />
+      <nav
+        aria-label={PERSONAL_HUB_COPY.actions}
+        className="grid w-full max-w-7xl grid-cols-2 gap-4 [&_button]:min-w-0"
       >
-        <h2 className="text-mapache-vivid-dark text-xl font-black uppercase">
-          {hasComparisons ? "Your Values" : "Included Values"}
-        </h2>
-        <p role="status" className="text-mapache-vivid-dark pt-1 pb-3 text-sm">
-          {hasComparisons
-            ? "Your ranking is based on your committed battles."
-            : "Not ranked yet. Browse the included values, then battle when you are ready."}
-        </p>
-        {dataNotice ? (
-          <p
-            role="status"
-            className="bg-mapache-vivid-secondary-green text-mapache-vivid-dark mb-5 border-4 border-black p-4 text-xl font-black shadow-[6px_6px_0px_0px_#000000]"
-          >
-            {dataNotice}
-          </p>
-        ) : null}
-
-        <div
-          className="h-120 max-h-[55dvh] min-h-48 overflow-y-auto px-1 pb-2"
-          tabIndex={0}
-          role="region"
-          aria-label="Value roster"
+        <Button
+          disabled={isNavigationBlocked}
+          onClick={onStartBattle}
+          aria-busy={isBattlePending}
+          aria-label={
+            isBattlePending
+              ? presentationLoadingCopy.cancelBattlePreparation
+              : undefined
+          }
+          variant="battle"
+          size="sm"
+          typographyClassName="text-2xl xl:text-3xl"
+          wrap
+          className="relative"
         >
-          {hasComparisons ? (
-            <h3
-              id="top-five-heading"
-              className="text-mapache-vivid-dark py-3 text-2xl font-black uppercase"
-            >
-              Top Five
-            </h3>
-          ) : null}
-          <ol className="flex flex-col gap-3">
-            {visibleValues.map((rankedValue, index) => (
-              <ValueRow
-                key={rankedValue.definition.id}
-                catalog={runtimeClipCatalog}
-                rankedValue={rankedValue}
-                hasComparisons={hasComparisons}
-                valuePresentation={resolveValueAnimalPresentation(
-                  rankedValue.definition,
-                  runtimeClipCatalog,
-                )}
-                shouldReduceMotion={shouldReduceMotion}
-                showDivider={hasComparisons && index === 5}
-              />
-            ))}
-          </ol>
-        </div>
-      </section>
+          <span className={isBattlePending ? "invisible" : undefined}>
+            {PERSONAL_HUB_COPY.battle}
+          </span>
+          {isBattlePending && (
+            <span className="absolute inset-0 flex items-center justify-center text-lg">
+              {presentationLoadingCopy.preparing}
+            </span>
+          )}
+        </Button>
+        <Button
+          id="hub-customize-button"
+          variant="secondary"
+          size="sm"
+          typographyClassName="text-base xl:text-lg"
+          wrap
+          disabled={isNavigationBlocked}
+          onClick={onCustomize}
+        >
+          {DRESSING_ROOM_COPY.customize}
+        </Button>
+        <Button
+          disabled={isNavigationBlocked}
+          ref={browseAllValuesButtonRef}
+          id="hub-browse-all-values-button"
+          variant="outline"
+          size="sm"
+          typographyClassName="text-base xl:text-lg"
+          wrap
+          onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
+        >
+          {PERSONAL_HUB_COPY.browse}
+        </Button>
+        <Button
+          disabled={customValueInvitation?.isSaving}
+          id="hub-add-custom-value-button"
+          variant="outline"
+          size="sm"
+          typographyClassName="text-base xl:text-lg"
+          wrap
+          onClick={(event) => onAddCustomValue(event.currentTarget.id)}
+        >
+          {PERSONAL_HUB_COPY.add}
+        </Button>
+      </nav>
     </MapacheScreen>
   )
 }

@@ -16,18 +16,14 @@ import {
   Uint8ArrayWriter,
   ZipWriter,
 } from "@zip.js/zip.js/index-native.js"
-import { validateSeethingSwarmArchiveEntryName } from "./SeethingSwarmArchiveEntry"
-import { extractSeethingSwarmArchive } from "./SeethingSwarmArchiveExtractor"
-import {
-  SEETHING_SWARM_ARCHIVE_ENTRY_ROOT,
-  SEETHING_SWARM_ARCHIVE_LIMITS,
-  SEETHING_SWARM_REQUIRED_ARCHIVE_ENTRY_NAMES,
-} from "./SeethingSwarmAssetCustody"
+import type { GhostAssetArchiveContract } from "./GhostAssetArchiveContract"
+import { validateGhostAssetArchiveEntryName } from "./GhostAssetArchiveEntry"
+import { extractGhostAssetArchive } from "./GhostAssetArchiveExtractor"
 
-const MINIMUM_ASSET_KEY_LENGTH = 32
 const STABLE_ARCHIVE_ENTRY_DATE = new Date("2026-01-01T00:00:00.000Z")
 
-type CreateSeethingSwarmArchiveOptions = {
+type CreateGhostAssetArchiveOptions = {
+  contract: GhostAssetArchiveContract
   archivePath: string
   assetKey: string
   custodyDirectory: string
@@ -50,6 +46,7 @@ async function pathExists(path: string) {
 
 async function collectCustodySourceFiles(
   custodyDirectory: string,
+  contract: GhostAssetArchiveContract,
   currentDirectory = custodyDirectory,
 ): Promise<readonly CustodySourceFile[]> {
   const directoryEntries = await readdir(currentDirectory, {
@@ -64,7 +61,11 @@ async function collectCustodySourceFiles(
 
     if (directoryEntry.isDirectory()) {
       sourceFiles.push(
-        ...(await collectCustodySourceFiles(custodyDirectory, absolutePath)),
+        ...(await collectCustodySourceFiles(
+          custodyDirectory,
+          contract,
+          absolutePath,
+        )),
       )
       continue
     }
@@ -80,8 +81,8 @@ async function collectCustodySourceFiles(
     )
       throw new Error("Licensed custody file resolves outside its boundary.")
 
-    const archiveEntryName = `${SEETHING_SWARM_ARCHIVE_ENTRY_ROOT}/${relativePath.replaceAll("\\", "/")}`
-    validateSeethingSwarmArchiveEntryName(archiveEntryName)
+    const archiveEntryName = `${contract.entryRoot}/${relativePath.replaceAll("\\", "/")}`
+    validateGhostAssetArchiveEntryName(archiveEntryName, contract)
     sourceFiles.push(
       Object.freeze({
         absolutePath,
@@ -100,10 +101,13 @@ async function collectCustodySourceFiles(
   )
 }
 
-function validateCustodySourceFiles(sourceFiles: readonly CustodySourceFile[]) {
+function validateCustodySourceFiles(
+  sourceFiles: readonly CustodySourceFile[],
+  contract: GhostAssetArchiveContract,
+) {
   if (
     sourceFiles.length === 0 ||
-    sourceFiles.length > SEETHING_SWARM_ARCHIVE_LIMITS.maximumEntryCount
+    sourceFiles.length > contract.limits.maximumEntryCount
   )
     throw new Error("Licensed custody contains an invalid file count.")
 
@@ -115,15 +119,15 @@ function validateCustodySourceFiles(sourceFiles: readonly CustodySourceFile[]) {
   let totalSize = 0
 
   for (const sourceFile of sourceFiles) {
-    if (sourceFile.size > SEETHING_SWARM_ARCHIVE_LIMITS.maximumEntrySizeBytes)
+    if (sourceFile.size > contract.limits.maximumEntrySizeBytes)
       throw new Error("Licensed custody file exceeds its size limit.")
 
     totalSize += sourceFile.size
-    if (totalSize > SEETHING_SWARM_ARCHIVE_LIMITS.maximumTotalSizeBytes)
+    if (totalSize > contract.limits.maximumTotalSizeBytes)
       throw new Error("Licensed custody payload exceeds its size limit.")
   }
 
-  for (const requiredEntryName of SEETHING_SWARM_REQUIRED_ARCHIVE_ENTRY_NAMES) {
+  for (const requiredEntryName of contract.requiredEntryNames) {
     if (!sourceEntryNames.has(requiredEntryName.toLowerCase()))
       throw new Error("Licensed custody is missing required files.")
   }
@@ -166,6 +170,7 @@ async function verifyArchiveRoundTrip(
   archivePath: string,
   assetKey: string,
   sourceFiles: readonly CustodySourceFile[],
+  contract: GhostAssetArchiveContract,
 ) {
   const verificationRoot = await mkdtemp(
     resolve(tmpdir(), "wayvm-archive-verification-"),
@@ -173,11 +178,12 @@ async function verifyArchiveRoundTrip(
   const verificationVendorDirectory = resolve(verificationRoot, "vendor")
   const verificationCustodyDirectory = resolve(
     verificationVendorDirectory,
-    SEETHING_SWARM_ARCHIVE_ENTRY_ROOT,
+    contract.entryRoot,
   )
 
   try {
-    await extractSeethingSwarmArchive({
+    await extractGhostAssetArchive({
+      contract,
       archivePath,
       assetKey,
       custodyDirectory: verificationCustodyDirectory,
@@ -185,6 +191,7 @@ async function verifyArchiveRoundTrip(
     })
     const verifiedFiles = await collectCustodySourceFiles(
       verificationCustodyDirectory,
+      contract,
     )
 
     if (verifiedFiles.length !== sourceFiles.length)
@@ -228,15 +235,14 @@ async function replaceArchiveFile(
   if (existingArchive) await rm(backupArchivePath, { force: true })
 }
 
-export async function createSeethingSwarmArchive({
+export async function createGhostAssetArchive({
+  contract,
   archivePath,
   assetKey,
   custodyDirectory,
-}: CreateSeethingSwarmArchiveOptions) {
-  if (assetKey.length < MINIMUM_ASSET_KEY_LENGTH)
-    throw new Error(
-      `The protected asset key must contain at least ${MINIMUM_ASSET_KEY_LENGTH} characters.`,
-    )
+}: CreateGhostAssetArchiveOptions) {
+  if (assetKey.length === 0)
+    throw new Error("The protected asset key must not be empty.")
 
   const relativeArchivePath = relative(custodyDirectory, archivePath)
   if (
@@ -248,14 +254,22 @@ export async function createSeethingSwarmArchive({
       "The encrypted archive must remain outside licensed custody.",
     )
 
-  const sourceFiles = await collectCustodySourceFiles(custodyDirectory)
-  const totalSize = validateCustodySourceFiles(sourceFiles)
+  const sourceFiles = await collectCustodySourceFiles(
+    custodyDirectory,
+    contract,
+  )
+  const totalSize = validateCustodySourceFiles(sourceFiles, contract)
   await mkdir(dirname(archivePath), { recursive: true })
   const temporaryArchivePath = `${archivePath}.${randomUUID()}.temporary`
 
   try {
     await writeEncryptedArchive(temporaryArchivePath, assetKey, sourceFiles)
-    await verifyArchiveRoundTrip(temporaryArchivePath, assetKey, sourceFiles)
+    await verifyArchiveRoundTrip(
+      temporaryArchivePath,
+      assetKey,
+      sourceFiles,
+      contract,
+    )
     await replaceArchiveFile(temporaryArchivePath, archivePath)
   } finally {
     await rm(temporaryArchivePath, { force: true })

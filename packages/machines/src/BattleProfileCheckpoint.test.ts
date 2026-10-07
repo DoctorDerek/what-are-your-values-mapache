@@ -10,6 +10,8 @@ import { createBattleChoiceEvent } from "./BattleProfileEvent"
 import { projectBattlePair } from "./BattleScheduler"
 import { parsePersistedJson, serializePersistedJson } from "./PersistedJson"
 import { createInitialPlayerData, createPlayerData } from "./PlayerData"
+import { encodePlayerData } from "./PlayerDataCodec"
+import { createSha256Hex } from "./Sha256"
 
 async function createCheckpoint() {
   const initial = createInitialPlayerData({
@@ -49,6 +51,25 @@ async function createCheckpoint() {
 }
 
 describe("Battle Profile Checkpoint", () => {
+  it("retains a released checkpoint checksum while adding the default appearance", async () => {
+    const current = await createCheckpoint()
+    const encoded = parsePersistedJson(
+      serializeBattleProfileCheckpoint(current),
+    )
+    if (!Array.isArray(encoded)) throw new Error("Expected checkpoint tuple")
+    const hashable = [
+      ...encoded.slice(0, 8),
+      encodePlayerData(current.playerData, 1),
+    ]
+    const legacy = serializePersistedJson([
+      ...hashable,
+      await createSha256Hex(serializePersistedJson(hashable)),
+    ])
+    const migrated = await decodeBattleProfileCheckpoint(legacy)
+    expect(migrated.playerData).toEqual(current.playerData)
+    expect(migrated.playerDataCodecVersion).toBe(1)
+    expect(serializeBattleProfileCheckpoint(migrated)).toBe(legacy)
+  })
   it("round-trips one canonical checksummed checkpoint", async () => {
     const checkpoint = await createCheckpoint()
     const serialized = serializeBattleProfileCheckpoint(checkpoint)

@@ -14,14 +14,11 @@ import {
   Uint8ArrayWriter,
   ZipReader,
 } from "@zip.js/zip.js/index-native.js"
-import { resolveSeethingSwarmArchiveOutputPath } from "./SeethingSwarmArchiveEntry"
-import {
-  SEETHING_SWARM_ARCHIVE_ENTRY_ROOT,
-  SEETHING_SWARM_ARCHIVE_LIMITS,
-  SEETHING_SWARM_REQUIRED_ARCHIVE_ENTRY_NAMES,
-} from "./SeethingSwarmAssetCustody"
+import type { GhostAssetArchiveContract } from "./GhostAssetArchiveContract"
+import { resolveGhostAssetArchiveOutputPath } from "./GhostAssetArchiveEntry"
 
-type ExtractSeethingSwarmArchiveOptions = {
+type ExtractGhostAssetArchiveOptions = {
+  contract: GhostAssetArchiveContract
   archivePath: string
   assetKey: string
   custodyDirectory: string
@@ -44,7 +41,7 @@ async function replaceCustodyDirectory(
 ) {
   const backupDirectory = resolve(
     vendorDirectory,
-    `.seethingswarm-backup-${randomUUID()}`,
+    `.ghost-assets-backup-${randomUUID()}`,
   )
   const existingCustodyDirectory = await pathExists(custodyDirectory)
 
@@ -62,16 +59,17 @@ async function replaceCustodyDirectory(
     await rm(backupDirectory, { force: true, recursive: true })
 }
 
-export async function extractSeethingSwarmArchive({
+export async function extractGhostAssetArchive({
+  contract,
   archivePath,
   assetKey,
   custodyDirectory,
   vendorDirectory,
-}: ExtractSeethingSwarmArchiveOptions) {
+}: ExtractGhostAssetArchiveOptions) {
   const archiveData = await readFile(archivePath)
   await mkdir(vendorDirectory, { recursive: true })
   const extractionDirectory = await mkdtemp(
-    resolve(vendorDirectory, ".seethingswarm-extract-"),
+    resolve(vendorDirectory, ".ghost-assets-extract-"),
   )
 
   try {
@@ -89,7 +87,7 @@ export async function extractSeethingSwarmArchive({
 
       if (
         entries.length === 0 ||
-        entries.length > SEETHING_SWARM_ARCHIVE_LIMITS.maximumEntryCount
+        entries.length > contract.limits.maximumEntryCount
       )
         throw new Error("Archive contains an invalid custody entry count.")
 
@@ -105,17 +103,11 @@ export async function extractSeethingSwarmArchive({
         )
           throw new Error("Archive contains an invalid custody entry type.")
 
-        if (
-          entry.uncompressedSize >
-          SEETHING_SWARM_ARCHIVE_LIMITS.maximumEntrySizeBytes
-        )
+        if (entry.uncompressedSize > contract.limits.maximumEntrySizeBytes)
           throw new Error("Archive custody entry exceeds its size limit.")
 
         totalUncompressedSize += entry.uncompressedSize
-        if (
-          totalUncompressedSize >
-          SEETHING_SWARM_ARCHIVE_LIMITS.maximumTotalSizeBytes
-        )
+        if (totalUncompressedSize > contract.limits.maximumTotalSizeBytes)
           throw new Error("Archive custody payload exceeds its size limit.")
 
         const normalizedEntryName = entry.filename.toLowerCase()
@@ -123,9 +115,10 @@ export async function extractSeethingSwarmArchive({
           throw new Error("Archive contains ambiguous custody entry names.")
         normalizedEntryNames.add(normalizedEntryName)
 
-        const outputPath = resolveSeethingSwarmArchiveOutputPath(
+        const outputPath = resolveGhostAssetArchiveOutputPath(
           extractionDirectory,
           entry.filename,
+          contract,
         )
         const entryData = await entry.getData(new Uint8ArrayWriter(), {
           checkAuthenticationCode: true,
@@ -139,13 +132,13 @@ export async function extractSeethingSwarmArchive({
         await writeFile(outputPath, entryData, { flag: "wx" })
       }
 
-      for (const requiredEntryName of SEETHING_SWARM_REQUIRED_ARCHIVE_ENTRY_NAMES) {
+      for (const requiredEntryName of contract.requiredEntryNames) {
         if (!normalizedEntryNames.has(requiredEntryName.toLowerCase()))
           throw new Error("Archive is missing required custody entries.")
       }
 
       await replaceCustodyDirectory(
-        resolve(extractionDirectory, SEETHING_SWARM_ARCHIVE_ENTRY_ROOT),
+        resolve(extractionDirectory, contract.entryRoot),
         custodyDirectory,
         vendorDirectory,
       )

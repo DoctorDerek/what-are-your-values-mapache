@@ -224,7 +224,7 @@ describe("Crucible Component Integration", () => {
       choicesRegion.compareDocumentPosition(battleActions) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
-    expect(overlay?.parentElement).toBe(battleSurface)
+    expect(overlay?.parentElement).toBe(choicesRegion)
     expect(battleSurface).toContainElement(
       screen.getAllByRole("button", {
         name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
@@ -801,18 +801,27 @@ describe("Crucible Component Integration", () => {
     )
 
     const battleSurface = screen.getByRole("main", { name: "Value battle" })
-    expect(
-      screen.getByRole("region", { name: "Battle choices" }),
-    ).toHaveAttribute("tabindex", "0")
+    const battleChoices = screen.getByRole("region", { name: "Battle choices" })
+    expect(battleChoices).toHaveAttribute("tabindex", "0")
     expect(battleSurface).toHaveAttribute("tabindex", "0")
     expect(battleSurface).toContainElement(
       screen.getByRole("navigation", { name: "Battle actions" }),
     )
-    fireEvent.focus(battleSurface)
-    for (const key of [" ", "Enter", "ArrowDown", "ArrowUp"])
-      fireEvent.keyDown(battleSurface, { key })
-    for (const key of ["Home", "End", "PageUp", "PageDown", "Tab"])
-      expect(fireEvent.keyDown(battleSurface, { key })).toBe(true)
+    for (const surface of [battleSurface, battleChoices]) {
+      act(() => surface.focus())
+      for (const key of [
+        " ",
+        "Enter",
+        "ArrowDown",
+        "ArrowUp",
+        "ArrowLeft",
+        "ArrowRight",
+      ])
+        expect(fireEvent.keyDown(surface, { key })).toBe(true)
+      for (const key of ["Home", "End", "PageUp", "PageDown", "Tab"])
+        expect(fireEvent.keyDown(surface, { key })).toBe(true)
+      expect(surface).toHaveFocus()
+    }
     expect(onWinnerSelected).not.toHaveBeenCalled()
 
     for (const [index, definition] of definitions.entries()) {

@@ -40,13 +40,17 @@ test("the web runtime follows its deployment offline policy", async ({
 }, testInfo) => {
   if (browserName === "chromium")
     await page.route("**/*", (route) => route.continue())
+  await page.emulateMedia({ reducedMotion: "reduce" })
   await page.goto("/")
   await expect(
     page.getByRole("heading", { name: "What Are Your Values, Mapache?" }),
   ).toBeVisible()
   await page.getByRole("button", { name: "Start", exact: true }).click()
   await expect(
-    page.getByRole("heading", { name: "Your Values", exact: true }),
+    page.getByRole("heading", {
+      name: /^My (?:Top Five )?Values$/,
+      exact: true,
+    }),
   ).toBeVisible()
   const registrationIsExpected =
     Boolean(playwrightTestBaseUrl) && !isProtectedVercelPreview
@@ -101,7 +105,10 @@ test("the web runtime follows its deployment offline policy", async ({
   await context.setOffline(true)
   await page.reload({ waitUntil: "domcontentloaded" })
   await expect(
-    page.getByRole("heading", { name: "Your Values", exact: true }),
+    page.getByRole("heading", {
+      name: /^My (?:Top Five )?Values$/,
+      exact: true,
+    }),
   ).toBeVisible()
   expect(
     await page.evaluate(

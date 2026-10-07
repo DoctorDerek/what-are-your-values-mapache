@@ -1,5 +1,9 @@
 PROPRIETARY THIRD-PARTY ASSETS
 
+HEROES99 AND HEROES99 PORTRAITS
+
+Credit name: AU_pixel. Heroes99 character art is published at https://au-pixel.itch.io/heroes99 and its portrait companion is published by the same artist. The purchased pack terms govern use in this game. The game credits AU_pixel in Credits & Privacy as well as this record. Raw asset redistribution and repackaging are not authorized by this repository. The encrypted Heroes99 archive is solely an authorized build input under the same custody protocol as the animal packs.
+
 The encrypted archives in this directory contain proprietary third-party assets used under license. The archives and their contents are not covered by the software license in the repository root.
 
 These archives are included solely to support authorized builds. No license or permission is granted by this repository to copy, decrypt, extract, modify, redistribute, sublicense, sell, publish, or reuse the contained assets, whether publicly or privately and whether for commercial or non-commercial purposes.

@@ -33,6 +33,11 @@ import useNativePlayerDataFiles from "@/components/useNativePlayerDataFiles"
 import { expoDurableStore } from "@/lib/ExpoDurableStore"
 import type { NativePlayerDataFileDestination } from "@/lib/NativePlayerDataFileEvents"
 
+jest.mock("@/components/NativeHeroes99Hero", () => ({
+  __esModule: true,
+  default: () => null,
+}))
+
 jest.mock("@/lib/ExpoDurableStore", () => ({
   expoDurableStore: {
     readAll: jest.fn(),
@@ -242,7 +247,9 @@ describe("NativeGameClient Menu navigation", () => {
     await render(<NativeGameClient />)
 
     await user.press(await screen.findByRole("button", { name: "Start" }))
-    expect(await screen.findByText("Your Values")).toBeOnTheScreen()
+    expect(
+      await screen.findByText(/^My (?:Top Five )?Values$/),
+    ).toBeOnTheScreen()
 
     await openMenuDestination(user, "Browse All Values")
     expect(await screen.findByText("All Values")).toBeOnTheScreen()
@@ -259,7 +266,9 @@ describe("NativeGameClient Menu navigation", () => {
 
     await openMenuDestination(user, "Browse All Values")
     await user.press(await screen.findByRole("button", { name: "Close" }))
-    expect(await screen.findByText("Your Values")).toBeOnTheScreen()
+    expect(
+      await screen.findByText(/^My (?:Top Five )?Values$/),
+    ).toBeOnTheScreen()
 
     await user.press(screen.getByRole("button", { name: "Battle" }))
     const presentedChoiceNames = getPresentedChoiceNames()
@@ -346,19 +355,19 @@ describe("NativeGameClient Menu navigation", () => {
     expect(getPresentedChoiceNames()).toEqual(presentedChoiceNames)
   }, 10_000)
 
-  it("routes every direct Hub destination back to the same durable profile", async () => {
+  it("routes Hub and Menu destinations back to the same durable profile", async () => {
     const user = userEvent.setup()
     await render(<NativeGameClient />)
 
     await user.press(await screen.findByRole("button", { name: "Start" }))
 
-    await user.press(screen.getByRole("button", { name: "Achievements" }))
+    await openMenuDestination(user, "Achievements")
     expect(await screen.findByText("Achievements")).toBeOnTheScreen()
     await user.press(
       screen.getByRole("button", { name: "Back to Your Values" }),
     )
 
-    await user.press(screen.getByRole("button", { name: "Import & Export" }))
+    await openMenuDestination(user, "Import & Export")
     expect(await screen.findByText("Import & Export")).toBeOnTheScreen()
     await user.press(
       screen.getByRole("button", { name: "Back to Your Values" }),
@@ -368,8 +377,13 @@ describe("NativeGameClient Menu navigation", () => {
     expect(await screen.findByText("All Values")).toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Close" }))
 
-    await user.press(screen.getByLabelText("Acceptance"))
-    expect(screen.getByText("Your Values")).toBeOnTheScreen()
+    await fireEvent(
+      screen.getByTestId("hub-animal-pvcs-2011:acceptance", {
+        includeHiddenElements: true,
+      }),
+      "pressIn",
+    )
+    expect(screen.getByText(/^My (?:Top Five )?Values$/)).toBeOnTheScreen()
     expect(screen.queryByText("All Values")).not.toBeOnTheScreen()
 
     await user.press(screen.getByRole("button", { name: "Add Custom Value" }))
@@ -377,7 +391,9 @@ describe("NativeGameClient Menu navigation", () => {
     await user.press(screen.getByRole("button", { name: "Cancel" }))
     await user.press(screen.getByRole("button", { name: "Close" }))
 
-    expect(await screen.findByText("Your Values")).toBeOnTheScreen()
+    expect(
+      await screen.findByText(/^My (?:Top Five )?Values$/),
+    ).toBeOnTheScreen()
   }, 10_000)
 
   it("leaves active and return-target surfaces before routing onward", async () => {
@@ -401,7 +417,9 @@ describe("NativeGameClient Menu navigation", () => {
     expect(screen.queryByText("Settings")).toBeNull()
 
     await user.press(screen.getByRole("button", { name: "Close" }))
-    expect(await screen.findByText("Your Values")).toBeOnTheScreen()
+    expect(
+      await screen.findByText(/^My (?:Top Five )?Values$/),
+    ).toBeOnTheScreen()
   }, 10_000)
 })
 
@@ -440,7 +458,9 @@ describe("NativeGameClient battle routing", () => {
     await user.press(screen.getByRole("button", { name: "Stop" }))
     expect(await screen.findByText("Results")).toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "See my values" }))
-    expect(await screen.findByText("Your Values")).toBeOnTheScreen()
+    expect(
+      await screen.findByText(/^My (?:Top Five )?Values$/),
+    ).toBeOnTheScreen()
   }, 10_000)
 })
 
@@ -616,7 +636,9 @@ describe("NativeGameClient persistence recovery and lifecycle", () => {
       await Promise.resolve()
     })
     await waitFor(() => expect(getOpenDialog("Menu")).toBeUndefined())
-    expect(await screen.findByText("Your Values")).toBeOnTheScreen()
+    expect(
+      await screen.findByText(/^My (?:Top Five )?Values$/),
+    ).toBeOnTheScreen()
 
     await unmount()
     expect(remove).toHaveBeenCalledTimes(subscriptions.mock.calls.length)
@@ -796,7 +818,9 @@ describe("NativeGameClient file operations and destructive actions", () => {
       }),
     )
 
-    expect(await screen.findByText("Your Values")).toBeOnTheScreen()
+    expect(
+      await screen.findByText(/^My (?:Top Five )?Values$/),
+    ).toBeOnTheScreen()
   }, 10_000)
 
   it("blocks Import and Export navigation while a selected backup is read", async () => {
@@ -902,7 +926,9 @@ describe("NativeGameClient file operations and destructive actions", () => {
       }),
     )
 
-    expect(await screen.findByText("Your Values")).toBeOnTheScreen()
+    expect(
+      await screen.findByText(/^My (?:Top Five )?Values$/),
+    ).toBeOnTheScreen()
   }, 10_000)
 
   it("reviews a retained last-known-good backup from corrupt-data recovery", async () => {

@@ -14,10 +14,13 @@ declare const self: ServiceWorkerGlobalScope
 
 const animalCacheName = "wayvm-animal-strips-v1"
 const animalStripPath = /^\/_next\/static\/media\/[^/]+_strip\d+\.[^/]+\.png$/
+const heroLayerPath =
+  /^\/_next\/static\/media\/(?:skin_c\d+|face_c\d+|[mf]\d+_c\d+_(?:top|bot)|cloth\d+_c\d+_(?:top|bot)|weapon\d+(?:_c\d+)?_(?:top|bot))\.[^/]+\.png$/
 
-function isAnimalStrip(url: URL) {
+function isOnDemandArtwork(url: URL) {
   return (
-    url.origin === self.location.origin && animalStripPath.test(url.pathname)
+    url.origin === self.location.origin &&
+    (animalStripPath.test(url.pathname) || heroLayerPath.test(url.pathname))
   )
 }
 
@@ -28,7 +31,7 @@ async function preserveCachedAnimalStrips() {
     const precache = await caches.open(cacheName)
     for (const request of await precache.keys()) {
       const url = new URL(request.url)
-      if (!isAnimalStrip(url)) continue
+      if (!isOnDemandArtwork(url)) continue
       url.searchParams.delete("__WB_REVISION__")
       if (await animalCache.match(url.href)) continue
       const response = await precache.match(request)
@@ -44,7 +47,7 @@ self.addEventListener("install", (event) => {
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST?.filter(
     (entry) =>
-      !isAnimalStrip(
+      !isOnDemandArtwork(
         new URL(
           typeof entry === "string" ? entry : entry.url,
           self.location.href,
@@ -53,7 +56,7 @@ const serwist = new Serwist({
   ),
   runtimeCaching: [
     {
-      matcher: ({ url }) => isAnimalStrip(url),
+      matcher: ({ url }) => isOnDemandArtwork(url),
       handler: new CacheFirst({ cacheName: animalCacheName }),
     },
   ],

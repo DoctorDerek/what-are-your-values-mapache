@@ -1,13 +1,16 @@
 import { resolve } from "node:path"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { getSeethingSwarmAssetCustodyPaths } from "./SeethingSwarmAssetCustody"
+import {
+  getSeethingSwarmAssetCustodyPaths,
+  SEETHING_SWARM_ARCHIVE_CONTRACT,
+} from "./SeethingSwarmAssetCustody"
 
 const dependencyMocks = vi.hoisted(() => ({
   createArchive: vi.fn(),
 }))
 
-vi.mock("./SeethingSwarmArchiveCreator", () => ({
-  createSeethingSwarmArchive: dependencyMocks.createArchive,
+vi.mock("./GhostAssetArchiveCreator", () => ({
+  createGhostAssetArchive: dependencyMocks.createArchive,
 }))
 
 const ASSET_KEY_ENVIRONMENT_VARIABLE_NAME =
@@ -44,6 +47,7 @@ describe("SeethingSwarm archive creator direct execution", () => {
       await import("./createSeethingSwarmArchive.cli")
 
       expect(dependencyMocks.createArchive).toHaveBeenCalledWith({
+        contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
         archivePath: paths.archivePath,
         assetKey: "synthetic-direct-execution-key-with-ample-length",
         custodyDirectory: paths.custodyDirectory,

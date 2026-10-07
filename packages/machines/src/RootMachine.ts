@@ -2,10 +2,11 @@ import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import { CUSTOM_VALUE_INVITATION_COPY } from "@game/data/src/CustomValueInvitationCopy"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { getErrorMessage } from "@game/utils/src/Errors"
-import { assign, setup } from "xstate"
+import { assign, forwardTo, setup } from "xstate"
 import type { AchievementId } from "./AchievementCatalog"
 import { recordAchievementPresentationActor } from "./AchievementPresentationActors"
 import { getPendingAchievementUnlocks } from "./AchievementState"
+import { avatarMachine } from "./AvatarMachine"
 import type { BattleAnimationSpeed } from "./BattleAnimationSpeed"
 import { createBattleExitResults } from "./BattleExitResults"
 import type { BattleProfile } from "./BattleProfile"
@@ -144,6 +145,8 @@ type RootMachineEvent =
   | { type: "ACHIEVEMENTS.CLOSE_REQUESTED" }
   | { type: "ACHIEVEMENT.PRESENTED"; achievementId: AchievementId }
   | { type: "SETTINGS.OPEN_REQUESTED" }
+  | { type: "AVATAR.OPEN_REQUESTED" }
+  | { type: "AVATAR.BACK_REQUESTED" }
   | { type: "SETTINGS.CLOSE_REQUESTED" }
   | { type: "SETTINGS.UPDATE_REQUESTED"; settings: PlayerSettings }
   | { type: "ALL_VALUES.OPEN_REQUESTED" }
@@ -410,8 +413,10 @@ export const rootMachine = setup({
     context: {} as RootMachineContext,
     events: {} as RootMachineEvent,
     input: {} as RootMachineInput,
+    children: {} as { avatar: "avatar" },
   },
   actors: {
+    avatar: avatarMachine,
     hydrateBattleProfile: hydrateBattleProfileActor,
     initializeBattleProfile: initializeBattleProfileActor,
     commitBattleProfileEvent: commitBattleProfileEventActor,
@@ -799,6 +804,10 @@ export const rootMachine = setup({
     },
     Hub: {
       on: {
+        "AVATAR.OPEN_REQUESTED": {
+          target: "DressingRoom",
+          actions: "clearPortabilityFeedback",
+        },
         "HUB.CUSTOM_VALUES_APPLY_REQUESTED": {
           target: "AddingCustomValues",
           actions: assign({
@@ -853,6 +862,26 @@ export const rootMachine = setup({
           }),
         },
       },
+    },
+    DressingRoom: {
+      invoke: {
+        id: "avatar",
+        src: "avatar",
+        input: ({ context }) => ({
+          store: context.durableStore,
+          state: requireBattleProfileStoreState(context),
+          now: context.now,
+          random: Math.random,
+        }),
+        onDone: {
+          target: "Hub",
+          actions: assign({
+            playerData: ({ event }) => event.output.head.playerData,
+            battleProfileStoreState: ({ event }) => event.output,
+          }),
+        },
+      },
+      on: { "AVATAR.BACK_REQUESTED": { actions: forwardTo("avatar") } },
     },
     AddingCustomValues: {
       invoke: {

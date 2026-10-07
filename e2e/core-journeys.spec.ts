@@ -11,6 +11,70 @@ const getChoiceValueName = async (choice: Locator) => {
   return valueName
 }
 
+test("a player previews every appearance category and retains only saved choices", async ({
+  page,
+}) => {
+  await page.goto("/")
+  await page.getByRole("button", { name: "Start", exact: true }).click()
+  await page
+    .getByRole("button", { name: "Customize my card", exact: true })
+    .click()
+  await expect(
+    page.getByRole("heading", { name: "Dressing Room", exact: true }),
+  ).toBeVisible()
+  await expect(
+    page
+      .getByRole("img", { name: "Your Heroes99 character" })
+      .locator("canvas"),
+  ).toBeVisible()
+  const heroCanvas = page
+    .getByRole("img", { name: "Your Heroes99 character" })
+    .locator("canvas")
+  const initialAppearance = await heroCanvas.evaluate(
+    (canvas: HTMLCanvasElement) => canvas.toDataURL(),
+  )
+  await page.getByRole("button", { name: "Skin 6", exact: true }).click()
+  await page.getByRole("button", { name: "Face", exact: true }).click()
+  await page.getByRole("button", { name: "Face 7", exact: true }).click()
+  await page.getByRole("button", { name: "Hair", exact: true }).click()
+  await page.getByRole("button", { name: "None", exact: true }).click()
+  await expect(page.getByRole("group", { name: "Hair palette" })).toHaveCount(0)
+  await page.getByRole("button", { name: "Clothing", exact: true }).click()
+  await page.getByRole("button", { name: "Outfit 17", exact: true }).click()
+  await page.getByRole("button", { name: "Palette 8", exact: true }).click()
+  await page.getByRole("button", { name: "Weapon", exact: true }).click()
+  await page.getByRole("button", { name: "Dagger", exact: true }).click()
+  await page.getByRole("button", { name: "Palette 4", exact: true }).click()
+  await expect
+    .poll(() =>
+      heroCanvas.evaluate((canvas: HTMLCanvasElement) => canvas.toDataURL()),
+    )
+    .not.toBe(initialAppearance)
+  await page.getByRole("button", { name: "Back", exact: true }).click()
+  await page.getByRole("button", { name: "Keep editing", exact: true }).click()
+  await page
+    .getByRole("button", { name: "Save appearance", exact: true })
+    .click()
+  await expect(
+    page.getByRole("heading", { name: "My Values", exact: true }),
+  ).toBeVisible()
+  await page.reload()
+  await page
+    .getByRole("button", { name: "Customize my card", exact: true })
+    .click()
+  await expect(
+    page.getByRole("button", { name: "Skin 6", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true")
+  await page.getByRole("button", { name: "Randomize", exact: true }).click()
+  await page.getByRole("button", { name: "Cancel", exact: true }).click()
+  await page
+    .getByRole("button", { name: "Customize my card", exact: true })
+    .click()
+  await expect(
+    page.getByRole("button", { name: "Skin 6", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true")
+})
+
 test("a new player starts immediately and reviews the complete ranking", async ({
   page,
 }) => {
@@ -33,11 +97,11 @@ test("a new player starts immediately and reviews the complete ranking", async (
 
   await page.getByRole("button", { name: "Start" }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: "Your Values" }),
+    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
   ).toBeVisible()
   await expect(
     page.getByText(
-      "Not ranked yet. Browse the included values, then battle when you are ready.",
+      "Not ranked yet. Browse all values, then battle when you are ready.",
     ),
   ).toBeVisible()
 
@@ -56,7 +120,7 @@ test("a new player starts immediately and reviews the complete ranking", async (
 
   await page.getByRole("button", { name: "Close" }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: "Your Values" }),
+    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
   ).toBeVisible()
   await expect(
     page.getByRole("button", { name: "Browse All Values" }),
@@ -70,7 +134,7 @@ test("a returning player keeps Undo and Redo across reloads", async ({
 
   await page.getByRole("button", { name: "Start" }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: "Your Values" }),
+    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
   ).toBeVisible()
   await page.getByRole("button", { name: "Battle", exact: true }).click()
   await expect(page.getByRole("main", { name: "Value battle" })).toBeVisible()
@@ -96,17 +160,13 @@ test("a returning player keeps Undo and Redo across reloads", async ({
   await page.reload()
 
   const winningValue = page
-    .locator('[id$="-presentation"]')
-    .filter({ has: page.getByText(firstChoiceName, { exact: true }) })
-  await expect(winningValue).toHaveAccessibleDescription("Rank 1, gold medal")
-  const firstRankedValue = page
     .getByRole("listitem")
-    .filter({ has: winningValue })
+    .filter({ has: page.getByText(firstChoiceName, { exact: true }) })
+  await expect(winningValue).toContainText("#1")
+  const firstRankedValue = winningValue
   await expect(firstRankedValue).toContainText(firstChoiceName)
   await expect(firstRankedValue).toContainText("Level 3")
-  await expect(
-    page.getByRole("progressbar", { name: "XP toward Level 4" }),
-  ).toHaveAttribute("aria-valuenow", "0")
+  await expect(page.getByRole("listitem")).toHaveCount(5)
 })
 
 test("a secondary tab stays read-only then inherits released writer ownership", async ({
@@ -150,17 +210,16 @@ test("a secondary tab stays read-only then inherits released writer ownership", 
 
   await secondaryPage.getByRole("button", { name: "Load Latest" }).click()
   await expect(
-    secondaryPage.getByRole("heading", { level: 1, name: "Your Values" }),
+    secondaryPage.getByRole("heading", {
+      level: 1,
+      name: /^My (?:Top Five )?Values$/,
+    }),
   ).toBeVisible()
   const inheritedWinningValue = secondaryPage
-    .locator('[id$="-presentation"]')
-    .filter({ has: secondaryPage.getByText(ownerChoiceName, { exact: true }) })
-  await expect(inheritedWinningValue).toHaveAccessibleDescription(
-    "Rank 1, gold medal",
-  )
-  const inheritedTopValue = secondaryPage
     .getByRole("listitem")
-    .filter({ has: inheritedWinningValue })
+    .filter({ has: secondaryPage.getByText(ownerChoiceName, { exact: true }) })
+  await expect(inheritedWinningValue).toContainText("#1")
+  const inheritedTopValue = inheritedWinningValue
   await expect(inheritedTopValue).toContainText(ownerChoiceName)
   await expect(inheritedTopValue).toContainText("Level 3")
 
