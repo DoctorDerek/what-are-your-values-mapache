@@ -19,10 +19,27 @@ const fault = { render: false }
 function GameView({ actor }: { readonly actor: RootActor }) {
   const snapshot = useRecoverableActorSnapshot(actor)
   if (fault.render) throw new Error("Render failure containing private data")
-  return <><p>{snapshot.matches("Hub") ? "Working hub" : snapshot.matches("DressingRoom") ? "Working editor" : "Working game"}</p>{snapshot.children.avatar && <EditorView actor={snapshot.children.avatar} />}</>
+  return (
+    <>
+      <p>
+        {snapshot.matches("Hub")
+          ? "Working hub"
+          : snapshot.matches("DressingRoom")
+            ? "Working editor"
+            : "Working game"}
+      </p>
+      {snapshot.children.avatar && (
+        <EditorView actor={snapshot.children.avatar} />
+      )}
+    </>
+  )
 }
 
-function EditorView({ actor }: { readonly actor: ActorRefFrom<typeof avatarMachine> }) {
+function EditorView({
+  actor,
+}: {
+  readonly actor: ActorRefFrom<typeof avatarMachine>
+}) {
   const snapshot = useRecoverableActorSnapshot(actor)
   return <p>Skin {snapshot.context.draft.skinPalette}</p>
 }
@@ -30,28 +47,63 @@ function EditorView({ actor }: { readonly actor: ActorRefFrom<typeof avatarMachi
 async function mountSession() {
   const store = createInMemoryDurableStore()
   const createdAt = "2026-10-07T12:00:00.000Z"
-  await initializeBattleProfileStore({ store, playerData: createInitialPlayerData({ schedulerSeed: "recovery", createdAt }), createdAt, appVersion: "test" })
+  await initializeBattleProfileStore({
+    store,
+    playerData: createInitialPlayerData({
+      schedulerSeed: "recovery",
+      createdAt,
+    }),
+    createdAt,
+    appVersion: "test",
+  })
   const onReopen = vi.fn()
   let capturedActor: RootActor | undefined
-  const content = (actor: RootActor) => { capturedActor = actor; return <GameView actor={actor} /> }
-  const view = render(<GameSession durableStore={store} onReopen={onReopen}>{content}</GameSession>)
+  const content = (actor: RootActor) => {
+    capturedActor = actor
+    return <GameView actor={actor} />
+  }
+  const view = render(
+    <GameSession durableStore={store} onReopen={onReopen}>
+      {content}
+    </GameSession>,
+  )
   await screen.findByText("Working hub")
   if (!capturedActor) throw new Error("Session did not create an actor")
-  return { ...view, store, actor: capturedActor, onReopen, redraw: () => view.rerender(<GameSession durableStore={store} onReopen={onReopen}>{content}</GameSession>) }
+  return {
+    ...view,
+    store,
+    actor: capturedActor,
+    onReopen,
+    redraw: () =>
+      view.rerender(
+        <GameSession durableStore={store} onReopen={onReopen}>
+          {content}
+        </GameSession>,
+      ),
+  }
 }
 
-afterEach(() => { fault.render = false; vi.restoreAllMocks() })
+afterEach(() => {
+  fault.render = false
+  vi.restoreAllMocks()
+})
 
 describe("Game session recovery", () => {
   it("contains an unexpected child actor failure and exports its retained draft", async () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined)
-    const download = vi.spyOn(PlayerDataFiles, "downloadPlayerDataFile").mockImplementation(() => undefined)
+    const download = vi
+      .spyOn(PlayerDataFiles, "downloadPlayerDataFile")
+      .mockImplementation(() => undefined)
     const session = await mountSession()
     act(() => session.actor.send({ type: "AVATAR.OPEN_REQUESTED" }))
     const editor = session.actor.getSnapshot().children.avatar
-    act(() => editor?.send({ type: "AVATAR.CHANGE", change: { skinPalette: 6 } }))
+    act(() =>
+      editor?.send({ type: "AVATAR.CHANGE", change: { skinPalette: 6 } }),
+    )
     const originalGuard = avatarMachine.implementations.guards.hasChanges
-    avatarMachine.implementations.guards.hasChanges = () => { throw new Error("Unexpected child failure") }
+    avatarMachine.implementations.guards.hasChanges = () => {
+      throw new Error("Unexpected child failure")
+    }
     try {
       act(() => editor?.send({ type: "AVATAR.BACK_REQUESTED" }))
     } finally {
@@ -61,7 +113,10 @@ describe("Game session recovery", () => {
     fireEvent.click(screen.getByRole("button", { name: copy.exportPlayer }))
     await screen.findByText(copy.exportReady)
     const backup = download.mock.calls[0][0]
-    expect((await decodeWayvmExport(backup.serialized)).playerData.appearance.skinPalette).toBe(6)
+    expect(
+      (await decodeWayvmExport(backup.serialized)).playerData.appearance
+        .skinPalette,
+    ).toBe(6)
     expect(session.onReopen).not.toHaveBeenCalled()
   })
 
@@ -70,7 +125,9 @@ describe("Game session recovery", () => {
     const session = await mountSession()
     act(() => session.actor.send({ type: "AVATAR.OPEN_REQUESTED" }))
     const editor = session.actor.getSnapshot().children.avatar
-    act(() => editor?.send({ type: "AVATAR.CHANGE", change: { skinPalette: 6 } }))
+    act(() =>
+      editor?.send({ type: "AVATAR.CHANGE", change: { skinPalette: 6 } }),
+    )
     const stored = await session.store.readAll()
     fault.render = true
     session.redraw()
@@ -87,11 +144,15 @@ describe("Game session recovery", () => {
   })
 
   it("retains a stopped actor for backup and requires confirmation before reopening", async () => {
-    const download = vi.spyOn(PlayerDataFiles, "downloadPlayerDataFile").mockImplementation(() => undefined)
+    const download = vi
+      .spyOn(PlayerDataFiles, "downloadPlayerDataFile")
+      .mockImplementation(() => undefined)
     const session = await mountSession()
     act(() => session.actor.send({ type: "BATTLE.START_REQUESTED" }))
     const originalGuard = rootMachine.implementations.guards.canUndoBattle
-    rootMachine.implementations.guards.canUndoBattle = () => { throw new Error("Unexpected actor failure") }
+    rootMachine.implementations.guards.canUndoBattle = () => {
+      throw new Error("Unexpected actor failure")
+    }
     try {
       act(() => session.actor.send({ type: "BATTLE.UNDO_REQUESTED" }))
     } finally {
@@ -99,13 +160,17 @@ describe("Game session recovery", () => {
     }
     expect(await screen.findByText(copy.actorDetail)).toBeVisible()
     expect(session.actor.getSnapshot().status).toBe("error")
-    expect(screen.queryByRole("button", { name: copy.retry })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: copy.retry }),
+    ).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole("button", { name: copy.exportPlayer }))
     await screen.findByText(copy.exportReady)
     expect(download).toHaveBeenCalledTimes(1)
     fireEvent.click(screen.getByRole("button", { name: copy.reopen }))
     expect(session.onReopen).not.toHaveBeenCalled()
-    expect(screen.getByRole("heading", { name: copy.confirmTitle })).toHaveFocus()
+    expect(
+      screen.getByRole("heading", { name: copy.confirmTitle }),
+    ).toHaveFocus()
     fireEvent.keyDown(window, { key: "Escape" })
     expect(screen.queryByText(copy.confirmDetail)).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole("button", { name: copy.reopen }))
@@ -118,14 +183,23 @@ describe("Game session recovery", () => {
 
   it("keeps failed backup feedback actionable until a successful retry", async () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined)
-    const download = vi.spyOn(PlayerDataFiles, "downloadPlayerDataFile").mockImplementationOnce(() => { throw new Error("Blocked") }).mockImplementation(() => undefined)
+    const download = vi
+      .spyOn(PlayerDataFiles, "downloadPlayerDataFile")
+      .mockImplementationOnce(() => {
+        throw new Error("Blocked")
+      })
+      .mockImplementation(() => undefined)
     const session = await mountSession()
     fault.render = true
     session.redraw()
     fireEvent.click(screen.getByRole("button", { name: copy.exportStored }))
-    expect(await screen.findByRole("alert")).toHaveTextContent(copy.exportFailed)
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      copy.exportFailed,
+    )
     fireEvent.click(screen.getByRole("button", { name: copy.exportStored }))
-    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent(copy.exportReady))
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent(copy.exportReady),
+    )
     expect(screen.queryByRole("alert")).not.toBeInTheDocument()
     expect(download).toHaveBeenCalledTimes(2)
   })
@@ -134,7 +208,9 @@ describe("Game session recovery", () => {
     const retry = vi.fn()
     render(<RuntimeRecovery onRetry={retry} />)
     expect(screen.getByText(copy.startupDetail)).toBeVisible()
-    expect(screen.queryByRole("button", { name: copy.exportPlayer })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: copy.exportPlayer }),
+    ).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole("button", { name: copy.retry }))
     expect(retry).toHaveBeenCalledTimes(1)
   })

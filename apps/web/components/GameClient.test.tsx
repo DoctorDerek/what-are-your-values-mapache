@@ -1373,14 +1373,15 @@ describe("GameClient Integration", () => {
     if (!winnerCard)
       throw new Error("Invariant banner test winner is unavailable")
 
-    const brokenProjection = vi.spyOn(
-      AchievementPresentation,
-      "projectAchievementCatalog",
-    ).mockReturnValue(Object.freeze([]))
+    const brokenProjection = vi
+      .spyOn(AchievementPresentation, "projectAchievementCatalog")
+      .mockReturnValue(Object.freeze([]))
     fireEvent.click(winnerCard)
 
     expect(
-      await screen.findByRole("heading", { name: "Let’s get you back to your game" }),
+      await screen.findByRole("heading", {
+        name: "Let’s get you back to your game",
+      }),
     ).toBeVisible()
     brokenProjection.mockRestore()
     fireEvent.click(screen.getByRole("button", { name: "Try again" }))

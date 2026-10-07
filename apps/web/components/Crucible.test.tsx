@@ -105,17 +105,40 @@ describe("Crucible Component Integration", () => {
   it("contains a failed battle callback in the shared render recovery boundary", async () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined)
     const { battleCycle, battle } = createBattleProps("battle-callback-failure")
-    const onWinnerSelected = vi.fn(() => { throw new Error("Battle callback failed") })
+    const onWinnerSelected = vi.fn(() => {
+      throw new Error("Battle callback failed")
+    })
     render(
-      <RenderRecoveryBoundary fallback={(retry) => <button onClick={retry}>Retry battle screen</button>}>
-        <Crucible {...createHistoryProps()} battle={battle} activeDeck={battleCycle.activeDeck} progressById={battleCycle.progressById} onWinnerSelected={onWinnerSelected} onExit={vi.fn()} />
+      <RenderRecoveryBoundary
+        fallback={(retry) => (
+          <button onClick={retry}>Retry battle screen</button>
+        )}
+      >
+        <Crucible
+          {...createHistoryProps()}
+          battle={battle}
+          activeDeck={battleCycle.activeDeck}
+          progressById={battleCycle.progressById}
+          onWinnerSelected={onWinnerSelected}
+          onExit={vi.fn()}
+        />
       </RenderRecoveryBoundary>,
     )
-    fireEvent.click(screen.getAllByRole("button", { name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN })[0])
-    expect(await screen.findByRole("button", { name: "Retry battle screen" })).toBeVisible()
+    fireEvent.click(
+      screen.getAllByRole("button", {
+        name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
+      })[0],
+    )
+    expect(
+      await screen.findByRole("button", { name: "Retry battle screen" }),
+    ).toBeVisible()
     expect(onWinnerSelected).toHaveBeenCalledTimes(1)
     fireEvent.click(screen.getByRole("button", { name: "Retry battle screen" }))
-    expect(screen.getAllByRole("button", { name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN })).toHaveLength(2)
+    expect(
+      screen.getAllByRole("button", {
+        name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
+      }),
+    ).toHaveLength(2)
     expect(onWinnerSelected).toHaveBeenCalledTimes(1)
   })
 
