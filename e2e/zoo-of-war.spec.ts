@@ -30,7 +30,9 @@ test("defers distant roster art and prepares animals when scrolling reaches them
   ).toHaveAttribute("data-playback-ready", "true")
   const rosterSources = await rows
     .locator("img")
-    .evaluateAll((images) => images.map((image) => image.src))
+    .evaluateAll((images: HTMLImageElement[]) =>
+      images.map((image) => image.src),
+    )
   expect(rosterSources.some((source) => !requestedImages.has(source))).toBe(
     true,
   )
@@ -44,7 +46,7 @@ test("defers distant roster art and prepares animals when scrolling reaches them
     .poll(() =>
       lastRow
         .locator("img")
-        .evaluateAll((images) =>
+        .evaluateAll((images: HTMLImageElement[]) =>
           images.every((image) => image.complete && image.naturalWidth > 0),
         ),
     )
@@ -89,7 +91,9 @@ test("prepares before Battle and retains real animals while the next pair loads"
     await expect(battle.locator("[data-placeholder-playback]")).toHaveCount(0)
     for (const source of await battle
       .locator("img")
-      .evaluateAll((images) => images.map((image) => image.src)))
+      .evaluateAll((images: HTMLImageElement[]) =>
+        images.map((image) => image.src),
+      ))
       allowedImageUrls.add(source)
     releaseAll = false
     await page.reload({ waitUntil: "domcontentloaded" })
@@ -160,6 +164,7 @@ test("prepares before Battle and retains real animals while the next pair loads"
 
 interface CompletedAnimalClip {
   choreographyIdentity: string | null
+  cue: string | null
   side: string | null
   role: string | null
   source: string
@@ -466,7 +471,14 @@ test("the Zoo of War holds both animals through a committed battle", async ({
       "animationend",
       (event) => {
         const image = event.target
-        if (!(image instanceof HTMLImageElement)) return
+        if (
+          !(image instanceof HTMLImageElement) ||
+          event.animationName !== "advance-seething-swarm-strip" ||
+          !image.closest(
+            '[data-battle-active-clip="true"] [data-playback-mode="one-shot"]',
+          )
+        )
+          return
         const stage = image.closest("[data-choreography-identity]")
         if (!stage) return
         const style = getComputedStyle(image)
@@ -474,6 +486,10 @@ test("the Zoo of War holds both animals through a committed battle", async ({
           choreographyIdentity: stage.getAttribute(
             "data-choreography-identity",
           ),
+          cue:
+            image
+              .closest("[data-battle-cue]")
+              ?.getAttribute("data-battle-cue") ?? null,
           side:
             image
               .closest("[data-combatant-side]")
@@ -582,12 +598,20 @@ test("the Zoo of War holds both animals through a committed battle", async ({
     )
     expect(
       completedClips.filter(
-        (clip) => clip.side === "first" && clip.role === "attack",
+        (clip) =>
+          clip.side === "first" &&
+          clip.role === "attack" &&
+          clip.cue === "strike",
       ).length,
     ).toBeGreaterThanOrEqual(1)
     expect(
       completedClips
-        .filter((clip) => clip.side === "second" && clip.role === "reaction")
+        .filter(
+          (clip) =>
+            clip.side === "second" &&
+            clip.role === "reaction" &&
+            clip.cue === "impact",
+        )
         .map((clip) => clip.role),
     ).toContain("reaction")
     expect(
@@ -603,7 +627,9 @@ test("the Zoo of War holds both animals through a committed battle", async ({
     expect(
       completedClips.findIndex((clip) => clip.role === "reaction"),
     ).toBeGreaterThan(
-      completedClips.findIndex((clip) => clip.role === "attack"),
+      completedClips.findIndex(
+        (clip) => clip.role === "attack" && clip.cue === "strike",
+      ),
     )
   }
 })
