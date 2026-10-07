@@ -22,19 +22,33 @@ import { getValueChoiceControlHint } from "@game/machines/src/PlayerSettingsPres
 import { getLevelFromXP } from "@game/utils/src/LevelMath"
 import { useMachine } from "@xstate/react"
 import type { StaticImageData } from "next/image"
-import { useCallback, useEffect, useRef, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react"
+import AchievementBanner from "@/components/AchievementBanner"
+import BattleActionBar from "@/components/BattleActionBar"
 import MapacheScreen from "@/components/MapacheScreen"
 import { usePreparedSeethingSwarmBattle } from "@/components/SeethingSwarmAssetPreparation"
+import SeethingSwarmBattleStage from "@/components/SeethingSwarmBattleStage"
+import { ValueChoiceCard } from "@/components/ValueChoiceCard"
 import useWebControlHintInputModality from "@/lib/useWebControlHintInputModality"
-import AchievementBanner from "./AchievementBanner"
-import BattleActionBar from "./BattleActionBar"
-import SeethingSwarmBattleStage from "./SeethingSwarmBattleStage"
-import { ValueChoiceCard } from "./ValueChoiceCard"
 
 type BattleAccessibilityAnnouncement = Readonly<{
   sequence: number
   message: string
 }>
+
+function handleBattleSurfaceKeyDown(event: ReactKeyboardEvent<HTMLElement>) {
+  if (
+    event.target === event.currentTarget &&
+    (event.key === " " || event.key === "Enter" || event.key.startsWith("Arrow"))
+  )
+    event.stopPropagation()
+}
 
 export default function Crucible({
   animationSpeed,
@@ -354,15 +368,7 @@ export default function Crucible({
       tabIndex={0}
       spacing="safe-area-only"
       viewport="fixed"
-      onKeyDown={(event) => {
-        if (
-          event.target === event.currentTarget &&
-          (event.key === " " ||
-            event.key === "Enter" ||
-            event.key.startsWith("Arrow"))
-        )
-          event.stopPropagation()
-      }}
+      onKeyDown={handleBattleSurfaceKeyDown}
       className="relative flex touch-manipulation flex-col border-4 border-transparent outline-none select-none focus-visible:border-white"
     >
       <p
@@ -382,7 +388,8 @@ export default function Crucible({
         role="region"
         aria-label="Battle choices"
         tabIndex={0}
-        className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white"
+        onKeyDown={handleBattleSurfaceKeyDown}
+        className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white"
       >
         <SeethingSwarmBattleStage
           animationSpeed={state.context.activeAnimationSpeed}
@@ -431,6 +438,15 @@ export default function Crucible({
             </>
           )}
         </SeethingSwarmBattleStage>
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-60 flex h-max justify-center [overflow-anchor:none]">
+          <AchievementBanner
+            achievements={achievements}
+            isAcknowledgementPending={isAchievementAcknowledgementPending}
+            placement="battle"
+            shouldReduceMotion={shouldReduceMotion}
+            onPresented={onAchievementPresented}
+          />
+        </div>
       </div>
       <div className="pointer-events-none relative z-50 flex shrink-0 flex-col items-center">
         <BattleActionBar
@@ -446,15 +462,6 @@ export default function Crucible({
           onUndo={handleUndo}
           onRedo={handleRedo}
           onStop={onExit}
-        />
-      </div>
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-60 flex h-max justify-center [overflow-anchor:none]">
-        <AchievementBanner
-          achievements={achievements}
-          isAcknowledgementPending={isAchievementAcknowledgementPending}
-          placement="battle"
-          shouldReduceMotion={shouldReduceMotion}
-          onPresented={onAchievementPresented}
         />
       </div>
     </MapacheScreen>
