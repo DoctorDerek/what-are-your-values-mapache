@@ -69,7 +69,7 @@ export default function NativeHub({
             <NativeHeroes99Hero
               appearance={appearance}
               shouldReduceMotion={shouldReduceMotion}
-              sizeClassName="h-28 xl:h-96"
+              sizeClassName="h-28 w-20 xl:h-96 xl:w-64"
             />
           </View>
           <View className="bg-player-card-values w-full xl:w-2/3">
@@ -93,7 +93,7 @@ export default function NativeHub({
           <View className="flex-row gap-4">
             <Button
               className="min-w-0 flex-1"
-              size="large"
+              size="compact"
               onPress={onStartBattle}
               accessibilityState={{ busy: isBattlePending }}
               accessibilityLabel={
@@ -117,6 +117,7 @@ export default function NativeHub({
             <Button
               className="min-w-0 flex-1"
               variant="secondary"
+              size="compact"
               onPress={onCustomize}
             >
               <Text>{DRESSING_ROOM_COPY.customize}</Text>
@@ -126,6 +127,7 @@ export default function NativeHub({
             <Button
               className="min-w-0 flex-1"
               variant="outline"
+              size="compact"
               onPress={onBrowseAllValues}
             >
               <Text>{PERSONAL_HUB_COPY.browse}</Text>
@@ -133,6 +135,7 @@ export default function NativeHub({
             <Button
               className="min-w-0 flex-1"
               variant="outline"
+              size="compact"
               onPress={onAddCustomValue}
             >
               <Text>{PERSONAL_HUB_COPY.add}</Text>

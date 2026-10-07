@@ -30,8 +30,10 @@ function PersonalValueRow({
   const { isAttended, attentionHandlers } = useAnimalAttentionInput()
   return (
     <li
+      {...attentionHandlers}
+      tabIndex={0}
       data-value-row="true"
-      className="border-player-card-frame grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-2 border-b-2 px-2 py-3 last:border-0 xl:grid-cols-[auto_auto_minmax(0,1fr)_auto] xl:gap-5 xl:px-6"
+      className="border-player-card-frame grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-2 border-b-2 px-2 py-3 last:border-0 focus-visible:outline-4 focus-visible:-outline-offset-4 xl:grid-cols-[auto_auto_minmax(0,1fr)_auto] xl:gap-5 xl:px-6"
       id={`hub-value-${value.definition.id}`}
     >
       <span className="bg-player-card-rank text-player-card-ink min-w-8 text-center text-xl tabular-nums xl:min-w-12 xl:text-3xl">
@@ -39,7 +41,6 @@ function PersonalValueRow({
       </span>
       <span
         id={`hub-value-${value.definition.id}-presentation`}
-        {...attentionHandlers}
       >
         <ValueAnimalPresentation
           rank={value.rank}

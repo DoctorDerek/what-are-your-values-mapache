@@ -33,12 +33,15 @@ export default function NativeHeroes99Hero({
 }) {
   const sizing = useResolveClassNames(sizeClassName)
   const height = typeof sizing.height === "number" ? sizing.height : 160
+  const stageWidth = typeof sizing.width === "number" ? sizing.width : height
   const [strip, setStrip] = useState<HeroStrip | null>(null)
   const [failed, setFailed] = useState(false)
   const [readySource, setReadySource] = useState<string | null>(null)
   const [isActive, setIsActive] = useState(AppState.currentState === "active")
   const progress = useSharedValue(0)
-  const width = strip ? (strip.width * height) / strip.height : height
+  const scale = strip ? Math.min(stageWidth / strip.width, height / strip.height) : 1
+  const width = strip ? strip.width * scale : stageWidth
+  const imageHeight = strip ? strip.height * scale : height
   const motion = useAnimatedStyle(() => ({
     transform: [
       {
@@ -96,17 +99,20 @@ export default function NativeHeroes99Hero({
         failed ? DRESSING_ROOM_COPY.placeholder : DRESSING_ROOM_COPY.character
       }
       className="items-center justify-end overflow-hidden"
-      style={{ width, height }}
+      style={{ width: stageWidth, height }}
     >
       {strip && !failed ? (
         <Animated.View
-          className="absolute top-0 left-0"
-          style={[{ width: width * HEROES99_IDLE_FRAME_COUNT, height }, motion]}
+          testID="heroes99-idle-strip"
+          className="absolute"
+          style={[{ width: width * HEROES99_IDLE_FRAME_COUNT, height: imageHeight, top: height - imageHeight, left: (stageWidth - width) / 2 }, motion]}
         >
           <Image
+            testID="heroes99-idle-image"
+            fadeDuration={0}
             source={strip.source}
             resizeMode="stretch"
-            style={{ width: width * HEROES99_IDLE_FRAME_COUNT, height }}
+            style={{ width: width * HEROES99_IDLE_FRAME_COUNT, height: imageHeight }}
             onLoad={() => setReadySource(strip.source.uri)}
             onError={() => setFailed(true)}
           />

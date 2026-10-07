@@ -136,7 +136,8 @@ export default function Hub({
               : undefined
           }
           variant="battle"
-          size="featured"
+          size="sm"
+          typographyClassName="text-2xl xl:text-3xl"
           wrap
           className="relative"
         >
@@ -152,7 +153,8 @@ export default function Hub({
         <Button
           id="hub-customize-button"
           variant="secondary"
-          size="tall"
+          size="sm"
+          typographyClassName="text-base xl:text-lg"
           wrap
           disabled={isNavigationBlocked}
           onClick={onCustomize}
@@ -164,7 +166,8 @@ export default function Hub({
           ref={browseAllValuesButtonRef}
           id="hub-browse-all-values-button"
           variant="outline"
-          size="tall"
+          size="sm"
+          typographyClassName="text-base xl:text-lg"
           wrap
           onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
         >
@@ -174,7 +177,8 @@ export default function Hub({
           disabled={customValueInvitation?.isSaving}
           id="hub-add-custom-value-button"
           variant="outline"
-          size="tall"
+          size="sm"
+          typographyClassName="text-base xl:text-lg"
           wrap
           onClick={(event) => onAddCustomValue(event.currentTarget.id)}
         >

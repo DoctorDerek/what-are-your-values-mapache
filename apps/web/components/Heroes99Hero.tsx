@@ -64,12 +64,12 @@ export default function Heroes99Hero({
       aria-label={
         failed ? DRESSING_ROOM_COPY.placeholder : DRESSING_ROOM_COPY.character
       }
-      className={cx("flex shrink-0 items-end justify-center", className)}
+      className={cx("flex shrink-0 items-end justify-center [container-type:size]", className)}
     >
       {strip && !failed ? (
         <div
-          className="relative h-full max-w-full overflow-hidden"
-          style={{ aspectRatio: `${strip.width} / ${strip.height}` }}
+          className="relative aspect-(--hero-aspect) w-[min(100cqw,calc(100cqh*var(--hero-aspect)))] overflow-hidden"
+          style={{ "--hero-aspect": strip.width / strip.height } as CSSProperties}
         >
           <canvas
             ref={canvas}
