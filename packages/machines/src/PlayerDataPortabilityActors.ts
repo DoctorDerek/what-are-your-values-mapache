@@ -50,30 +50,33 @@ export const createWayvmExportActor = fromPromise(
     prepareWayvmDownload(input),
 )
 
+type PreparePendingPlayerDataInput = PrepareWayvmDownloadInput & {
+  readonly pendingCommit: {
+    readonly state: BattleProfileStoreState
+    readonly event: BattleProfileEvent
+    readonly committedAt: string
+  } | null
+}
+
+export async function preparePendingPlayerDataDownload(
+  input: PreparePendingPlayerDataInput,
+): Promise<PreparedWayvmDownload> {
+  const playerData =
+    input.pendingCommit === null
+      ? input.playerData
+      : (
+          await createBattleProfileJournalCommit({
+            head: input.pendingCommit.state.head,
+            event: input.pendingCommit.event,
+            committedAt: input.pendingCommit.committedAt,
+          })
+        ).head.playerData
+  return prepareWayvmDownload({ ...input, playerData })
+}
+
 export const createPendingBattleProfileExportActor = fromPromise(
-  async ({
-    input,
-  }: {
-    input: PrepareWayvmDownloadInput & {
-      readonly pendingCommit: {
-        readonly state: BattleProfileStoreState
-        readonly event: BattleProfileEvent
-        readonly committedAt: string
-      } | null
-    }
-  }) => {
-    const playerData =
-      input.pendingCommit === null
-        ? input.playerData
-        : (
-            await createBattleProfileJournalCommit({
-              head: input.pendingCommit.state.head,
-              event: input.pendingCommit.event,
-              committedAt: input.pendingCommit.committedAt,
-            })
-          ).head.playerData
-    return prepareWayvmDownload({ ...input, playerData })
-  },
+  async ({ input }: { input: PreparePendingPlayerDataInput }) =>
+    preparePendingPlayerDataDownload(input),
 )
 
 export const prepareWayvmImportActor = fromPromise(
