@@ -23,6 +23,30 @@ import {
 
 export const PLAYER_DATA_CODEC_VERSION = 2 as const
 export type PlayerDataCodecVersion = 1 | typeof PLAYER_DATA_CODEC_VERSION
+type EncodedHeroes99Appearance = readonly [
+  packVersion: string,
+  skinPalette: number,
+  facePalette: number,
+  hairStyle: string | null,
+  hairPalette: number,
+  clothingStyle: number,
+  clothingPalette: number,
+  weaponStyle: string | null,
+  weaponPalette: number,
+]
+
+function encodeAppearance(appearance: Heroes99Appearance): EncodedHeroes99Appearance {
+  return [appearance.packVersion, appearance.skinPalette, appearance.facePalette,
+    appearance.hairStyle, appearance.hairPalette, appearance.clothingStyle,
+    appearance.clothingPalette, appearance.weaponStyle, appearance.weaponPalette]
+}
+
+function decodeAppearance(value: unknown): Heroes99Appearance {
+  const tuple = readTuple(value, 9, "Heroes99 appearance")
+  return readHeroes99Appearance({ packVersion: tuple[0], skinPalette: tuple[1],
+    facePalette: tuple[2], hairStyle: tuple[3], hairPalette: tuple[4],
+    clothingStyle: tuple[5], clothingPalette: tuple[6], weaponStyle: tuple[7], weaponPalette: tuple[8] })
+}
 
 export type EncodedPlayerData =
   | readonly [
@@ -38,7 +62,7 @@ export type EncodedPlayerData =
       achievements: EncodedAchievementState,
       settings: EncodedPlayerSettings,
       progressGenerationStartedAt: string,
-      appearance: Heroes99Appearance,
+      appearance: EncodedHeroes99Appearance,
     ]
 
 export function encodePlayerData(
@@ -55,7 +79,7 @@ export function encodePlayerData(
   ] as const
   return version === 1
     ? [1, ...fields]
-    : [PLAYER_DATA_CODEC_VERSION, ...fields, validated.appearance]
+    : [PLAYER_DATA_CODEC_VERSION, ...fields, encodeAppearance(validated.appearance)]
 }
 
 export function readPlayerDataCodecVersion(
@@ -86,7 +110,7 @@ export function decodePlayerData(value: unknown) {
     appearance:
       version === 1
         ? DEFAULT_HEROES99_APPEARANCE
-        : readHeroes99Appearance(tuple[5]),
+        : decodeAppearance(tuple[5]),
   })
 
   if (

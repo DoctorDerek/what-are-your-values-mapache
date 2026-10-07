@@ -14,7 +14,10 @@ import {
   type PlayerData,
 } from "./PlayerData"
 import { createPlayerSettings } from "./PlayerSettings"
-import { createWayvmExport, serializeWayvmExport } from "./WayvmExport"
+import { encodePlayerData } from "./PlayerDataCodec"
+import { serializePersistedJson } from "./PersistedJson"
+import { createSha256Hex } from "./Sha256"
+import { createWayvmExport, decodeWayvmExport, encodeWayvmExport } from "./WayvmExport"
 
 const CREATED_AT = "2026-08-01T10:00:00.000Z"
 const CUSTOM_VALUE_CREATED_AT = "2026-08-01T10:01:00.000Z"
@@ -122,16 +125,19 @@ export async function createWayvmExportV1TestVector() {
     }),
   })
 
-  const wayvmExport = await createWayvmExport({
+  const currentExport = await createWayvmExport({
     exportedAt: WAYVM_EXPORT_V1_TEST_VECTOR.exportedAt,
     sourceAppVersion: WAYVM_EXPORT_V1_TEST_VECTOR.sourceAppVersion,
     sourceBuild: WAYVM_EXPORT_V1_TEST_VECTOR.sourceBuild,
     playerData,
   })
 
+  const hashable = [...encodeWayvmExport(currentExport).slice(0, 10), encodePlayerData(playerData, 1)]
+  const contentHash = await createSha256Hex(serializePersistedJson(hashable))
+  const serialized = serializePersistedJson([...hashable, contentHash])
   return Object.freeze({
-    wayvmExport,
-    serialized: serializeWayvmExport(wayvmExport),
+    wayvmExport: await decodeWayvmExport(serialized),
+    serialized,
     customValueId,
     firstBattleAchievementId,
   })
