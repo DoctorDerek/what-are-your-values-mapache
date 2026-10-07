@@ -1,6 +1,6 @@
 # Protected Art Asset Operations
 
-This directory is the tracked transport boundary for licensed SeethingSwarm animal assets. The repository may contain the encrypted `seethingswarm-assets.zip` build input, but it must never contain the raw source packs, decrypted `vendor/seethingswarm` custody, purchase records, private download links, or the encryption key.
+This directory is the tracked transport boundary for licensed SeethingSwarm and Heroes99 assets. The repository may contain their encrypted build archives, but it must never contain the raw source packs, decrypted vendor custody, purchase records, private download links, or the encryption key.
 
 The canonical build-time secret is `GHOST_ASSET_KEY_WHAT_ARE_YOUR_VALUES_MAPACHE`. It is intentionally not prefixed with `NEXT_PUBLIC_` or `EXPO_PUBLIC_` because it must never enter a browser or native application bundle.
 
@@ -14,7 +14,7 @@ Before creating or deploying an archive:
 4. Verify that `vendor/seethingswarm` contains the validated registry, staging receipt, generated static asset modules, and licensed PNG files produced by the staging pipeline.
 5. Retain the existing nonempty key exactly as configured in a password manager. There is no application-imposed minimum or maximum length, and whitespace is not trimmed. Never paste it into chat, a commit, an issue, a pull request, a command argument, or a log.
 
-Heroes99 uses the same protected key and build entry point, with a separate `ghost_assets/heroes99-assets.zip` archive and ignored `vendor/heroes99` custody. Its `animated` and `portrait` directories contain only the validated purchased PNG layers. Preparation verifies the full 761-layer animated and 1,146-layer portrait inventories, then generates surface-scoped runtime bindings and appearance thumbnails. Raw sources, generated PNG files and private purchase records remain ignored. Both archives use the same authenticated extractor and exact-byte round-trip verification.
+Heroes99 uses the same protected key and build entry point, with a separate `ghost_assets/heroes99-assets.zip` archive and ignored `vendor/heroes99` custody. Its inspected source inventory contains 761 animated and 1,146 portrait PNG layers. Runtime preparation validates the animated layer count, geometry and appearance references, then generates surface-scoped runtime bindings and appearance thumbnails; portraits remain reserved source custody. Raw sources, generated PNG files and private purchase records remain ignored. Both archives use the same authenticated extractor and exact-byte round-trip verification.
 
 ## Create or rotate the encrypted archive
 
@@ -59,6 +59,8 @@ Vercel can keep `apps/web` as its Root Directory and `turbo run build` as its Bu
 The key participates in the web build’s cache fingerprint, so unkeyed, keyed, and rotated-key builds have distinct cache identities. The encrypted archive and existing preparation scripts, runner, and runner configuration are explicit root-relative inputs; changing them invalidates the consuming web build. Ordinary web inputs and inherited build dependencies and outputs remain intact. This uses the existing Turbo cache and asset lifecycle, not another workflow.
 
 For a fresh protected deployment, verify the safe extraction and preparation status lines, then open its exact deployment URL and start a battle. Both combatants must load licensed animal images, the selected animal must attack, the other must react, and the next pair must appear. A successful deployment or a test accepting placeholder mode does not prove that licensed assets shipped. Public-source CI intentionally retains the placeholder-compatible path.
+
+Also verify the Hub hero and Dressing Room choices on the protected deployment. The hero requests only its selected layers; individual Heroes99 layers must not enter the service worker's eager precache. Saving an appearance must survive reload while Cancel leaves the stored appearance unchanged. The unkeyed source build retains an accessible hero-unavailable presentation without blocking the values game.
 
 ## EAS protected native builds
 
