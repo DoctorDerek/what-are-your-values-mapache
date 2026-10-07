@@ -51,9 +51,9 @@ describe("Heroes99 asset custody and preparation", () => {
     await prepareHeroes99Assets(repositoryRoot)
     for (const platform of ["web", "mobile"]) {
       const root = resolve(repositoryRoot, `apps/${platform}/generated/heroes99`)
-      const module = await readFile(resolve(root, "Heroes99Assets.ts"), "utf8")
-      expect(module).toContain("layers: {}")
-      expect(module).toContain("thumbnailAtlas: null")
+      const generatedModule = await readFile(resolve(root, "Heroes99Assets.ts"), "utf8")
+      expect(generatedModule).toContain("layers: {}")
+      expect(generatedModule).toContain("thumbnailAtlas: null")
       expect(await readdir(root)).toEqual(["Heroes99Assets.ts", "identity.txt"])
     }
   })
