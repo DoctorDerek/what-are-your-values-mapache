@@ -161,6 +161,7 @@ function createHubCallbacks() {
   return {
     appearance: DEFAULT_HEROES99_APPEARANCE,
     onCustomize: jest.fn(),
+    onShare: jest.fn(),
     onAddCustomValue: jest.fn(),
     onBrowseAllValues: jest.fn(),
     onOpenAchievements: jest.fn(),
@@ -255,12 +256,12 @@ describe("NativeHub", () => {
       ["Add Custom Value", callbacks.onAddCustomValue],
       ["Menu", callbacks.onOpenMenu],
       ["Customize my card", callbacks.onCustomize],
+      ["Share my values card", callbacks.onShare],
       ["Battle", callbacks.onStartBattle],
     ] as const) {
       await user.press(screen.getByRole("button", { name: label }))
       expect(callback).toHaveBeenCalledTimes(1)
     }
-    expect(screen.queryByRole("button", { name: /Share/ })).toBeNull()
   })
 
   it("shows the earned five values and backup feedback", async () => {

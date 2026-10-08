@@ -42,6 +42,7 @@ vi.mock("@/components/Heroes99Hero", () => ({
 const animalPresentationProps = Object.freeze({
   appearance: DEFAULT_HEROES99_APPEARANCE,
   onCustomize: vi.fn(),
+  onShare: vi.fn(),
   runtimeClipCatalog: createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
   shouldReduceMotion: false,
 })
@@ -304,7 +305,7 @@ describe("Hub Component Integration", () => {
     expect(within(firstRow).getByText("Acceptance")).toBeVisible()
   })
 
-  it("renders five fresh values and exposes explicit actions without a fake share control", () => {
+  it("renders five fresh values and exposes the sharing action", () => {
     const battleCycle = createInitialBattleCycle("fresh-hub-seed")
 
     const { container } = render(
@@ -357,10 +358,12 @@ describe("Hub Component Integration", () => {
     ).toEqual([
       "Battle",
       "Customize my card",
+      "Share my values card",
       "Browse All Values",
       "Add Custom Value",
     ])
-    expect(screen.queryByRole("button", { name: /Share/ })).toBeNull()
+    fireEvent.click(screen.getByRole("button", { name: "Share my values card" }))
+    expect(animalPresentationProps.onShare).toHaveBeenCalledOnce()
     expect(
       within(valueActions).queryByRole("button", { name: "Menu" }),
     ).not.toBeInTheDocument()

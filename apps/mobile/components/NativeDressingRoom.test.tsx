@@ -60,13 +60,26 @@ async function mountEditor(reduceMotion = false) {
       random: () => 0.5,
     },
   }).start()
+  const onShare = jest.fn()
   const view = await render(
-    <NativeDressingRoom actor={actor} shouldReduceMotion={reduceMotion} />,
+    <NativeDressingRoom actor={actor} shouldReduceMotion={reduceMotion} onShare={onShare} />,
   )
-  return { actor, store, commit, ...view }
+  return { actor, store, commit, onShare, ...view }
 }
 
 describe("native Dressing Room", () => {
+  it("shares the current appearance draft without saving or closing the editor", async () => {
+    const { actor, store, onShare } = await mountEditor()
+    const before = await store.readAll()
+    await fireEvent.press(screen.getByRole("button", { name: "Skin 6" }))
+    await fireEvent.press(screen.getByRole("button", { name: "Share my values card" }))
+    expect(onShare).toHaveBeenCalledWith(actor.getSnapshot().context.draft)
+    expect(actor.getSnapshot().status).toBe("active")
+    expect(actor.getSnapshot().context.draft.skinPalette).toBe(6)
+    expect(await store.readAll()).toEqual(before)
+    actor.stop()
+  })
+
   it("retains a valid draft after a rejected choice and clears feedback on a valid choice", async () => {
     const { actor } = await mountEditor()
     await fireEvent.press(screen.getByRole("button", { name: "Skin 6" }))
