@@ -31,22 +31,58 @@ function readBattleGeometry(page: Page) {
   return page
     .getByRole("main", { name: "Value battle" })
     .evaluate((surface) => {
+      const choices = surface.querySelector<HTMLElement>(
+        '[aria-label="Battle choices"]',
+      )!
       const measure = (element: Element) => {
         const { x, y, width, height } = element.getBoundingClientRect()
         return { x, y: y + surface.scrollTop, width, height }
+      }
+      const measureContent = (element: Element) => {
+        const { x, y, width, height } = element.getBoundingClientRect()
+        const viewport = choices.getBoundingClientRect()
+        return {
+          x: x - viewport.x + choices.scrollLeft,
+          y: y - viewport.y + choices.scrollTop,
+          width,
+          height,
+        }
       }
       return {
         scrollTop: surface.scrollTop,
         scrollHeight: surface.scrollHeight,
         scrollWidth: surface.scrollWidth,
         controls: measure(surface.querySelector("nav")!),
-        cards: [...surface.querySelectorAll("[data-value-card] button")].map(
-          measure,
+        choices: {
+          ...measure(choices),
+          scrollHeight: choices.scrollHeight,
+          scrollWidth: choices.scrollWidth,
+        },
+        cards: [...choices.querySelectorAll("[data-value-card] button")].map(
+          measureContent,
         ),
-        arenas: [...surface.querySelectorAll("[data-battle-arena-side]")].map(
-          measure,
+        arenas: [...choices.querySelectorAll("[data-battle-arena-side]")].map(
+          measureContent,
         ),
       }
+    })
+}
+
+function expectUnchangedBattleGeometry(
+  page: Page,
+  geometry: Awaited<ReturnType<typeof readBattleGeometry>>,
+) {
+  const withSubpixelPosition = (bounds: (typeof geometry.cards)[number]) => ({
+    ...bounds,
+    x: expect.closeTo(bounds.x, 3),
+    y: expect.closeTo(bounds.y, 3),
+  })
+  return expect
+    .poll(() => readBattleGeometry(page))
+    .toEqual({
+      ...geometry,
+      cards: geometry.cards.map(withSubpixelPosition),
+      arenas: geometry.arenas.map(withSubpixelPosition),
     })
 }
 
@@ -69,11 +105,18 @@ for (const textSize of [100, 200, 400]) {
     })
     await expect(cards).toHaveCount(0)
     const beforeArrival = await readBattleGeometry(page)
+    const choices = page.getByRole("region", { name: "Battle choices" })
+    const scrollBeforeArrival = await choices.evaluate(
+      (element) => element.scrollTop,
+    )
     await page.evaluate(() => window.dispatchEvent(new Event("focus")))
     await expect(cards).toHaveCount(2)
     await expect(cards.first().getByRole("heading")).toHaveText("5 Battles")
     await expect(cards.last().getByRole("heading")).toHaveText("First Battle")
-    await expect.poll(() => readBattleGeometry(page)).toEqual(beforeArrival)
+    await expectUnchangedBattleGeometry(page, beforeArrival)
+    expect(await choices.evaluate((element) => element.scrollTop)).toBe(
+      scrollBeforeArrival,
+    )
     await cards.first().hover()
     await page.screenshot({
       path: testInfo.outputPath("achievement-stack.png"),
@@ -91,9 +134,7 @@ for (const textSize of [100, 200, 400]) {
       "First Battle",
     )
     await expect(cards.last().getByRole("heading")).toHaveText("First Battle")
-    await expect
-      .poll(() => readBattleGeometry(page))
-      .toEqual(beforeFirstDismissal)
+    await expectUnchangedBattleGeometry(page, beforeFirstDismissal)
     const olderDismissButton = cards
       .last()
       .getByRole("button", { name: /^Dismiss achievement/ })
@@ -103,9 +144,7 @@ for (const textSize of [100, 200, 400]) {
     await expect(
       page.getByRole("button", { name: "Dismiss achievement: First Battle" }),
     ).toHaveCount(0)
-    await expect
-      .poll(() => readBattleGeometry(page))
-      .toEqual(beforeOlderDismissal)
+    await expectUnchangedBattleGeometry(page, beforeOlderDismissal)
   })
 }
 
@@ -150,7 +189,7 @@ test("the rainbow clock pauses for hover, focus and inactivity then expires with
   await page.evaluate(() => window.dispatchEvent(new Event("focus")))
   await page.clock.runFor(8_000)
   await expect(card).toHaveCount(0)
-  await expect.poll(() => readBattleGeometry(page)).toEqual(geometry)
+  await expectUnchangedBattleGeometry(page, geometry)
   await expect(
     page.getByRole("button", { name: /^Choose / }).first(),
   ).toBeEnabled()

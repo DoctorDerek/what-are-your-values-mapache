@@ -13,6 +13,7 @@ import {
 import { projectBattlePair } from "@game/machines/src/BattleScheduler"
 import type { PresentedBattle } from "@game/machines/src/CombatMachine"
 import { projectScheduledPair } from "@game/machines/src/PairScheduler"
+import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
 import {
   act,
   fireEvent,
@@ -100,6 +101,46 @@ const firstAchievementPresentation = Object.freeze({
 
 describe("Crucible Component Integration", () => {
   afterEach(() => vi.restoreAllMocks())
+
+  it("contains a failed battle callback in the shared render recovery boundary", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined)
+    const { battleCycle, battle } = createBattleProps("battle-callback-failure")
+    const onWinnerSelected = vi.fn(() => {
+      throw new Error("Battle callback failed")
+    })
+    render(
+      <RenderRecoveryBoundary
+        fallback={(retry) => (
+          <button onClick={retry}>Retry battle screen</button>
+        )}
+      >
+        <Crucible
+          {...createHistoryProps()}
+          battle={battle}
+          activeDeck={battleCycle.activeDeck}
+          progressById={battleCycle.progressById}
+          onWinnerSelected={onWinnerSelected}
+          onExit={vi.fn()}
+        />
+      </RenderRecoveryBoundary>,
+    )
+    fireEvent.click(
+      screen.getAllByRole("button", {
+        name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
+      })[0],
+    )
+    expect(
+      await screen.findByRole("button", { name: "Retry battle screen" }),
+    ).toBeVisible()
+    expect(onWinnerSelected).toHaveBeenCalledTimes(1)
+    fireEvent.click(screen.getByRole("button", { name: "Retry battle screen" }))
+    expect(
+      screen.getAllByRole("button", {
+        name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
+      }),
+    ).toHaveLength(2)
+    expect(onWinnerSelected).toHaveBeenCalledTimes(1)
+  })
 
   it("renders both complete choices on the first commit before projection effects", () => {
     const { battleCycle, battle } = createBattleProps("initial-battle-render")

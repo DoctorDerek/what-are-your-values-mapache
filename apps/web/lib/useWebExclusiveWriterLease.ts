@@ -1,5 +1,6 @@
 "use client"
 
+import { getErrorMessage } from "@game/utils/src/Errors"
 import { useSyncExternalStore } from "react"
 import {
   acquireWebExclusiveWriterLease,
@@ -35,7 +36,19 @@ export function createWebExclusiveWriterCoordinator(
     if (acquisitionIsPending || snapshot.status !== "checking") return
     acquisitionIsPending = true
 
-    void acquireLease().then((lease) => {
+    const acquireSafely = async (): Promise<WebExclusiveWriterLeaseResult> => {
+      try {
+        return await acquireLease()
+      } catch (error: unknown) {
+        return {
+          status: "read-only",
+          reason: "lock-request-failed",
+          issue: getErrorMessage(error),
+        }
+      }
+    }
+
+    void acquireSafely().then((lease) => {
       acquisitionIsPending = false
       if (releaseLeaseAfterAcquisition && subscribers.size === 0) {
         if (lease.status === "writer") lease.release()

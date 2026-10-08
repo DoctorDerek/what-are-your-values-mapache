@@ -45,6 +45,40 @@ async function editor() {
 }
 
 describe("Appearance editor", () => {
+  it("rejects an invalid edit without stopping the editor or losing the previous draft", async () => {
+    const { actor, store } = await editor()
+    const before = await store.readAll()
+    actor.send({ type: "AVATAR.CHANGE", change: { skinPalette: 6 } })
+    const draft = actor.getSnapshot().context.draft
+    actor.send({ type: "AVATAR.CHANGE", change: { skinPalette: 999 } })
+    expect(actor.getSnapshot().status).toBe("active")
+    expect(actor.getSnapshot().context.draft).toEqual(draft)
+    expect(actor.getSnapshot().context.hasEditFailure).toBe(true)
+    expect(await store.readAll()).toEqual(before)
+    actor.send({ type: "AVATAR.CHANGE", change: { skinPalette: 5 } })
+    expect(actor.getSnapshot().context.hasEditFailure).toBe(false)
+    expect(actor.getSnapshot().context.draft.skinPalette).toBe(5)
+    actor.stop()
+  })
+
+  it("keeps the save failure visible after a later appearance edit until retry succeeds", async () => {
+    const { actor, failWrites } = await editor()
+    actor.send({ type: "AVATAR.CHANGE", change: { skinPalette: 6 } })
+    failWrites(true)
+    actor.send({ type: "AVATAR.SAVE" })
+    await waitFor(actor, (snapshot) => snapshot.matches("SaveFailed"))
+    actor.send({ type: "AVATAR.CHANGE", change: { facePalette: 3 } })
+    expect(actor.getSnapshot().matches("SaveFailed")).toBe(true)
+    const draft = actor.getSnapshot().context.draft
+    failWrites(false)
+    actor.send({ type: "AVATAR.SAVE" })
+    await waitFor(actor, (snapshot) => snapshot.status === "done")
+    expect(actor.getSnapshot().output?.head.playerData.appearance).toEqual(
+      draft,
+    )
+    actor.stop()
+  })
+
   it("keeps changes as a draft, asks on Back, and discards without writing", async () => {
     const { actor, store } = await editor()
     const before = await store.readAll()

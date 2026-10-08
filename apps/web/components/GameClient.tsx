@@ -35,19 +35,22 @@ import {
   PLAYER_SETTINGS_COPY,
   resolveShouldReduceMotion,
 } from "@game/machines/src/PlayerSettingsPresentation"
-import { rootMachine } from "@game/machines/src/RootMachine"
 import { projectRootBackDisposition } from "@game/machines/src/RootNavigation"
+import type { RootActor } from "@game/machines/src/RuntimeRecovery"
 import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPreparation"
 import { getErrorMessage } from "@game/utils/src/Errors"
-import { useMachine } from "@xstate/react"
+import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
+import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { useReducedMotion } from "motion/react"
 import dynamic from "next/dynamic"
 import type { StaticImageData } from "next/image"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Controls from "@/components/Controls"
+import GameSession from "@/components/GameSession"
 import { ReopenedInformationPanel } from "@/components/InformationPanel"
 import InformationPanelContent from "@/components/InformationPanelContent"
 import ProductMenu from "@/components/ProductMenu"
+import RuntimeRecovery from "@/components/RuntimeRecovery"
 import SeethingSwarmAssetPreparation, {
   usePreparedSeethingSwarmBattle,
   usePreparedSeethingSwarmClips,
@@ -131,20 +134,9 @@ function ReadOnlyGameClient({
   )
 }
 
-function WritableGameClient({
-  durableStore,
-}: {
-  readonly durableStore: DurableStoreAdapter
-}) {
-  const [state, send] = useMachine(rootMachine, {
-    input: {
-      durableStore,
-      appVersion: SOURCE_APP_VERSION,
-      sourceBuild: SOURCE_BUILD,
-      now: () => new Date().toISOString(),
-      randomUuid: () => crypto.randomUUID(),
-    },
-  })
+function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
+  const state = useRecoverableActorSnapshot(gameActor)
+  const send = gameActor.send
   const systemShouldReduceMotion = useReducedMotion() === true
   const browseAllValuesButtonRef = useRef<HTMLButtonElement>(null)
   const returnFocusTargetIdRef = useRef("hub-browse-all-values-button")
@@ -505,13 +497,6 @@ function WritableGameClient({
     },
     [send],
   )
-
-  useEffect(() => {
-    send({
-      type: "APP.HYDRATED",
-      schedulerSeed: crypto.randomUUID(),
-    })
-  }, [send])
 
   useEffect(() => {
     document.documentElement.toggleAttribute(
@@ -1049,17 +1034,36 @@ function WritableGameClient({
   return null
 }
 
-export default function GameClient() {
+function GameClientShell() {
   const durableStore = useMemo(() => createIndexedDbDurableStore(), [])
   const writerLease = useWebExclusiveWriterLease()
+  const [sessionRevision, setSessionRevision] = useState(0)
 
   if (writerLease.status === "checking") return <PlayerDataLoading />
   if (writerLease.status === "read-only")
     return <ReadOnlyGameClient durableStore={durableStore} />
 
   return (
-    <SeethingSwarmAssetPreparation>
-      <WritableGameClient durableStore={durableStore} />
-    </SeethingSwarmAssetPreparation>
+    <GameSession
+      key={sessionRevision}
+      durableStore={durableStore}
+      onReopen={() => setSessionRevision((revision) => revision + 1)}
+    >
+      {(gameActor) => (
+        <SeethingSwarmAssetPreparation>
+          <WritableGameClient gameActor={gameActor} />
+        </SeethingSwarmAssetPreparation>
+      )}
+    </GameSession>
+  )
+}
+
+export default function GameClient() {
+  return (
+    <RenderRecoveryBoundary
+      fallback={(retry) => <RuntimeRecovery onRetry={retry} />}
+    >
+      <GameClientShell />
+    </RenderRecoveryBoundary>
   )
 }

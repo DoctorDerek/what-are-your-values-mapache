@@ -12,7 +12,7 @@ import {
   type Heroes99RuntimeAssets,
 } from "@game/data/src/Heroes99RuntimeAssets"
 import type { avatarMachine } from "@game/machines/src/AvatarMachine"
-import { useSelector } from "@xstate/react"
+import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { cx } from "classix"
 import { useState } from "react"
 import { Image, Modal, Pressable, ScrollView, View } from "react-native"
@@ -32,7 +32,7 @@ export default function NativeDressingRoom({
   actor: ActorRefFrom<typeof avatarMachine>
   shouldReduceMotion: boolean
 }) {
-  const state = useSelector(actor, (snapshot) => snapshot)
+  const state = useRecoverableActorSnapshot(actor)
   const [category, setCategory] = useState<Heroes99Category>("Skin")
   const { draft } = state.context
   const isSaving = state.matches("Saving")
@@ -197,6 +197,14 @@ export default function NativeDressingRoom({
           )}
         </View>
       </ScrollView>
+      {state.context.hasEditFailure && (
+        <Text
+          accessibilityRole="alert"
+          className="mx-3 border-4 border-black bg-white p-3 text-black"
+        >
+          {DRESSING_ROOM_COPY.editError}
+        </Text>
+      )}
       {state.matches("SaveFailed") && (
         <View
           accessibilityRole="alert"

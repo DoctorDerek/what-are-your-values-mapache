@@ -20,6 +20,29 @@ async function waitForControlledApplication(page: Page) {
     .toBe(true)
 }
 
+async function seedPreviouslyCachedAnimalArt(page: Page) {
+  const worker = await page.request.get("/sw.js")
+  const animalPath = (await worker.text()).match(
+    /\/_next\/static\/media\/[^"\s]+_strip\d+\.[^"\s]+\.png/,
+  )?.[0]
+  if (!animalPath) throw new Error("Built service worker has no animal fixture")
+  await page.goto("/icons/icon-192.png")
+  await page.evaluate(async (path) => {
+    const cache = await caches.open(`serwist-precache-v2-${location.origin}/`)
+    const response = await fetch(path)
+    const headers = new Headers(response.headers)
+    headers.set("x-cache-fixture", "previously-precached")
+    await cache.put(
+      `${path}?__WB_REVISION__=legacy`,
+      new Response(await response.arrayBuffer(), {
+        headers,
+        status: response.status,
+      }),
+    )
+  }, animalPath)
+  return animalPath
+}
+
 if (playwrightTestBaseUrl) {
   test("the deployment publishes the generated service worker", async ({
     request,
@@ -41,6 +64,12 @@ test("the web runtime follows its deployment offline policy", async ({
   if (browserName === "chromium")
     await page.route("**/*", (route) => route.continue())
   await page.emulateMedia({ reducedMotion: "reduce" })
+  const registrationIsExpected =
+    Boolean(playwrightTestBaseUrl) && !isProtectedVercelPreview
+  const legacyAnimalPath =
+    registrationIsExpected && browserName !== "webkit"
+      ? await seedPreviouslyCachedAnimalArt(page)
+      : null
   await page.goto("/")
   await expect(
     page.getByRole("heading", { name: "What Are Your Values, Mapache?" }),
@@ -52,8 +81,6 @@ test("the web runtime follows its deployment offline policy", async ({
       exact: true,
     }),
   ).toBeVisible()
-  const registrationIsExpected =
-    Boolean(playwrightTestBaseUrl) && !isProtectedVercelPreview
   await expect
     .poll(() =>
       page.evaluate(
@@ -116,6 +143,23 @@ test("the web runtime follows its deployment offline policy", async ({
       cachedAnimalUrls[0],
     ),
   ).toBe(true)
+  if (legacyAnimalPath) {
+    const restored = await page.evaluate(async (path) => {
+      const cache = await caches.open("wayvm-animal-strips-v1")
+      const cached = await cache.match(path)
+      const response = await fetch(path)
+      return {
+        cacheSource: cached?.headers.get("x-cache-fixture"),
+        responseSource: response.headers.get("x-cache-fixture"),
+        ok: response.ok,
+        bytes: (await response.arrayBuffer()).byteLength,
+      }
+    }, legacyAnimalPath)
+    expect(restored.cacheSource).toBe("previously-precached")
+    expect(restored.responseSource).toBe("previously-precached")
+    expect(restored.ok).toBe(true)
+    expect(restored.bytes).toBeGreaterThan(0)
+  }
   await page
     .getByRole("button", { name: "Add Custom Value", exact: true })
     .click()
@@ -173,46 +217,4 @@ test("the web runtime follows its deployment offline policy", async ({
     page.getByRole("button", { name: /^Choose / }).first(),
   ).toBeEnabled()
   await expect(page.locator("[data-placeholder-playback]")).toHaveCount(0)
-})
-
-test("preserves previously precached animal art before activating the new cache policy", async ({
-  page,
-  context,
-  browserName,
-  isProtectedVercelPreview,
-}) => {
-  test.skip(
-    !playwrightTestBaseUrl ||
-      isProtectedVercelPreview ||
-      browserName === "webkit",
-    "Requires an unprotected production worker and offline-capable browser",
-  )
-  const worker = await page.request.get("/sw.js")
-  const animalPath = (await worker.text()).match(
-    /\/_next\/static\/media\/[^"\s]+_strip\d+\.[^"\s]+\.png/,
-  )?.[0]
-  expect(animalPath).toBeDefined()
-  await page.goto("/icons/icon-192.png")
-  await page.evaluate(async (path) => {
-    if (!path) throw new Error("Missing animal fixture")
-    const cache = await caches.open("serwist-precache-legacy-test")
-    await cache.put(`${path}?__WB_REVISION__=legacy`, await fetch(path))
-  }, animalPath)
-  await page.goto("/")
-  await waitForControlledApplication(page)
-  await context.setOffline(true)
-  const restored = await page.evaluate(async (path) => {
-    if (!path) throw new Error("Missing animal fixture")
-    const cache = await caches.open("wayvm-animal-strips-v1")
-    const cached = await cache.match(path)
-    const response = await fetch(path)
-    return {
-      cached: Boolean(cached),
-      ok: response.ok,
-      bytes: (await response.arrayBuffer()).byteLength,
-    }
-  }, animalPath)
-  expect(restored.cached).toBe(true)
-  expect(restored.ok).toBe(true)
-  expect(restored.bytes).toBeGreaterThan(0)
 })

@@ -18,6 +18,30 @@ describe("Web Exclusive Writer React Lifecycle", () => {
     vi.unstubAllGlobals()
   })
 
+  it.each(["rejected", "thrown"])(
+    "leaves startup safely read-only when lease acquisition is %s",
+    async (failure) => {
+      const acquire = vi.fn(() => {
+        if (failure === "thrown") throw new Error("Locks unavailable")
+        return Promise.reject(new Error("Locks unavailable"))
+      })
+      const coordinator = createWebExclusiveWriterCoordinator(acquire)
+      const { result, unmount } = renderHook(() =>
+        useWebExclusiveWriterLease(coordinator),
+      )
+      await waitFor(() => expect(result.current.status).toBe("read-only"))
+      expect(result.current).toEqual({
+        status: "read-only",
+        reason: "lock-request-failed",
+        issue: "Locks unavailable",
+      })
+      unmount()
+      await vi.waitFor(() =>
+        expect(coordinator.getSnapshot().status).toBe("checking"),
+      )
+    },
+  )
+
   it("uses browser lock discovery when no acquisition override is supplied", async () => {
     const request = vi.fn<WebExclusiveWriterLockManager["request"]>(
       async (_name, _options, callback) => callback(null),

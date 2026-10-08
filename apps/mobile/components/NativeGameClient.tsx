@@ -29,11 +29,11 @@ import {
   PLAYER_SETTINGS_COPY,
   resolveShouldReduceMotion,
 } from "@game/machines/src/PlayerSettingsPresentation"
-import { rootMachine } from "@game/machines/src/RootMachine"
 import { projectRootBackDisposition } from "@game/machines/src/RootNavigation"
+import type { RootActor } from "@game/machines/src/RuntimeRecovery"
 import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPreparation"
-import { useMachine } from "@xstate/react"
-import * as ExpoCrypto from "expo-crypto"
+import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
+import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { AppState, BackHandler, View } from "react-native"
 import { useReducedMotion } from "react-native-reanimated"
@@ -46,6 +46,7 @@ import NativeDataManagement, {
   type NativeDataManagementActivity,
 } from "@/components/NativeDataManagement"
 import NativeDressingRoom from "@/components/NativeDressingRoom"
+import NativeGameSession from "@/components/NativeGameSession"
 import NativeHub from "@/components/NativeHub"
 import { ReopenedNativeInformationPanel } from "@/components/NativeInformationPanel"
 import NativeInformationPanelContent from "@/components/NativeInformationPanelContent"
@@ -56,6 +57,7 @@ import NativePersistenceFailure, {
 import NativePlayerDataLoading from "@/components/NativePlayerDataLoading"
 import NativeProductMenu from "@/components/NativeProductMenu"
 import NativeResults from "@/components/NativeResults"
+import NativeRuntimeRecovery from "@/components/NativeRuntimeRecovery"
 import NativeSeethingSwarmAssetPreparation, {
   usePreparedNativeSeethingSwarmBattle,
   usePreparedNativeSeethingSwarmClips,
@@ -63,28 +65,33 @@ import NativeSeethingSwarmAssetPreparation, {
 import NativeSettings from "@/components/NativeSettings"
 import useNativePlayerDataFiles from "@/components/useNativePlayerDataFiles"
 import { SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG } from "@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog"
-import { expoDurableStore } from "@/lib/ExpoDurableStore"
 import { createNativeAppLifecycleEvent } from "@/lib/NativeAppLifecycleEvents"
-import packageMetadata from "@/package.json"
-
-const nativeRootMachineInput = Object.freeze({
-  durableStore: expoDurableStore,
-  appVersion: packageMetadata.version,
-  sourceBuild: process.env.EXPO_PUBLIC_SOURCE_BUILD ?? "development",
-  now: () => new Date().toISOString(),
-  randomUuid: () => ExpoCrypto.randomUUID(),
-})
 
 export default function NativeGameClient() {
+  const [sessionRevision, setSessionRevision] = useState(0)
   return (
-    <NativeSeethingSwarmAssetPreparation>
-      <NativeGameClientContent />
-    </NativeSeethingSwarmAssetPreparation>
+    <RenderRecoveryBoundary
+      fallback={(retry) => <NativeRuntimeRecovery onRetry={retry} />}
+    >
+      <NativeGameSession
+        key={sessionRevision}
+        onReopen={() => setSessionRevision((revision) => revision + 1)}
+      >
+        {(gameActor) => (
+          <NativeSeethingSwarmAssetPreparation>
+            <NativeGameClientContent gameActor={gameActor} />
+          </NativeSeethingSwarmAssetPreparation>
+        )}
+      </NativeGameSession>
+    </RenderRecoveryBoundary>
   )
 }
 
-function NativeGameClientContent() {
-  const [schedulerSeed] = useState(() => ExpoCrypto.randomUUID())
+function NativeGameClientContent({
+  gameActor,
+}: {
+  readonly gameActor: RootActor
+}) {
   const systemShouldReduceMotion = useReducedMotion()
   const [isProductMenuOpen, setIsProductMenuOpen] = useState(false)
   const [isControlsOpen, setIsControlsOpen] = useState(false)
@@ -96,9 +103,8 @@ function NativeGameClientContent() {
     useState(false)
   const [customValueBuilderRequestId, setCustomValueBuilderRequestId] =
     useState(0)
-  const [state, send] = useMachine(rootMachine, {
-    input: nativeRootMachineInput,
-  })
+  const state = useRecoverableActorSnapshot(gameActor)
+  const send = gameActor.send
   const { isReadingImportFile, chooseBackup } = useNativePlayerDataFiles({
     state,
     send,
@@ -356,10 +362,6 @@ function NativeGameClientContent() {
     },
     [send],
   )
-
-  useEffect(() => {
-    send({ type: "APP.HYDRATED", schedulerSeed })
-  }, [schedulerSeed, send])
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (appState) => {

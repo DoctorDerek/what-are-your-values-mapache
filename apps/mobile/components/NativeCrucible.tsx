@@ -18,7 +18,8 @@ import {
 import type { ControlHintPreference } from "@game/machines/src/PlayerSettings"
 import { getValueChoiceControlHint } from "@game/machines/src/PlayerSettingsPresentation"
 import { getLevelFromXP } from "@game/utils/src/LevelMath"
-import { useMachine } from "@xstate/react"
+import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
+import { useActorRef } from "@xstate/react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AccessibilityInfo, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
@@ -76,9 +77,11 @@ export default function NativeCrucible({
     expectedScheduler: BattleSchedulerRestorePoint,
   ) => void
 }) {
-  const [state, send] = useMachine(combatMachine, {
+  const actor = useActorRef(combatMachine, {
     input: { initialBattle: battle, animationSpeed, onWinnerSelected },
   })
+  const state = useRecoverableActorSnapshot(actor)
+  const send = actor.send
   const isPresentationReady = usePreparedNativeSeethingSwarmBattle(
     battle,
     runtimeClipCatalog,

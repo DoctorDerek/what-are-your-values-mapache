@@ -2,7 +2,11 @@
   "name": "@game/utils",
   "version": "0.1.0",
   "private": true,
+  "peerDependencies": {
+    "react": "^19"
+  },
   "devDependencies": {
+    "@types/react": "^19",
     "typescript": "^6"
   }
 }
