@@ -2,24 +2,24 @@ import { Component, type ReactNode } from "react"
 
 type RenderRecoveryBoundaryProps = {
   readonly children: ReactNode
-  readonly fallback: (retry: () => void) => ReactNode
+  readonly fallback: (retry: () => void, error: unknown) => ReactNode
 }
 
 export default class RenderRecoveryBoundary extends Component<
   RenderRecoveryBoundaryProps,
-  { readonly hasError: boolean }
+  { readonly failure: { readonly error: unknown } | null }
 > {
-  state = { hasError: false }
+  state: { readonly failure: { readonly error: unknown } | null } = { failure: null }
 
-  static getDerivedStateFromError() {
-    return { hasError: true }
+  static getDerivedStateFromError(error: unknown) {
+    return { failure: { error } }
   }
 
-  retry = () => this.setState({ hasError: false })
+  retry = () => this.setState({ failure: null })
 
   render() {
-    return this.state.hasError
-      ? this.props.fallback(this.retry)
+    return this.state.failure
+      ? this.props.fallback(this.retry, this.state.failure.error)
       : this.props.children
   }
 }

@@ -4,6 +4,7 @@ import {
 } from "@game/data/src/Heroes99Appearance"
 import { applyHeroes99Choice } from "@game/data/src/Heroes99DressingRoom"
 import { assign, fromPromise, setup } from "xstate"
+import { getErrorMessage } from "@game/utils/src/Errors"
 import { inspectBattleProfileStore } from "./BattleProfileHydration"
 import {
   replaceBattleProfileStorePlayerDataForLocalMutation,
@@ -21,6 +22,7 @@ type AvatarInput = Readonly<{
 type AvatarContext = AvatarInput & {
   draft: Heroes99Appearance
   hasEditFailure: boolean
+  errorMessage: string | null
 }
 type AvatarEvent =
   | { type: "AVATAR.CHANGE"; change: Partial<Heroes99Appearance> }
@@ -79,9 +81,9 @@ export const avatarMachine = setup({
             : event.type === "AVATAR.RANDOMIZE"
               ? randomizeHeroes99Appearance(context.random)
               : context.draft
-        return { draft, hasEditFailure: false }
-      } catch {
-        return { hasEditFailure: true }
+        return { draft, hasEditFailure: false, errorMessage: null }
+      } catch (error) {
+        return { hasEditFailure: true, errorMessage: getErrorMessage(error) }
       }
     }),
   },
@@ -91,6 +93,7 @@ export const avatarMachine = setup({
     ...input,
     draft: input.state.head.playerData.appearance,
     hasEditFailure: false,
+    errorMessage: null,
   }),
   initial: "Editing",
   output: ({ context }) => context.state,
@@ -116,6 +119,7 @@ export const avatarMachine = setup({
       },
     },
     Saving: {
+      entry: assign({ errorMessage: null }),
       invoke: {
         src: "saveAppearance",
         input: ({ context }) => context,
@@ -123,7 +127,7 @@ export const avatarMachine = setup({
           target: "Done",
           actions: assign({ state: ({ event }) => event.output }),
         },
-        onError: "SaveFailed",
+        onError: { target: "SaveFailed", actions: assign({ errorMessage: ({ event }) => getErrorMessage(event.error) }) },
       },
     },
     SaveFailed: {
