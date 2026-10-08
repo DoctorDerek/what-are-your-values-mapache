@@ -22,8 +22,8 @@ describe("getErrorMessage", () => {
     expect(getErrorMessage(null)).toBe("null")
   })
 
-  it("converts undefined to empty message", () => {
-    expect(getErrorMessage(undefined)).toBe("")
+  it.each([undefined, new Error(), { message: "   " }])("provides a meaningful fallback for an empty failure: %s", (error) => {
+    expect(getErrorMessage(error)).toBe("Unknown error")
   })
 
   it("handles objects without message property", () => {
