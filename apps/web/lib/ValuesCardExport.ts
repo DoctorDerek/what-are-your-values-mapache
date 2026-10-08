@@ -80,10 +80,10 @@ export async function prepareWebValuesCard(
     })], { type: "image/gif" })
     signal.throwIfAborted()
     const file = new File([blob], `my-values-card.${format}`, { type: blob.type })
-    const previewUri = URL.createObjectURL(blob)
-    const stillPreviewUri = format === "png" ? previewUri : URL.createObjectURL(still)
     const shareData: ShareData = { files: [file] }
     const canShare = typeof navigator.canShare === "function" && navigator.canShare(shareData)
+    const previewUri = URL.createObjectURL(blob)
+    const stillPreviewUri = format === "png" ? previewUri : URL.createObjectURL(still)
     return {
       format, previewUri, stillPreviewUri, byteLength: blob.size, canShare,
       save: async () => {
