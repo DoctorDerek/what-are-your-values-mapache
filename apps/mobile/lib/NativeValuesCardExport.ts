@@ -14,14 +14,14 @@ import {
 } from "@game/data/src/ValuesCardScene"
 import { encodeGif } from "@game/utils/src/EncodeGif"
 import {
-  AlphaType, ColorType, FilterMode, FontSlant, FontWidth, FontWeight, ImageFormat,
-  MipmapMode, Skia, type SkFont, type SkImage,
+  AlphaType, ColorType, FilterMode, ImageFormat,
+  MipmapMode, Skia, type SkParagraph, type SkImage,
 } from "@shopify/react-native-skia"
 import { Directory, File, Paths } from "expo-file-system"
 import { isAvailableAsync, shareAsync } from "expo-sharing"
 import { Image, Platform } from "react-native"
 import { HEROES99_ASSETS } from "@/generated/heroes99/Heroes99Assets"
-import { composeNativeHeroes99 } from "@/lib/ComposeNativeHeroes99"
+import { composeNativeHeroes99 } from "./ComposeNativeHeroes99"
 
 async function loadImage(uri: string, signal: AbortSignal) {
   const data = await Skia.Data.fromURI(uri)
@@ -43,8 +43,8 @@ export async function prepareNativeValuesCard(
   if (!surface) throw new Error("Card rendering is unavailable")
   const canvas = surface.getCanvas()
   const paint = Skia.Paint()
-  const fontManager = Skia.FontMgr.System()
-  const fonts = new Map<string, SkFont>()
+  const paragraphs = new Map<string, SkParagraph>()
+  const measuredWidths = new Map<string, number>()
   const images = new Map<number | "hero", SkImage>()
   const cache = new Directory(Paths.cache, `values-card-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   let isPrepared = false
@@ -55,31 +55,44 @@ export async function prepareNativeValuesCard(
     }
     const hero = includeHero ? await composeNativeHeroes99(model.appearance, HEROES99_ASSETS, signal) : null
     if (hero) images.set("hero", await loadImage(hero.source.uri, signal))
-    const font = (size: number, weight: CardText["weight"]) => {
-      const key = `${size}:${weight}`
-      const existing = fonts.get(key)
-      if (existing) return existing
-      const typeface = fontManager.matchFamilyStyle(Platform.OS === "ios" ? "Arial" : "sans-serif", {
-        weight: weight === 400 ? FontWeight.Normal : weight === 700 ? FontWeight.Bold : FontWeight.Black,
-        width: FontWidth.Normal, slant: FontSlant.Upright,
-      })
-      const created = Skia.Font(typeface, size)
-      typeface.dispose()
-      fonts.set(key, created)
-      return created
+    const createParagraph = (value: string, size: number, weight: CardText["weight"], color: string) => {
+      const builder = Skia.ParagraphBuilder.Make({ textStyle: {
+        color: Skia.Color(color), fontSize: size, fontStyle: { weight },
+        fontFamilies: [Platform.OS === "ios" ? "Arial" : "sans-serif"],
+      } })
+      try {
+        const paragraph = builder.addText(value).build()
+        paragraph.layout(0)
+        paragraph.layout(Math.ceil(paragraph.getMaxIntrinsicWidth()))
+        return paragraph
+      } finally { builder.dispose() }
     }
     const painter: ValuesCardPainter = {
       rectangle: (bounds, color) => {
         paint.setColor(Skia.Color(color))
         canvas.drawRect(Skia.XYWHRect(bounds.x, bounds.y, bounds.width, bounds.height), paint)
       },
-      measure: (value, size, weight) => font(size, weight).measureText(value).width,
+      measure: (value, size, weight) => {
+        const key = JSON.stringify([value, size, weight])
+        const existing = measuredWidths.get(key)
+        if (existing !== undefined) return existing
+        const paragraph = createParagraph(value, size, weight, palette.ink)
+        try {
+          const width = paragraph.getMaxIntrinsicWidth()
+          measuredWidths.set(key, width)
+          return width
+        } finally { paragraph.dispose() }
+      },
       text: ({ value, x, y, size, weight, color, align = "left" }) => {
-        const face = font(size, weight)
-        const textWidth = face.measureText(value).width
-        paint.setColor(Skia.Color(color))
-        paint.setAntiAlias(true)
-        canvas.drawText(value, align === "left" ? x : align === "right" ? x - textWidth : x - textWidth / 2, y, paint, face)
+        const key = JSON.stringify([value, size, weight, color])
+        let paragraph = paragraphs.get(key)
+        if (!paragraph) {
+          paragraph = createParagraph(value, size, weight, color)
+          paragraphs.set(key, paragraph)
+        }
+        const textWidth = paragraph.getMaxIntrinsicWidth()
+        const baseline = paragraph.getLineMetrics()[0]?.baseline ?? 0
+        paragraph.paint(canvas, align === "left" ? x : align === "right" ? x - textWidth : x - textWidth / 2, y - baseline)
       },
       sprite: (key, source, target) => {
         const image = images.get(key)
@@ -150,8 +163,7 @@ export async function prepareNativeValuesCard(
   } finally {
     if (!isPrepared && cache.exists) cache.delete()
     images.forEach((image) => image.dispose())
-    fonts.forEach((font) => font.dispose())
-    fontManager.dispose()
+    paragraphs.forEach((paragraph) => paragraph.dispose())
     paint.dispose()
     surface.dispose()
   }

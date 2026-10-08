@@ -57,8 +57,8 @@ export default function NativeValuesCardShare({ model, shouldReduceMotion, onClo
             onPress={() => send({ type: "CARD_SHARE.HERO", includeHero: !includeHero })} className="min-h-12 flex-row items-center gap-3">
             <Text className="text-2xl text-white">{includeHero ? "☑" : "☐"}</Text><Text className="font-bold text-white">{copy.includeHero}</Text>
           </Pressable>
-          {error && <View accessibilityRole="alert" className="gap-2 border-4 border-black bg-white p-3">
-            <Text className="font-bold text-black">{artifact ? copy.deliveryFailure : copy.failure}</Text>
+          {error && <View className="gap-2 border-4 border-black bg-white p-3">
+            <Text accessibilityRole="alert" className="font-bold text-black">{artifact ? copy.deliveryFailure : copy.failure}</Text>
             <Button variant="outline" size="compact" onPress={() => setShowDetails((value) => !value)}><Text>{copy.details}</Text></Button>
             {showDetails && <Text selectable className="text-black">{error}</Text>}
           </View>}
