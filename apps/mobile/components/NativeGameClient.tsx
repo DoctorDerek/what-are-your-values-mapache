@@ -9,6 +9,7 @@ import {
 } from "@game/data/src/ProductMenu"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { rankValues } from "@game/data/src/ValueRanking"
+import { createValuesCardModel, type ValuesCardModel } from "@game/data/src/ValuesCard"
 import {
   getPendingAchievementPresentations,
   projectAchievementCatalog,
@@ -63,6 +64,7 @@ import NativeSeethingSwarmAssetPreparation, {
   usePreparedNativeSeethingSwarmClips,
 } from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSettings from "@/components/NativeSettings"
+import NativeValuesCardShare from "@/components/NativeValuesCardShare"
 import useNativePlayerDataFiles from "@/components/useNativePlayerDataFiles"
 import { SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG } from "@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog"
 import { createNativeAppLifecycleEvent } from "@/lib/NativeAppLifecycleEvents"
@@ -167,6 +169,7 @@ function NativeGameClientContent({
   )
   usePreparedNativeSeethingSwarmClips(hubClips)
   const [isBattleRequested, setIsBattleRequested] = useState(false)
+  const [sharedCard, setSharedCard] = useState<ValuesCardModel<number> | null>(null)
   const [isAllValuesNavigationBlocked, setIsAllValuesNavigationBlocked] =
     useState(false)
   useEffect(() => {
@@ -204,6 +207,7 @@ function NativeGameClientContent({
   const isHubReady = state.matches("Hub")
   const canAwaitBattle =
     isHubReady &&
+    sharedCard === null &&
     !isProductMenuOpen &&
     activeInformationPanelId === null &&
     !isControlsOpen
@@ -575,10 +579,14 @@ function NativeGameClientContent({
     const avatar = state.children.avatar
     if (!avatar) throw new Error("Expected the appearance editor actor")
     return (
+      <>
       <NativeDressingRoom
         actor={avatar}
         shouldReduceMotion={shouldReduceMotion}
+        onShare={(appearance) => setSharedCard(createValuesCardModel(rankedValues, appearance, SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG))}
       />
+      {sharedCard && <NativeValuesCardShare model={sharedCard} shouldReduceMotion={shouldReduceMotion} onClose={() => setSharedCard(null)} />}
+      </>
     )
   }
 
@@ -587,6 +595,7 @@ function NativeGameClientContent({
       <View className="flex-1">
         <NativeHub
           appearance={playerData.appearance}
+          onShare={() => setSharedCard(createValuesCardModel(rankedValues, playerData.appearance, SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG))}
           onCustomize={() => send({ type: "AVATAR.OPEN_REQUESTED" })}
           rankedValues={rankedValues}
           runtimeClipCatalog={SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG}
@@ -600,6 +609,7 @@ function NativeGameClientContent({
           isBattlePending={isBattleRequested}
           onStartBattle={handleStartBattle}
         />
+        {sharedCard && <NativeValuesCardShare model={sharedCard} shouldReduceMotion={shouldReduceMotion} onClose={() => setSharedCard(null)} />}
         <NativeProductMenu
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}
           open={isProductMenuOpen}

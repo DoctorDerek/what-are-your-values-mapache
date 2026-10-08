@@ -8,6 +8,7 @@ import { presentationLoadingCopy } from "@game/data/src/PresentationLoadingCopy"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
+import { VALUES_CARD_COPY } from "@game/data/src/ValuesCard"
 import type { StaticImageData } from "next/image"
 import { useCallback, useEffect, useRef, useState, type Ref } from "react"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
@@ -31,6 +32,7 @@ export default function Hub({
   onOpenMenu,
   onStartBattle,
   onCustomize,
+  onShare,
 }: {
   customValueInvitation?: {
     editorRequestId?: number
@@ -54,6 +56,7 @@ export default function Hub({
   onOpenMenu: () => void
   onStartBattle: () => void
   onCustomize: () => void
+  onShare: () => void
 }) {
   const [isDraftNavigationBlocked, setIsDraftNavigationBlocked] =
     useState(false)
@@ -124,7 +127,7 @@ export default function Hub({
       />
       <nav
         aria-label={PERSONAL_HUB_COPY.actions}
-        className="grid w-full max-w-7xl grid-cols-2 gap-4 [&_button]:min-w-0"
+        className="grid w-full max-w-7xl grid-cols-6 gap-4 [&_button]:min-w-0"
       >
         <Button
           disabled={isNavigationBlocked}
@@ -139,7 +142,7 @@ export default function Hub({
           size="sm"
           typographyClassName="text-2xl xl:text-3xl"
           wrap
-          className="relative"
+          className="relative col-span-6 xl:col-span-2"
         >
           <span className={isBattlePending ? "invisible" : undefined}>
             {PERSONAL_HUB_COPY.battle}
@@ -152,6 +155,7 @@ export default function Hub({
         </Button>
         <Button
           id="hub-customize-button"
+          className="col-span-3 xl:col-span-2"
           variant="secondary"
           size="sm"
           typographyClassName="text-base xl:text-lg"
@@ -161,7 +165,12 @@ export default function Hub({
         >
           {DRESSING_ROOM_COPY.customize}
         </Button>
+        <Button id="hub-share-button" className="col-span-3 xl:col-span-2" variant="secondary" size="sm"
+          typographyClassName="text-base xl:text-lg" wrap disabled={isNavigationBlocked} onClick={onShare}>
+          {VALUES_CARD_COPY.title}
+        </Button>
         <Button
+          className="col-span-3"
           disabled={isNavigationBlocked}
           ref={browseAllValuesButtonRef}
           id="hub-browse-all-values-button"
@@ -175,6 +184,7 @@ export default function Hub({
         </Button>
         <Button
           disabled={customValueInvitation?.isSaving}
+          className="col-span-3"
           id="hub-add-custom-value-button"
           variant="outline"
           size="sm"

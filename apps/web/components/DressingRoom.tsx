@@ -1,5 +1,7 @@
 "use client"
 
+import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
+import { VALUES_CARD_COPY } from "@game/data/src/ValuesCard"
 import {
   DRESSING_ROOM_COPY,
   getHeroes99PaletteChoices,
@@ -30,9 +32,11 @@ const assets: Heroes99RuntimeAssets<StaticImageData> = HEROES99_ASSETS
 export default function DressingRoom({
   actor,
   shouldReduceMotion,
+  onShare,
 }: {
   actor: ActorRefFrom<typeof avatarMachine>
   shouldReduceMotion: boolean
+  onShare: (appearance: Heroes99Appearance) => void
 }) {
   const state = useRecoverableActorSnapshot(actor)
   const [category, setCategory] = useState<Heroes99Category>("Skin")
@@ -196,7 +200,7 @@ export default function DressingRoom({
           </Button>
         </div>
       )}
-      <footer className="grid w-full max-w-7xl grid-cols-2 gap-4">
+      <footer className="grid w-full max-w-7xl grid-cols-2 gap-4 xl:grid-cols-3">
         <Button
           variant="outline"
           disabled={isSaving}
@@ -212,6 +216,8 @@ export default function DressingRoom({
         >
           {isSaving ? DRESSING_ROOM_COPY.saving : DRESSING_ROOM_COPY.save}
         </Button>
+        <Button id="dressing-room-share-button" className="col-span-2 xl:col-span-1" variant="secondary" wrap
+          disabled={isSaving} onClick={() => onShare(draft)}>{VALUES_CARD_COPY.title}</Button>
       </footer>
       <Dialog
         open={state.matches("ConfirmingLeave")}

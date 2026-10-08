@@ -6,6 +6,7 @@ import { presentationLoadingCopy } from "@game/data/src/PresentationLoadingCopy"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
+import { VALUES_CARD_COPY } from "@game/data/src/ValuesCard"
 import { cx } from "classix"
 import { ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
@@ -26,6 +27,7 @@ export default function NativeHub({
   onOpenMenu,
   onStartBattle,
   onCustomize,
+  onShare,
 }: {
   appearance: Heroes99Appearance
   isBattlePending?: boolean
@@ -38,6 +40,7 @@ export default function NativeHub({
   onOpenMenu: () => void
   onStartBattle: () => void
   onCustomize: () => void
+  onShare: () => void
 }) {
   const { hasComparisons, topFive } = projectHubValues(rankedValues)
   return (
@@ -90,9 +93,9 @@ export default function NativeHub({
           )}
         </View>
         <View className="w-full max-w-7xl gap-4">
-          <View className="flex-row gap-4">
+          <View className="gap-4 xl:flex-row">
             <Button
-              className="min-w-0 flex-1"
+              className="min-w-0 xl:flex-1"
               size="compact"
               onPress={onStartBattle}
               accessibilityState={{ busy: isBattlePending }}
@@ -114,6 +117,7 @@ export default function NativeHub({
                 </View>
               )}
             </Button>
+            <View className="flex-row gap-4 xl:flex-[2]">
             <Button
               className="min-w-0 flex-1"
               variant="secondary"
@@ -122,6 +126,10 @@ export default function NativeHub({
             >
               <Text>{DRESSING_ROOM_COPY.customize}</Text>
             </Button>
+            <Button className="min-w-0 flex-1" variant="secondary" size="compact" onPress={onShare}>
+              <Text>{VALUES_CARD_COPY.title}</Text>
+            </Button>
+            </View>
           </View>
           <View className="flex-row gap-4">
             <Button

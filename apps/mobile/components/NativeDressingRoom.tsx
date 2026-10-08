@@ -1,3 +1,5 @@
+import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
+import { VALUES_CARD_COPY } from "@game/data/src/ValuesCard"
 import {
   DRESSING_ROOM_COPY,
   getHeroes99PaletteChoices,
@@ -28,9 +30,11 @@ const assets: Heroes99RuntimeAssets<number> = HEROES99_ASSETS
 export default function NativeDressingRoom({
   actor,
   shouldReduceMotion,
+  onShare,
 }: {
   actor: ActorRefFrom<typeof avatarMachine>
   shouldReduceMotion: boolean
+  onShare: (appearance: Heroes99Appearance) => void
 }) {
   const state = useRecoverableActorSnapshot(actor)
   const [category, setCategory] = useState<Heroes99Category>("Skin")
@@ -219,7 +223,8 @@ export default function NativeDressingRoom({
           </Button>
         </View>
       )}
-      <View className="flex-row gap-4 px-3 pt-4 pb-6">
+      <View className="gap-4 px-3 pt-4 pb-6">
+      <View className="flex-row gap-4">
         <Button
           className="min-w-0 flex-1"
           variant="outline"
@@ -238,6 +243,8 @@ export default function NativeDressingRoom({
             {isSaving ? DRESSING_ROOM_COPY.saving : DRESSING_ROOM_COPY.save}
           </Text>
         </Button>
+      </View>
+      <Button variant="secondary" disabled={isSaving} onPress={() => onShare(draft)}><Text>{VALUES_CARD_COPY.title}</Text></Button>
       </View>
       <Modal
         transparent
