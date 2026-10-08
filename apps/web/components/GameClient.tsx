@@ -225,8 +225,11 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
   const shareTriggerRef = useRef<HTMLElement | null>(null)
   const closeSharedCard = () => {
     setSharedCard(null)
-    shareTriggerRef.current?.focus()
   }
+  const restoreShareTriggerFocus = useCallback((event: Event) => {
+    event.preventDefault()
+    shareTriggerRef.current?.focus()
+  }, [])
   const [isCustomValueDraftActive, setIsCustomValueDraftActive] =
     useState(false)
   const [isAllValuesNavigationBlocked, setIsAllValuesNavigationBlocked] =
@@ -778,7 +781,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         shareTriggerRef.current = document.getElementById("dressing-room-share-button")
         setSharedCard(createValuesCardModel(rankedValues, appearance, SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG))
       }} />
-      {sharedCard && <ValuesCardShare model={sharedCard} shouldReduceMotion={shouldReduceMotion} onClose={closeSharedCard} />}
+      {sharedCard && <ValuesCardShare model={sharedCard} shouldReduceMotion={shouldReduceMotion} onClose={closeSharedCard} onCloseAutoFocus={restoreShareTriggerFocus} />}
       </>
     )
   }
@@ -839,7 +842,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           isBattlePending={isBattleRequested}
           onStartBattle={handleStartBattle}
         />
-        {sharedCard && <ValuesCardShare model={sharedCard} shouldReduceMotion={shouldReduceMotion} onClose={closeSharedCard} />}
+        {sharedCard && <ValuesCardShare model={sharedCard} shouldReduceMotion={shouldReduceMotion} onClose={closeSharedCard} onCloseAutoFocus={restoreShareTriggerFocus} />}
         <ProductMenu
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}
           open={isProductMenuOpen}

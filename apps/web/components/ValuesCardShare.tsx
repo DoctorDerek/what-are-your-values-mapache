@@ -9,15 +9,16 @@ import {
 import { valuesCardShareMachine } from "@game/machines/src/ValuesCardShareMachine"
 import { useMachine } from "@xstate/react"
 import Image, { type StaticImageData } from "next/image"
-import { useEffect } from "react"
+import { useEffect, type ComponentProps } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { prepareWebValuesCard } from "@/lib/ValuesCardExport"
 
-export default function ValuesCardShare({ model, shouldReduceMotion, onClose }: {
+export default function ValuesCardShare({ model, shouldReduceMotion, onClose, onCloseAutoFocus }: {
   readonly model: ValuesCardModel<StaticImageData>
   readonly shouldReduceMotion: boolean
   readonly onClose: () => void
+  readonly onCloseAutoFocus?: ComponentProps<typeof DialogContent>["onCloseAutoFocus"]
 }) {
   const [state, send, actor] = useMachine(valuesCardShareMachine, {
     input: { prepare: (options) => prepareWebValuesCard(model, options) },
@@ -27,7 +28,8 @@ export default function ValuesCardShare({ model, shouldReduceMotion, onClose }: 
   const isDelivering = state.matches("Delivering")
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent variant="panel" aria-describedby={undefined} className="bg-mapache-vivid-dark flex flex-col gap-4 overflow-y-auto border-4 border-black p-3 xl:p-6">
+      <DialogContent variant="panel" aria-describedby={undefined} onCloseAutoFocus={onCloseAutoFocus}>
+        <div className="bg-mapache-vivid-dark flex min-h-0 flex-col gap-4 overflow-y-auto border-4 border-black p-3 xl:p-6">
         <header className="flex items-center gap-3">
           <Button onClick={onClose} variant="secondary" size="sm">{copy.back}</Button>
           <DialogTitle className="text-mapache-vivid-primary-cyan min-w-0 text-xl font-black xl:text-3xl">{copy.title}</DialogTitle>
@@ -63,6 +65,7 @@ export default function ValuesCardShare({ model, shouldReduceMotion, onClose }: 
         )}
         {artifact && !artifact.canShare && <p className="text-sm text-white">{copy.unsupportedShare}</p>}
         <p role="status" className="min-h-7 font-medium text-white">{isDelivering ? copy.delivering : getValuesCardDeliveryMessage(outcome)}</p>
+        </div>
       </DialogContent>
     </Dialog>
   )
