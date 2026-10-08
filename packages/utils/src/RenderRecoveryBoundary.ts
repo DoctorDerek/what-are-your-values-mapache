@@ -9,7 +9,9 @@ export default class RenderRecoveryBoundary extends Component<
   RenderRecoveryBoundaryProps,
   { readonly failure: { readonly error: unknown } | null }
 > {
-  state: { readonly failure: { readonly error: unknown } | null } = { failure: null }
+  state: { readonly failure: { readonly error: unknown } | null } = {
+    failure: null,
+  }
 
   static getDerivedStateFromError(error: unknown) {
     return { failure: { error } }

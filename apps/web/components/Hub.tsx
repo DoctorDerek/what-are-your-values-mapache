@@ -165,8 +165,16 @@ export default function Hub({
         >
           {DRESSING_ROOM_COPY.customize}
         </Button>
-        <Button id="hub-share-button" className="col-span-3 xl:col-span-2" variant="secondary" size="sm"
-          typographyClassName="text-base xl:text-lg" wrap disabled={isNavigationBlocked} onClick={onShare}>
+        <Button
+          id="hub-share-button"
+          className="col-span-3 xl:col-span-2"
+          variant="secondary"
+          size="sm"
+          typographyClassName="text-base xl:text-lg"
+          wrap
+          disabled={isNavigationBlocked}
+          onClick={onShare}
+        >
           {VALUES_CARD_COPY.title}
         </Button>
         <Button

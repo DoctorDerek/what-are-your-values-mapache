@@ -22,9 +22,12 @@ describe("getErrorMessage", () => {
     expect(getErrorMessage(null)).toBe("null")
   })
 
-  it.each([undefined, new Error(), { message: "   " }])("provides a meaningful fallback for an empty failure: %s", (error) => {
-    expect(getErrorMessage(error)).toBe("Unknown error")
-  })
+  it.each([undefined, new Error(), { message: "   " }])(
+    "provides a meaningful fallback for an empty failure: %s",
+    (error) => {
+      expect(getErrorMessage(error)).toBe("Unknown error")
+    },
+  )
 
   it("handles objects without message property", () => {
     const result = getErrorMessage({ code: 404 })

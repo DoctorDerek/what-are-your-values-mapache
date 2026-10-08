@@ -118,17 +118,22 @@ export default function NativeHub({
               )}
             </Button>
             <View className="flex-row gap-4 xl:flex-[2]">
-            <Button
-              className="min-w-0 flex-1"
-              variant="secondary"
-              size="compact"
-              onPress={onCustomize}
-            >
-              <Text>{DRESSING_ROOM_COPY.customize}</Text>
-            </Button>
-            <Button className="min-w-0 flex-1" variant="secondary" size="compact" onPress={onShare}>
-              <Text>{VALUES_CARD_COPY.title}</Text>
-            </Button>
+              <Button
+                className="min-w-0 flex-1"
+                variant="secondary"
+                size="compact"
+                onPress={onCustomize}
+              >
+                <Text>{DRESSING_ROOM_COPY.customize}</Text>
+              </Button>
+              <Button
+                className="min-w-0 flex-1"
+                variant="secondary"
+                size="compact"
+                onPress={onShare}
+              >
+                <Text>{VALUES_CARD_COPY.title}</Text>
+              </Button>
             </View>
           </View>
           <View className="flex-row gap-4">

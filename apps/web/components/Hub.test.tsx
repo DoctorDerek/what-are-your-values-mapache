@@ -362,7 +362,9 @@ describe("Hub Component Integration", () => {
       "Browse All Values",
       "Add Custom Value",
     ])
-    fireEvent.click(screen.getByRole("button", { name: "Share my values card" }))
+    fireEvent.click(
+      screen.getByRole("button", { name: "Share my values card" }),
+    )
     expect(animalPresentationProps.onShare).toHaveBeenCalledOnce()
     expect(
       within(valueActions).queryByRole("button", { name: "Menu" }),

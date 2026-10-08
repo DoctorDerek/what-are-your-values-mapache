@@ -25,7 +25,9 @@ export async function prepareWebValuesCard(
   await document.fonts.ready
   signal.throwIfAborted()
   const styles = getComputedStyle(document.documentElement)
-  const palette = readValuesCardPalette(VALUES_CARD_COLOR_VARIABLES.map((name) => styles.getPropertyValue(name)))
+  const palette = readValuesCardPalette(
+    VALUES_CARD_COLOR_VARIABLES.map((name) => styles.getPropertyValue(name)),
+  )
   const canvas = document.createElement("canvas")
   const { width, height } = VALUES_CARD_SIZE
   canvas.width = width
@@ -44,8 +46,10 @@ export async function prepareWebValuesCard(
       animals.set(index, bitmap)
       signal.throwIfAborted()
     }
-    if (includeHero) hero = await composeHeroes99(model.appearance, HEROES99_ASSETS, signal)
-    const font = (size: number, weight: CardText["weight"]) => `${weight} ${size}px Arial, sans-serif`
+    if (includeHero)
+      hero = await composeHeroes99(model.appearance, HEROES99_ASSETS, signal)
+    const font = (size: number, weight: CardText["weight"]) =>
+      `${weight} ${size}px Arial, sans-serif`
     const painter: ValuesCardPainter = {
       rectangle: (bounds, color) => {
         context.fillStyle = color
@@ -64,28 +68,66 @@ export async function prepareWebValuesCard(
       sprite: (key, source, target) => {
         const image = key === "hero" ? hero?.canvas : animals.get(key)
         if (!image) throw new Error("Card artwork is unavailable")
-        context.drawImage(image, source.x, source.y, source.width, source.height, target.x, target.y, target.width, target.height)
+        context.drawImage(
+          image,
+          source.x,
+          source.y,
+          source.width,
+          source.height,
+          target.x,
+          target.y,
+          target.width,
+          target.height,
+        )
       },
     }
-    const render = (frame: number) => paintValuesCard({ painter, model, palette, frame, hero })
+    const render = (frame: number) =>
+      paintValuesCard({ painter, model, palette, frame, hero })
     render(0)
-    const still = await new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("The PNG could not be encoded")), "image/png"))
-    const blob = format === "png" ? still : new Blob([await encodeGif({
-      width, height, frameCount: getValuesCardLoopFrameCount(model, includeHero),
-      frameDurationMs: VALUES_CARD_FRAME_DURATION_MS, signal,
-      render: (frame) => {
-        render(frame)
-        return context.getImageData(0, 0, width, height).data
-      },
-    })], { type: "image/gif" })
+    const still = await new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob(
+        (blob) =>
+          blob
+            ? resolve(blob)
+            : reject(new Error("The PNG could not be encoded")),
+        "image/png",
+      ),
+    )
+    const blob =
+      format === "png"
+        ? still
+        : new Blob(
+            [
+              await encodeGif({
+                width,
+                height,
+                frameCount: getValuesCardLoopFrameCount(model, includeHero),
+                frameDurationMs: VALUES_CARD_FRAME_DURATION_MS,
+                signal,
+                render: (frame) => {
+                  render(frame)
+                  return context.getImageData(0, 0, width, height).data
+                },
+              }),
+            ],
+            { type: "image/gif" },
+          )
     signal.throwIfAborted()
-    const file = new File([blob], `my-values-card.${format}`, { type: blob.type })
+    const file = new File([blob], `my-values-card.${format}`, {
+      type: blob.type,
+    })
     const shareData: ShareData = { files: [file] }
-    const canShare = typeof navigator.canShare === "function" && navigator.canShare(shareData)
+    const canShare =
+      typeof navigator.canShare === "function" && navigator.canShare(shareData)
     const previewUri = URL.createObjectURL(blob)
-    const stillPreviewUri = format === "png" ? previewUri : URL.createObjectURL(still)
+    const stillPreviewUri =
+      format === "png" ? previewUri : URL.createObjectURL(still)
     return {
-      format, previewUri, stillPreviewUri, byteLength: blob.size, canShare,
+      format,
+      previewUri,
+      stillPreviewUri,
+      byteLength: blob.size,
+      canShare,
       save: async () => {
         const link = document.createElement("a")
         link.href = previewUri
@@ -100,7 +142,8 @@ export async function prepareWebValuesCard(
           await navigator.share(shareData)
           return "handed-off"
         } catch (error) {
-          if (error instanceof DOMException && error.name === "AbortError") return "cancelled"
+          if (error instanceof DOMException && error.name === "AbortError")
+            return "cancelled"
           throw error
         }
       },
@@ -111,7 +154,10 @@ export async function prepareWebValuesCard(
     }
   } finally {
     animals.forEach((image) => image.close())
-    if (hero) { hero.canvas.width = 0; hero.canvas.height = 0 }
+    if (hero) {
+      hero.canvas.width = 0
+      hero.canvas.height = 0
+    }
     canvas.width = 0
     canvas.height = 0
   }

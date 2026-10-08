@@ -62,7 +62,11 @@ async function mountEditor(reduceMotion = false) {
   }).start()
   const onShare = jest.fn()
   const view = await render(
-    <NativeDressingRoom actor={actor} shouldReduceMotion={reduceMotion} onShare={onShare} />,
+    <NativeDressingRoom
+      actor={actor}
+      shouldReduceMotion={reduceMotion}
+      onShare={onShare}
+    />,
   )
   return { actor, store, commit, onShare, ...view }
 }
@@ -72,7 +76,9 @@ describe("native Dressing Room", () => {
     const { actor, store, onShare } = await mountEditor()
     const before = await store.readAll()
     await fireEvent.press(screen.getByRole("button", { name: "Skin 6" }))
-    await fireEvent.press(screen.getByRole("button", { name: "Share my values card" }))
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Share my values card" }),
+    )
     expect(onShare).toHaveBeenCalledWith(actor.getSnapshot().context.draft)
     expect(actor.getSnapshot().status).toBe("active")
     expect(actor.getSnapshot().context.draft.skinPalette).toBe(6)

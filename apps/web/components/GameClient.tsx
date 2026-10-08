@@ -11,7 +11,10 @@ import {
 } from "@game/data/src/ProductMenu"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { rankValues } from "@game/data/src/ValueRanking"
-import { createValuesCardModel, type ValuesCardModel } from "@game/data/src/ValuesCard"
+import {
+  createValuesCardModel,
+  type ValuesCardModel,
+} from "@game/data/src/ValuesCard"
 import {
   getPendingAchievementPresentations,
   projectAchievementCatalog,
@@ -221,7 +224,8 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
   )
   usePreparedSeethingSwarmClips(hubClips)
   const [isBattleRequested, setIsBattleRequested] = useState(false)
-  const [sharedCard, setSharedCard] = useState<ValuesCardModel<StaticImageData> | null>(null)
+  const [sharedCard, setSharedCard] =
+    useState<ValuesCardModel<StaticImageData> | null>(null)
   const shareTriggerRef = useRef<HTMLElement | null>(null)
   const closeSharedCard = () => {
     setSharedCard(null)
@@ -777,11 +781,30 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     if (!avatar) throw new Error("Expected the appearance editor actor")
     return (
       <>
-      <DressingRoom actor={avatar} shouldReduceMotion={shouldReduceMotion} onShare={(appearance) => {
-        shareTriggerRef.current = document.getElementById("dressing-room-share-button")
-        setSharedCard(createValuesCardModel(rankedValues, appearance, SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG))
-      }} />
-      {sharedCard && <ValuesCardShare model={sharedCard} shouldReduceMotion={shouldReduceMotion} onClose={closeSharedCard} onCloseAutoFocus={restoreShareTriggerFocus} />}
+        <DressingRoom
+          actor={avatar}
+          shouldReduceMotion={shouldReduceMotion}
+          onShare={(appearance) => {
+            shareTriggerRef.current = document.getElementById(
+              "dressing-room-share-button",
+            )
+            setSharedCard(
+              createValuesCardModel(
+                rankedValues,
+                appearance,
+                SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
+              ),
+            )
+          }}
+        />
+        {sharedCard && (
+          <ValuesCardShare
+            model={sharedCard}
+            shouldReduceMotion={shouldReduceMotion}
+            onClose={closeSharedCard}
+            onCloseAutoFocus={restoreShareTriggerFocus}
+          />
+        )}
       </>
     )
   }
@@ -792,8 +815,15 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         <Hub
           appearance={playerData.appearance}
           onShare={() => {
-            shareTriggerRef.current = document.getElementById("hub-share-button")
-            setSharedCard(createValuesCardModel(rankedValues, playerData.appearance, SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG))
+            shareTriggerRef.current =
+              document.getElementById("hub-share-button")
+            setSharedCard(
+              createValuesCardModel(
+                rankedValues,
+                playerData.appearance,
+                SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
+              ),
+            )
           }}
           onCustomize={() => {
             shouldRestoreHubFocusRef.current = true
@@ -842,7 +872,14 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           isBattlePending={isBattleRequested}
           onStartBattle={handleStartBattle}
         />
-        {sharedCard && <ValuesCardShare model={sharedCard} shouldReduceMotion={shouldReduceMotion} onClose={closeSharedCard} onCloseAutoFocus={restoreShareTriggerFocus} />}
+        {sharedCard && (
+          <ValuesCardShare
+            model={sharedCard}
+            shouldReduceMotion={shouldReduceMotion}
+            onClose={closeSharedCard}
+            onCloseAutoFocus={restoreShareTriggerFocus}
+          />
+        )}
         <ProductMenu
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}
           open={isProductMenuOpen}

@@ -1,7 +1,6 @@
 "use client"
 
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
-import { VALUES_CARD_COPY } from "@game/data/src/ValuesCard"
 import {
   DRESSING_ROOM_COPY,
   getHeroes99PaletteChoices,
@@ -15,6 +14,7 @@ import {
   HEROES99_THUMBNAIL,
   type Heroes99RuntimeAssets,
 } from "@game/data/src/Heroes99RuntimeAssets"
+import { VALUES_CARD_COPY } from "@game/data/src/ValuesCard"
 import type { avatarMachine } from "@game/machines/src/AvatarMachine"
 import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { cx } from "classix"
@@ -216,8 +216,16 @@ export default function DressingRoom({
         >
           {isSaving ? DRESSING_ROOM_COPY.saving : DRESSING_ROOM_COPY.save}
         </Button>
-        <Button id="dressing-room-share-button" className="col-span-2 xl:col-span-1" variant="secondary" wrap
-          disabled={isSaving} onClick={() => onShare(draft)}>{VALUES_CARD_COPY.title}</Button>
+        <Button
+          id="dressing-room-share-button"
+          className="col-span-2 xl:col-span-1"
+          variant="secondary"
+          wrap
+          disabled={isSaving}
+          onClick={() => onShare(draft)}
+        >
+          {VALUES_CARD_COPY.title}
+        </Button>
       </footer>
       <Dialog
         open={state.matches("ConfirmingLeave")}

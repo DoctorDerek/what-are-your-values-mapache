@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@game/utils/src/Errors"
 import {
   assign,
   fromPromise,
@@ -5,7 +6,6 @@ import {
   type ActorRefFrom,
   type SnapshotFrom,
 } from "xstate"
-import { getErrorMessage } from "@game/utils/src/Errors"
 import { createBattleProfileRecoveryBundle } from "./BattleProfileRecoveryBundle"
 import { createPlayerData } from "./PlayerData"
 import {
@@ -104,7 +104,11 @@ export const runtimeRecoveryMachine = setup({
   },
 }).createMachine({
   id: "runtimeRecovery",
-  context: ({ input }) => ({ ...input, backupKind: "player", errorMessage: null }),
+  context: ({ input }) => ({
+    ...input,
+    backupKind: "player",
+    errorMessage: null,
+  }),
   initial: "Ready",
   states: {
     Ready: {},
@@ -117,7 +121,12 @@ export const runtimeRecoveryMachine = setup({
         src: "exportBackup",
         input: ({ context }) => context,
         onDone: "Exported",
-        onError: { target: "Failed", actions: assign({ errorMessage: ({ event }) => getErrorMessage(event.error) }) },
+        onError: {
+          target: "Failed",
+          actions: assign({
+            errorMessage: ({ event }) => getErrorMessage(event.error),
+          }),
+        },
       },
     },
   },

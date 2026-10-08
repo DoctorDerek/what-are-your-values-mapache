@@ -1,7 +1,7 @@
+import { getLevelFromXP } from "@game/utils/src/LevelMath"
 import type { Heroes99Appearance } from "./Heroes99Appearance"
 import { projectHubValues } from "./HubValueProjection"
 import { PERSONAL_HUB_COPY } from "./PersonalHubCopy"
-import { getLevelFromXP } from "@game/utils/src/LevelMath"
 import { resolveValueAnimalPresentation } from "./SeethingSwarmAnimalPresentation"
 import type {
   SeethingSwarmRuntimeCharacterClip,
@@ -29,16 +29,25 @@ export type ValuesCardPalette = Readonly<{
   muted: string
 }>
 
-export function readValuesCardPalette(values: readonly unknown[]): ValuesCardPalette {
+export function readValuesCardPalette(
+  values: readonly unknown[],
+): ValuesCardPalette {
   const [frame, background, plane, rank, ink, muted] = values
   if (
-    typeof frame !== "string" || !frame.trim() ||
-    typeof background !== "string" || !background.trim() ||
-    typeof plane !== "string" || !plane.trim() ||
-    typeof rank !== "string" || !rank.trim() ||
-    typeof ink !== "string" || !ink.trim() ||
-    typeof muted !== "string" || !muted.trim()
-  ) throw new Error("The values-card colors are unavailable")
+    typeof frame !== "string" ||
+    !frame.trim() ||
+    typeof background !== "string" ||
+    !background.trim() ||
+    typeof plane !== "string" ||
+    !plane.trim() ||
+    typeof rank !== "string" ||
+    !rank.trim() ||
+    typeof ink !== "string" ||
+    !ink.trim() ||
+    typeof muted !== "string" ||
+    !muted.trim()
+  )
+    throw new Error("The values-card colors are unavailable")
   return { frame, background, values: plane, rank, ink, muted }
 }
 
@@ -52,9 +61,11 @@ export const VALUES_CARD_COPY = Object.freeze({
   preparing: "Preparing your card…",
   delivering: "Opening your file…",
   retry: "Retry",
-  failure: "Your card could not be prepared. Your values and appearance are unchanged.",
+  failure:
+    "Your card could not be prepared. Your values and appearance are unchanged.",
   deliveryFailure: "Your file is still ready. Try again or save it instead.",
-  unsupportedShare: "Save your card, then attach it wherever you want to share it.",
+  unsupportedShare:
+    "Save your card, then attach it wherever you want to share it.",
   downloadStarted: "Your file is ready in your device’s save or download flow.",
   handoff: "Your card was handed to your device’s sharing options.",
   saved: "Card saved.",
@@ -85,28 +96,40 @@ export function createValuesCardModel<Asset>(
 ): ValuesCardModel<Asset> {
   const { hasComparisons, topFive } = projectHubValues(rankedValues)
   return Object.freeze({
-    title: hasComparisons ? PERSONAL_HUB_COPY.rankedTitle : PERSONAL_HUB_COPY.unrankedTitle,
+    title: hasComparisons
+      ? PERSONAL_HUB_COPY.rankedTitle
+      : PERSONAL_HUB_COPY.unrankedTitle,
     hasComparisons,
     appearance: Object.freeze({ ...appearance }),
-    values: Object.freeze(topFive.map(({ definition, progress }) => {
-      const presentation = resolveValueAnimalPresentation(definition, catalog)
-      return Object.freeze({
-        name: getValueDisplayName(definition),
-        level: getLevelFromXP(progress.totalXp),
-        animal: presentation.kind === "animal" ? presentation.clip : null,
-      })
-    })),
+    values: Object.freeze(
+      topFive.map(({ definition, progress }) => {
+        const presentation = resolveValueAnimalPresentation(definition, catalog)
+        return Object.freeze({
+          name: getValueDisplayName(definition),
+          level: getLevelFromXP(progress.totalXp),
+          animal: presentation.kind === "animal" ? presentation.clip : null,
+        })
+      }),
+    ),
   })
 }
 
-export type ValuesCardDelivery = "saved" | "download-started" | "handed-off" | "cancelled"
-export function getValuesCardDeliveryMessage(outcome: ValuesCardDelivery | null) {
+export type ValuesCardDelivery =
+  "saved" | "download-started" | "handed-off" | "cancelled"
+export function getValuesCardDeliveryMessage(
+  outcome: ValuesCardDelivery | null,
+) {
   switch (outcome) {
-    case "saved": return VALUES_CARD_COPY.saved
-    case "download-started": return VALUES_CARD_COPY.downloadStarted
-    case "handed-off": return VALUES_CARD_COPY.handoff
-    case "cancelled": return VALUES_CARD_COPY.cancelled
-    default: return ""
+    case "saved":
+      return VALUES_CARD_COPY.saved
+    case "download-started":
+      return VALUES_CARD_COPY.downloadStarted
+    case "handed-off":
+      return VALUES_CARD_COPY.handoff
+    case "cancelled":
+      return VALUES_CARD_COPY.cancelled
+    default:
+      return ""
   }
 }
 export type PreparedValuesCard = Readonly<{
@@ -124,4 +147,6 @@ export type ValuesCardPreparation = Readonly<{
   includeHero: boolean
   signal: AbortSignal
 }>
-export type PrepareValuesCard = (options: ValuesCardPreparation) => Promise<PreparedValuesCard>
+export type PrepareValuesCard = (
+  options: ValuesCardPreparation,
+) => Promise<PreparedValuesCard>

@@ -3,8 +3,8 @@ import {
   type Heroes99Appearance,
 } from "@game/data/src/Heroes99Appearance"
 import { applyHeroes99Choice } from "@game/data/src/Heroes99DressingRoom"
-import { assign, fromPromise, setup } from "xstate"
 import { getErrorMessage } from "@game/utils/src/Errors"
+import { assign, fromPromise, setup } from "xstate"
 import { inspectBattleProfileStore } from "./BattleProfileHydration"
 import {
   replaceBattleProfileStorePlayerDataForLocalMutation,
@@ -127,7 +127,12 @@ export const avatarMachine = setup({
           target: "Done",
           actions: assign({ state: ({ event }) => event.output }),
         },
-        onError: { target: "SaveFailed", actions: assign({ errorMessage: ({ event }) => getErrorMessage(event.error) }) },
+        onError: {
+          target: "SaveFailed",
+          actions: assign({
+            errorMessage: ({ event }) => getErrorMessage(event.error),
+          }),
+        },
       },
     },
     SaveFailed: {
