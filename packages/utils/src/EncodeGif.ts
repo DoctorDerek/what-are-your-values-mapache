@@ -1,3 +1,4 @@
+/// <reference path="./gifenc.d.ts" />
 import { applyPalette, GIFEncoder, quantize } from "gifenc"
 
 export async function encodeGif({ width, height, frameCount, frameDurationMs, render, signal }: {

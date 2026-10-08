@@ -1,11 +1,11 @@
-import { HEROES99_IDLE_FRAME_COUNT } from "@game/data/src/Heroes99SpatialArchitecture"
-import { SEETHING_SWARM_CALM_FRAME_DURATION_MS } from "@game/data/src/SeethingSwarmAnimalPresentation"
+import { HEROES99_IDLE_FRAME_COUNT } from "./Heroes99SpatialArchitecture"
+import { SEETHING_SWARM_CALM_FRAME_DURATION_MS } from "./SeethingSwarmAnimalPresentation"
 import {
   VALUES_CARD_COPY,
   VALUES_CARD_SIZE,
   type ValuesCardModel,
   type ValuesCardPalette,
-} from "@game/data/src/ValuesCard"
+} from "./ValuesCard"
 import { graphemeSegments } from "unicode-segmenter/grapheme"
 
 export type CardRectangle = Readonly<{ x: number; y: number; width: number; height: number }>

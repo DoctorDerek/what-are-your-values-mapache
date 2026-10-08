@@ -1,14 +1,14 @@
-import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
-import { projectHubValues } from "@game/data/src/HubValueProjection"
-import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
+import type { Heroes99Appearance } from "./Heroes99Appearance"
+import { projectHubValues } from "./HubValueProjection"
+import { PERSONAL_HUB_COPY } from "./PersonalHubCopy"
 import { getLevelFromXP } from "@game/utils/src/LevelMath"
-import { resolveValueAnimalPresentation } from "@game/data/src/SeethingSwarmAnimalPresentation"
+import { resolveValueAnimalPresentation } from "./SeethingSwarmAnimalPresentation"
 import type {
   SeethingSwarmRuntimeCharacterClip,
   SeethingSwarmRuntimeClipCatalog,
-} from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
-import { getValueDisplayName } from "@game/data/src/Value"
-import type { RankedValue } from "@game/data/src/ValueRanking"
+} from "./SeethingSwarmRuntimeClipCatalog"
+import { getValueDisplayName } from "./Value"
+import type { RankedValue } from "./ValueRanking"
 
 export const VALUES_CARD_SIZE = Object.freeze({ width: 1600, height: 900 })
 export const VALUES_CARD_COLOR_VARIABLES = [
@@ -100,6 +100,15 @@ export function createValuesCardModel<Asset>(
 }
 
 export type ValuesCardDelivery = "saved" | "download-started" | "handed-off" | "cancelled"
+export function getValuesCardDeliveryMessage(outcome: ValuesCardDelivery | null) {
+  switch (outcome) {
+    case "saved": return VALUES_CARD_COPY.saved
+    case "download-started": return VALUES_CARD_COPY.downloadStarted
+    case "handed-off": return VALUES_CARD_COPY.handoff
+    case "cancelled": return VALUES_CARD_COPY.cancelled
+    default: return ""
+  }
+}
 export type PreparedValuesCard = Readonly<{
   format: ValuesCardFormat
   previewUri: string
