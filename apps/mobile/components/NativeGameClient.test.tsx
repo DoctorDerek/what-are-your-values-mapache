@@ -38,6 +38,11 @@ jest.mock("@/components/NativeHeroes99Hero", () => ({
   default: () => null,
 }))
 
+jest.mock("@/components/NativeValuesCardShare", () => ({
+  __esModule: true,
+  default: () => null,
+}))
+
 jest.mock("@/lib/ExpoDurableStore", () => ({
   expoDurableStore: {
     readAll: jest.fn(),

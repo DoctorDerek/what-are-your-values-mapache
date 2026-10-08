@@ -1,3 +1,4 @@
+import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
 import {
   DRESSING_ROOM_COPY,
   getHeroes99PaletteChoices,
@@ -11,6 +12,7 @@ import {
   HEROES99_THUMBNAIL,
   type Heroes99RuntimeAssets,
 } from "@game/data/src/Heroes99RuntimeAssets"
+import { VALUES_CARD_COPY } from "@game/data/src/ValuesCard"
 import type { avatarMachine } from "@game/machines/src/AvatarMachine"
 import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { cx } from "classix"
@@ -28,9 +30,11 @@ const assets: Heroes99RuntimeAssets<number> = HEROES99_ASSETS
 export default function NativeDressingRoom({
   actor,
   shouldReduceMotion,
+  onShare,
 }: {
   actor: ActorRefFrom<typeof avatarMachine>
   shouldReduceMotion: boolean
+  onShare: (appearance: Heroes99Appearance) => void
 }) {
   const state = useRecoverableActorSnapshot(actor)
   const [category, setCategory] = useState<Heroes99Category>("Skin")
@@ -219,24 +223,33 @@ export default function NativeDressingRoom({
           </Button>
         </View>
       )}
-      <View className="flex-row gap-4 px-3 pt-4 pb-6">
+      <View className="gap-4 px-3 pt-4 pb-6">
+        <View className="flex-row gap-4">
+          <Button
+            className="min-w-0 flex-1"
+            variant="outline"
+            disabled={isSaving}
+            onPress={() => actor.send({ type: "AVATAR.CANCEL" })}
+          >
+            <Text>{DRESSING_ROOM_COPY.cancel}</Text>
+          </Button>
+          <Button
+            className="min-w-0 flex-1"
+            disabled={isSaving}
+            accessibilityState={{ busy: isSaving }}
+            onPress={() => actor.send({ type: "AVATAR.SAVE" })}
+          >
+            <Text>
+              {isSaving ? DRESSING_ROOM_COPY.saving : DRESSING_ROOM_COPY.save}
+            </Text>
+          </Button>
+        </View>
         <Button
-          className="min-w-0 flex-1"
-          variant="outline"
+          variant="secondary"
           disabled={isSaving}
-          onPress={() => actor.send({ type: "AVATAR.CANCEL" })}
+          onPress={() => onShare(draft)}
         >
-          <Text>{DRESSING_ROOM_COPY.cancel}</Text>
-        </Button>
-        <Button
-          className="min-w-0 flex-1"
-          disabled={isSaving}
-          accessibilityState={{ busy: isSaving }}
-          onPress={() => actor.send({ type: "AVATAR.SAVE" })}
-        >
-          <Text>
-            {isSaving ? DRESSING_ROOM_COPY.saving : DRESSING_ROOM_COPY.save}
-          </Text>
+          <Text>{VALUES_CARD_COPY.title}</Text>
         </Button>
       </View>
       <Modal

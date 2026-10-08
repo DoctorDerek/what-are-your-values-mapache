@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@game/utils/src/Errors"
 import {
   assign,
   fromPromise,
@@ -76,6 +77,7 @@ export const runtimeRecoveryMachine = setup({
   types: {
     context: {} as RuntimeRecoveryInput & {
       readonly backupKind: "player" | "stored"
+      readonly errorMessage: string | null
     },
     input: {} as RuntimeRecoveryInput,
     events: {} as {
@@ -102,19 +104,29 @@ export const runtimeRecoveryMachine = setup({
   },
 }).createMachine({
   id: "runtimeRecovery",
-  context: ({ input }) => ({ ...input, backupKind: "player" }),
+  context: ({ input }) => ({
+    ...input,
+    backupKind: "player",
+    errorMessage: null,
+  }),
   initial: "Ready",
   states: {
     Ready: {},
     Exported: {},
     Failed: {},
     Exporting: {
+      entry: assign({ errorMessage: null }),
       on: { "RECOVERY.EXPORT": {} },
       invoke: {
         src: "exportBackup",
         input: ({ context }) => context,
         onDone: "Exported",
-        onError: "Failed",
+        onError: {
+          target: "Failed",
+          actions: assign({
+            errorMessage: ({ event }) => getErrorMessage(event.error),
+          }),
+        },
       },
     },
   },

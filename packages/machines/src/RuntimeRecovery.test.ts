@@ -101,9 +101,11 @@ describe("Runtime recovery", () => {
     recovery.send({ type: "RECOVERY.EXPORT", backupKind: "player" })
     recovery.send({ type: "RECOVERY.EXPORT", backupKind: "stored" })
     await waitFor(recovery, (snapshot) => snapshot.matches("Failed"))
+    expect(recovery.getSnapshot().context.errorMessage).toBe("Download blocked")
     expect(deliverDownload).toHaveBeenCalledTimes(1)
     recovery.send({ type: "RECOVERY.EXPORT", backupKind: "stored" })
     await waitFor(recovery, (snapshot) => snapshot.matches("Exported"))
+    expect(recovery.getSnapshot().context.errorMessage).toBeNull()
     expect(deliverDownload).toHaveBeenCalledTimes(2)
     expect(deliverDownload.mock.lastCall?.[0].serialized).toContain(
       "wayvm-recovery-bundle",

@@ -1,0 +1,82 @@
+import { readFile } from "node:fs/promises"
+import { expect } from "@playwright/test"
+import sharp from "sharp"
+import { test } from "./fixtures"
+
+test("a player previews and saves genuine GIF and PNG cards, then returns to an unchanged appearance draft", async ({
+  page,
+}, testInfo) => {
+  await page.goto("/")
+  await page.getByRole("button", { name: "Start", exact: true }).click()
+  await page
+    .getByRole("button", { name: "Share my values card", exact: true })
+    .click()
+  const preview = page.getByRole("dialog", { name: "Share my values card" })
+  await expect(
+    preview.getByRole("button", { name: /GIF · Animated/ }),
+  ).toHaveAttribute("aria-pressed", "true")
+  await expect(preview.getByRole("button", { name: "Save GIF" })).toBeEnabled({
+    timeout: 30_000,
+  })
+  const gifDownload = page.waitForEvent("download")
+  await preview.getByRole("button", { name: "Save GIF" }).click()
+  const gifPath = testInfo.outputPath("my-values-card.gif")
+  await (await gifDownload).saveAs(gifPath)
+  const gif = await readFile(gifPath)
+  const metadata = await sharp(gif, { animated: true }).metadata()
+  expect(metadata).toMatchObject({
+    format: "gif",
+    width: 1600,
+    pageHeight: 900,
+    loop: 0,
+  })
+  expect(metadata.pages).toBeGreaterThan(1)
+  expect(metadata.pages).toBeLessThanOrEqual(24)
+  expect(metadata.delay?.every((delay) => delay === 160)).toBe(true)
+  expect(gif.byteLength).toBeLessThan(5 * 1024 * 1024)
+  const first = await sharp(gif, { page: 0 }).raw().toBuffer()
+  const second = await sharp(gif, { page: 1 }).raw().toBuffer()
+  expect(first.equals(second)).toBe(false)
+  expect(
+    first
+      .subarray(0, 1600 * 160 * (metadata.channels ?? 3))
+      .equals(second.subarray(0, 1600 * 160 * (metadata.channels ?? 3))),
+  ).toBe(true)
+  await preview.getByRole("button", { name: "PNG · Still" }).click()
+  await expect(preview.getByRole("button", { name: "Save PNG" })).toBeEnabled()
+  const pngDownload = page.waitForEvent("download")
+  await preview.getByRole("button", { name: "Save PNG" }).click()
+  const pngPath = testInfo.outputPath("my-values-card.png")
+  await (await pngDownload).saveAs(pngPath)
+  const pngMetadata = await sharp(pngPath).metadata()
+  expect(pngMetadata).toMatchObject({ format: "png", width: 1600, height: 900 })
+  expect(pngMetadata.pages ?? 1).toBe(1)
+  await preview.screenshot({ path: testInfo.outputPath("preview.png") })
+  await page.keyboard.press("Escape")
+  await expect(preview).not.toBeVisible()
+  await expect(
+    page.getByRole("button", { name: "Share my values card", exact: true }),
+  ).toBeFocused()
+  await expect(
+    page.getByRole("heading", { name: "My Values", exact: true }),
+  ).toBeVisible()
+  await page
+    .getByRole("button", { name: "Customize my card", exact: true })
+    .click()
+  await page.getByRole("button", { name: "Skin 6", exact: true }).click()
+  await page
+    .getByRole("button", { name: "Share my values card", exact: true })
+    .click()
+  await expect(preview).toBeVisible()
+  await preview.getByRole("button", { name: "Back", exact: true }).click()
+  await expect(
+    page.getByRole("button", { name: "Skin 6", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true")
+  await page.getByRole("button", { name: "Cancel", exact: true }).click()
+  await page
+    .getByRole("button", { name: "Customize my card", exact: true })
+    .click()
+  await expect(
+    page.getByRole("button", { name: "Skin 6", exact: true }),
+  ).toHaveAttribute("aria-pressed", "false")
+})

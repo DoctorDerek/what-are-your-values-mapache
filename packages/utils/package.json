@@ -2,6 +2,9 @@
   "name": "@game/utils",
   "version": "0.1.0",
   "private": true,
+  "dependencies": {
+    "gifenc": "^1"
+  },
   "peerDependencies": {
     "react": "^19"
   },

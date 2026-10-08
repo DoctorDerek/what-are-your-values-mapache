@@ -58,11 +58,28 @@ async function mountEditor() {
       random: () => 0.5,
     },
   }).start()
-  const view = render(<DressingRoom actor={actor} shouldReduceMotion={false} />)
-  return { actor, store, commit, ...view }
+  const onShare = vi.fn()
+  const view = render(
+    <DressingRoom actor={actor} shouldReduceMotion={false} onShare={onShare} />,
+  )
+  return { actor, store, commit, onShare, ...view }
 }
 
 describe("Dressing Room", () => {
+  it("shares the current appearance draft without saving or closing the editor", async () => {
+    const { actor, store, onShare } = await mountEditor()
+    const before = await store.readAll()
+    fireEvent.click(screen.getByRole("button", { name: "Skin 6" }))
+    fireEvent.click(
+      screen.getByRole("button", { name: "Share my values card" }),
+    )
+    expect(onShare).toHaveBeenCalledWith(actor.getSnapshot().context.draft)
+    expect(actor.getSnapshot().status).toBe("active")
+    expect(actor.getSnapshot().context.draft.skinPalette).toBe(6)
+    expect(await store.readAll()).toEqual(before)
+    actor.stop()
+  })
+
   it("offers every source style and applicable palettes, then saves the chosen appearance", async () => {
     const { actor, store } = await mountEditor()
     for (const [category, choices] of Object.entries(HEROES99_CHOICES)) {
