@@ -1,6 +1,6 @@
 import {
-  CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
   CUSTOM_VALUE_INVITATION_COPY as copy,
+  CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
 } from "@game/data/src/CustomValueInvitationCopy"
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"

@@ -1,6 +1,6 @@
 import {
-  CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
   CUSTOM_VALUE_INVITATION_COPY as copy,
+  CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
 } from "@game/data/src/CustomValueInvitationCopy"
 import { expect, type Locator } from "@playwright/test"
 import { test } from "./fixtures"
@@ -172,7 +172,9 @@ test("a player uses the informational example to author a custom value and retai
   await expect(page.getByLabel("Value name", { exact: true })).toHaveValue("")
   await expect(page.getByLabel("Definition", { exact: true })).toHaveValue("")
   await expect(page.getByText(copy.example)).toBeVisible()
-  await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled()
+  await expect(
+    page.getByRole("button", { name: "Save", exact: true }),
+  ).toBeDisabled()
   await expect(page.getByRole("button", { name: "Add all three" })).toHaveCount(
     0,
   )

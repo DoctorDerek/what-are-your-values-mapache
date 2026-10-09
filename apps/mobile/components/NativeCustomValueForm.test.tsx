@@ -1,7 +1,7 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
 import {
-  CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
   CUSTOM_VALUE_INVITATION_COPY as copy,
+  CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
 } from "@game/data/src/CustomValueInvitationCopy"
 import { customValueValidationMessages } from "@game/data/src/CustomValueValidationMessages"
 import {
@@ -59,7 +59,9 @@ describe("NativeCustomValueForm", () => {
     await render(<NativeCustomValueForm {...props} />)
 
     expect(screen.getByLabelText("Value Name")).toHaveDisplayValue("")
-    expect(screen.getByLabelText("What This Value Means to Me")).toHaveDisplayValue("")
+    expect(
+      screen.getByLabelText("What This Value Means to Me"),
+    ).toHaveDisplayValue("")
     expect(
       screen.getByText(
         "For example: Craftsmanship — to take care and pride in making things well",

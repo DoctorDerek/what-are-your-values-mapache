@@ -50,9 +50,7 @@ test.describe("static English editorial document", () => {
     await expect(editorialArticle.locator("dd").first()).toHaveText(
       "to be accepted as I am",
     )
-    await expect(editorialArticle.locator("dt").last()).toHaveText(
-      "Pets",
-    )
+    await expect(editorialArticle.locator("dt").last()).toHaveText("Pets")
     await expect(editorialArticle.locator("dd").last()).toHaveText(
       "to care for, protect, and share life with companion animals",
     )

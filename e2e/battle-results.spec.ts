@@ -353,9 +353,11 @@ for (const viewport of [
       "true",
     )
     const roster = page.getByRole("list", { name: "Your value results" })
-    const stackingOrders = await roster.getByRole("listitem").evaluateAll(
-      (rows) => rows.map((row) => Number(getComputedStyle(row).zIndex)),
-    )
+    const stackingOrders = await roster
+      .getByRole("listitem")
+      .evaluateAll((rows) =>
+        rows.map((row) => Number(getComputedStyle(row).zIndex)),
+      )
     expect(stackingOrders[0]).toBeGreaterThan(
       Math.max(...stackingOrders.slice(1)),
     )
