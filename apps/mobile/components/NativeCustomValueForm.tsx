@@ -1,3 +1,4 @@
+import { CUSTOM_VALUE_INVITATION_COPY as copy } from "@game/data/src/CustomValueInvitationCopy"
 import {
   CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES,
   CUSTOM_VALUE_NAME_MAX_GRAPHEMES,
@@ -94,11 +95,15 @@ export default function NativeCustomValueForm({
       }
       className="gap-4 border-4 border-black bg-white p-4 shadow-[6px_6px_0px_0px_#000000]"
     >
+      {mode === "add" && (
+        <Text className="text-sm leading-5 text-black">{copy.example}</Text>
+      )}
       <Text className="text-lg font-black text-black uppercase">
         Value Name
       </Text>
       <TextInput
         accessibilityLabel="Value Name"
+        accessibilityHint={mode === "add" ? copy.example : undefined}
         aria-invalid={isNameTouched && validation.name.validationCode !== null}
         autoCapitalize="words"
         className="min-h-14 border-4 border-black bg-white p-3 text-xl font-bold text-black"

@@ -46,6 +46,12 @@ export default function CustomValueDraftEditor({
           {copy.back}
         </Button>
       </div>
+      <p
+        id="hub-custom-value-example"
+        className="text-sm leading-5 xl:col-span-2"
+      >
+        {copy.example}
+      </p>
       <div className="space-y-2">
         <label htmlFor="hub-custom-value-name" className="font-bold">
           {copy.name}
@@ -56,7 +62,7 @@ export default function CustomValueDraftEditor({
           id="hub-custom-value-name"
           value={draft.name}
           onChange={(event) => onChange({ ...draft, name: event.target.value })}
-          aria-describedby="hub-name-feedback"
+          aria-describedby="hub-custom-value-example hub-name-feedback"
           aria-invalid={
             draft.name.length > 0 && validation.name.validationCode !== null
           }
