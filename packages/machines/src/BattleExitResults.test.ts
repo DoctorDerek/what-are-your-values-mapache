@@ -71,7 +71,7 @@ describe("Battle-exit Results", () => {
     expect(midway.values[0]?.motion.travel).toBeGreaterThan(0.5)
     expect(midway.values[0]?.motion.lateralPercentage).toBe(5)
     expect(midway.values[0]?.rank).toBe(20)
-    expect(midway.values[0]?.rankLabelPlaceholder).toBe("#100")
+    expect(midway.values[0]?.rankLabelPlaceholder).toBe("#103")
     for (const elapsedMs of [0, 925, 1_850, 2_775, 3_700]) {
       const frame = projectBattleExitResultsFrame(results, elapsedMs)
       for (const { rank, value } of frame.values) {
@@ -467,7 +467,7 @@ describe("Battle-exit Results", () => {
     })
     const results = createBattleExitResults(entry, entry)
 
-    expect(results?.values).toHaveLength(101)
+    expect(results?.values).toHaveLength(104)
     expect(
       results?.values.find(({ definition }) => definition.id === customValueId)
         ?.definition,

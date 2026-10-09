@@ -118,7 +118,7 @@ describe("Player Data Reset", () => {
     })
 
     expect(candidate.profile.activeDeck.customValues).toEqual([])
-    expect(candidate.profile.activeDeck.valueIds).toHaveLength(100)
+    expect(candidate.profile.activeDeck.valueIds).toHaveLength(103)
     expect(candidate.profile.scheduler.deckRevision).toBe(
       playerData.profile.scheduler.deckRevision + 1,
     )

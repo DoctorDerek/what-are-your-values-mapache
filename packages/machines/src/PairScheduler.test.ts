@@ -1,6 +1,7 @@
 import { createActiveDeck, getPairCount } from "@game/data/src/ActiveDeck"
 import {
   createCustomValueId,
+  SOURCE_CATALOG_VERSION,
   type CustomValueDefinition,
   type ValueId,
   type ValuePair,
@@ -38,6 +39,7 @@ function createDeck(customValueCount: number) {
     Array.from({ length: customValueCount }, (_, index) =>
       createCustomValue(index + 1),
     ),
+    SOURCE_CATALOG_VERSION,
   )
 }
 

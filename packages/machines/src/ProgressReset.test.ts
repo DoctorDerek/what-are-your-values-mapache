@@ -54,7 +54,7 @@ describe("Progress Reset", () => {
     expect(candidate.progressGeneration).toBe(4)
     expect(candidate.scheduler.scheduleKind).toBe(FULL_CYCLE_SCHEDULE_KIND)
     expect(candidate.scheduler.cycleIndex).toBe(0)
-    expect(candidate.progressById.size).toBe(101)
+    expect(candidate.progressById.size).toBe(104)
     expect(
       Array.from(candidate.progressById.values()).every(
         ({ totalXp, profileWins, profileComparisons, currentCycleWins }) =>

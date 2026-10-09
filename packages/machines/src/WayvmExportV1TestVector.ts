@@ -1,5 +1,8 @@
+import { createActiveDeck } from "@game/data/src/ActiveDeck"
+import { SOURCE_CATALOG_VERSION } from "@game/data/src/Value"
+import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { readAchievementId } from "./AchievementCatalog"
-import { markAchievementPresented } from "./AchievementState"
+import { createInitialAchievementState, markAchievementPresented } from "./AchievementState"
 import { applyAchievementTransition } from "./AchievementTransition"
 import {
   createBattleChoiceCommit,
@@ -8,6 +11,8 @@ import {
 } from "./BattleProfileCommit"
 import { projectBattlePair } from "./BattleScheduler"
 import { createCustomValueAddCommit } from "./CustomValueCommands"
+import { createCyclePayoutTierSnapshot } from "./CyclePayoutTierSnapshot"
+import { createSchedulerRestorePoint } from "./PairScheduler"
 import { serializePersistedJson } from "./PersistedJson"
 import {
   createInitialPlayerData,
@@ -57,9 +62,23 @@ function applyCommit(
 }
 
 export async function createWayvmExportV1TestVector() {
-  let playerData = createInitialPlayerData({
-    schedulerSeed: "wayvm-export-v1-test-vector",
+  const schedulerSeed = "wayvm-export-v1-test-vector"
+  const initialPlayerData = createInitialPlayerData({
+    schedulerSeed,
     createdAt: CREATED_AT,
+  })
+  const activeDeck = createActiveDeck([], SOURCE_CATALOG_VERSION)
+  const progressById = createInitialValueProgress(activeDeck)
+  let playerData = createPlayerData({
+    ...initialPlayerData,
+    achievements: createInitialAchievementState(activeDeck),
+    profile: {
+      ...initialPlayerData.profile,
+      activeDeck,
+      progressById,
+      cyclePayoutTierSnapshot: createCyclePayoutTierSnapshot(activeDeck, progressById),
+      scheduler: createSchedulerRestorePoint({ activeDeck, progressGeneration: 0, deckRevision: 0, seed: schedulerSeed, cycleIndex: 0 }),
+    },
   })
   const customValueCommit = createCustomValueAddCommit({
     profile: playerData.profile,
