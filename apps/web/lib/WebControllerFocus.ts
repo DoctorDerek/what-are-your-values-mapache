@@ -1,16 +1,17 @@
 import type { ControllerCommand } from "@game/data/src/ControllerControls"
+import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
 
 const CONTROLLER_FOCUS_TARGETS =
   "button, a[href], input, select, textarea, [role=region][tabindex], [data-controller-scroll]"
 const CONTROLLER_SCROLL_STEP = 96
 
-export function moveWebControllerFocus(command: ControllerCommand) {
-  const dialogs = document.querySelectorAll<HTMLElement>('[role="dialog"]')
+function getControllerFocusTargets() {
+  const dialogs = document.querySelectorAll<HTMLElement>('[role="dialog"], [role="alertdialog"]')
   const scope =
     dialogs.item(dialogs.length - 1) ??
     document.querySelector<HTMLElement>('[data-slot="mapache-screen"]')
-  if (!scope) return
-  const targets = [
+  if (!scope) return []
+  return [
     ...scope.querySelectorAll<HTMLElement>(CONTROLLER_FOCUS_TARGETS),
   ].filter(
     (element) =>
@@ -23,6 +24,18 @@ export function moveWebControllerFocus(command: ControllerCommand) {
         opacityProperty: true,
       }),
   )
+}
+
+export function activateWebControllerMenu() {
+  const menu = getControllerFocusTargets().find((element) =>
+    element instanceof HTMLButtonElement &&
+    (element.getAttribute("aria-label") ?? element.textContent?.trim()) === PRODUCT_MENU_COPY.openAction,
+  )
+  menu?.click()
+}
+
+export function moveWebControllerFocus(command: ControllerCommand) {
+  const targets = getControllerFocusTargets()
   const active = document.activeElement
   if (command === "confirm") {
     if (active instanceof HTMLElement && targets.includes(active)) {

@@ -64,6 +64,7 @@ import WebControlsProvider, {
 } from "@/components/WebControlsProvider"
 import { SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG } from "@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog"
 import { createIndexedDbDurableStore } from "@/lib/IndexedDbDurableStore"
+import { activateWebControllerMenu } from "@/lib/WebControllerFocus"
 import {
   downloadPlayerDataFile,
   readPlayerDataFile,
@@ -378,16 +379,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
   useWebControllerActions(0, (command) => {
     if (command === "back" || command === "cancel") return handleSemanticBack()
     if (command !== "menu") return false
-    if (
-      playerData &&
-      state.context.battleProfileStoreState &&
-      !isCustomValueDraftActive &&
-      !isAllValuesNavigationBlocked &&
-      !isReadingImportFile &&
-      !isReadingRecoveryImportFile &&
-      !state.matches("PersistenceFailure")
-    )
-      handleProductMenuOpen()
+    activateWebControllerMenu()
     return true
   })
   const closeInformationPanel = useCallback(

@@ -3,7 +3,7 @@ import {
   getControllerButtonLabel,
   type ControllerCommand,
   type ControllerFamily,
-} from "@game/data/src/ControllerControls"
+} from "./ControllerControls"
 
 export const CONTROLLER_PROMPT_SIZE = 64
 export const CONTROLLER_PROMPT_COLUMNS = 6

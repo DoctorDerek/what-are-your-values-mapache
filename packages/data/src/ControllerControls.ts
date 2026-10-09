@@ -1,4 +1,4 @@
-import type { ControlActionId } from "@game/data/src/Controls"
+import type { ControlActionId } from "./Controls"
 
 export type ControllerCommand =
   | "select-first-value"
