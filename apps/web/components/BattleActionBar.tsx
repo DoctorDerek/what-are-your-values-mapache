@@ -1,16 +1,35 @@
+import type {
+  ControllerCommand,
+  ControllerFamily,
+} from "@game/data/src/ControllerControls"
 import type { BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
 import { cx } from "classix"
 import BattleSpeedControl from "@/components/BattleSpeedControl"
+import ControllerPrompt from "@/components/ControllerPrompt"
 
 function BattleActionLabel({
   label,
   shortcut,
   showKeyboardControlHints,
+  controllerFamily,
+  command,
 }: {
   label: string
   shortcut: string
   showKeyboardControlHints: boolean
+  controllerFamily?: ControllerFamily
+  command: ControllerCommand
 }) {
+  if (controllerFamily)
+    return (
+      <span
+        aria-hidden="true"
+        className="inline-flex flex-col items-center justify-center gap-1 xl:flex-row"
+      >
+        <span>{label}</span>
+        <ControllerPrompt family={controllerFamily} command={command} />
+      </span>
+    )
   return (
     <span
       aria-hidden="true"
@@ -45,6 +64,7 @@ export default function BattleActionBar({
   canRedo,
   canStop,
   showKeyboardControlHints,
+  controllerFamily,
   onOpenMenu,
   onUndo,
   onRedo,
@@ -58,6 +78,7 @@ export default function BattleActionBar({
   canRedo: boolean
   canStop: boolean
   showKeyboardControlHints: boolean
+  controllerFamily?: ControllerFamily
   onOpenMenu: () => void
   onUndo: () => void
   onRedo: () => void
@@ -81,6 +102,8 @@ export default function BattleActionBar({
         >
           <BattleActionLabel
             label="Menu"
+            controllerFamily={controllerFamily}
+            command="menu"
             shortcut="[ESC]"
             showKeyboardControlHints={showKeyboardControlHints}
           />
@@ -94,6 +117,8 @@ export default function BattleActionBar({
         >
           <BattleActionLabel
             label="Undo"
+            controllerFamily={controllerFamily}
+            command="cancel"
             shortcut="[Z]"
             showKeyboardControlHints={showKeyboardControlHints}
           />
@@ -107,6 +132,8 @@ export default function BattleActionBar({
         >
           <BattleActionLabel
             label="Redo"
+            controllerFamily={controllerFamily}
+            command="redo"
             shortcut="[Y]"
             showKeyboardControlHints={showKeyboardControlHints}
           />

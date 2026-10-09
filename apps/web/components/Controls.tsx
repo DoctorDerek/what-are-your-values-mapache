@@ -1,13 +1,20 @@
 "use client"
 
 import {
+  CONTROLLER_BINDINGS,
+  CONTROLLER_COPY,
+  getControllerButtonLabel,
+} from "@game/data/src/ControllerControls"
+import {
   CONTROL_ACTION_LABELS,
   CONTROL_SEMANTIC_ACTIONS,
   CONTROLS_COPY,
   WEB_CONTROL_GROUPS,
 } from "@game/data/src/Controls"
 import type { ComponentProps } from "react"
+import ControllerPrompt from "@/components/ControllerPrompt"
 import { ReopenedInformationPanel } from "@/components/InformationPanel"
+import { useWebControls } from "@/components/WebControlsProvider"
 
 export default function Controls({
   open,
@@ -20,6 +27,7 @@ export default function Controls({
     typeof ReopenedInformationPanel
   >["onCloseAutoFocus"]
 }>) {
+  const { controller, hasUnsupportedController } = useWebControls()
   return (
     <ReopenedInformationPanel
       open={open}
@@ -82,6 +90,52 @@ export default function Controls({
               </dl>
             </section>
           ))}
+          <section className="grid gap-3">
+            <h3 className="text-2xl leading-tight font-black">
+              {CONTROLLER_COPY.title}
+            </h3>
+            <p className="text-lg leading-relaxed">
+              {CONTROLLER_COPY.introduction}
+            </p>
+            {!controller && (
+              <p className="text-lg">
+                {hasUnsupportedController
+                  ? CONTROLLER_COPY.unsupported
+                  : CONTROLLER_COPY.activate}
+              </p>
+            )}
+            <dl className="grid gap-3">
+              {CONTROLLER_BINDINGS.map((binding) => (
+                <div
+                  key={binding.command}
+                  className="grid gap-2 border-4 border-black p-4 xl:grid-cols-2"
+                >
+                  <dt className="text-lg font-black">
+                    {CONTROL_ACTION_LABELS[binding.actionId]}
+                  </dt>
+                  <dd className="flex items-center gap-2 text-lg">
+                    <ControllerPrompt
+                      family={controller?.family ?? "generic"}
+                      command={binding.command}
+                    />
+                    <span>
+                      {binding.input}
+                      {controller && (
+                        <>
+                          {" "}
+                          ·{" "}
+                          {getControllerButtonLabel(
+                            controller.family,
+                            binding.command,
+                          )}
+                        </>
+                      )}
+                    </span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
         </section>
       </div>
     </ReopenedInformationPanel>

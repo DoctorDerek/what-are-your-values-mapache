@@ -4,7 +4,7 @@ import {
   getInitialWebControlHintInputModality,
   type ControlHintInputModality,
 } from "@game/machines/src/PlayerSettingsPresentation"
-import { useEffect, useState } from "react"
+import { useEffect, useEffectEvent, useState } from "react"
 
 const CONTROL_HINT_IGNORED_KEYS: readonly string[] = Object.freeze([
   "Alt",
@@ -13,7 +13,10 @@ const CONTROL_HINT_IGNORED_KEYS: readonly string[] = Object.freeze([
   "Shift",
 ])
 
-export default function useWebControlHintInputModality() {
+export default function useWebControlHintInputModality(
+  onActivity?: () => void,
+) {
+  const handleActivity = useEffectEvent(() => onActivity?.())
   const [inputModality, setInputModality] = useState<ControlHintInputModality>(
     () =>
       getInitialWebControlHintInputModality(
@@ -23,10 +26,13 @@ export default function useWebControlHintInputModality() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!CONTROL_HINT_IGNORED_KEYS.includes(event.key))
+      if (!CONTROL_HINT_IGNORED_KEYS.includes(event.key) && !event.repeat) {
+        handleActivity()
         setInputModality("keyboard")
+      }
     }
     const handlePointerDown = (event: PointerEvent) => {
+      if (event.pointerType) handleActivity()
       if (event.pointerType === "mouse") setInputModality("keyboard")
       else if (event.pointerType === "touch" || event.pointerType === "pen")
         setInputModality("touch-pointer")

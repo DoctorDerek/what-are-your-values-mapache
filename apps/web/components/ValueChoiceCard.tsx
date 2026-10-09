@@ -26,7 +26,7 @@ type ValueChoiceCardProps = {
   winnerId: ValueId | null
   isEnabled: boolean
   isAnimating: boolean
-  controlHint: string | null
+  controlHint: ReactNode
   combatant?: (isAttended: boolean, reward?: ReactNode) => ReactNode
   reward?: BattleRewardPresentation | null
   onActivate: (valueId: ValueId) => void
@@ -144,7 +144,7 @@ export const ValueChoiceCard = forwardRef<
               <h2
                 className={cx(
                   "clear-both mx-auto flow-root w-max max-w-full min-w-0 pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words hyphens-auto text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000]",
-                  controlHint && "xl:clear-none xl:pt-0",
+                  Boolean(controlHint) && "xl:clear-none xl:pt-0",
                 )}
               >
                 {displayName}

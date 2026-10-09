@@ -16,6 +16,7 @@ export const CONTROL_ACTION_LABELS = Object.freeze({
   stop: "Stop",
   "move-focus": "Move Focus",
   "confirm-focused-value": "Confirm Focused Value",
+  back: "Back",
 } as const)
 
 export type ControlActionId = keyof typeof CONTROL_ACTION_LABELS

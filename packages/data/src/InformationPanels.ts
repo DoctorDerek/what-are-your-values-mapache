@@ -383,6 +383,20 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "section",
+      heading: "Controller Prompts",
+      paragraphs: Object.freeze([
+        "Controller prompt artwork is by Kenney, from Input Prompts, used under Creative Commons Zero (CC0). The shared artwork includes generic, Xbox, PlayStation, Nintendo, Steam Deck, and Steam Controller layouts. Source and license records are included in the project.",
+      ]),
+    }),
+    Object.freeze({
+      kind: "resource",
+      title: "Kenney Input Prompts",
+      description: "Controller glyph artwork, shared across WAYVM’s platforms.",
+      actionLabel: "Visit Kenney",
+      url: "https://kenney.nl/assets/input-prompts",
+    }),
+    Object.freeze({
+      kind: "section",
       heading: "Animal Art and Animation",
       paragraphs: Object.freeze([
         "Animal pixel art and animations are by SeethingSwarm, used under the applicable animal-pack licenses. These commercial source assets are not covered by the application’s software license. Interface design is by Dr. Derek Austin. The current game presentation is silent. Complete open-source software notices are available in the project’s license records.",

@@ -17,14 +17,20 @@ import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
 import {
   act,
   fireEvent,
-  render,
+  render as renderComponent,
   screen,
   waitFor,
   within,
+  type RenderOptions,
 } from "@testing-library/react"
-import { Profiler } from "react"
+import { Profiler, type ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import WebControlsProvider from "@/components/WebControlsProvider"
 import Crucible from "./Crucible"
+
+function render(ui: ReactNode, options?: RenderOptions) {
+  return renderComponent(ui, { wrapper: WebControlsProvider, ...options })
+}
 
 const VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN =
   /^Choose .+\. Level \d+\. Choice [12]\.$/

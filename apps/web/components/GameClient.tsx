@@ -59,6 +59,9 @@ import SeethingSwarmAssetPreparation, {
   usePreparedSeethingSwarmBattle,
   usePreparedSeethingSwarmClips,
 } from "@/components/SeethingSwarmAssetPreparation"
+import WebControlsProvider, {
+  useWebControllerActions,
+} from "@/components/WebControlsProvider"
 import { SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG } from "@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog"
 import { createIndexedDbDurableStore } from "@/lib/IndexedDbDurableStore"
 import {
@@ -67,6 +70,7 @@ import {
 } from "@/lib/PlayerDataFiles"
 import useWebExclusiveWriterLease from "@/lib/useWebExclusiveWriterLease"
 import useWebSemanticBack from "@/lib/useWebSemanticBack"
+import { activateWebControllerMenu } from "@/lib/WebControllerFocus"
 import packageMetadata from "@/package.json"
 import AchievementBanner from "./AchievementBanner"
 import Achievements from "./Achievements"
@@ -254,7 +258,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     isControlsOpen ||
     activeInformationPanelId !== null ||
     isCustomValueDraftActive
-  useWebSemanticBack({
+  const handleSemanticBack = useWebSemanticBack({
     hasParent: hasSemanticParent,
     onBack: () => {
       if (sharedCard !== null) {
@@ -372,6 +376,12 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
       activeElement instanceof HTMLElement ? activeElement : null
     setIsProductMenuOpen(true)
   }, [])
+  useWebControllerActions(0, (command) => {
+    if (command === "back" || command === "cancel") return handleSemanticBack()
+    if (command !== "menu") return false
+    activateWebControllerMenu()
+    return true
+  })
   const closeInformationPanel = useCallback(
     () => setActiveInformationPanelId(null),
     [],
@@ -1141,7 +1151,9 @@ export default function GameClient() {
     <RenderRecoveryBoundary
       fallback={(retry) => <RuntimeRecovery onRetry={retry} />}
     >
-      <GameClientShell />
+      <WebControlsProvider>
+        <GameClientShell />
+      </WebControlsProvider>
     </RenderRecoveryBoundary>
   )
 }
