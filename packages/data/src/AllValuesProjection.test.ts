@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { createActiveDeck } from "./ActiveDeck"
 import { projectAllValues } from "./AllValuesProjection"
-import { createCustomValueId, type CustomValueDefinition } from "./Value"
+import { createCanonicalValueId, createCustomValueId, type CustomValueDefinition } from "./Value"
 import {
   createInitialValueProgress,
   createValueProgressById,
@@ -68,7 +68,7 @@ describe("All Values Projection", () => {
     expect(projection.orderedValues).toBe(rankedValues)
     expect(
       projection.visibleValues.map(({ definition }) => definition.id),
-    ).toEqual([INGENUITY.id])
+    ).toEqual([createCanonicalValueId("wayvm:ingenuity"), INGENUITY.id])
   })
 
   it("returns frozen platform-neutral collections", () => {

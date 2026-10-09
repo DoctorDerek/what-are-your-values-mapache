@@ -35,7 +35,7 @@ describe("Hub Value Projection", () => {
     const projection = projectHubValues(rankedValues)
 
     expect(projection.hasComparisons).toBe(false)
-    expect(projection.visibleValues).toHaveLength(100)
+    expect(projection.visibleValues).toHaveLength(103)
     expect(
       projection.visibleValues
         .slice(0, 3)

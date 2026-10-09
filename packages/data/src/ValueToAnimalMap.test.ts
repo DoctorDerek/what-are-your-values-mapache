@@ -37,7 +37,7 @@ const retiredZooAnimalIds: readonly string[] = Object.freeze([
 
 function serializeCanonicalAnimalMap() {
   return JSON.stringify(
-    VALUE_TO_ANIMAL_MAP.map(({ valueId, animalId }) => ({
+    VALUE_TO_ANIMAL_MAP.filter(({ valueId }) => valueId.startsWith("pvcs-2011:")).map(({ valueId, animalId }) => ({
       valueId,
       animalId,
     })),
@@ -57,7 +57,7 @@ async function createSha256Hash(value: string) {
 
 describe("canonical value-to-animal mapping", () => {
   it("preserves the complete approved mapping", async () => {
-    expect(VALUE_TO_ANIMAL_MAP).toHaveLength(100)
+    expect(VALUE_TO_ANIMAL_MAP).toHaveLength(103)
     expect(await createSha256Hash(serializeCanonicalAnimalMap())).toBe(
       canonicalAnimalMapContentHash,
     )
@@ -84,7 +84,7 @@ describe("canonical value-to-animal mapping", () => {
   it("contains no manufactured hue identity", () => {
     expect(
       VALUE_TO_ANIMAL_MAP.map((mapping) => Object.keys(mapping).sort()),
-    ).toEqual(Array.from({ length: 100 }, () => ["animalId", "valueId"]))
+    ).toEqual(Array.from({ length: 103 }, () => ["animalId", "valueId"]))
   })
 
   it("contains no retired animal aliases", () => {

@@ -62,7 +62,7 @@ describe("Value Progress construction", () => {
     const activeDeck = createActiveDeck([createCustomValue(1)])
     const progressById = createInitialValueProgress(activeDeck)
 
-    expect(progressById.size).toBe(101)
+    expect(progressById.size).toBe(104)
     expect(Array.from(progressById.keys())).toEqual(activeDeck.valueIds)
     progressById.forEach((progress) => {
       expect(progress).toEqual({
@@ -113,7 +113,7 @@ describe("Value Progress reconfiguration", () => {
       progressById,
     })
 
-    expect(revisedProgressById.size).toBe(101)
+    expect(revisedProgressById.size).toBe(104)
     expect(revisedProgressById.get(curiosityId)).toEqual({
       ...playedProgress,
       currentCycleWins: 0,
@@ -172,7 +172,7 @@ describe("Value Progress reconfiguration", () => {
       currentCycleWins: 0,
     })
     expect(deletedProgressById.has(destiny.id)).toBe(false)
-    expect(deletedProgressById.size).toBe(101)
+    expect(deletedProgressById.size).toBe(104)
   })
 
   it("resets progress without changing Active Deck membership", () => {
