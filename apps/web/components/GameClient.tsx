@@ -144,6 +144,14 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
   const send = gameActor.send
   const systemShouldReduceMotion = useReducedMotion() === true
   const browseAllValuesButtonRef = useRef<HTMLButtonElement>(null)
+  const hubRosterScrollTop = useRef(0)
+  const preserveHubRosterScroll = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return
+    node.scrollTop = hubRosterScrollTop.current
+    return () => {
+      hubRosterScrollTop.current = node.scrollTop
+    }
+  }, [])
   const returnFocusTargetIdRef = useRef("hub-browse-all-values-button")
   const [pendingAllValuesValueId, setPendingAllValuesValueId] =
     useState<ValueId | null>(null)
@@ -862,6 +870,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           rankedValues={rankedValues}
           runtimeClipCatalog={SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG}
           browseAllValuesButtonRef={browseAllValuesButtonRef}
+          rosterRef={preserveHubRosterScroll}
           dataNotice={state.context.portabilityNotice}
           shouldReduceMotion={shouldReduceMotion}
           onBrowseAllValues={(focusTargetId) =>

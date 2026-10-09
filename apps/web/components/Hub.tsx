@@ -26,6 +26,7 @@ export default function Hub({
   rankedValues,
   runtimeClipCatalog,
   browseAllValuesButtonRef,
+  rosterRef,
   dataNotice,
   shouldReduceMotion,
   onBrowseAllValues,
@@ -50,6 +51,7 @@ export default function Hub({
   rankedValues: readonly RankedValue[]
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   browseAllValuesButtonRef?: Ref<HTMLButtonElement>
+  rosterRef?: Ref<HTMLDivElement>
   dataNotice: string | null
   shouldReduceMotion: boolean
   onBrowseAllValues: (focusTargetId: string) => void
@@ -124,6 +126,7 @@ export default function Hub({
         />
       )}
       <PersonalValuesCard
+        rosterRef={rosterRef}
         appearance={appearance}
         rankedValues={rankedValues}
         catalog={runtimeClipCatalog}

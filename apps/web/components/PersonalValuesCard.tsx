@@ -6,17 +6,20 @@ import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import type { StaticImageData } from "next/image"
+import type { Ref } from "react"
 import Heroes99Hero from "@/components/Heroes99Hero"
 import PersonalValueRow from "@/components/PersonalValueRow"
 
 export default function PersonalValuesCard({
   appearance, rankedValues, catalog, shouldReduceMotion, inert,
+  rosterRef,
 }: {
   appearance: Heroes99Appearance
   rankedValues: readonly RankedValue[]
   catalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   shouldReduceMotion: boolean
   inert?: boolean
+  rosterRef?: Ref<HTMLDivElement>
 }) {
   const { hasComparisons, visibleValues, topFive, remainingValues } = projectHubValues(rankedValues)
   const renderValue = (value: RankedValue) => (
@@ -60,6 +63,7 @@ export default function PersonalValuesCard({
       </div>
       <div
         role="region"
+        ref={rosterRef}
         aria-label={hasComparisons ? PERSONAL_HUB_COPY.rankedList : PERSONAL_HUB_COPY.unrankedList}
         tabIndex={0}
         className="bg-player-card-values col-span-2 row-start-2 min-h-0 min-w-0 overflow-y-auto overscroll-contain focus-visible:outline-4 focus-visible:-outline-offset-4 xl:col-span-1 xl:col-start-2"
