@@ -619,7 +619,9 @@ test("All Values and Custom Values reflow without document overflow", async ({
   ).toBeVisible()
   await expectNoDocumentHorizontalOverflow(page, "All Values")
 
-  await page.getByRole("button", { name: "Add value", exact: true }).click()
+  await page
+    .getByRole("button", { name: "Add Custom Value", exact: true })
+    .click()
   await expect(
     page.getByRole("form", { name: "Add Custom Value" }),
   ).toBeVisible()

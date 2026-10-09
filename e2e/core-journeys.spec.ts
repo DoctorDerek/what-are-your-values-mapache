@@ -235,7 +235,7 @@ test("a secondary tab stays read-only then inherits released writer ownership", 
   await secondaryPage.getByRole("button", { name: "Load Latest" }).click()
   await expect(
     secondaryPage.getByRole("heading", {
-      level: 1,
+      level: 2,
       name: /^My (?:Top Five Life )?Values$/,
     }),
   ).toBeVisible()
