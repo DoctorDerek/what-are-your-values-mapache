@@ -1,4 +1,8 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
+import {
+  CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
+  CUSTOM_VALUE_INVITATION_COPY as copy,
+} from "@game/data/src/CustomValueInvitationCopy"
 import { customValueValidationMessages } from "@game/data/src/CustomValueValidationMessages"
 import {
   createCustomValueId,
@@ -49,27 +53,34 @@ function createAddProps() {
 }
 
 describe("NativeCustomValueForm", () => {
-  it("starts blank and saves only the player-authored value", async () => {
+  it("shows an informational example and saves only an explicitly authored value", async () => {
     const props = createAddProps()
     const user = userEvent.setup()
     await render(<NativeCustomValueForm {...props} />)
 
     expect(screen.getByLabelText("Value Name")).toHaveDisplayValue("")
+    expect(screen.getByLabelText("What This Value Means to Me")).toHaveDisplayValue("")
+    expect(
+      screen.getByText(
+        "For example: Craftsmanship — to take care and pride in making things well",
+      ),
+    ).toBeOnTheScreen()
+    expect(screen.getByRole("button", { name: "Save Value" })).toBeDisabled()
     expect(
       screen.queryByRole("button", { name: /Start with/ }),
     ).not.toBeOnTheScreen()
     expect(props.onSubmit).not.toHaveBeenCalled()
-    await user.type(screen.getByLabelText("Value Name"), "Craftsmanship")
+    await user.type(screen.getByLabelText("Value Name"), example.name)
     await user.type(
       screen.getByLabelText("What This Value Means to Me"),
-      "To hone my craft.",
+      example.definition,
     )
 
     await user.press(screen.getByRole("button", { name: "Save Value" }))
 
     expect(props.onSubmit).toHaveBeenCalledWith(
       "Craftsmanship",
-      "To hone my craft.",
+      "to take care and pride in making things well",
     )
   })
 
@@ -173,6 +184,7 @@ describe("NativeCustomValueForm", () => {
     )
 
     const reviewUpdate = screen.getByRole("button", { name: "Review Update" })
+    expect(screen.queryByText(copy.example)).not.toBeOnTheScreen()
     expect(reviewUpdate).toBeDisabled()
 
     const definition = screen.getByLabelText("What This Value Means to Me")

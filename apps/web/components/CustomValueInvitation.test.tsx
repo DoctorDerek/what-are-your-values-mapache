@@ -1,3 +1,7 @@
+import {
+  CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
+  CUSTOM_VALUE_INVITATION_COPY as copy,
+} from "@game/data/src/CustomValueInvitationCopy"
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
@@ -41,9 +45,14 @@ describe("Hub custom-value invitation", () => {
   it("keeps the untouched Home free of a second authoring entry point", () => {
     const { props, rerender } = setup(0)
     expect(screen.queryByRole("complementary")).not.toBeInTheDocument()
+    expect(screen.queryByText(copy.example)).not.toBeInTheDocument()
     rerender(<CustomValueInvitation {...props} editorRequestId={1} />)
     expect(screen.getByLabelText("Value name")).toHaveFocus()
     expect(screen.getByRole("complementary")).toBeVisible()
+    expect(screen.getByText(copy.example)).toBeVisible()
+    click("Close editor")
+    expect(screen.queryByText(copy.example)).not.toBeInTheDocument()
+    expect(props.onApply).not.toHaveBeenCalled()
   })
   it("saves pending player-authored entries with an empty editor", () => {
     const { props } = setup(1)
@@ -71,20 +80,31 @@ describe("Hub custom-value invitation", () => {
       { name: "Another direction", definition: "to explore another path" },
     ])
   })
-  it("starts blank without examples and requires an explicit save", () => {
+  it("shows one informational example without filling or saving a draft", () => {
     const { props } = setup()
     expect(screen.getByLabelText("Value name")).toHaveValue("")
     expect(screen.getByLabelText("Definition")).toHaveValue("")
-    expect(screen.queryByText(/Try an example/)).not.toBeInTheDocument()
+    expect(
+      screen.getByText(
+        "For example: Craftsmanship — to take care and pride in making things well",
+      ),
+    ).toBeVisible()
+    expect(screen.getByLabelText("Value name")).toHaveAccessibleDescription(
+      expect.stringContaining(copy.example),
+    )
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
     expect(
       screen.queryByRole("button", { name: "Add all three" }),
     ).not.toBeInTheDocument()
     expect(screen.getByText(/clears Undo and Redo/)).toBeVisible()
-    fill("Craftsmanship", "To hone my craft.")
+    fill(example.name, example.definition)
     expect(props.onApply).not.toHaveBeenCalled()
     click("Save")
     expect(props.onApply).toHaveBeenCalledExactlyOnceWith([
-      { name: "Craftsmanship", definition: "To hone my craft." },
+      {
+        name: "Craftsmanship",
+        definition: "to take care and pride in making things well",
+      },
     ])
   })
   it("retains unfinished text when closed and reopened through a new request", () => {

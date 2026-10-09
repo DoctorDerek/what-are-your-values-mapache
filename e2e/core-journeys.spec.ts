@@ -1,3 +1,7 @@
+import {
+  CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
+  CUSTOM_VALUE_INVITATION_COPY as copy,
+} from "@game/data/src/CustomValueInvitationCopy"
 import { expect, type Locator } from "@playwright/test"
 import { test } from "./fixtures"
 
@@ -158,18 +162,22 @@ test("a new player starts immediately and reviews the complete ranking", async (
   await expect(editorial).toBeHidden()
 })
 
-test("a player writes a custom value without starter examples and retains it after reload", async ({
+test("a player uses the informational example to author a custom value and retains it after reload", async ({
   page,
 }) => {
   await page.goto("/")
   await page.getByRole("button", { name: "Start", exact: true }).click()
+  await expect(page.getByText(copy.example)).toHaveCount(0)
   await page.getByRole("button", { name: "Add value", exact: true }).click()
   await expect(page.getByLabel("Value name", { exact: true })).toHaveValue("")
+  await expect(page.getByLabel("Definition", { exact: true })).toHaveValue("")
+  await expect(page.getByText(copy.example)).toBeVisible()
+  await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled()
   await expect(page.getByRole("button", { name: "Add all three" })).toHaveCount(
     0,
   )
-  await page.getByLabel("Value name", { exact: true }).fill("Craftsmanship")
-  await page.getByLabel("Definition", { exact: true }).fill("To hone my craft.")
+  await page.getByLabel("Value name", { exact: true }).fill(example.name)
+  await page.getByLabel("Definition", { exact: true }).fill(example.definition)
   await page.getByRole("button", { name: "Save", exact: true }).click()
   await expect(
     page.getByText("Your Custom Values are saved and ready to battle."),
@@ -184,7 +192,9 @@ test("a player writes a custom value without starter examples and retains it aft
     .fill("Craftsmanship")
   const row = page.getByRole("listitem")
   await expect(row).toHaveCount(1)
-  await expect(row.getByText("“To hone my craft.”")).toBeVisible()
+  await expect(
+    row.getByText("“to take care and pride in making things well”"),
+  ).toBeVisible()
   await expect(
     row.getByRole("button", { name: "Edit", exact: true }),
   ).toBeVisible()
