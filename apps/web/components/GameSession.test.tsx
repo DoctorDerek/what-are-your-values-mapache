@@ -89,6 +89,33 @@ afterEach(() => {
 })
 
 describe("Game session recovery", () => {
+  it("projects public arrival and accepted play from the same actor", async () => {
+    let actor: RootActor | undefined
+    const { container } = render(
+      <GameSession
+        durableStore={createInMemoryDurableStore()}
+        onReopen={vi.fn()}
+      >
+        {(gameActor) => {
+          actor = gameActor
+          return <GameView actor={gameActor} />
+        }}
+      </GameSession>,
+    )
+    await waitFor(() =>
+      expect(container.querySelector("[data-game-surface]")).toHaveAttribute(
+        "data-game-surface",
+        "arrival",
+      ),
+    )
+    act(() => actor?.send({ type: "INTRODUCTION.COMPLETED" }))
+    await screen.findByText("Working hub")
+    expect(container.querySelector("[data-game-surface]")).toHaveAttribute(
+      "data-game-surface",
+      "active",
+    )
+  })
+
   it("contains an unexpected child actor failure and exports its retained draft", async () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined)
     const download = vi

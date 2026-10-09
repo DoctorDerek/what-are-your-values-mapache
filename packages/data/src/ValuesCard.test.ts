@@ -91,4 +91,46 @@ describe("values-card composition", () => {
   it("rejects unavailable theme data rather than creating an unrelated palette", () => {
     expect(() => readValuesCardPalette([undefined])).toThrow("colors")
   })
+
+  it("paints the ranked heading on two equally prominent lines above the values", () => {
+    const painter: ValuesCardPainter = {
+      rectangle: vi.fn(),
+      sprite: vi.fn(),
+      text: vi.fn(),
+      measure: (value, size) => value.length * size * 0.52,
+    }
+    const palette = readValuesCardPalette([
+      "#009dae",
+      "#71dfe7",
+      "#c2fff9",
+      "#ffe652",
+      "#18233e",
+      "#384873",
+    ])
+    paintValuesCard({
+      painter,
+      model: { ...model(), hasComparisons: true },
+      palette,
+      frame: 0,
+      hero: null,
+    })
+    expect(painter.text).toHaveBeenCalledWith({
+      value: "My Top Five",
+      x: 800,
+      y: 76,
+      size: 64,
+      weight: 900,
+      color: palette.ink,
+      align: "center",
+    })
+    expect(painter.text).toHaveBeenCalledWith({
+      value: "Life Values",
+      x: 800,
+      y: 148,
+      size: 64,
+      weight: 900,
+      color: palette.ink,
+      align: "center",
+    })
+  })
 })
