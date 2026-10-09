@@ -1,0 +1,26 @@
+Input Prompts (1.5A)
+Created/distributed by Kenney (www.kenney.nl)
+Creation date: 11-07-2026
+
+License: Creative Commons Zero (CC0)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+You can use this content for personal, educational, and commercial purposes.
+Support by crediting Kenney or www.kenney.nl (this is not a requirement).
+
+Source: https://kenney.nl/assets/input-prompts
+Archive: https://kenney.nl/media/pages/assets/input-prompts/8de120163f-1783763952/kenney_input-prompts_1.5.zip
+Retrieved: 2026-10-08
+
+WAYVM uses a losslessly assembled subset of the 64x64 Default PNG glyphs.
+The six-column, eight-row atlas is shared by web and native presentation.
+Exact source filenames and atlas columns are recorded in
+packages/data/src/ControllerPrompts.ts. Rows follow CONTROLLER_BINDINGS,
+followed by the D-pad. No glyph drawing, labels, or colors were modified.
+
+Generic face-position glyphs use the unlettered Nintendo Switch diagrams.
+Generic shoulders and center buttons remain unbranded and use text labels.
+Controller family is inferred from the input device, never the host OS.
+
+Website: https://kenney.nl
+Donate: https://kenney.nl/donate
