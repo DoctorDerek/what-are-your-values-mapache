@@ -1,5 +1,5 @@
 import type { ActiveDeck } from "@game/data/src/ActiveDeck"
-import type { ValueId } from "@game/data/src/Value"
+import type { CanonicalCatalogVersion, ValueId } from "@game/data/src/Value"
 import { type CustomValueDefinition } from "@game/data/src/Value"
 import {
   createBattleCycleCandidate,
@@ -201,12 +201,15 @@ export function applyBattleRedo(profile: BattleProfile) {
 export function applyDeckRevision({
   profile,
   revisedCustomValues,
+  catalogVersion,
 }: {
   readonly profile: BattleProfile
   readonly revisedCustomValues: readonly CustomValueDefinition[]
+  readonly catalogVersion?: CanonicalCatalogVersion
 }) {
   const candidate = createDeckRevisionCandidate({
     priorActiveDeck: profile.activeDeck,
+    catalogVersion,
     revisedCustomValues,
     progressById: profile.progressById,
     deckRevision: profile.scheduler.deckRevision,

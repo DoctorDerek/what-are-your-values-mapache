@@ -1,5 +1,5 @@
 import { createActiveDeck, type ActiveDeck } from "@game/data/src/ActiveDeck"
-import type { CustomValueDefinition, CustomValueId } from "@game/data/src/Value"
+import type { CanonicalCatalogVersion, CustomValueDefinition, CustomValueId } from "@game/data/src/Value"
 import {
   reconfigureValueProgress,
   type ValueProgressById,
@@ -73,6 +73,7 @@ function validateRetainedCustomValueIdentity(
 
 export function createDeckRevisionCandidate({
   priorActiveDeck,
+  catalogVersion = priorActiveDeck.catalogVersion,
   revisedCustomValues,
   progressById,
   deckRevision,
@@ -80,6 +81,7 @@ export function createDeckRevisionCandidate({
   seed,
 }: {
   readonly priorActiveDeck: ActiveDeck
+  readonly catalogVersion?: CanonicalCatalogVersion
   readonly revisedCustomValues: readonly CustomValueDefinition[]
   readonly progressById: ValueProgressById
   readonly deckRevision: number
@@ -89,7 +91,7 @@ export function createDeckRevisionCandidate({
   validateGeneration(progressGeneration, "progress generation")
   validateRetainedCustomValueIdentity(priorActiveDeck, revisedCustomValues)
 
-  const activeDeck = createActiveDeck(revisedCustomValues)
+  const activeDeck = createActiveDeck(revisedCustomValues, catalogVersion)
   if (activeDeck.fingerprint === priorActiveDeck.fingerprint) {
     throw new Error("Deck revision does not change Active Deck meaning")
   }

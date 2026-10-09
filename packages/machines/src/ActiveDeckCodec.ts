@@ -1,7 +1,7 @@
 import { createActiveDeck, type ActiveDeck } from "@game/data/src/ActiveDeck"
 import {
-  CANONICAL_CATALOG_VERSION,
   createCustomValueId,
+  isCanonicalCatalogVersion,
   type CustomValueDefinition,
 } from "@game/data/src/Value"
 import {
@@ -79,7 +79,7 @@ export function decodeActiveDeck(value: unknown) {
   if (version !== ACTIVE_DECK_CODEC_VERSION) {
     throw new Error(`Unsupported Active Deck codec version: ${String(version)}`)
   }
-  if (catalogVersion !== CANONICAL_CATALOG_VERSION) {
+  if (!isCanonicalCatalogVersion(catalogVersion)) {
     throw new Error(`Unsupported canonical catalog version: ${catalogVersion}`)
   }
   if (!Array.isArray(encodedCustomValues)) {
@@ -88,6 +88,7 @@ export function decodeActiveDeck(value: unknown) {
 
   const activeDeck = createActiveDeck(
     encodedCustomValues.map(decodeCustomValueDefinition),
+    catalogVersion,
   )
   if (activeDeck.fingerprint !== fingerprint) {
     throw new Error("Active Deck fingerprint does not match its definitions")

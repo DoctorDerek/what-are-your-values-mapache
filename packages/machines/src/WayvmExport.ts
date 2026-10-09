@@ -1,4 +1,4 @@
-import { CANONICAL_CATALOG_VERSION } from "@game/data/src/Value"
+import { isCanonicalCatalogVersion, type CanonicalCatalogVersion } from "@game/data/src/Value"
 import { BATTLE_PROFILE_CHECKPOINT_SCHEMA_VERSION } from "./BattleProfileCheckpoint"
 import { parsePersistedJson, serializePersistedJson } from "./PersistedJson"
 import {
@@ -29,7 +29,7 @@ export type WayvmExport = {
   readonly sourceAppVersion: string
   readonly sourceBuild: string
   readonly saveSchemaVersion: typeof BATTLE_PROFILE_CHECKPOINT_SCHEMA_VERSION
-  readonly canonicalCatalogVersion: typeof CANONICAL_CATALOG_VERSION
+  readonly canonicalCatalogVersion: CanonicalCatalogVersion
   readonly activeDeckFingerprint: string
   readonly deckRevision: number
   readonly progressGeneration: number
@@ -99,7 +99,7 @@ function createHashableWayvmExport({
     readRequiredMetadata(sourceAppVersion, "source application version"),
     readRequiredMetadata(sourceBuild, "source build"),
     BATTLE_PROFILE_CHECKPOINT_SCHEMA_VERSION,
-    CANONICAL_CATALOG_VERSION,
+    playerData.profile.activeDeck.catalogVersion,
     playerData.profile.activeDeck.fingerprint,
     playerData.profile.scheduler.deckRevision,
     playerData.profile.scheduler.progressGeneration,
@@ -119,7 +119,7 @@ function freezeWayvmExport(
     sourceAppVersion: hashableExport[3],
     sourceBuild: hashableExport[4],
     saveSchemaVersion: BATTLE_PROFILE_CHECKPOINT_SCHEMA_VERSION,
-    canonicalCatalogVersion: CANONICAL_CATALOG_VERSION,
+    canonicalCatalogVersion: playerData.profile.activeDeck.catalogVersion,
     activeDeckFingerprint: hashableExport[7],
     deckRevision: hashableExport[8],
     progressGeneration: hashableExport[9],
@@ -177,7 +177,7 @@ export async function decodeWayvmExport(serialized: string) {
   if (tuple[5] !== BATTLE_PROFILE_CHECKPOINT_SCHEMA_VERSION) {
     throw new Error(`Unsupported save schema version: ${String(tuple[5])}`)
   }
-  if (tuple[6] !== CANONICAL_CATALOG_VERSION) {
+  if (!isCanonicalCatalogVersion(tuple[6])) {
     throw new Error(
       `Unsupported canonical catalog version: ${String(tuple[6])}`,
     )
@@ -215,6 +215,7 @@ export async function decodeWayvmExport(serialized: string) {
 
   const playerData = decodePlayerData(tuple[10])
   if (
+    playerData.profile.activeDeck.catalogVersion !== tuple[6] ||
     activeDeckFingerprint !== playerData.profile.activeDeck.fingerprint ||
     deckRevision !== playerData.profile.scheduler.deckRevision ||
     progressGeneration !== playerData.profile.scheduler.progressGeneration
