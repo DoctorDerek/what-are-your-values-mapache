@@ -24,7 +24,7 @@ test("defers distant roster art and prepares animals when scrolling reaches them
   const rows = page
     .getByRole("listitem")
     .filter({ has: page.locator("[data-hub-active-clip]") })
-  await expect(rows).toHaveCount(100)
+  await expect(rows).toHaveCount(103)
   await expect(
     rows.first().locator('[data-hub-active-clip="true"] [data-playback-ready]'),
   ).toHaveAttribute("data-playback-ready", "true")

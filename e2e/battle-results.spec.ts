@@ -226,7 +226,7 @@ test("battle results show committed progress without delaying either exit", asyn
     page
       .getByRole("list", { name: "Your value results" })
       .getByRole("listitem"),
-  ).toHaveCount(100)
+  ).toHaveCount(103)
   await expect(
     page.getByRole("region", { name: "Profile progress" }),
   ).toContainText("Profile XP 4")

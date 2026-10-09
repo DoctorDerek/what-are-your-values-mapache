@@ -42,8 +42,8 @@ test.describe("static English editorial document", () => {
         name: "Introduction",
       }),
     ).toBeVisible()
-    await expect(editorialArticle.locator("dt")).toHaveCount(100)
-    await expect(editorialArticle.locator("dd")).toHaveCount(100)
+    await expect(editorialArticle.locator("dt")).toHaveCount(103)
+    await expect(editorialArticle.locator("dd")).toHaveCount(103)
     await expect(editorialArticle.locator("dt").first()).toHaveText(
       "Acceptance",
     )
@@ -51,10 +51,10 @@ test.describe("static English editorial document", () => {
       "to be accepted as I am",
     )
     await expect(editorialArticle.locator("dt").last()).toHaveText(
-      "World Peace",
+      "Pets",
     )
     await expect(editorialArticle.locator("dd").last()).toHaveText(
-      "to work to promote peace in the world",
+      "to care for, protect, and share life with companion animals",
     )
     await expect(
       editorialArticle.getByRole("link", { name: "Start or Continue Game" }),
