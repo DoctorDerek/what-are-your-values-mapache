@@ -19,7 +19,7 @@ packages/data/src/ControllerPrompts.ts. Rows follow CONTROLLER_BINDINGS,
 followed by the D-pad. No glyph drawing, labels, or colors were modified.
 
 Generic face-position glyphs use the unlettered Nintendo Switch diagrams.
-Generic shoulders and center buttons remain unbranded and use text labels.
+Generic shoulders and center buttons use unbranded L1/R1 and menu/view glyphs.
 Controller family is inferred from the input device, never the host OS.
 
 Website: https://kenney.nl

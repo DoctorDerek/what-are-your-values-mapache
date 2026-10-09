@@ -1,7 +1,7 @@
 import type { ControllerCommand } from "@game/data/src/ControllerControls"
 
 const CONTROLLER_FOCUS_TARGETS =
-  "button, a[href], input, select, textarea, [role=region][tabindex], [data-testid=information-panel-body]"
+  "button, a[href], input, select, textarea, [role=region][tabindex], [data-controller-scroll]"
 const CONTROLLER_SCROLL_STEP = 96
 
 export function moveWebControllerFocus(command: ControllerCommand) {
@@ -28,7 +28,7 @@ export function moveWebControllerFocus(command: ControllerCommand) {
     if (active instanceof HTMLElement && targets.includes(active)) {
       if (
         !active.matches(
-          '[role="region"], [data-testid="information-panel-body"]',
+          '[role="region"], [data-controller-scroll]',
         )
       )
         active.click()
@@ -38,7 +38,7 @@ export function moveWebControllerFocus(command: ControllerCommand) {
   if (
     active instanceof HTMLElement &&
     targets.includes(active) &&
-    active.matches('[role="region"], [data-testid="information-panel-body"]') &&
+    active.matches('[role="region"], [data-controller-scroll]') &&
     (command === "up" || command === "down")
   ) {
     active.scrollBy({

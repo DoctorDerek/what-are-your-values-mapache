@@ -24,7 +24,7 @@ function BattleActionLabel({
     return (
       <span
         aria-hidden="true"
-        className="inline-flex flex-wrap items-center justify-center gap-1"
+        className="inline-flex flex-col items-center justify-center gap-1 xl:flex-row"
       >
         <span>{label}</span>
         <ControllerPrompt family={controllerFamily} command={command} />

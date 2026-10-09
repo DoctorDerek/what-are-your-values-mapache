@@ -3,7 +3,7 @@ import {
   getControllerButtonLabel,
   type ControllerCommand,
   type ControllerFamily,
-} from "./ControllerControls"
+} from "@game/data/src/ControllerControls"
 
 export const CONTROLLER_PROMPT_SIZE = 64
 export const CONTROLLER_PROMPT_COLUMNS = 6
@@ -14,13 +14,13 @@ export const CONTROLLER_PROMPT_SOURCES = {
     column: 0,
     folder: "Generic/Default",
     files: [
-      "generic_button_trigger_b",
-      "generic_button_trigger_b",
+      "Steam Deck/Default/steamdeck_button_l1",
+      "Steam Deck/Default/steamdeck_button_r1",
       "Nintendo Switch/Default/switch_buttons_down",
       "Nintendo Switch/Default/switch_buttons_right",
       "Nintendo Switch/Default/switch_buttons_up",
-      "generic_button",
-      "generic_button",
+      "Xbox Series/Default/xbox_button_view",
+      "Xbox Series/Default/xbox_button_menu",
       "Nintendo Switch/Default/switch_dpad",
     ],
   },
