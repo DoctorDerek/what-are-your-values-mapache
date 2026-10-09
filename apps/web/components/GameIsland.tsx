@@ -14,7 +14,7 @@ export default function GameIsland() {
     <section
       id="game"
       aria-label={`Play ${introductionCopy.title}`}
-      className="min-h-[100dvh]"
+      className="peer min-h-[100dvh]"
     >
       <GameClient />
     </section>

@@ -1106,7 +1106,11 @@ function GameClientShell() {
 
   if (writerLease.status === "checking") return <PlayerDataLoading />
   if (writerLease.status === "read-only")
-    return <ReadOnlyGameClient durableStore={durableStore} />
+    return (
+      <div data-game-surface="active">
+        <ReadOnlyGameClient durableStore={durableStore} />
+      </div>
+    )
 
   return (
     <GameSession

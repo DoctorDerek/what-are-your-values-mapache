@@ -4,7 +4,7 @@ import type { DurableStoreAdapter } from "@game/machines/src/DurableStoreAdapter
 import { rootMachine } from "@game/machines/src/RootMachine"
 import type { RootActor } from "@game/machines/src/RuntimeRecovery"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
-import { useActorRef } from "@xstate/react"
+import { useActorRef, useSelector } from "@xstate/react"
 import { useEffect, useMemo, useReducer, type ReactNode } from "react"
 import RuntimeRecovery from "@/components/RuntimeRecovery"
 import packageMetadata from "@/package.json"
@@ -37,21 +37,28 @@ export default function GameSession({
     },
     observer,
   )
+  const isPublicArrival = useSelector(
+    gameActor,
+    (snapshot) => snapshot.matches("Splash") || snapshot.matches("InitializingProfile"),
+  )
 
   useEffect(() => {
     gameActor.send({ type: "APP.HYDRATED", schedulerSeed: crypto.randomUUID() })
   }, [gameActor])
 
-  if (gameActor.getSnapshot().status === "error")
-    return <RuntimeRecovery gameActor={gameActor} onReopen={onReopen} />
-
   return (
-    <RenderRecoveryBoundary
-      fallback={(retry) => (
-        <RuntimeRecovery gameActor={gameActor} onRetry={retry} />
+    <div data-game-surface={isPublicArrival ? "arrival" : "active"}>
+      {gameActor.getSnapshot().status === "error" ? (
+        <RuntimeRecovery gameActor={gameActor} onReopen={onReopen} />
+      ) : (
+        <RenderRecoveryBoundary
+          fallback={(retry) => (
+            <RuntimeRecovery gameActor={gameActor} onRetry={retry} />
+          )}
+        >
+          {children(gameActor)}
+        </RenderRecoveryBoundary>
       )}
-    >
-      {children(gameActor)}
-    </RenderRecoveryBoundary>
+    </div>
   )
 }
