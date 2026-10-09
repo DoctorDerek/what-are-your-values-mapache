@@ -5,20 +5,15 @@ import {
   type CustomValueDraft,
 } from "@game/data/src/CustomValueDraft"
 import { CUSTOM_VALUE_INVITATION_COPY as copy } from "@game/data/src/CustomValueInvitationCopy"
-import { CUSTOM_VALUE_STARTER_EXAMPLES } from "@game/data/src/CustomValueStarterExamples"
-import { validateCustomValueDraft } from "@game/data/src/CustomValueValidation"
 import { customValueValidationMessages } from "@game/data/src/CustomValueValidationMessages"
-import {
-  normalizeValueNameForComparison,
-  type CustomValueDefinition,
-} from "@game/data/src/Value"
+import type { CustomValueDefinition } from "@game/data/src/Value"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { useEffect, useState } from "react"
 import CustomValueDraftEditor from "@/components/CustomValueDraftEditor"
 import { Button } from "@/components/ui/button"
 
 type DraftEntry = CustomValueDraft &
-  Readonly<{ key: string; exampleName: string | null }>
+  Readonly<{ key: string }>
 const EMPTY_DRAFT: CustomValueDraft = Object.freeze({
   name: "",
   definition: "",
@@ -47,7 +42,6 @@ export default function CustomValueInvitation({
   const [editorDraft, setEditorDraft] = useState<CustomValueDraft>(EMPTY_DRAFT)
   const [editingKey, setEditingKey] = useState<string | null>(null)
   const [writing, setWriting] = useState(false)
-  const [examplesExpanded, setExamplesExpanded] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [exportIssue, setExportIssue] = useState<string | null>(null)
   const [handledEditorRequestId, setHandledEditorRequestId] = useState(0)
@@ -55,7 +49,6 @@ export default function CustomValueInvitation({
     setHandledEditorRequestId(editorRequestId)
     if (editorRequestId !== 0) {
       setWriting(true)
-      setExamplesExpanded(true)
       if (!editorDraft.name && !editorDraft.definition) {
         setEditorDraft({ name: initialName, definition: "" })
       }
@@ -90,20 +83,6 @@ export default function CustomValueInvitation({
     editingKey !== null ||
     editorDraft.name.length > 0 ||
     editorDraft.definition.length > 0
-  const examplesAlreadyDrafted = CUSTOM_VALUE_STARTER_EXAMPLES.filter(
-    (example) =>
-      drafts.some(
-        (draft) =>
-          draft.exampleName !== example.name &&
-          normalizeValueNameForComparison(draft.name) ===
-            normalizeValueNameForComparison(example.name),
-      ),
-  )
-  const availableExamples = CUSTOM_VALUE_STARTER_EXAMPLES.filter(
-    (example) =>
-      validateCustomValueDraft({ ...example, existingCustomValues }).isValid &&
-      !examplesAlreadyDrafted.includes(example),
-  )
   const additions = hasUnfinishedDraft
     ? editingKey
       ? drafts.map((draft) => (draft.key === editingKey ? editorDraft : draft))
@@ -124,9 +103,8 @@ export default function CustomValueInvitation({
       )
   }
 
-  function backToSelection() {
+  function closeEditor() {
     setWriting(false)
-    setExamplesExpanded(true)
     document.getElementById("hub-add-custom-value-button")?.focus()
   }
   function queueDraft() {
@@ -141,7 +119,7 @@ export default function CustomValueInvitation({
           )
         : [
             ...drafts,
-            { ...nextDraft, key: crypto.randomUUID(), exampleName: null },
+            { ...nextDraft, key: crypto.randomUUID() },
           ],
     )
     setEditorDraft(EMPTY_DRAFT)
@@ -161,8 +139,7 @@ export default function CustomValueInvitation({
     }
   }
 
-  if (editorRequestId === 0 && !isNavigationBlocked && !examplesExpanded)
-    return null
+  if (!isNavigationBlocked) return null
 
   return (
     <aside
@@ -179,77 +156,13 @@ export default function CustomValueInvitation({
             validation={editorValidation}
             onChange={setEditorDraft}
             onSubmit={saveAdditions}
-            onBack={backToSelection}
+            onBack={closeEditor}
           />
         ) : hasUnfinishedDraft && drafts.length === 0 ? (
           <Button variant="link" onClick={() => setWriting(true)}>
             {copy.continueDraft}
           </Button>
         ) : null}
-        <details
-          open={examplesExpanded}
-          onToggle={(event) => setExamplesExpanded(event.currentTarget.open)}
-        >
-          <summary className="min-h-11 cursor-pointer py-2 font-bold focus-visible:outline-4 focus-visible:outline-offset-4">
-            {copy.invitation}
-          </summary>
-          <p className="py-2 text-sm">{copy.guidance}</p>
-          <div className="flex flex-wrap gap-3">
-            {CUSTOM_VALUE_STARTER_EXAMPLES.map((example) => (
-              <Button
-                key={example.name}
-                variant="outline"
-                size="sm"
-                disabled={
-                  hasUnfinishedDraft ||
-                  !availableExamples.includes(example) ||
-                  drafts.some((draft) => draft.exampleName === example.name)
-                }
-                aria-label={
-                  example.label
-                    ? `${example.name} — ${example.label}`
-                    : example.name
-                }
-                onClick={() => {
-                  setEditorDraft({
-                    name: example.name,
-                    definition: example.definition,
-                  })
-                  setEditingKey(null)
-                  setWriting(true)
-                }}
-              >
-                {example.name}
-              </Button>
-            ))}
-            <Button
-              variant="link"
-              disabled={availableExamples.every((example) =>
-                drafts.some((draft) => draft.exampleName === example.name),
-              )}
-              onClick={() =>
-                setDrafts([
-                  ...drafts,
-                  ...availableExamples
-                    .filter(
-                      (example) =>
-                        !drafts.some(
-                          (draft) => draft.exampleName === example.name,
-                        ),
-                    )
-                    .map((example) => ({
-                      name: example.name,
-                      definition: example.definition,
-                      key: `example:${example.name}`,
-                      exampleName: example.name,
-                    })),
-                ])
-              }
-            >
-              {copy.selectAll}
-            </Button>
-          </div>
-        </details>
         {drafts.length > 0 && (
           <section
             className="space-y-3 border-t-2 border-black pt-3"
@@ -274,7 +187,6 @@ export default function CustomValueInvitation({
                           definition: draft.definition,
                         })
                         setWriting(true)
-                        setExamplesExpanded(true)
                       }}
                     >
                       {copy.edit}
@@ -287,7 +199,6 @@ export default function CustomValueInvitation({
                         setDrafts(
                           drafts.filter((item) => item.key !== draft.key),
                         )
-                        setExamplesExpanded(true)
                       }}
                     >
                       {copy.remove}
@@ -339,7 +250,7 @@ export default function CustomValueInvitation({
             onClick={() => {
               setEditorDraft(EMPTY_DRAFT)
               setEditingKey(null)
-              backToSelection()
+              closeEditor()
             }}
           >
             {copy.discardUnfinished}
@@ -355,7 +266,7 @@ export default function CustomValueInvitation({
                   setDrafts([])
                   setEditorDraft(EMPTY_DRAFT)
                   setEditingKey(null)
-                  backToSelection()
+                  closeEditor()
                 }}
               >
                 {copy.discard}

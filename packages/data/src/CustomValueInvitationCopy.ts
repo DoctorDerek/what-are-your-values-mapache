@@ -1,9 +1,4 @@
 export const CUSTOM_VALUE_INVITATION_COPY = Object.freeze({
-  invitation: "Missing a value? Try an example",
-  write: "Add Custom Value",
-  selectAll: "Add all three",
-  guidance:
-    "Choose an example to edit, or add all three to your pending list. Nothing is saved yet.",
   editorTitle: "Add Custom Value",
   name: "Value name",
   definition: "Definition",
@@ -27,8 +22,6 @@ export const CUSTOM_VALUE_INVITATION_COPY = Object.freeze({
   discard: "Discard pending values",
   unsaved: "Not saved yet. Save or discard your pending values before leaving.",
   invalid: "Resolve the highlighted draft errors before applying changes.",
-  alreadyIncluded: "Already in your deck",
-  alreadyDrafted: "Already pending",
   edit: "Edit",
   remove: "Remove",
 })

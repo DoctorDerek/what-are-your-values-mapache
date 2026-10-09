@@ -1,4 +1,3 @@
-import { CUSTOM_VALUE_STARTER_EXAMPLES } from "@game/data/src/CustomValueStarterExamples"
 import {
   CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES,
   CUSTOM_VALUE_NAME_MAX_GRAPHEMES,
@@ -95,45 +94,6 @@ export default function NativeCustomValueForm({
       }
       className="gap-4 border-4 border-black bg-white p-4 shadow-[6px_6px_0px_0px_#000000]"
     >
-      {mode === "add" ? (
-        <>
-          <Text
-            accessibilityRole="header"
-            className="text-2xl font-black text-black uppercase"
-          >
-            Custom Value Builder
-          </Text>
-          <Text className="text-base leading-6 font-bold text-black">
-            Start with an example or add your own. Each example fills an unsaved
-            draft that you can edit before saving.
-          </Text>
-          <Text className="text-lg font-black text-black uppercase">
-            Examples—not recommendations
-          </Text>
-          <View className="gap-3">
-            {CUSTOM_VALUE_STARTER_EXAMPLES.map(
-              ({ definition: exampleDefinition, label, name: exampleName }) => (
-                <Button
-                  key={exampleName}
-                  accessibilityHint={label ?? undefined}
-                  disabled={isPersistencePending}
-                  variant="secondary"
-                  onPress={() => {
-                    setName(exampleName)
-                    setDefinition(exampleDefinition)
-                    setIsNameTouched(false)
-                    setIsDefinitionTouched(false)
-                    setIsConfirmingEdit(false)
-                    definitionInputRef.current?.focus()
-                  }}
-                >
-                  <View className="items-center">
-                    <Text>+ Start with {exampleName}</Text>
-                    {label ? (
-                      <Text className="mt-1 text-center text-xs font-bold text-black normal-case">
-                        {label}
-                      </Text>
-                    ) : null}
                   </View>
                 </Button>
               ),
