@@ -89,7 +89,7 @@ export default function Hub({
       className="flex h-[100dvh] min-w-0 flex-col items-center gap-4"
     >
       <header className="w-full max-w-7xl shrink-0 text-white">
-        <h1 className="text-[clamp(1rem,5.25vw,1.5rem)] leading-tight font-bold whitespace-nowrap">
+        <h1 className="text-[min(5vw,1.5rem)] leading-tight font-bold whitespace-nowrap">
           {introductionCopy.title}
         </h1>
         <div className="mt-2 flex items-center justify-between gap-3">
