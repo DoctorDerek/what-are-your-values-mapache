@@ -1,9 +1,7 @@
-import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
-
 export const CUSTOM_VALUE_AUTHORING_EXAMPLE = Object.freeze({
   name: "Craftsmanship",
   definition: "to take care and pride in making things well",
-}) satisfies CustomValueDraft
+})
 
 export const CUSTOM_VALUE_INVITATION_COPY = Object.freeze({
   editorTitle: "Add Custom Value",
