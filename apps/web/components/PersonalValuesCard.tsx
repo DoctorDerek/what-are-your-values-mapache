@@ -11,7 +11,11 @@ import Heroes99Hero from "@/components/Heroes99Hero"
 import PersonalValueRow from "@/components/PersonalValueRow"
 
 export default function PersonalValuesCard({
-  appearance, rankedValues, catalog, shouldReduceMotion, inert,
+  appearance,
+  rankedValues,
+  catalog,
+  shouldReduceMotion,
+  inert,
   rosterRef,
 }: {
   appearance: Heroes99Appearance
@@ -21,7 +25,8 @@ export default function PersonalValuesCard({
   inert?: boolean
   rosterRef?: Ref<HTMLDivElement>
 }) {
-  const { hasComparisons, visibleValues, topFive, remainingValues } = projectHubValues(rankedValues)
+  const { hasComparisons, visibleValues, topFive, remainingValues } =
+    projectHubValues(rankedValues)
   const renderValue = (value: RankedValue) => (
     <PersonalValueRow
       key={value.definition.id}
@@ -44,7 +49,9 @@ export default function PersonalValuesCard({
         >
           {hasComparisons
             ? PERSONAL_HUB_COPY.rankedTitleLines.map((line) => (
-                <span key={line} className="block">{line}</span>
+                <span key={line} className="block">
+                  {line}
+                </span>
               ))
             : PERSONAL_HUB_COPY.unrankedTitle}
         </h2>
@@ -64,7 +71,11 @@ export default function PersonalValuesCard({
       <div
         role="region"
         ref={rosterRef}
-        aria-label={hasComparisons ? PERSONAL_HUB_COPY.rankedList : PERSONAL_HUB_COPY.unrankedList}
+        aria-label={
+          hasComparisons
+            ? PERSONAL_HUB_COPY.rankedList
+            : PERSONAL_HUB_COPY.unrankedList
+        }
         tabIndex={0}
         className="bg-player-card-values col-span-2 row-start-2 min-h-0 min-w-0 overflow-y-auto overscroll-contain focus-visible:outline-4 focus-visible:-outline-offset-4 xl:col-span-1 xl:col-start-2"
       >
@@ -74,7 +85,9 @@ export default function PersonalValuesCard({
             <h3 className="border-player-card-frame bg-player-card-rank text-player-card-ink border-y-2 px-3 py-2 font-bold">
               {PERSONAL_HUB_COPY.remainingValues}
             </h3>
-            <ol start={topFive.length + 1}>{remainingValues.map(renderValue)}</ol>
+            <ol start={topFive.length + 1}>
+              {remainingValues.map(renderValue)}
+            </ol>
           </>
         )}
       </div>

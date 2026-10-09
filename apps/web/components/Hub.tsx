@@ -1,9 +1,9 @@
 "use client"
 
 import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
-import { introductionCopy } from "@game/data/src/IntroductionCopy"
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
 import { DRESSING_ROOM_COPY } from "@game/data/src/Heroes99DressingRoom"
+import { introductionCopy } from "@game/data/src/IntroductionCopy"
 import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
 import { presentationLoadingCopy } from "@game/data/src/PresentationLoadingCopy"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
@@ -93,7 +93,9 @@ export default function Hub({
           {introductionCopy.title}
         </h1>
         <div className="mt-2 flex items-center justify-between gap-3">
-          <p className="text-sm xl:text-base">{PERSONAL_HUB_COPY.screenTitle}</p>
+          <p className="text-sm xl:text-base">
+            {PERSONAL_HUB_COPY.screenTitle}
+          </p>
           <Button
             id={HUB_MENU_BUTTON_ID}
             variant="secondary"
@@ -106,7 +108,10 @@ export default function Hub({
         </div>
       </header>
       {dataNotice && (
-        <p role="status" className="bg-mapache-vivid-secondary-green w-full max-w-7xl shrink-0 border-4 border-black p-4 font-bold text-white">
+        <p
+          role="status"
+          className="bg-mapache-vivid-secondary-green w-full max-w-7xl shrink-0 border-4 border-black p-4 font-bold text-white"
+        >
           {dataNotice}
         </p>
       )}
@@ -152,14 +157,20 @@ export default function Hub({
             disabled={isNavigationBlocked}
             onClick={onStartBattle}
             aria-busy={isBattlePending}
-            aria-label={isBattlePending ? presentationLoadingCopy.cancelBattlePreparation : undefined}
+            aria-label={
+              isBattlePending
+                ? presentationLoadingCopy.cancelBattlePreparation
+                : undefined
+            }
             variant="battle"
             size="tall"
             typographyClassName="text-2xl xl:text-3xl"
             wrap
             className="relative"
           >
-            <span className={isBattlePending ? "invisible" : undefined}>{PERSONAL_HUB_COPY.battle}</span>
+            <span className={isBattlePending ? "invisible" : undefined}>
+              {PERSONAL_HUB_COPY.battle}
+            </span>
             {isBattlePending && (
               <span className="absolute inset-0 flex items-center justify-center text-lg">
                 {presentationLoadingCopy.preparing}

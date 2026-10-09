@@ -3,7 +3,10 @@
 import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
 import { resolveValueAnimalPresentation } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
-import { getValueDisplayDefinition, getValueDisplayName } from "@game/data/src/Value"
+import {
+  getValueDisplayDefinition,
+  getValueDisplayName,
+} from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { getLevelFromXP } from "@game/utils/src/LevelMath"
@@ -13,7 +16,10 @@ import ValueAnimalPresentation from "@/components/ValueAnimalPresentation"
 import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
 
 export default function PersonalValueRow({
-  value, hasComparisons, catalog, shouldReduceMotion,
+  value,
+  hasComparisons,
+  catalog,
+  shouldReduceMotion,
 }: {
   value: RankedValue
   hasComparisons: boolean
@@ -53,7 +59,10 @@ export default function PersonalValueRow({
           surface="card"
           catalog={catalog}
           isAttended={isAttended}
-          valuePresentation={resolveValueAnimalPresentation(value.definition, catalog)}
+          valuePresentation={resolveValueAnimalPresentation(
+            value.definition,
+            catalog,
+          )}
           shouldReduceMotion={shouldReduceMotion}
         />
       </span>
