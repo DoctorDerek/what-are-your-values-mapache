@@ -86,9 +86,9 @@ export const HOW_IT_WORKS_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "section",
-      heading: "Start With 100 Values—or Add Your Own",
+      heading: "Start With 103 Values—or Add Your Own",
       paragraphs: Object.freeze([
-        "The game includes 100 values from the public-domain 2011 Personal Values Card Sort. No list can include every value that may matter to every person, so you can add as many private Custom Values as are useful to you, with your own names and definitions.",
+        "The game includes 103 built-in values: 100 from the public-domain 2011 Personal Values Card Sort, plus Ingenuity, Destiny, and Pets. No list can include every value that may matter to every person, so you can add as many private Custom Values as are useful to you, with your own names and definitions.",
       ]),
     }),
     Object.freeze({
@@ -117,7 +117,7 @@ export const HOW_IT_WORKS_INFORMATION_PANEL = Object.freeze({
       kind: "section",
       heading: "Play for as Long—or as Little—as You Want",
       paragraphs: Object.freeze([
-        "The game eventually presents every possible pair in a balanced order. With the 100 included values, a complete cycle contains 4,950 unique comparisons. Adding Custom Values increases that total, but you never have to complete a cycle in one sitting. Stop anywhere and continue later.",
+        "The game eventually presents every possible pair in a balanced order. With the 103 included values, a complete cycle contains 5,253 unique comparisons. Adding Custom Values increases that total, but you never have to complete a cycle in one sitting. Stop anywhere and continue later.",
       ]),
     }),
     Object.freeze({
@@ -188,7 +188,7 @@ export const WHY_VALUES_MATTER_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "paragraph",
-      text: "Repeating those comparisons creates discrimination: many small choices reveal patterns. The Top Five then creates compression: it turns 100 or more possibilities into a short set you can remember while keeping the complete ranking available.",
+      text: "Repeating those comparisons creates discrimination: many small choices reveal patterns. The Top Five then creates compression: it turns 103 or more possibilities into a short set you can remember while keeping the complete ranking available.",
     }),
     Object.freeze({
       kind: "paragraph",
@@ -233,7 +233,7 @@ export const WHY_I_MADE_THIS_GAME_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "paragraph",
-      text: "The current game uses the expanded, public-domain 2011 Personal Values Card Sort. It includes Fun, Health, Curiosity, and Creativity, but it still does not include Ingenuity. That is a useful reminder that no values list can be complete for every person. WAYVM therefore lets you add as many private Custom Values as are useful to you.",
+      text: "The current game preserves the 100 values from the public-domain 2011 Personal Values Card Sort and adds Ingenuity, Destiny, and Pets as WAYVM-authored built-in values. No values list can be complete for every person, so WAYVM also lets you add as many private Custom Values as are useful to you.",
     }),
     Object.freeze({
       kind: "paragraph",
@@ -288,7 +288,7 @@ export const FREE_RESOURCES_INFORMATION_PANEL = Object.freeze({
       kind: "resource",
       title: "Personal Values Card Sort — 2011 Update",
       description:
-        "Read the public-domain source for the 100 included values and definitions, the three-to-five-pile procedure, the final five-to-ten ranking, and the three blank “Other Value” cards adapted by WAYVM.",
+        "Read the public-domain source for the original 100 values and definitions, the three-to-five-pile procedure, the final five-to-ten ranking, and the three blank “Other Value” cards adapted by WAYVM.",
       actionLabel: "Open the Personal Values Card Sort",
       url: "https://www.guilford.com/add/miller11_old/pers_val.pdf?t=1",
     }),
@@ -370,7 +370,7 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
       kind: "section",
       heading: "Values Source",
       paragraphs: Object.freeze([
-        "The 100 included values and definitions are adapted from the 2011 update of the Personal Values Card Sort by William R. Miller, Janet C’de Baca, Daniel B. Matthews, and Paula L. Wilbourne, University of New Mexico. The source instrument states that it is in the public domain and may be copied or adapted without further permission.",
+        "The original 100 values and definitions are adapted from the 2011 update of the Personal Values Card Sort by William R. Miller, Janet C’de Baca, Daniel B. Matthews, and Paula L. Wilbourne, University of New Mexico. The source instrument states that it is in the public domain and may be copied or adapted without further permission. Ingenuity, Destiny, and Pets are three WAYVM-authored additions, not entries from that source.",
         "The source also includes three blank “Other Value” cards, demonstrating that its printed vocabulary is intentionally open-ended. WAYVM adapts that openness through optional private values written by the player without treating the paper template’s three blanks as a product ceiling. Player-authored names and definitions are not part of the source instrument and are not endorsed by its authors.",
       ]),
     }),
