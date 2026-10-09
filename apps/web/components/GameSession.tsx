@@ -4,7 +4,7 @@ import type { DurableStoreAdapter } from "@game/machines/src/DurableStoreAdapter
 import { rootMachine } from "@game/machines/src/RootMachine"
 import type { RootActor } from "@game/machines/src/RuntimeRecovery"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
-import { useActorRef, useSelector } from "@xstate/react"
+import { useActorRef } from "@xstate/react"
 import { useEffect, useMemo, useReducer, type ReactNode } from "react"
 import RuntimeRecovery from "@/components/RuntimeRecovery"
 import packageMetadata from "@/package.json"
@@ -18,11 +18,14 @@ export default function GameSession({
   readonly children: (gameActor: RootActor) => ReactNode
   readonly onReopen: () => void
 }) {
-  const [, notifyActorFailure] = useReducer(
+  const [, notifyActorUpdate] = useReducer(
     (revision: number) => revision + 1,
     0,
   )
-  const observer = useMemo(() => ({ error: notifyActorFailure }), [])
+  const observer = useMemo(
+    () => ({ next: notifyActorUpdate, error: notifyActorUpdate }),
+    [],
+  )
   const gameActor = useActorRef(
     rootMachine,
     {
@@ -37,10 +40,9 @@ export default function GameSession({
     },
     observer,
   )
-  const isPublicArrival = useSelector(
-    gameActor,
-    (snapshot) => snapshot.matches("Splash") || snapshot.matches("InitializingProfile"),
-  )
+  const snapshot = gameActor.getSnapshot()
+  const isPublicArrival =
+    snapshot.matches("Splash") || snapshot.matches("InitializingProfile")
 
   useEffect(() => {
     gameActor.send({ type: "APP.HYDRATED", schedulerSeed: crypto.randomUUID() })
@@ -48,7 +50,7 @@ export default function GameSession({
 
   return (
     <div data-game-surface={isPublicArrival ? "arrival" : "active"}>
-      {gameActor.getSnapshot().status === "error" ? (
+      {snapshot.status === "error" ? (
         <RuntimeRecovery gameActor={gameActor} onReopen={onReopen} />
       ) : (
         <RenderRecoveryBoundary
