@@ -1,4 +1,7 @@
-import { isCanonicalCatalogVersion, type CanonicalCatalogVersion } from "@game/data/src/Value"
+import {
+  isCanonicalCatalogVersion,
+  type CanonicalCatalogVersion,
+} from "@game/data/src/Value"
 import { parsePersistedJson, serializePersistedJson } from "./PersistedJson"
 import {
   readIsoTimestamp,

@@ -1,4 +1,7 @@
-import { isCanonicalCatalogVersion, type CanonicalCatalogVersion } from "@game/data/src/Value"
+import {
+  isCanonicalCatalogVersion,
+  type CanonicalCatalogVersion,
+} from "@game/data/src/Value"
 import { BATTLE_PROFILE_CHECKPOINT_SCHEMA_VERSION } from "./BattleProfileCheckpoint"
 import { parsePersistedJson, serializePersistedJson } from "./PersistedJson"
 import {

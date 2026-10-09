@@ -2,7 +2,10 @@ import { createActiveDeck } from "@game/data/src/ActiveDeck"
 import { SOURCE_CATALOG_VERSION } from "@game/data/src/Value"
 import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { readAchievementId } from "./AchievementCatalog"
-import { createInitialAchievementState, markAchievementPresented } from "./AchievementState"
+import {
+  createInitialAchievementState,
+  markAchievementPresented,
+} from "./AchievementState"
 import { applyAchievementTransition } from "./AchievementTransition"
 import {
   createBattleChoiceCommit,
@@ -76,8 +79,17 @@ export async function createWayvmExportV1TestVector() {
       ...initialPlayerData.profile,
       activeDeck,
       progressById,
-      cyclePayoutTierSnapshot: createCyclePayoutTierSnapshot(activeDeck, progressById),
-      scheduler: createSchedulerRestorePoint({ activeDeck, progressGeneration: 0, deckRevision: 0, seed: schedulerSeed, cycleIndex: 0 }),
+      cyclePayoutTierSnapshot: createCyclePayoutTierSnapshot(
+        activeDeck,
+        progressById,
+      ),
+      scheduler: createSchedulerRestorePoint({
+        activeDeck,
+        progressGeneration: 0,
+        deckRevision: 0,
+        seed: schedulerSeed,
+        cycleIndex: 0,
+      }),
     },
   })
   const customValueCommit = createCustomValueAddCommit({

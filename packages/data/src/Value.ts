@@ -7,8 +7,7 @@ export const CANONICAL_CATALOG_VERSION = "wayvm-103-v1" as const
 export const SOURCE_CATALOG_VERSION = "pvcs-2011-100-v1" as const
 
 export type CanonicalCatalogVersion =
-  | typeof CANONICAL_CATALOG_VERSION
-  | typeof SOURCE_CATALOG_VERSION
+  typeof CANONICAL_CATALOG_VERSION | typeof SOURCE_CATALOG_VERSION
 
 export type CanonicalValueId = (`pvcs-2011:${string}` | `wayvm:${string}`) & {
   readonly [canonicalValueIdBrand]: "canonical"

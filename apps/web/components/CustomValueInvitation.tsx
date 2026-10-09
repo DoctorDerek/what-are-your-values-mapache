@@ -12,8 +12,7 @@ import { useEffect, useState } from "react"
 import CustomValueDraftEditor from "@/components/CustomValueDraftEditor"
 import { Button } from "@/components/ui/button"
 
-type DraftEntry = CustomValueDraft &
-  Readonly<{ key: string }>
+type DraftEntry = CustomValueDraft & Readonly<{ key: string }>
 const EMPTY_DRAFT: CustomValueDraft = Object.freeze({
   name: "",
   definition: "",
@@ -117,10 +116,7 @@ export default function CustomValueInvitation({
         ? drafts.map((draft) =>
             draft.key === editingKey ? { ...draft, ...nextDraft } : draft,
           )
-        : [
-            ...drafts,
-            { ...nextDraft, key: crypto.randomUUID() },
-          ],
+        : [...drafts, { ...nextDraft, key: crypto.randomUUID() }],
     )
     setEditorDraft(EMPTY_DRAFT)
     setEditingKey(null)

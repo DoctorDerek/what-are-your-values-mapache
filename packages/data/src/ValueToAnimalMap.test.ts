@@ -37,7 +37,9 @@ const retiredZooAnimalIds: readonly string[] = Object.freeze([
 
 function serializeCanonicalAnimalMap() {
   return JSON.stringify(
-    VALUE_TO_ANIMAL_MAP.filter(({ valueId }) => valueId.startsWith("pvcs-2011:")).map(({ valueId, animalId }) => ({
+    VALUE_TO_ANIMAL_MAP.filter(({ valueId }) =>
+      valueId.startsWith("pvcs-2011:"),
+    ).map(({ valueId, animalId }) => ({
       valueId,
       animalId,
     })),

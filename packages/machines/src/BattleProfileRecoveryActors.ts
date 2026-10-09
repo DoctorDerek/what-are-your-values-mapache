@@ -5,8 +5,8 @@ import {
   replaceUnrecoverableBattleProfileStorePlayerData,
 } from "./BattleProfileStore"
 import type { DurableStoreAdapter } from "./DurableStoreAdapter"
-import type { PlayerData } from "./PlayerData"
 import { upgradePlayerDataCatalog } from "./PlayerCatalogUpgrade"
+import type { PlayerData } from "./PlayerData"
 
 type CreateRecoveryBundleInput = {
   readonly entries: ReadonlyMap<string, string>

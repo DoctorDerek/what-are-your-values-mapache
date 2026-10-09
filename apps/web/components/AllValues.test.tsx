@@ -105,10 +105,13 @@ function createLicensedRuntimeClipCatalog() {
 }
 
 function findLegacyCustomRow() {
-  return screen.getAllByRole("listitem").find((row) =>
-    within(row).queryByText("Ingenuity", { exact: true }) &&
-    within(row).queryByRole("button", { name: "Edit" }),
-  )
+  return screen
+    .getAllByRole("listitem")
+    .find(
+      (row) =>
+        within(row).queryByText("Ingenuity", { exact: true }) &&
+        within(row).queryByRole("button", { name: "Edit" }),
+    )
 }
 
 describe("All Values Component Integration", () => {

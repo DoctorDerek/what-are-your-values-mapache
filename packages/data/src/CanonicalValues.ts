@@ -638,7 +638,8 @@ export const CANONICAL_VALUES = Object.freeze([
     sourceOrdinal: null,
     catalogOrdinal: 101,
     englishName: "Ingenuity",
-    sourceDefinition: "to solve problems in original, resourceful, and practical ways",
+    sourceDefinition:
+      "to solve problems in original, resourceful, and practical ways",
   } satisfies CanonicalValueDefinition),
   Object.freeze({
     kind: "canonical",
@@ -654,7 +655,8 @@ export const CANONICAL_VALUES = Object.freeze([
     sourceOrdinal: null,
     catalogOrdinal: 103,
     englishName: "Pets",
-    sourceDefinition: "to care for, protect, and share life with companion animals",
+    sourceDefinition:
+      "to care for, protect, and share life with companion animals",
   } satisfies CanonicalValueDefinition),
 ])
 

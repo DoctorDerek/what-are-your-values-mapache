@@ -134,7 +134,9 @@ test("a new player starts immediately and reviews the complete ranking", async (
     const row = page.getByRole("listitem")
     await expect(row).toHaveCount(1)
     await expect(row.getByRole("heading", { name, exact: true })).toBeVisible()
-    await expect(row.getByRole("button", { name: "Edit", exact: true })).toHaveCount(0)
+    await expect(
+      row.getByRole("button", { name: "Edit", exact: true }),
+    ).toHaveCount(0)
   }
 
   await page.getByRole("button", { name: "Close" }).click()
@@ -156,24 +158,36 @@ test("a new player starts immediately and reviews the complete ranking", async (
   await expect(editorial).toBeHidden()
 })
 
-test("a player writes a custom value without starter examples and retains it after reload", async ({ page }) => {
+test("a player writes a custom value without starter examples and retains it after reload", async ({
+  page,
+}) => {
   await page.goto("/")
   await page.getByRole("button", { name: "Start", exact: true }).click()
   await page.getByRole("button", { name: "Add value", exact: true }).click()
   await expect(page.getByLabel("Value name", { exact: true })).toHaveValue("")
-  await expect(page.getByRole("button", { name: "Add all three" })).toHaveCount(0)
+  await expect(page.getByRole("button", { name: "Add all three" })).toHaveCount(
+    0,
+  )
   await page.getByLabel("Value name", { exact: true }).fill("Craftsmanship")
   await page.getByLabel("Definition", { exact: true }).fill("To hone my craft.")
   await page.getByRole("button", { name: "Save", exact: true }).click()
-  await expect(page.getByText("Your Custom Values are saved and ready to battle.")).toBeVisible()
+  await expect(
+    page.getByText("Your Custom Values are saved and ready to battle."),
+  ).toBeVisible()
   await page.reload()
-  await page.getByRole("button", { name: "Browse All Values", exact: true }).click()
+  await page
+    .getByRole("button", { name: "Browse All Values", exact: true })
+    .click()
   await expect(page.getByText("104 Active Values")).toBeVisible()
-  await page.getByRole("searchbox", { name: "Search All Values" }).fill("Craftsmanship")
+  await page
+    .getByRole("searchbox", { name: "Search All Values" })
+    .fill("Craftsmanship")
   const row = page.getByRole("listitem")
   await expect(row).toHaveCount(1)
   await expect(row.getByText("“To hone my craft.”")).toBeVisible()
-  await expect(row.getByRole("button", { name: "Edit", exact: true })).toBeVisible()
+  await expect(
+    row.getByRole("button", { name: "Edit", exact: true }),
+  ).toBeVisible()
 })
 
 test("a returning player keeps Undo and Redo across reloads", async ({

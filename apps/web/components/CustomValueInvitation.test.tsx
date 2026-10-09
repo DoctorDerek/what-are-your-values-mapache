@@ -76,7 +76,9 @@ describe("Hub custom-value invitation", () => {
     expect(screen.getByLabelText("Value name")).toHaveValue("")
     expect(screen.getByLabelText("Definition")).toHaveValue("")
     expect(screen.queryByText(/Try an example/)).not.toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: "Add all three" })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Add all three" }),
+    ).not.toBeInTheDocument()
     expect(screen.getByText(/clears Undo and Redo/)).toBeVisible()
     fill("Craftsmanship", "To hone my craft.")
     expect(props.onApply).not.toHaveBeenCalled()
@@ -173,7 +175,9 @@ describe("Hub custom-value invitation", () => {
       "Backup download failed",
     )
     expect(screen.getByRole("button", { name: "Save" })).toBeEnabled()
-    expect(screen.getByRole("button", { name: "Edit Third direction" })).toBeVisible()
+    expect(
+      screen.getByRole("button", { name: "Edit Third direction" }),
+    ).toBeVisible()
     expect(props.onApply).not.toHaveBeenCalled()
   })
   it("retains an edited pending value when adding another before saving", () => {

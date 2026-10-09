@@ -1,5 +1,9 @@
 import { createActiveDeck, type ActiveDeck } from "@game/data/src/ActiveDeck"
-import type { CanonicalCatalogVersion, CustomValueDefinition, CustomValueId } from "@game/data/src/Value"
+import type {
+  CanonicalCatalogVersion,
+  CustomValueDefinition,
+  CustomValueId,
+} from "@game/data/src/Value"
 import {
   reconfigureValueProgress,
   type ValueProgressById,

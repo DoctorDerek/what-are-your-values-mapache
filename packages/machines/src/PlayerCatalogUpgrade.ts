@@ -6,7 +6,8 @@ import type { PlayerData } from "./PlayerData"
 
 export function getPlayerCatalogUpgradeEvent(playerData: PlayerData) {
   const { profile } = playerData
-  if (profile.activeDeck.catalogVersion === CANONICAL_CATALOG_VERSION) return null
+  if (profile.activeDeck.catalogVersion === CANONICAL_CATALOG_VERSION)
+    return null
 
   return createDeckRevisionEvent(
     applyDeckRevision({
@@ -26,6 +27,10 @@ export function upgradePlayerDataCatalog({
 }): PlayerData {
   const event = getPlayerCatalogUpgradeEvent(playerData)
   return event
-    ? applyBattleProfileEventToPlayerData({ playerData, event, occurredAt: upgradedAt })
+    ? applyBattleProfileEventToPlayerData({
+        playerData,
+        event,
+        occurredAt: upgradedAt,
+      })
     : playerData
 }

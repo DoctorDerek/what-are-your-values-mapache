@@ -706,12 +706,17 @@ describe("NativeGameClient file operations and destructive actions", () => {
     await user.press(await screen.findByRole("button", { name: "Start" }))
     await user.press(await screen.findByRole("button", { name: "Add value" }))
     await user.type(screen.getByLabelText("Value Name"), "Craftsmanship")
-    await user.type(screen.getByLabelText("What This Value Means to Me"), "To hone my craft.")
+    await user.type(
+      screen.getByLabelText("What This Value Means to Me"),
+      "To hone my craft.",
+    )
     await user.press(screen.getByRole("button", { name: "Save Value" }))
 
     await user.type(screen.getByLabelText("Search All Values"), "Craftsmanship")
     const craftsmanship = await screen.findByLabelText("Craftsmanship details")
-    await user.press(within(craftsmanship).getByRole("button", { name: "Edit" }))
+    await user.press(
+      within(craftsmanship).getByRole("button", { name: "Edit" }),
+    )
     const definition = screen.getByLabelText("What This Value Means to Me")
     await user.clear(definition)
     await user.type(definition, "Resourceful and original problem solving.")
@@ -723,9 +728,12 @@ describe("NativeGameClient file operations and destructive actions", () => {
       await screen.findByText("“Resourceful and original problem solving.”"),
     ).toBeOnTheScreen()
     await user.press(
-      within(screen.getByLabelText("Craftsmanship details")).getByRole("button", {
-        name: "Delete",
-      }),
+      within(screen.getByLabelText("Craftsmanship details")).getByRole(
+        "button",
+        {
+          name: "Delete",
+        },
+      ),
     )
     await user.press(screen.getByRole("button", { name: "Remove Value" }))
 
@@ -967,7 +975,10 @@ describe("NativeGameClient file operations and destructive actions", () => {
     await user.press(await screen.findByRole("button", { name: "Start" }))
     await user.press(await screen.findByRole("button", { name: "Add value" }))
     await user.type(screen.getByLabelText("Value Name"), "Craftsmanship")
-    await user.type(screen.getByLabelText("What This Value Means to Me"), "To hone my craft.")
+    await user.type(
+      screen.getByLabelText("What This Value Means to Me"),
+      "To hone my craft.",
+    )
     await user.press(screen.getByRole("button", { name: "Save Value" }))
     await user.press(await screen.findByRole("button", { name: "Close" }))
     await openMenuDestination(user, "Import & Export")

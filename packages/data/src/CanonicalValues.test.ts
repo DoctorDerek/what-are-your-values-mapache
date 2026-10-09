@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest"
-import { CANONICAL_VALUES, SOURCE_CANONICAL_VALUES, getCanonicalValueById } from "./CanonicalValues"
+import {
+  CANONICAL_VALUES,
+  getCanonicalValueById,
+  SOURCE_CANONICAL_VALUES,
+} from "./CanonicalValues"
 import {
   createCanonicalValueId,
   createCustomValueId,
@@ -44,7 +48,9 @@ describe("canonical values", () => {
 
   it("uses unique semantic IDs and separate source and catalog ordinals", () => {
     const ids = CANONICAL_VALUES.map(({ id }) => id)
-    const ordinals = SOURCE_CANONICAL_VALUES.map(({ sourceOrdinal }) => sourceOrdinal)
+    const ordinals = SOURCE_CANONICAL_VALUES.map(
+      ({ sourceOrdinal }) => sourceOrdinal,
+    )
 
     expect(new Set(ids).size).toBe(103)
     expect(new Set(ordinals).size).toBe(100)
@@ -52,9 +58,9 @@ describe("canonical values", () => {
       Array.from({ length: 100 }, (_, index) => index + 1),
     )
     expect(ids.every(isCanonicalValueId)).toBe(true)
-    expect(CANONICAL_VALUES.map(({ catalogOrdinal }) => catalogOrdinal)).toEqual(
-      Array.from({ length: 103 }, (_, index) => index + 1),
-    )
+    expect(
+      CANONICAL_VALUES.map(({ catalogOrdinal }) => catalogOrdinal),
+    ).toEqual(Array.from({ length: 103 }, (_, index) => index + 1))
   })
 
   it("keeps every static record immutable", () => {
@@ -74,9 +80,32 @@ describe("canonical values", () => {
 
   it("includes the three product-authored additions without fabricated source attribution", () => {
     expect(CANONICAL_VALUES.slice(100)).toEqual([
-      { kind: "canonical", id: "wayvm:ingenuity", sourceOrdinal: null, catalogOrdinal: 101, englishName: "Ingenuity", sourceDefinition: "to solve problems in original, resourceful, and practical ways" },
-      { kind: "canonical", id: "wayvm:destiny", sourceOrdinal: null, catalogOrdinal: 102, englishName: "Destiny", sourceDefinition: "to pursue the path I believe I am meant to fulfill" },
-      { kind: "canonical", id: "wayvm:pets", sourceOrdinal: null, catalogOrdinal: 103, englishName: "Pets", sourceDefinition: "to care for, protect, and share life with companion animals" },
+      {
+        kind: "canonical",
+        id: "wayvm:ingenuity",
+        sourceOrdinal: null,
+        catalogOrdinal: 101,
+        englishName: "Ingenuity",
+        sourceDefinition:
+          "to solve problems in original, resourceful, and practical ways",
+      },
+      {
+        kind: "canonical",
+        id: "wayvm:destiny",
+        sourceOrdinal: null,
+        catalogOrdinal: 102,
+        englishName: "Destiny",
+        sourceDefinition: "to pursue the path I believe I am meant to fulfill",
+      },
+      {
+        kind: "canonical",
+        id: "wayvm:pets",
+        sourceOrdinal: null,
+        catalogOrdinal: 103,
+        englishName: "Pets",
+        sourceDefinition:
+          "to care for, protect, and share life with companion animals",
+      },
     ])
   })
 

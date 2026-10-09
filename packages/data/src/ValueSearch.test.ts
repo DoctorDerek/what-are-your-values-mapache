@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 import { createActiveDeck } from "./ActiveDeck"
-import { createCanonicalValueId, createCustomValueId, type CustomValueDefinition } from "./Value"
+import {
+  createCanonicalValueId,
+  createCustomValueId,
+  type CustomValueDefinition,
+} from "./Value"
 import { createInitialValueProgress } from "./ValueProgress"
 import { rankValues } from "./ValueRanking"
 import {

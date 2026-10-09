@@ -55,10 +55,15 @@ describe("NativeCustomValueForm", () => {
     await render(<NativeCustomValueForm {...props} />)
 
     expect(screen.getByLabelText("Value Name")).toHaveDisplayValue("")
-    expect(screen.queryByRole("button", { name: /Start with/ })).not.toBeOnTheScreen()
+    expect(
+      screen.queryByRole("button", { name: /Start with/ }),
+    ).not.toBeOnTheScreen()
     expect(props.onSubmit).not.toHaveBeenCalled()
     await user.type(screen.getByLabelText("Value Name"), "Craftsmanship")
-    await user.type(screen.getByLabelText("What This Value Means to Me"), "To hone my craft.")
+    await user.type(
+      screen.getByLabelText("What This Value Means to Me"),
+      "To hone my craft.",
+    )
 
     await user.press(screen.getByRole("button", { name: "Save Value" }))
 

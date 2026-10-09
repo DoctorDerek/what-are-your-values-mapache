@@ -4,8 +4,8 @@ import { createBattleProfileJournalCommit } from "./BattleProfileJournal"
 import type { BattleProfileStoreState } from "./BattleProfileStore"
 import { replaceBattleProfileStorePlayerData } from "./BattleProfileStore"
 import type { DurableStoreAdapter } from "./DurableStoreAdapter"
-import type { PlayerData } from "./PlayerData"
 import { upgradePlayerDataCatalog } from "./PlayerCatalogUpgrade"
+import type { PlayerData } from "./PlayerData"
 import {
   createWayvmExport,
   createWayvmExportFilename,

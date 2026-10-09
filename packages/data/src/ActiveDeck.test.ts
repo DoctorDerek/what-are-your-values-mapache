@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest"
 import { createActiveDeck, getPairCount } from "./ActiveDeck"
 import {
   CANONICAL_CATALOG_VERSION,
-  SOURCE_CATALOG_VERSION,
   createCustomValueId,
+  SOURCE_CATALOG_VERSION,
   type CustomValueDefinition,
   type CustomValueId,
 } from "./Value"
@@ -114,17 +114,28 @@ describe("Active Deck", () => {
     expect(getPairCount(activeDeck.values.length)).toBe(607_753)
   })
 
-  it.each([[0, 103, 5253], [1, 104, 5356], [2, 105, 5460], [3, 106, 5565]])(
+  it.each([
+    [0, 103, 5253],
+    [1, 104, 5356],
+    [2, 105, 5460],
+    [3, 106, 5565],
+  ])(
     "derives the current K=%i pair count",
     (customValueCount, activeValueCount, expectedPairCount) => {
-      const activeDeck = createActiveDeck(Array.from({ length: customValueCount }, (_, index) => createCustomValue(index + 1)))
+      const activeDeck = createActiveDeck(
+        Array.from({ length: customValueCount }, (_, index) =>
+          createCustomValue(index + 1),
+        ),
+      )
       expect(activeDeck.values).toHaveLength(activeValueCount)
       expect(getPairCount(activeValueCount)).toBe(expectedPairCount)
     },
   )
 
   it("retains preexisting custom values named after the new built-ins", () => {
-    const customValues = ["Ingenuity", "Destiny", "Pets"].map((name, index) => createCustomValue(index + 1, { name }))
+    const customValues = ["Ingenuity", "Destiny", "Pets"].map((name, index) =>
+      createCustomValue(index + 1, { name }),
+    )
     expect(createActiveDeck(customValues).customValues).toEqual(customValues)
   })
 

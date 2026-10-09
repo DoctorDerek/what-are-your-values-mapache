@@ -67,7 +67,8 @@ function hasDuplicateName({
   if (
     retainedValue &&
     normalizeValueNameForComparison(retainedValue.name) === comparisonKey
-  ) return false
+  )
+    return false
 
   return (
     canonicalValueNameComparisonKeys.includes(comparisonKey) ||

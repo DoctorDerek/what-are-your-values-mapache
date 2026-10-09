@@ -65,10 +65,11 @@ function createCallbacks() {
 }
 
 function getLegacyCustomDetails() {
-  const customDetails = screen.getAllByLabelText("Ingenuity details").find((details) =>
-    within(details).queryByRole("button", { name: "Edit" }),
-  )
-  if (!customDetails) throw new Error("Expected the retained custom Ingenuity details")
+  const customDetails = screen
+    .getAllByLabelText("Ingenuity details")
+    .find((details) => within(details).queryByRole("button", { name: "Edit" }))
+  if (!customDetails)
+    throw new Error("Expected the retained custom Ingenuity details")
   return customDetails
 }
 
