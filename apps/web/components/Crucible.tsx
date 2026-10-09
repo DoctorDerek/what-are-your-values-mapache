@@ -32,11 +32,15 @@ import {
 } from "react"
 import AchievementBanner from "@/components/AchievementBanner"
 import BattleActionBar from "@/components/BattleActionBar"
+import ControllerPrompt from "@/components/ControllerPrompt"
 import MapacheScreen from "@/components/MapacheScreen"
 import { usePreparedSeethingSwarmBattle } from "@/components/SeethingSwarmAssetPreparation"
 import SeethingSwarmBattleStage from "@/components/SeethingSwarmBattleStage"
 import { ValueChoiceCard } from "@/components/ValueChoiceCard"
-import useWebControlHintInputModality from "@/lib/useWebControlHintInputModality"
+import {
+  useWebControllerActions,
+  useWebControls,
+} from "@/components/WebControlsProvider"
 
 type BattleAccessibilityAnnouncement = Readonly<{
   sequence: number
@@ -108,7 +112,8 @@ export default function Crucible({
     battle,
     runtimeClipCatalog,
   )
-  const controlHintInputModality = useWebControlHintInputModality()
+  const { inputModality: controlHintInputModality, controller } =
+    useWebControls()
   const firstChoiceRef = useRef<HTMLButtonElement>(null)
   const secondChoiceRef = useRef<HTMLButtonElement>(null)
   const battleSurfaceRef = useRef<HTMLElement>(null)
@@ -215,6 +220,17 @@ export default function Crucible({
   const currentBattle = state.context.currentBattle
   const currentPair = currentBattle.pair
   const isAnimating = state.matches("AnimatingResult")
+  useWebControllerActions(1, (command) => {
+    if (isMenuOpen) return false
+    if (command === "menu") {
+      if (canNavigate) onOpenMenu()
+    } else if (command === "select-first-value") handleSelect(currentPair[0])
+    else if (command === "select-second-value") handleSelect(currentPair[1])
+    else if (command === "cancel") handleUndo()
+    else if (command === "redo") handleRedo()
+    else return false
+    return true
+  })
   const handleResultAnimationComplete = useCallback(() => {
     if (isAnimating) {
       send({ type: "ANIMATION.RESULT_FINISHED" })
@@ -223,7 +239,12 @@ export default function Crucible({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.defaultPrevented || isMenuOpen) return
+      if (e.defaultPrevented || e.repeat || isMenuOpen) return
+      if (
+        e.target instanceof HTMLElement &&
+        e.target.closest("input, textarea, select, [contenteditable=true]")
+      )
+        return
       if (e.key === "Escape") {
         if (canNavigate) {
           e.preventDefault()
@@ -343,18 +364,36 @@ export default function Crucible({
   }
   const levelA = getLevelFromXP(progressA.totalXp)
   const levelB = getLevelFromXP(progressB.totalXp)
-  const firstControlHint = getValueChoiceControlHint({
-    preference: controlHintPreference,
-    inputModality: controlHintInputModality,
-    position: "first",
-  })
-  const secondControlHint = getValueChoiceControlHint({
-    preference: controlHintPreference,
-    inputModality: controlHintInputModality,
-    position: "second",
-  })
+  const firstControlHint =
+    controller && controlHintPreference !== "off" ? (
+      <ControllerPrompt
+        family={controller.family}
+        command="select-first-value"
+      />
+    ) : (
+      getValueChoiceControlHint({
+        preference: controlHintPreference,
+        inputModality: controlHintInputModality,
+        position: "first",
+      })
+    )
+  const secondControlHint =
+    controller && controlHintPreference !== "off" ? (
+      <ControllerPrompt
+        family={controller.family}
+        command="select-second-value"
+      />
+    ) : (
+      getValueChoiceControlHint({
+        preference: controlHintPreference,
+        inputModality: controlHintInputModality,
+        position: "second",
+      })
+    )
   const showKeyboardControlHints =
-    controlHintInputModality === "keyboard" && firstControlHint !== null
+    !controller &&
+    controlHintInputModality === "keyboard" &&
+    firstControlHint !== null
   const winnerId = state.context.winnerId
   const reward =
     isAnimating && state.context.pendingBattle && !isPersistencePending
@@ -463,6 +502,9 @@ export default function Crucible({
           canRedo={isInteractive && canRedo}
           canStop={canNavigate}
           showKeyboardControlHints={showKeyboardControlHints}
+          controllerFamily={
+            controlHintPreference !== "off" ? controller?.family : undefined
+          }
           onOpenMenu={onOpenMenu}
           onUndo={handleUndo}
           onRedo={handleRedo}

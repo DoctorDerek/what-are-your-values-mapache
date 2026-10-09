@@ -61,4 +61,6 @@ export default function useWebSemanticBack({
       window.history.back()
     }
   }, [hasParent, historyRevision])
+
+  return onBack
 }
