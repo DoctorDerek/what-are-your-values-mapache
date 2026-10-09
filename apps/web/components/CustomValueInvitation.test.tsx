@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
 
-function setup(editorRequestId = 0) {
+function setup(editorRequestId = 1) {
   const props = {
     editorRequestId,
     existingCustomValues: [],
@@ -27,10 +27,18 @@ function fill(name: string, definition: string) {
   })
 }
 function selectExamples() {
-  fireEvent.click(screen.getByText("Missing a value? Try an example"))
+  const disclosure = screen.getByText("Missing a value? Try an example")
+  if (!disclosure.closest("details")?.open) fireEvent.click(disclosure)
   click("Add all three")
 }
 describe("Hub custom-value invitation", () => {
+  it("keeps the untouched Home free of a second authoring entry point", () => {
+    const { props, rerender } = setup(0)
+    expect(screen.queryByRole("complementary")).not.toBeInTheDocument()
+    rerender(<CustomValueInvitation {...props} editorRequestId={1} />)
+    expect(screen.getByLabelText("Value name")).toHaveFocus()
+    expect(screen.getByRole("complementary")).toBeVisible()
+  })
   it("expands examples on request and saves pending entries with an empty editor", () => {
     const { props } = setup(1)
     expect(
@@ -62,7 +70,6 @@ describe("Hub custom-value invitation", () => {
   })
   it("prefills an individual example without saving it", () => {
     const { props } = setup()
-    fireEvent.click(screen.getByText("Missing a value? Try an example"))
     click("Ingenuity — Mapachito’s example")
     expect(screen.getByLabelText("Definition")).toHaveValue(
       CUSTOM_VALUE_STARTER_EXAMPLES[0].definition,

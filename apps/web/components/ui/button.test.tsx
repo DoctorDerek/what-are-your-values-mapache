@@ -30,6 +30,26 @@ describe("Button Primitive Integration", () => {
     expect(onClick).not.toHaveBeenCalled()
   })
 
+  it("supports sentence-case labels without changing other buttons", () => {
+    const onClick = vi.fn()
+    render(
+      <>
+        <Button textCase="normal-case" onClick={onClick}>
+          Add value
+        </Button>
+        <Button>Battle</Button>
+      </>,
+    )
+    const add = screen.getByRole("button", { name: "Add value" })
+    expect(add).toHaveClass("normal-case")
+    expect(add).not.toHaveClass("uppercase")
+    expect(screen.getByRole("button", { name: "Battle" })).toHaveClass(
+      "uppercase",
+    )
+    fireEvent.click(add)
+    expect(onClick).toHaveBeenCalledTimes(1)
+  })
+
   it("composes the same styles onto a semantic link when requested", () => {
     render(
       <Button asChild variant="secondary">

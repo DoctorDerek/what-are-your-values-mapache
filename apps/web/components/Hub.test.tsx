@@ -271,12 +271,12 @@ describe("Hub Component Integration", () => {
       "xl:[--mapache-screen-spacing:2rem]",
     )
     expect(
-      screen.getByRole("heading", { name: "My Values", level: 1 }),
+      screen.getByRole("heading", { name: "My Values", level: 2 }),
     ).toBeVisible()
     expect(
-      screen.getByRole("list", { name: "Included values preview" }),
+      screen.getByRole("region", { name: "Included values" }),
     ).toBeVisible()
-    expect(screen.getByText(/Not ranked yet\./)).toBeVisible()
+    expect(screen.getByText(/Not ranked yet/)).toBeVisible()
     expect(container.querySelector("[data-animal-id]")).toBeNull()
     expect(screen.queryByText(/^Rank \d/)).not.toBeInTheDocument()
     expect(screen.queryByText(/🥇|🥈|🥉/)).not.toBeInTheDocument()
@@ -305,7 +305,7 @@ describe("Hub Component Integration", () => {
     expect(within(firstRow).getByText("Acceptance")).toBeVisible()
   })
 
-  it("renders five fresh values and exposes the sharing action", () => {
+  it("renders the complete fresh roster and exposes the approved actions", () => {
     const battleCycle = createInitialBattleCycle("fresh-hub-seed")
 
     const { container } = render(
@@ -324,11 +324,15 @@ describe("Hub Component Integration", () => {
       />,
     )
 
-    const roster = screen.getByRole("list", { name: "Included values preview" })
-    expect(within(roster).getAllByRole("listitem")).toHaveLength(5)
-    expect(container.querySelectorAll("[data-animal-id]")).toHaveLength(5)
+    const roster = screen.getByRole("region", { name: "Included values" })
+    expect(within(roster).getAllByRole("listitem")).toHaveLength(
+      battleCycle.activeDeck.values.length,
+    )
+    expect(container.querySelectorAll("[data-animal-id]")).toHaveLength(
+      battleCycle.activeDeck.values.length,
+    )
     expect(within(roster).queryByRole("button", { name: "Battle" })).toBeNull()
-    for (const definition of battleCycle.activeDeck.values.slice(0, 5)) {
+    for (const definition of battleCycle.activeDeck.values) {
       expect(
         within(roster).getByText(getValueDisplayDefinition(definition)),
       ).toBeVisible()
@@ -337,9 +341,7 @@ describe("Hub Component Integration", () => {
     expect(
       screen.getByRole("button", { name: "Browse All Values" }),
     ).toBeVisible()
-    expect(
-      screen.getByRole("button", { name: "Add Custom Value" }),
-    ).toBeVisible()
+    expect(screen.getByRole("button", { name: "Add value" })).toBeVisible()
     expect(screen.getByRole("button", { name: "Menu" })).toBeVisible()
     expect(
       screen.queryByRole("button", { name: "Achievements" }),
@@ -356,11 +358,11 @@ describe("Hub Component Integration", () => {
         .getAllByRole("button")
         .map((button) => button.textContent),
     ).toEqual([
+      "Add value",
       "Battle",
       "Customize my card",
       "Share my values card",
       "Browse All Values",
-      "Add Custom Value",
     ])
     fireEvent.click(
       screen.getByRole("button", { name: "Share my values card" }),
@@ -371,7 +373,7 @@ describe("Hub Component Integration", () => {
     ).not.toBeInTheDocument()
   })
 
-  it("renders the earned Top Five with value definitions and levels", () => {
+  it("separates the earned Top Five from the remaining ranked values", () => {
     const onBrowseAllValues = vi.fn()
     const onAddCustomValue = vi.fn()
     const initialBattleCycle = createInitialBattleCycle("ranked-hub-seed")
@@ -407,9 +409,15 @@ describe("Hub Component Integration", () => {
     )
 
     expect(
-      screen.getByRole("heading", { name: "My Top Five Values" }),
+      screen.getByRole("heading", { name: "My Top Five Life Values" }),
     ).toBeVisible()
-    expect(screen.getAllByRole("listitem")).toHaveLength(5)
+    expect(screen.getAllByRole("listitem")).toHaveLength(
+      battleCycle.activeDeck.values.length,
+    )
+    expect(
+      screen.getByRole("heading", { name: "All Other Values" }),
+    ).toBeVisible()
+    expect(screen.getByLabelText("Rank 1, gold medal")).toBeVisible()
     expect(getHubPresentation(getValueDisplayName(winner))).toBeVisible()
     expect(screen.getByText("#1")).toBeVisible()
     expect(screen.getAllByText("Level 3").length).toBeGreaterThan(0)
@@ -451,7 +459,9 @@ describe("Hub Component Integration", () => {
     const animalPresentations = [
       ...container.querySelectorAll('[data-value-presentation="animal"]'),
     ]
-    expect(animalPresentations).toHaveLength(5)
+    expect(animalPresentations).toHaveLength(
+      battleCycle.activeDeck.values.length,
+    )
     for (const animalPresentation of animalPresentations) {
       expect(animalPresentation).toHaveAttribute("aria-hidden", "true")
       expect(animalPresentation).not.toHaveAttribute("tabindex")
@@ -461,16 +471,14 @@ describe("Hub Component Integration", () => {
         element.getAttribute("data-animal-id"),
       ),
     ).toEqual(
-      rankedValues
-        .slice(0, 5)
-        .map(({ definition }) => getMappedAnimalId(definition.id)),
+      rankedValues.map(({ definition }) => getMappedAnimalId(definition.id)),
     )
     expect(
       container.querySelectorAll('[data-reduced-motion="true"]'),
-    ).toHaveLength(5)
+    ).toHaveLength(battleCycle.activeDeck.values.length)
     expect(
-      screen.queryByText(getValueDisplayName(rankedValues[5].definition)),
-    ).toBeNull()
+      screen.getByText(getValueDisplayName(rankedValues[5].definition)),
+    ).toBeVisible()
     const failedPresentation = animalPresentations[0]
     const failedImage = failedPresentation.querySelector("img")
     if (!failedImage) throw new Error("Expected the first ranked animal image")
@@ -515,7 +523,7 @@ describe("Hub Component Integration", () => {
     )
     expect(
       container.querySelectorAll('[data-value-presentation="animal"]'),
-    ).toHaveLength(5)
+    ).toHaveLength(rankedValues.length)
 
     fireEvent.click(customValueButton)
     expect(
@@ -545,7 +553,7 @@ describe("Hub Component Integration", () => {
     )
 
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
-    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
+    fireEvent.click(screen.getByRole("button", { name: "Add value" }))
     fireEvent.click(screen.getByRole("button", { name: "Menu" }))
     fireEvent.click(screen.getByRole("button", { name: "Customize my card" }))
     fireEvent.click(getHubPresentation("Acceptance"))
@@ -582,6 +590,8 @@ describe("Hub Component Integration", () => {
     expect(
       screen.getByText("Backup restored. Your imported progress is ready."),
     ).toBeVisible()
-    expect(screen.getAllByRole("listitem")).toHaveLength(5)
+    expect(screen.getAllByRole("listitem")).toHaveLength(
+      battleCycle.activeDeck.values.length,
+    )
   })
 })

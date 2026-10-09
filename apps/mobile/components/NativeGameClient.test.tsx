@@ -253,7 +253,7 @@ describe("NativeGameClient Menu navigation", () => {
 
     await user.press(await screen.findByRole("button", { name: "Start" }))
     expect(
-      await screen.findByText(/^My (?:Top Five )?Values$/),
+      await screen.findByText(/^My (?:Top Five Life )?Values$/),
     ).toBeOnTheScreen()
 
     await openMenuDestination(user, "Browse All Values")
@@ -272,7 +272,7 @@ describe("NativeGameClient Menu navigation", () => {
     await openMenuDestination(user, "Browse All Values")
     await user.press(await screen.findByRole("button", { name: "Close" }))
     expect(
-      await screen.findByText(/^My (?:Top Five )?Values$/),
+      await screen.findByText(/^My (?:Top Five Life )?Values$/),
     ).toBeOnTheScreen()
 
     await user.press(screen.getByRole("button", { name: "Battle" }))
@@ -388,16 +388,16 @@ describe("NativeGameClient Menu navigation", () => {
       }),
       "pressIn",
     )
-    expect(screen.getByText(/^My (?:Top Five )?Values$/)).toBeOnTheScreen()
+    expect(screen.getByText(/^My (?:Top Five Life )?Values$/)).toBeOnTheScreen()
     expect(screen.queryByText("All Values")).not.toBeOnTheScreen()
 
-    await user.press(screen.getByRole("button", { name: "Add Custom Value" }))
+    await user.press(screen.getByRole("button", { name: "Add value" }))
     expect(await screen.findByText("Custom Value Builder")).toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Cancel" }))
     await user.press(screen.getByRole("button", { name: "Close" }))
 
     expect(
-      await screen.findByText(/^My (?:Top Five )?Values$/),
+      await screen.findByText(/^My (?:Top Five Life )?Values$/),
     ).toBeOnTheScreen()
   }, 10_000)
 
@@ -423,7 +423,7 @@ describe("NativeGameClient Menu navigation", () => {
 
     await user.press(screen.getByRole("button", { name: "Close" }))
     expect(
-      await screen.findByText(/^My (?:Top Five )?Values$/),
+      await screen.findByText(/^My (?:Top Five Life )?Values$/),
     ).toBeOnTheScreen()
   }, 10_000)
 })
@@ -464,7 +464,7 @@ describe("NativeGameClient battle routing", () => {
     expect(await screen.findByText("Results")).toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "See my values" }))
     expect(
-      await screen.findByText(/^My (?:Top Five )?Values$/),
+      await screen.findByText(/^My (?:Top Five Life )?Values$/),
     ).toBeOnTheScreen()
   }, 10_000)
 })
@@ -642,7 +642,7 @@ describe("NativeGameClient persistence recovery and lifecycle", () => {
     })
     await waitFor(() => expect(getOpenDialog("Menu")).toBeUndefined())
     expect(
-      await screen.findByText(/^My (?:Top Five )?Values$/),
+      await screen.findByText(/^My (?:Top Five Life )?Values$/),
     ).toBeOnTheScreen()
 
     await unmount()
@@ -704,9 +704,7 @@ describe("NativeGameClient file operations and destructive actions", () => {
     await render(<NativeGameClient />)
 
     await user.press(await screen.findByRole("button", { name: "Start" }))
-    await user.press(
-      await screen.findByRole("button", { name: "Add Custom Value" }),
-    )
+    await user.press(await screen.findByRole("button", { name: "Add value" }))
     await user.press(
       screen.getByRole("button", { name: /^\+ Start with Ingenuity/ }),
     )
@@ -824,7 +822,7 @@ describe("NativeGameClient file operations and destructive actions", () => {
     )
 
     expect(
-      await screen.findByText(/^My (?:Top Five )?Values$/),
+      await screen.findByText(/^My (?:Top Five Life )?Values$/),
     ).toBeOnTheScreen()
   }, 10_000)
 
@@ -932,7 +930,7 @@ describe("NativeGameClient file operations and destructive actions", () => {
     )
 
     expect(
-      await screen.findByText(/^My (?:Top Five )?Values$/),
+      await screen.findByText(/^My (?:Top Five Life )?Values$/),
     ).toBeOnTheScreen()
   }, 10_000)
 
@@ -968,9 +966,7 @@ describe("NativeGameClient file operations and destructive actions", () => {
     await render(<NativeGameClient />)
 
     await user.press(await screen.findByRole("button", { name: "Start" }))
-    await user.press(
-      await screen.findByRole("button", { name: "Add Custom Value" }),
-    )
+    await user.press(await screen.findByRole("button", { name: "Add value" }))
     await user.press(
       screen.getByRole("button", { name: /^\+ Start with Ingenuity/ }),
     )

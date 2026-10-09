@@ -68,6 +68,7 @@ function Button({
   align = "center",
   wrap = false,
   typographyClassName,
+  textCase = variant === "link" ? "normal-case" : "uppercase",
   ...props
 }: ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
@@ -75,6 +76,7 @@ function Button({
     align?: "center" | "start"
     wrap?: boolean
     typographyClassName?: string
+    textCase?: "normal-case" | "uppercase"
   }) {
   const Component = asChild ? Slot.Root : "button"
   const resolvedSize = variant === "link" ? "link" : size
@@ -87,7 +89,7 @@ function Button({
       className={cx(
         buttonVariants({ variant, size: resolvedSize }),
         variant !== "ghost" && variant !== "link" && "border-black",
-        variant === "link" ? "normal-case" : "uppercase",
+        textCase,
         align === "start" ? "justify-start text-left" : "justify-center",
         wrap ? "whitespace-normal" : "whitespace-nowrap",
         typographyClassName ?? buttonTypographyVariants({ size: resolvedSize }),

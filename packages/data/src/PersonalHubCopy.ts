@@ -1,13 +1,17 @@
+const rankedTitleLines = Object.freeze(["My Top Five", "Life Values"])
+
 export const PERSONAL_HUB_COPY = Object.freeze({
-  rankedTitle: "My Top Five Values",
+  screenTitle: "Home screen",
+  rankedTitle: rankedTitleLines.join(" "),
+  rankedTitleLines,
   unrankedTitle: "My Values",
-  rankedList: "Top Five values",
-  unrankedList: "Included values preview",
-  unrankedNotice:
-    "Not ranked yet. Browse all values, then battle when you are ready.",
+  rankedList: "Your values",
+  unrankedList: "Included values",
+  unrankedNotice: "Not ranked yet",
+  remainingValues: "All Other Values",
   battle: "Battle",
   browse: "Browse All Values",
-  add: "Add Custom Value",
+  add: "Add value",
   actions: "Value actions",
   level: (level: number) => `Level ${level}`,
 })

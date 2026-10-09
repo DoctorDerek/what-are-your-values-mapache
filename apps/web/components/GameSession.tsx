@@ -18,11 +18,14 @@ export default function GameSession({
   readonly children: (gameActor: RootActor) => ReactNode
   readonly onReopen: () => void
 }) {
-  const [, notifyActorFailure] = useReducer(
+  const [, notifyActorUpdate] = useReducer(
     (revision: number) => revision + 1,
     0,
   )
-  const observer = useMemo(() => ({ error: notifyActorFailure }), [])
+  const observer = useMemo(
+    () => ({ next: notifyActorUpdate, error: notifyActorUpdate }),
+    [],
+  )
   const gameActor = useActorRef(
     rootMachine,
     {
@@ -37,21 +40,27 @@ export default function GameSession({
     },
     observer,
   )
+  const snapshot = gameActor.getSnapshot()
+  const isPublicArrival =
+    snapshot.matches("Splash") || snapshot.matches("InitializingProfile")
 
   useEffect(() => {
     gameActor.send({ type: "APP.HYDRATED", schedulerSeed: crypto.randomUUID() })
   }, [gameActor])
 
-  if (gameActor.getSnapshot().status === "error")
-    return <RuntimeRecovery gameActor={gameActor} onReopen={onReopen} />
-
   return (
-    <RenderRecoveryBoundary
-      fallback={(retry) => (
-        <RuntimeRecovery gameActor={gameActor} onRetry={retry} />
+    <div data-game-surface={isPublicArrival ? "arrival" : "active"}>
+      {snapshot.status === "error" ? (
+        <RuntimeRecovery gameActor={gameActor} onReopen={onReopen} />
+      ) : (
+        <RenderRecoveryBoundary
+          fallback={(retry) => (
+            <RuntimeRecovery gameActor={gameActor} onRetry={retry} />
+          )}
+        >
+          {children(gameActor)}
+        </RenderRecoveryBoundary>
       )}
-    >
-      {children(gameActor)}
-    </RenderRecoveryBoundary>
+    </div>
   )
 }

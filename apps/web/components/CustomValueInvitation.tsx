@@ -161,6 +161,9 @@ export default function CustomValueInvitation({
     }
   }
 
+  if (editorRequestId === 0 && !isNavigationBlocked && !examplesExpanded)
+    return null
+
   return (
     <aside
       aria-label="Add your own values"

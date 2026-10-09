@@ -3,6 +3,7 @@
 import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
 import { DRESSING_ROOM_COPY } from "@game/data/src/Heroes99DressingRoom"
+import { introductionCopy } from "@game/data/src/IntroductionCopy"
 import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
 import { presentationLoadingCopy } from "@game/data/src/PresentationLoadingCopy"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
@@ -25,6 +26,7 @@ export default function Hub({
   rankedValues,
   runtimeClipCatalog,
   browseAllValuesButtonRef,
+  rosterRef,
   dataNotice,
   shouldReduceMotion,
   onBrowseAllValues,
@@ -49,6 +51,7 @@ export default function Hub({
   rankedValues: readonly RankedValue[]
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   browseAllValuesButtonRef?: Ref<HTMLButtonElement>
+  rosterRef?: Ref<HTMLDivElement>
   dataNotice: string | null
   shouldReduceMotion: boolean
   onBrowseAllValues: (focusTargetId: string) => void
@@ -83,22 +86,32 @@ export default function Hub({
     <MapacheScreen
       spacing="standard-xl"
       viewport="scrollable"
-      className="flex min-w-0 flex-col items-center gap-5 [overflow-wrap:anywhere]"
+      className="flex h-[100dvh] min-w-0 flex-col items-center gap-4"
     >
-      <header className="flex w-full max-w-7xl justify-end">
-        <Button
-          id={HUB_MENU_BUTTON_ID}
-          variant="secondary"
-          onClick={onOpenMenu}
-          disabled={isNavigationBlocked}
-        >
-          {PRODUCT_MENU_COPY.openAction}
-        </Button>
+      <header className="w-full max-w-7xl shrink-0 text-white">
+        <h1 className="text-[min(5vw,1.5rem)] leading-tight font-bold whitespace-nowrap">
+          {introductionCopy.title}
+        </h1>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <p className="text-sm xl:text-base">
+            {PERSONAL_HUB_COPY.screenTitle}
+          </p>
+          <Button
+            id={HUB_MENU_BUTTON_ID}
+            variant="secondary"
+            size="sm"
+            textCase="normal-case"
+            onClick={onOpenMenu}
+            disabled={isNavigationBlocked}
+          >
+            {PRODUCT_MENU_COPY.openAction}
+          </Button>
+        </div>
       </header>
       {dataNotice && (
         <p
           role="status"
-          className="bg-mapache-vivid-secondary-green w-full max-w-7xl border-4 border-black p-4 font-bold text-white"
+          className="bg-mapache-vivid-secondary-green w-full max-w-7xl shrink-0 border-4 border-black p-4 font-bold text-white"
         >
           {dataNotice}
         </p>
@@ -119,6 +132,7 @@ export default function Hub({
         />
       )}
       <PersonalValuesCard
+        rosterRef={rosterRef}
         appearance={appearance}
         rankedValues={rankedValues}
         catalog={runtimeClipCatalog}
@@ -127,61 +141,81 @@ export default function Hub({
       />
       <nav
         aria-label={PERSONAL_HUB_COPY.actions}
-        className="grid w-full max-w-7xl grid-cols-6 gap-4 [&_button]:min-w-0"
+        className="grid w-full max-w-7xl shrink-0 gap-4 pb-3 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] [&_button]:min-w-0"
       >
-        <Button
-          disabled={isNavigationBlocked}
-          onClick={onStartBattle}
-          aria-busy={isBattlePending}
-          aria-label={
-            isBattlePending
-              ? presentationLoadingCopy.cancelBattlePreparation
-              : undefined
-          }
-          variant="battle"
-          size="sm"
-          typographyClassName="text-2xl xl:text-3xl"
-          wrap
-          className="relative col-span-6 xl:col-span-2"
-        >
-          <span className={isBattlePending ? "invisible" : undefined}>
-            {PERSONAL_HUB_COPY.battle}
-          </span>
-          {isBattlePending && (
-            <span className="absolute inset-0 flex items-center justify-center text-lg">
-              {presentationLoadingCopy.preparing}
+        <div className="flex flex-wrap gap-4 xl:col-span-2">
+          <Button
+            disabled={customValueInvitation?.isSaving}
+            id="hub-add-custom-value-button"
+            variant="outline"
+            size="sm"
+            textCase="normal-case"
+            typographyClassName="text-base xl:text-lg"
+            className="flex-[1_1_6rem]"
+            wrap
+            onClick={(event) => onAddCustomValue(event.currentTarget.id)}
+          >
+            {PERSONAL_HUB_COPY.add}
+          </Button>
+          <Button
+            disabled={isNavigationBlocked}
+            onClick={onStartBattle}
+            aria-busy={isBattlePending}
+            aria-label={
+              isBattlePending
+                ? presentationLoadingCopy.cancelBattlePreparation
+                : undefined
+            }
+            variant="battle"
+            size="tall"
+            textCase="normal-case"
+            typographyClassName="text-2xl xl:text-3xl"
+            wrap
+            className="relative flex-[1.35_1_8rem]"
+          >
+            <span className={isBattlePending ? "invisible" : undefined}>
+              {PERSONAL_HUB_COPY.battle}
             </span>
-          )}
-        </Button>
+            {isBattlePending && (
+              <span className="absolute inset-0 flex items-center justify-center text-lg">
+                {presentationLoadingCopy.preparing}
+              </span>
+            )}
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-4">
+          <Button
+            id="hub-customize-button"
+            textCase="normal-case"
+            variant="secondary"
+            size="sm"
+            typographyClassName="text-base xl:text-lg"
+            className="flex-[1_1_7rem]"
+            wrap
+            disabled={isNavigationBlocked}
+            onClick={onCustomize}
+          >
+            {DRESSING_ROOM_COPY.customize}
+          </Button>
+          <Button
+            id="hub-share-button"
+            textCase="normal-case"
+            variant="secondary"
+            size="sm"
+            typographyClassName="text-base xl:text-lg"
+            className="flex-[1_1_7rem]"
+            wrap
+            disabled={isNavigationBlocked}
+            onClick={onShare}
+          >
+            {VALUES_CARD_COPY.title}
+          </Button>
+        </div>
         <Button
-          id="hub-customize-button"
-          className="col-span-3 xl:col-span-2"
-          variant="secondary"
-          size="sm"
-          typographyClassName="text-base xl:text-lg"
-          wrap
-          disabled={isNavigationBlocked}
-          onClick={onCustomize}
-        >
-          {DRESSING_ROOM_COPY.customize}
-        </Button>
-        <Button
-          id="hub-share-button"
-          className="col-span-3 xl:col-span-2"
-          variant="secondary"
-          size="sm"
-          typographyClassName="text-base xl:text-lg"
-          wrap
-          disabled={isNavigationBlocked}
-          onClick={onShare}
-        >
-          {VALUES_CARD_COPY.title}
-        </Button>
-        <Button
-          className="col-span-3"
           disabled={isNavigationBlocked}
           ref={browseAllValuesButtonRef}
           id="hub-browse-all-values-button"
+          textCase="normal-case"
           variant="outline"
           size="sm"
           typographyClassName="text-base xl:text-lg"
@@ -189,18 +223,6 @@ export default function Hub({
           onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
         >
           {PERSONAL_HUB_COPY.browse}
-        </Button>
-        <Button
-          disabled={customValueInvitation?.isSaving}
-          className="col-span-3"
-          id="hub-add-custom-value-button"
-          variant="outline"
-          size="sm"
-          typographyClassName="text-base xl:text-lg"
-          wrap
-          onClick={(event) => onAddCustomValue(event.currentTarget.id)}
-        >
-          {PERSONAL_HUB_COPY.add}
         </Button>
       </nav>
     </MapacheScreen>
