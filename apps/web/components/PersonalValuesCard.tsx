@@ -40,33 +40,35 @@ export default function PersonalValuesCard({
     <section
       inert={inert}
       aria-labelledby="your-values-heading"
-      className="border-player-card-frame bg-player-card-background grid min-h-64 w-full max-w-7xl flex-1 grid-cols-[minmax(0,1fr)_6rem] grid-rows-[auto_minmax(8rem,1fr)] overflow-hidden border-4 inert:opacity-50 xl:grid-cols-[minmax(12rem,1fr)_minmax(0,3fr)]"
+      className="border-player-card-frame bg-player-card-background grid min-h-min w-full max-w-7xl flex-1 grid-cols-1 grid-rows-[auto_minmax(8rem,1fr)] overflow-hidden border-4 inert:opacity-50 xl:grid-cols-[minmax(12rem,1fr)_minmax(0,3fr)]"
     >
-      <div className="col-start-1 row-start-1 self-center px-3 py-4 xl:col-span-2 xl:text-center">
-        <h2
-          id="your-values-heading"
-          className="text-player-card-ink text-2xl leading-tight font-black xl:text-3xl"
-        >
-          {hasComparisons
-            ? PERSONAL_HUB_COPY.rankedTitleLines.map((line) => (
-                <span key={line} className="block">
-                  {line}
-                </span>
-              ))
-            : PERSONAL_HUB_COPY.unrankedTitle}
-        </h2>
-        {!hasComparisons && (
-          <p className="text-player-card-muted mt-2 text-sm">
-            {PERSONAL_HUB_COPY.unrankedNotice}
-          </p>
-        )}
-      </div>
-      <div className="xl:bg-player-card-values col-start-2 row-start-1 flex min-h-0 items-center justify-center py-2 pr-2 xl:col-start-1 xl:row-start-2 xl:p-4">
-        <Heroes99Hero
-          appearance={appearance}
-          shouldReduceMotion={shouldReduceMotion}
-          className="h-28 w-full xl:h-full xl:max-h-96"
-        />
+      <div className="flex flex-wrap items-center xl:contents">
+        <div className="min-w-0 flex-[1_1_10rem] self-center px-3 py-4 xl:col-span-2 xl:row-start-1 xl:text-center">
+          <h2
+            id="your-values-heading"
+            className="text-player-card-ink text-2xl leading-tight font-black xl:text-3xl"
+          >
+            {hasComparisons
+              ? PERSONAL_HUB_COPY.rankedTitleLines.map((line) => (
+                  <span key={line} className="block">
+                    {line}
+                  </span>
+                ))
+              : PERSONAL_HUB_COPY.unrankedTitle}
+          </h2>
+          {!hasComparisons && (
+            <p className="text-player-card-muted mt-2 text-sm">
+              {PERSONAL_HUB_COPY.unrankedNotice}
+            </p>
+          )}
+        </div>
+        <div className="xl:bg-player-card-values flex min-h-0 w-24 max-w-full shrink-0 items-center justify-center py-2 pr-2 xl:col-start-1 xl:row-start-2 xl:w-auto xl:p-4">
+          <Heroes99Hero
+            appearance={appearance}
+            shouldReduceMotion={shouldReduceMotion}
+            className="h-28 w-full xl:h-full xl:max-h-96"
+          />
+        </div>
       </div>
       <div
         role="region"
@@ -77,7 +79,7 @@ export default function PersonalValuesCard({
             : PERSONAL_HUB_COPY.unrankedList
         }
         tabIndex={0}
-        className="bg-player-card-values col-span-2 row-start-2 min-h-0 min-w-0 overflow-y-auto overscroll-contain focus-visible:outline-4 focus-visible:-outline-offset-4 xl:col-span-1 xl:col-start-2"
+        className="bg-player-card-values col-start-1 row-start-2 min-h-0 min-w-0 overflow-y-auto overscroll-contain [contain:size] focus-visible:outline-4 focus-visible:-outline-offset-4 xl:col-start-2"
       >
         <ol>{(hasComparisons ? topFive : visibleValues).map(renderValue)}</ol>
         {hasComparisons && remainingValues.length > 0 && (

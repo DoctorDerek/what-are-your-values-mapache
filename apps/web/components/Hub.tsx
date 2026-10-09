@@ -143,7 +143,7 @@ export default function Hub({
         aria-label={PERSONAL_HUB_COPY.actions}
         className="grid w-full max-w-7xl shrink-0 gap-4 pb-3 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] [&_button]:min-w-0"
       >
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-4 xl:col-span-2">
+        <div className="flex flex-wrap gap-4 xl:col-span-2">
           <Button
             disabled={customValueInvitation?.isSaving}
             id="hub-add-custom-value-button"
@@ -151,6 +151,7 @@ export default function Hub({
             size="sm"
             textCase="normal-case"
             typographyClassName="text-base xl:text-lg"
+            className="flex-[1_1_6rem]"
             wrap
             onClick={(event) => onAddCustomValue(event.currentTarget.id)}
           >
@@ -170,7 +171,7 @@ export default function Hub({
             textCase="normal-case"
             typographyClassName="text-2xl xl:text-3xl"
             wrap
-            className="relative"
+            className="relative flex-[1.35_1_8rem]"
           >
             <span className={isBattlePending ? "invisible" : undefined}>
               {PERSONAL_HUB_COPY.battle}
@@ -182,13 +183,14 @@ export default function Hub({
             )}
           </Button>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-wrap gap-4">
           <Button
             id="hub-customize-button"
             textCase="normal-case"
             variant="secondary"
             size="sm"
             typographyClassName="text-base xl:text-lg"
+            className="flex-[1_1_7rem]"
             wrap
             disabled={isNavigationBlocked}
             onClick={onCustomize}
@@ -201,6 +203,7 @@ export default function Hub({
             variant="secondary"
             size="sm"
             typographyClassName="text-base xl:text-lg"
+            className="flex-[1_1_7rem]"
             wrap
             disabled={isNavigationBlocked}
             onClick={onShare}

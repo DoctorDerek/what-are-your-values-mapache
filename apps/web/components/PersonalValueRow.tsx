@@ -33,10 +33,10 @@ export default function PersonalValueRow({
       {...attentionHandlers}
       tabIndex={0}
       data-value-row="true"
-      className="border-player-card-frame grid grid-cols-[minmax(1.75rem,max-content)_auto_minmax(0,1fr)] items-center gap-1.5 border-b px-2 py-2 last:border-0 focus-visible:outline-4 focus-visible:-outline-offset-4 xl:gap-3 xl:px-4"
+      className="border-player-card-frame flex flex-wrap items-center gap-1.5 border-b px-2 py-2 last:border-0 focus-visible:outline-4 focus-visible:-outline-offset-4 xl:gap-3 xl:px-4"
       id={`hub-value-${value.definition.id}`}
     >
-      <span className="flex flex-col items-center gap-1 text-sm tabular-nums xl:text-lg">
+      <span className="flex min-w-7 shrink-0 flex-col items-center gap-1 text-sm tabular-nums xl:text-lg">
         {hasComparisons && (
           <>
             <span
@@ -52,7 +52,10 @@ export default function PersonalValueRow({
           </>
         )}
       </span>
-      <span id={`hub-value-${value.definition.id}-presentation`}>
+      <span
+        className="shrink-0"
+        id={`hub-value-${value.definition.id}-presentation`}
+      >
         <ValueAnimalPresentation
           rank={value.rank}
           showRank={false}
@@ -66,7 +69,7 @@ export default function PersonalValueRow({
           shouldReduceMotion={shouldReduceMotion}
         />
       </span>
-      <div className="min-w-0 [overflow-wrap:break-word]">
+      <div className="min-w-0 flex-[1_1_8rem] [overflow-wrap:anywhere]">
         <h3 className="text-player-card-ink text-lg leading-tight font-black xl:text-2xl">
           {getValueDisplayName(value.definition)}
         </h3>
