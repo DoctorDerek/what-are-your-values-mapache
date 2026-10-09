@@ -94,14 +94,6 @@ export default function NativeCustomValueForm({
       }
       className="gap-4 border-4 border-black bg-white p-4 shadow-[6px_6px_0px_0px_#000000]"
     >
-                  </View>
-                </Button>
-              ),
-            )}
-          </View>
-        </>
-      ) : null}
-
       <Text className="text-lg font-black text-black uppercase">
         Value Name
       </Text>
