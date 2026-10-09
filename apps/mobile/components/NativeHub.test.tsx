@@ -253,7 +253,7 @@ describe("NativeHub", () => {
       expect(screen.getByText(name)).toBeOnTheScreen()
     for (const [label, callback] of [
       ["Browse All Values", callbacks.onBrowseAllValues],
-      ["Add Custom Value", callbacks.onAddCustomValue],
+      ["Add value", callbacks.onAddCustomValue],
       ["Menu", callbacks.onOpenMenu],
       ["Customize my card", callbacks.onCustomize],
       ["Share my values card", callbacks.onShare],
@@ -274,7 +274,7 @@ describe("NativeHub", () => {
         rankedValues={rankedValues}
       />,
     )
-    expect(screen.getByText("My Top Five Values")).toBeOnTheScreen()
+    expect(screen.getByText("My Top Five Life Values")).toBeOnTheScreen()
     expect(screen.getByText("Your imported data is ready.")).toBeOnTheScreen()
     expect(screen.getByText("#1")).toBeOnTheScreen()
     expect(screen.queryByText("#6")).toBeNull()
