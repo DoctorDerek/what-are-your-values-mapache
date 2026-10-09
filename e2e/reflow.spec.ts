@@ -66,9 +66,7 @@ for (const width of [390, 1440]) {
     await page
       .getByRole("button", { name: "Close editor", exact: true })
       .click()
-    await page
-      .getByRole("button", { name: "Add Custom Value", exact: true })
-      .click()
+    await page.getByRole("button", { name: "Add value", exact: true }).click()
     await expect(page.getByLabel("Definition", { exact: true })).toHaveValue(
       "to explore practical solutions through experiments",
     )
@@ -111,7 +109,7 @@ for (const width of [390, 1440]) {
     await page.emulateMedia({ reducedMotion: "no-preference" })
     await startAtHub(page)
     const hubRow = page
-      .getByRole("list", { name: "Included values preview" })
+      .getByRole("region", { name: "Included values" })
       .getByRole("listitem")
       .first()
     const hubAnimal = hubRow.locator('[data-hub-active-clip="true"] img')
@@ -168,7 +166,7 @@ test("Hub attention displays each authored frame for one complete interval", asy
   await page.emulateMedia({ reducedMotion: "no-preference" })
   await startAtHub(page)
   const row = page
-    .getByRole("list", { name: "Included values preview" })
+    .getByRole("region", { name: "Included values" })
     .getByRole("listitem")
     .first()
   await row.hover()
@@ -214,7 +212,7 @@ test("Hub hover completions retain the final authored frame across repeated atte
   await page.emulateMedia({ reducedMotion: "no-preference" })
   await startAtHub(page)
   const row = page
-    .getByRole("list", { name: "Included values preview" })
+    .getByRole("region", { name: "Included values" })
     .getByRole("listitem")
     .first()
   const active = row.locator('[data-hub-active-clip="true"]')
@@ -279,7 +277,7 @@ test("Hub attention responds to hover and focus without shifting the row", async
   await page.emulateMedia({ reducedMotion: "no-preference" })
   await startAtHub(page)
   const row = page
-    .getByRole("list", { name: "Included values preview" })
+    .getByRole("region", { name: "Included values" })
     .getByRole("listitem")
     .first()
   const active = row.locator('[data-hub-active-clip="true"]')
@@ -304,16 +302,52 @@ test("Hub attention responds to hover and focus without shifting the row", async
   await expect(active.locator('[data-playback-mode="static"]')).toHaveCount(1)
 })
 
-for (const width of [390, 1440]) {
+for (const width of [320, 390, 1280]) {
   test(`Personal Hub remains readable and reachable with enlarged text at ${width}px`, async ({
     page,
   }) => {
-    await page.setViewportSize({ width, height: 900 })
+    await page.setViewportSize({ width, height: width === 320 ? 640 : 900 })
     await page.emulateMedia({ reducedMotion: "reduce" })
     await startAtHub(page)
-    const roster = page.getByRole("list", { name: "Included values preview" })
+    const roster = page.getByRole("region", { name: "Included values" })
     const actions = page.getByRole("navigation", { name: "Value actions" })
-    await expect(roster.getByRole("listitem")).toHaveCount(5)
+    await expect(roster.getByRole("listitem")).toHaveCount(100)
+    expect(
+      await roster.evaluate(
+        (element) => element.scrollHeight > element.clientHeight,
+      ),
+    ).toBe(true)
+    const titleGeometry = await page
+      .getByRole("heading", { level: 1 })
+      .evaluate((element) => ({
+        height: element.getBoundingClientRect().height,
+        lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight),
+        width: element.clientWidth,
+        scrollWidth: element.scrollWidth,
+      }))
+    expect(titleGeometry.height).toBeLessThanOrEqual(
+      titleGeometry.lineHeight + 1,
+    )
+    expect(titleGeometry.scrollWidth).toBeLessThanOrEqual(titleGeometry.width)
+    const addBounds = await actions
+      .getByRole("button", { name: "Add value", exact: true })
+      .boundingBox()
+    const battleBounds = await actions
+      .getByRole("button", { name: "Battle", exact: true })
+      .boundingBox()
+    const shareBounds = await actions
+      .getByRole("button", { name: "Share my values card", exact: true })
+      .boundingBox()
+    expect(addBounds).not.toBeNull()
+    expect(battleBounds).not.toBeNull()
+    expect(shareBounds).not.toBeNull()
+    expect(addBounds!.x).toBeLessThan(battleBounds!.x)
+    expect(Math.abs(addBounds!.y - battleBounds!.y)).toBeLessThanOrEqual(1)
+    expect(battleBounds!.y + battleBounds!.height).toBeLessThan(shareBounds!.y)
+    await page.screenshot({
+      path: test.info().outputPath(`hub-${width}-normal.png`),
+      fullPage: false,
+    })
     await roster.getByRole("listitem").last().scrollIntoViewIfNeeded()
     await expect(roster.getByRole("listitem").last()).toBeInViewport()
     await page.addStyleTag({ content: "html { font-size: 200%; }" })
@@ -322,6 +356,49 @@ for (const width of [390, 1440]) {
       scrollWidth: element.scrollWidth,
     }))
     expect(hubBounds.scrollWidth).toBeLessThanOrEqual(hubBounds.width)
+    const enlargedButtonOverflow = await actions
+      .getByRole("button")
+      .evaluateAll((buttons) =>
+        buttons.flatMap((button) => {
+          const bounds = button.getBoundingClientRect()
+          const textRange = document.createRange()
+          textRange.selectNodeContents(button)
+          const textBounds = textRange.getBoundingClientRect()
+          return textBounds.left < bounds.left ||
+            textBounds.right > bounds.right ||
+            textBounds.top < bounds.top ||
+            textBounds.bottom > bounds.bottom
+            ? [button.textContent]
+            : []
+        }),
+      )
+    expect(enlargedButtonOverflow).toEqual([])
+    await roster.getByRole("listitem").first().scrollIntoViewIfNeeded()
+    const valueTextGeometry = await roster
+      .getByRole("listitem")
+      .first()
+      .getByRole("heading")
+      .evaluate((element) => ({
+        height: element.getBoundingClientRect().height,
+        lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight),
+        width: element.clientWidth,
+        scrollWidth: element.scrollWidth,
+      }))
+    expect(valueTextGeometry.height).toBeLessThanOrEqual(
+      valueTextGeometry.lineHeight * 2 + 1,
+    )
+    expect(valueTextGeometry.scrollWidth).toBeLessThanOrEqual(
+      valueTextGeometry.width,
+    )
+    expect(
+      await roster.evaluate(
+        (element) => element.scrollHeight > element.clientHeight,
+      ),
+    ).toBe(true)
+    await page.screenshot({
+      path: test.info().outputPath(`hub-${width}-large-roster.png`),
+      fullPage: false,
+    })
     await actions
       .getByRole("button", { name: "Battle", exact: true })
       .scrollIntoViewIfNeeded()
@@ -421,7 +498,10 @@ async function startAtHub(page: Page) {
   ).toBeVisible()
   await page.getByRole("button", { name: "Start", exact: true }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
+    page.getByRole("heading", {
+      level: 2,
+      name: /^My (?:Top Five Life )?Values$/,
+    }),
   ).toBeVisible()
 }
 
@@ -506,7 +586,10 @@ test("Introduction Hub Crucible and achievement feedback reflow without document
 
   await page.getByRole("button", { name: "Start", exact: true }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
+    page.getByRole("heading", {
+      level: 2,
+      name: /^My (?:Top Five Life )?Values$/,
+    }),
   ).toBeVisible()
   await expectNoDocumentHorizontalOverflow(page, "first-run Hub")
 
@@ -536,9 +619,7 @@ test("All Values and Custom Values reflow without document overflow", async ({
   ).toBeVisible()
   await expectNoDocumentHorizontalOverflow(page, "All Values")
 
-  await page
-    .getByRole("button", { name: "Add Custom Value", exact: true })
-    .click()
+  await page.getByRole("button", { name: "Add value", exact: true }).click()
   await expect(
     page.getByRole("form", { name: "Add Custom Value" }),
   ).toBeVisible()

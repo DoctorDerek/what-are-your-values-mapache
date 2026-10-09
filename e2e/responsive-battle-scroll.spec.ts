@@ -28,7 +28,7 @@ declare global {
   }
 }
 
-for (const width of [390, 1100, 1440]) {
+for (const width of [320, 390, 1280]) {
   test(`Personal Hub preserves the complete ranking before and after comparisons at ${width}px`, async ({
     page,
   }) => {
@@ -38,7 +38,15 @@ for (const width of [390, 1100, 1440]) {
     await page.getByRole("button", { name: "Start", exact: true }).click()
     for (const hasComparisons of [false, true]) {
       const rows = page.getByRole("listitem")
-      await expect(rows).toHaveCount(5)
+      await expect(rows).toHaveCount(100)
+      await rows.first().scrollIntoViewIfNeeded()
+      await page.screenshot({
+        path: test
+          .info()
+          .outputPath(
+            `home-${width}-${hasComparisons ? "ranked" : "unranked"}.png`,
+          ),
+      })
       await rows.last().scrollIntoViewIfNeeded()
       await expect(rows.last()).toBeInViewport()
       await page
@@ -46,12 +54,13 @@ for (const width of [390, 1100, 1440]) {
         .click()
       await expect(rows).toHaveCount(100)
       await page.getByRole("button", { name: "Close", exact: true }).click()
-      await expect(rows).toHaveCount(5)
-      await expect(
-        page.getByRole("article", {
-          name: "What Are Your Values, Mapache? information",
-        }),
-      ).toBeAttached()
+      await expect(rows).toHaveCount(100)
+      const editorial = page.getByRole("article", {
+        name: "What Are Your Values, Mapache? information",
+        includeHidden: true,
+      })
+      await expect(editorial).toBeAttached()
+      await expect(editorial).toBeHidden()
       if (!hasComparisons) {
         await page.getByRole("button", { name: "Battle", exact: true }).click()
         const stage = page.locator("[data-choreography-identity]")
@@ -73,8 +82,8 @@ for (const width of [390, 1100, 1440]) {
           .click()
         await expect(
           page.getByRole("heading", {
-            name: /^My (?:Top Five )?Values$/,
-            level: 1,
+            name: /^My (?:Top Five Life )?Values$/,
+            level: 2,
           }),
         ).toBeVisible()
       }
@@ -503,7 +512,10 @@ for (const viewport of [
       .getByRole("button", { name: "See my values", exact: true })
       .click()
     await expect(
-      page.getByRole("heading", { name: "My Top Five Values", exact: true }),
+      page.getByRole("heading", {
+        name: "My Top Five Life Values",
+        exact: true,
+      }),
     ).toBeVisible()
   })
 }

@@ -44,7 +44,10 @@ async function startAtHub(page: Page) {
   ).toBeVisible()
   await page.getByRole("button", { name: "Start", exact: true }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
+    page.getByRole("heading", {
+      level: 2,
+      name: /^My (?:Top Five Life )?Values$/,
+    }),
   ).toBeVisible()
 }
 
@@ -69,7 +72,10 @@ test("Introduction and Hub meet automated accessibility rules", async ({
 
   await page.getByRole("button", { name: "Start", exact: true }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
+    page.getByRole("heading", {
+      level: 2,
+      name: /^My (?:Top Five Life )?Values$/,
+    }),
   ).toBeVisible()
   await expectNoAccessibilityViolations(page, "first-run Hub")
 })

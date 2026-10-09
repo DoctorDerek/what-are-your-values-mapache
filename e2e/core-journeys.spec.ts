@@ -94,16 +94,27 @@ test("a new player starts immediately and reviews the complete ranking", async (
       "Private. Offline. Account-free. Your choices and Custom Values stay on this device unless you choose to export them.",
     ),
   ).toBeVisible()
+  const editorial = page.getByRole("article", {
+    name: "What Are Your Values, Mapache? information",
+    includeHidden: true,
+  })
+  await expect(editorial).toBeVisible()
 
   await page.getByRole("button", { name: "Start" }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
+    page.getByRole("heading", {
+      level: 2,
+      name: /^My (?:Top Five Life )?Values$/,
+    }),
   ).toBeVisible()
-  await expect(
-    page.getByText(
-      "Not ranked yet. Browse all values, then battle when you are ready.",
-    ),
-  ).toBeVisible()
+  await expect(page.getByText("Not ranked yet")).toBeVisible()
+  await expect(editorial).toBeHidden()
+  const roster = page.getByRole("region", { name: "Included values" })
+  await expect(roster.getByRole("listitem")).toHaveCount(100)
+  await roster.focus()
+  await page.keyboard.press("End")
+  await expect(roster.getByRole("listitem").last()).toBeInViewport()
+  const scrollTop = await roster.evaluate((element) => element.scrollTop)
 
   await page.getByRole("button", { name: "Browse All Values" }).click()
   await expect(
@@ -120,11 +131,21 @@ test("a new player starts immediately and reviews the complete ranking", async (
 
   await page.getByRole("button", { name: "Close" }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
+    page.getByRole("heading", {
+      level: 2,
+      name: /^My (?:Top Five Life )?Values$/,
+    }),
   ).toBeVisible()
   await expect(
     page.getByRole("button", { name: "Browse All Values" }),
   ).toBeFocused()
+  await expect
+    .poll(() => roster.evaluate((element) => element.scrollTop))
+    .toBe(scrollTop)
+  await expect(editorial).toBeHidden()
+  await page.reload()
+  await expect(page.getByText("Home screen", { exact: true })).toBeVisible()
+  await expect(editorial).toBeHidden()
 })
 
 test("a returning player keeps Undo and Redo across reloads", async ({
@@ -134,7 +155,10 @@ test("a returning player keeps Undo and Redo across reloads", async ({
 
   await page.getByRole("button", { name: "Start" }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
+    page.getByRole("heading", {
+      level: 2,
+      name: /^My (?:Top Five Life )?Values$/,
+    }),
   ).toBeVisible()
   await page.getByRole("button", { name: "Battle", exact: true }).click()
   await expect(page.getByRole("main", { name: "Value battle" })).toBeVisible()
@@ -166,7 +190,7 @@ test("a returning player keeps Undo and Redo across reloads", async ({
   const firstRankedValue = winningValue
   await expect(firstRankedValue).toContainText(firstChoiceName)
   await expect(firstRankedValue).toContainText("Level 3")
-  await expect(page.getByRole("listitem")).toHaveCount(5)
+  await expect(page.getByRole("listitem")).toHaveCount(100)
 })
 
 test("a secondary tab stays read-only then inherits released writer ownership", async ({
@@ -212,7 +236,7 @@ test("a secondary tab stays read-only then inherits released writer ownership", 
   await expect(
     secondaryPage.getByRole("heading", {
       level: 1,
-      name: /^My (?:Top Five )?Values$/,
+      name: /^My (?:Top Five Life )?Values$/,
     }),
   ).toBeVisible()
   const inheritedWinningValue = secondaryPage

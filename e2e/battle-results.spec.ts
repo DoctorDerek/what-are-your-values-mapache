@@ -55,13 +55,11 @@ test("browser Back closes actual parents, preserves drafts and permits Hub depar
   await page.evaluate(() => history.back())
   await expect(
     page.getByRole("heading", {
-      name: /^My (?:Top Five )?Values$/,
+      name: /^My (?:Top Five Life )?Values$/,
       exact: true,
     }),
   ).toBeVisible()
-  await page
-    .getByRole("button", { name: "Add Custom Value", exact: true })
-    .click()
+  await page.getByRole("button", { name: "Add value", exact: true }).click()
   await page.getByLabel("Value name", { exact: true }).fill("Keep my draft")
   await page.evaluate(() => history.back())
   await expect(page.getByLabel("Value name", { exact: true })).toHaveValue(
@@ -256,7 +254,10 @@ test("battle results show committed progress without delaying either exit", asyn
 
   await page.getByRole("button", { name: /Stop/ }).click()
   await expect(
-    page.getByRole("heading", { level: 1, name: /^My (?:Top Five )?Values$/ }),
+    page.getByRole("heading", {
+      level: 2,
+      name: /^My (?:Top Five Life )?Values$/,
+    }),
   ).toBeVisible()
   await expect(page.getByRole("heading", { name: "Results" })).toHaveCount(0)
 })
@@ -362,8 +363,8 @@ for (const viewport of [
     await page.getByRole("button", { name: "See my values" }).click()
     await expect(
       page.getByRole("heading", {
-        name: /^My (?:Top Five )?Values$/,
-        level: 1,
+        name: /^My (?:Top Five Life )?Values$/,
+        level: 2,
       }),
     ).toBeVisible()
   })
@@ -431,8 +432,8 @@ for (const viewport of [
     await page.getByRole("button", { name: "See my values" }).click()
     await expect(
       page.getByRole("heading", {
-        name: /^My (?:Top Five )?Values$/,
-        level: 1,
+        name: /^My (?:Top Five Life )?Values$/,
+        level: 2,
       }),
     ).toBeVisible()
   })
@@ -498,8 +499,8 @@ for (const viewport of [
     await page.getByRole("button", { name: "See my values" }).click()
     await expect(
       page.getByRole("heading", {
-        name: /^My (?:Top Five )?Values$/,
-        level: 1,
+        name: /^My (?:Top Five Life )?Values$/,
+        level: 2,
       }),
     ).toBeVisible()
   })

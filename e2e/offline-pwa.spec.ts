@@ -77,7 +77,7 @@ test("the web runtime follows its deployment offline policy", async ({
   await page.getByRole("button", { name: "Start", exact: true }).click()
   await expect(
     page.getByRole("heading", {
-      name: /^My (?:Top Five )?Values$/,
+      name: /^My (?:Top Five Life )?Values$/,
       exact: true,
     }),
   ).toBeVisible()
@@ -133,7 +133,7 @@ test("the web runtime follows its deployment offline policy", async ({
   await page.reload({ waitUntil: "domcontentloaded" })
   await expect(
     page.getByRole("heading", {
-      name: /^My (?:Top Five )?Values$/,
+      name: /^My (?:Top Five Life )?Values$/,
       exact: true,
     }),
   ).toBeVisible()
@@ -160,9 +160,7 @@ test("the web runtime follows its deployment offline policy", async ({
     expect(restored.ok).toBe(true)
     expect(restored.bytes).toBeGreaterThan(0)
   }
-  await page
-    .getByRole("button", { name: "Add Custom Value", exact: true })
-    .click()
+  await page.getByRole("button", { name: "Add value", exact: true }).click()
   await page.getByLabel("Value name", { exact: true }).fill("Offline ingenuity")
   await page
     .getByLabel("Definition", { exact: true })
