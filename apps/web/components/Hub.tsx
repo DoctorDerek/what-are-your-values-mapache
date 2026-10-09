@@ -100,6 +100,7 @@ export default function Hub({
             id={HUB_MENU_BUTTON_ID}
             variant="secondary"
             size="sm"
+            textCase="normal-case"
             onClick={onOpenMenu}
             disabled={isNavigationBlocked}
           >
@@ -147,7 +148,9 @@ export default function Hub({
             disabled={customValueInvitation?.isSaving}
             id="hub-add-custom-value-button"
             variant="outline"
-            size="tall"
+            size="sm"
+            textCase="normal-case"
+            typographyClassName="text-base xl:text-lg"
             wrap
             onClick={(event) => onAddCustomValue(event.currentTarget.id)}
           >
@@ -164,6 +167,7 @@ export default function Hub({
             }
             variant="battle"
             size="tall"
+            textCase="normal-case"
             typographyClassName="text-2xl xl:text-3xl"
             wrap
             className="relative"
@@ -181,6 +185,7 @@ export default function Hub({
         <div className="grid grid-cols-2 gap-4">
           <Button
             id="hub-customize-button"
+            textCase="normal-case"
             variant="secondary"
             size="sm"
             typographyClassName="text-base xl:text-lg"
@@ -192,6 +197,7 @@ export default function Hub({
           </Button>
           <Button
             id="hub-share-button"
+            textCase="normal-case"
             variant="secondary"
             size="sm"
             typographyClassName="text-base xl:text-lg"
@@ -206,6 +212,7 @@ export default function Hub({
           disabled={isNavigationBlocked}
           ref={browseAllValuesButtonRef}
           id="hub-browse-all-values-button"
+          textCase="normal-case"
           variant="outline"
           size="sm"
           typographyClassName="text-base xl:text-lg"
