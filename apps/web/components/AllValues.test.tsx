@@ -104,6 +104,13 @@ function createLicensedRuntimeClipCatalog() {
   } satisfies SeethingSwarmRuntimeClipCatalog<StaticImageData>
 }
 
+function findLegacyCustomRow() {
+  return screen.getAllByRole("listitem").find((row) =>
+    within(row).queryByText("Ingenuity", { exact: true }) &&
+    within(row).queryByRole("button", { name: "Edit" }),
+  )
+}
+
 describe("All Values Component Integration", () => {
   afterEach(() => vi.restoreAllMocks())
   it("retains calm art until attention is ready and preserves focus while the pointer leaves", async () => {
@@ -191,7 +198,7 @@ describe("All Values Component Integration", () => {
       runtimeClipCatalog: createLicensedRuntimeClipCatalog(),
     })
 
-    const customRow = screen.getByText("Ingenuity").closest("li")
+    const customRow = findLegacyCustomRow()
     expect(customRow).not.toBeNull()
     expect(customRow?.querySelector("[data-animal-id]")).toHaveAttribute(
       "data-animal-id",
@@ -216,10 +223,10 @@ describe("All Values Component Integration", () => {
     const onAddCustomValue = vi.fn()
     renderAllValues(undefined, { onAddCustomValue })
     fireEvent.change(screen.getByLabelText("Search All Values"), {
-      target: { value: "Ingenuity" },
+      target: { value: "Craftsmanship" },
     })
     fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
-    expect(onAddCustomValue).toHaveBeenCalledExactlyOnceWith("Ingenuity")
+    expect(onAddCustomValue).toHaveBeenCalledExactlyOnceWith("Craftsmanship")
   })
 
   it("locks navigation and creation while persistence is pending", () => {
@@ -237,7 +244,7 @@ describe("All Values Component Integration", () => {
 
     renderAllValues(createRankedValues(activeDeck), { onUpdateCustomValue })
 
-    const targetListItem = screen.getByText("Ingenuity").closest("li")
+    const targetListItem = findLegacyCustomRow()
     if (!targetListItem) {
       throw new Error("Expected Ingenuity list item in DOM")
     }
@@ -274,7 +281,7 @@ describe("All Values Component Integration", () => {
 
     renderAllValues(createRankedValues(activeDeck), { onUpdateCustomValue })
 
-    const targetListItem = screen.getByText("Ingenuity").closest("li")
+    const targetListItem = findLegacyCustomRow()
     if (!targetListItem) {
       throw new Error("Expected Ingenuity list item in DOM")
     }
@@ -302,7 +309,7 @@ describe("All Values Component Integration", () => {
 
     renderAllValues(createRankedValues(activeDeck), { onUpdateCustomValue })
 
-    const targetListItem = screen.getByText("Ingenuity").closest("li")
+    const targetListItem = findLegacyCustomRow()
     if (!targetListItem) {
       throw new Error("Expected Ingenuity list item in DOM")
     }
@@ -351,7 +358,7 @@ describe("All Values Component Integration", () => {
 
     renderAllValues(createRankedValues(activeDeck), { onUpdateCustomValue })
 
-    const targetListItem = screen.getByText("Ingenuity").closest("li")
+    const targetListItem = findLegacyCustomRow()
     if (!targetListItem) {
       throw new Error("Expected Ingenuity list item in DOM")
     }
@@ -397,7 +404,7 @@ describe("All Values Component Integration", () => {
 
     renderAllValues(createRankedValues(activeDeck), { onDeleteCustomValue })
 
-    const targetListItem = screen.getByText("Ingenuity").closest("li")
+    const targetListItem = findLegacyCustomRow()
     if (!targetListItem) {
       throw new Error("Expected Ingenuity list item in DOM")
     }
@@ -442,7 +449,7 @@ describe("All Values Component Integration", () => {
 
     renderAllValues(createRankedValues(activeDeck))
 
-    const targetListItem = screen.getByText("Ingenuity").closest("li")
+    const targetListItem = findLegacyCustomRow()
     if (!targetListItem) {
       throw new Error("Expected Ingenuity list item in DOM")
     }

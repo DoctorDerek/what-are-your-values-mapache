@@ -30,7 +30,7 @@ describe("web page", () => {
         name: "Introduction",
       }),
     ).toBeVisible()
-    expect(editorialQueries.getAllByRole("term")).toHaveLength(100)
+    expect(editorialQueries.getAllByRole("term")).toHaveLength(103)
     expect(
       editorialQueries.getByRole("link", { name: "Report a Problem" }),
     ).toHaveAttribute("href", "mailto:derekraustin+wayvm@gmail.com")

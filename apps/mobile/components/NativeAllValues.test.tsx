@@ -64,6 +64,14 @@ function createCallbacks() {
   }
 }
 
+function getLegacyCustomDetails() {
+  const customDetails = screen.getAllByLabelText("Ingenuity details").find((details) =>
+    within(details).queryByRole("button", { name: "Edit" }),
+  )
+  if (!customDetails) throw new Error("Expected the retained custom Ingenuity details")
+  return customDetails
+}
+
 describe("NativeAllValues", () => {
   it("routes Menu and Close when no Custom Value work is pending", async () => {
     const callbacks = createCallbacks()
@@ -121,7 +129,7 @@ describe("NativeAllValues", () => {
 
     const menu = screen.getByRole("button", { name: "Menu" })
     const close = screen.getByRole("button", { name: "Close" })
-    const ingenuity = screen.getByLabelText("Ingenuity details")
+    const ingenuity = getLegacyCustomDetails()
 
     await user.press(within(ingenuity).getByRole("button", { name: "Edit" }))
     expect(menu).toBeDisabled()
@@ -194,7 +202,7 @@ describe("NativeAllValues", () => {
     await render(<NativeAllValues {...callbacks} rankedValues={rankedValues} />)
 
     await user.press(
-      within(screen.getByLabelText("Ingenuity details")).getByRole("button", {
+      within(getLegacyCustomDetails()).getByRole("button", {
         name: "Edit",
       }),
     )
@@ -222,7 +230,7 @@ describe("NativeAllValues", () => {
     await render(<NativeAllValues {...callbacks} rankedValues={rankedValues} />)
 
     await user.press(
-      within(screen.getByLabelText("Ingenuity details")).getByRole("button", {
+      within(getLegacyCustomDetails()).getByRole("button", {
         name: "Delete",
       }),
     )

@@ -1,5 +1,4 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
-import { CUSTOM_VALUE_STARTER_EXAMPLES } from "@game/data/src/CustomValueStarterExamples"
 import { customValueValidationMessages } from "@game/data/src/CustomValueValidationMessages"
 import {
   createCustomValueId,
@@ -50,28 +49,22 @@ function createAddProps() {
 }
 
 describe("NativeCustomValueForm", () => {
-  it("loads a starter example as an editable unsaved draft", async () => {
+  it("starts blank and saves only the player-authored value", async () => {
     const props = createAddProps()
     const user = userEvent.setup()
-    const starter = CUSTOM_VALUE_STARTER_EXAMPLES[0]
     await render(<NativeCustomValueForm {...props} />)
 
-    await user.press(
-      screen.getByRole("button", {
-        name: new RegExp(`^\\+ Start with ${starter.name}`),
-      }),
-    )
-
-    expect(screen.getByLabelText("Value Name")).toHaveDisplayValue(starter.name)
-    expect(
-      screen.getByLabelText("What This Value Means to Me"),
-    ).toHaveDisplayValue(starter.definition)
+    expect(screen.getByLabelText("Value Name")).toHaveDisplayValue("")
+    expect(screen.queryByRole("button", { name: /Start with/ })).not.toBeOnTheScreen()
+    expect(props.onSubmit).not.toHaveBeenCalled()
+    await user.type(screen.getByLabelText("Value Name"), "Craftsmanship")
+    await user.type(screen.getByLabelText("What This Value Means to Me"), "To hone my craft.")
 
     await user.press(screen.getByRole("button", { name: "Save Value" }))
 
     expect(props.onSubmit).toHaveBeenCalledWith(
-      starter.name,
-      starter.definition,
+      "Craftsmanship",
+      "To hone my craft.",
     )
   })
 

@@ -8,7 +8,7 @@ describe("WebEditorialCanonicalValues", () => {
     render(<WebEditorialCanonicalValues />)
 
     const canonicalValuesSection = screen.getByRole("region", {
-      name: "100 Included Values",
+      name: "103 Included Values",
     })
     const canonicalValueTerms = within(canonicalValuesSection).getAllByRole(
       "term",
@@ -28,8 +28,8 @@ describe("WebEditorialCanonicalValues", () => {
       "aria-labelledby",
       "included-values-title",
     )
-    expect(canonicalValueTerms).toHaveLength(100)
-    expect(canonicalValueDefinitions).toHaveLength(100)
+    expect(canonicalValueTerms).toHaveLength(103)
+    expect(canonicalValueDefinitions).toHaveLength(103)
     expect(renderedCanonicalNames).toEqual(
       CANONICAL_VALUES.map(({ englishName }) => englishName),
     )
