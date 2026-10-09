@@ -9,6 +9,7 @@ import {
 } from "./BattleProfileStore"
 import type { DurableStoreAdapter } from "./DurableStoreAdapter"
 import type { PlayerData } from "./PlayerData"
+import { getPlayerCatalogUpgradeEvent } from "./PlayerCatalogUpgrade"
 
 type HydrateBattleProfileInput = {
   readonly store: DurableStoreAdapter
@@ -34,8 +35,20 @@ type CheckpointBattleProfileInput = {
 }
 
 export const hydrateBattleProfileActor = fromPromise(
-  async ({ input }: { input: HydrateBattleProfileInput }) =>
-    hydrateBattleProfileStore(input),
+  async ({ input }: { input: HydrateBattleProfileInput & { readonly now: () => string } }) => {
+    const result = await hydrateBattleProfileStore(input)
+    if (result.status !== "ready") return result
+    const event = getPlayerCatalogUpgradeEvent(result.state.head.playerData)
+    if (!event) return result
+
+    const state = await commitBattleProfileStoreEvent({
+      store: input.store,
+      state: result.state,
+      event,
+      committedAt: input.now(),
+    })
+    return Object.freeze({ ...result, state })
+  },
 )
 
 export const initializeBattleProfileActor = fromPromise(

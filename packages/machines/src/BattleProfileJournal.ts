@@ -160,6 +160,29 @@ function validateJournalMetadata({
   })
 }
 
+export function applyBattleProfileEventToPlayerData({
+  playerData,
+  event,
+  occurredAt,
+}: {
+  readonly playerData: PlayerData
+  readonly event: BattleProfileEvent
+  readonly occurredAt: string
+}): PlayerData {
+  const resultingProfile = replayBattleProfileEvent(playerData.profile, event)
+  return createPlayerData({
+    ...playerData,
+    profile: resultingProfile,
+    achievements: applyAchievementTransition({
+      state: playerData.achievements,
+      priorProfile: playerData.profile,
+      resultingProfile,
+      event,
+      occurredAt,
+    }),
+  })
+}
+
 export function applyBattleProfileJournalRecord(
   head: BattleProfilePersistenceHead,
   record: BattleProfileJournalRecord,
@@ -173,24 +196,13 @@ export function applyBattleProfileJournalRecord(
     )
   }
 
-  const resultingProfile = replayBattleProfileEvent(
-    head.playerData.profile,
-    record.event,
-  )
-
   return Object.freeze({
     generation: record.generation,
     revision: record.revision,
-    playerData: createPlayerData({
-      ...head.playerData,
-      profile: resultingProfile,
-      achievements: applyAchievementTransition({
-        state: head.playerData.achievements,
-        priorProfile: head.playerData.profile,
-        resultingProfile,
-        event: record.event,
-        occurredAt: record.committedAt,
-      }),
+    playerData: applyBattleProfileEventToPlayerData({
+      playerData: head.playerData,
+      event: record.event,
+      occurredAt: record.committedAt,
     }),
   }) satisfies BattleProfilePersistenceHead
 }
