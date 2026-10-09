@@ -6,6 +6,7 @@ import {
 } from "@game/data/src/ControllerControls"
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useEffectEvent,
@@ -26,12 +27,12 @@ const WebControlsContext = createContext<{
   controller: ActiveWebController | null
   inputModality: "keyboard" | "touch-pointer"
   hasUnsupportedController: boolean
-  handlers: Set<ControllerHandler> | null
+  registerControllerHandler: ((handler: ControllerHandler) => () => void) | null
 }>({
   controller: null,
   inputModality: "keyboard",
   hasUnsupportedController: false,
-  handlers: null,
+  registerControllerHandler: null,
 })
 
 export function useWebControls() {
@@ -42,18 +43,15 @@ export function useWebControllerActions(
   priority: number,
   handle: ControllerHandler["handle"],
 ) {
-  const { handlers } = useWebControls()
+  const { registerControllerHandler } = useWebControls()
   const handleCommand = useEffectEvent(handle)
   useEffect(() => {
     const handler = {
       priority,
       handle: (command: ControllerCommand) => handleCommand(command),
     }
-    handlers?.add(handler)
-    return () => {
-      handlers?.delete(handler)
-    }
-  }, [handlers, priority])
+    return registerControllerHandler?.(handler)
+  }, [registerControllerHandler, priority])
 }
 
 export default function WebControlsProvider({
@@ -62,6 +60,10 @@ export default function WebControlsProvider({
   children: ReactNode
 }) {
   const handlers = useRef(new Set<ControllerHandler>())
+  const registerControllerHandler = useCallback((handler: ControllerHandler) => {
+    handlers.current.add(handler)
+    return () => { handlers.current.delete(handler) }
+  }, [])
   const [controller, setController] = useState<ActiveWebController | null>(null)
   const inputModality = useWebControlHintInputModality(() =>
     setController(null),
@@ -93,7 +95,7 @@ export default function WebControlsProvider({
         controller,
         inputModality,
         hasUnsupportedController,
-        handlers: handlers.current,
+        registerControllerHandler,
       }}
     >
       <div

@@ -27,6 +27,7 @@ export default function NativeControllerPrompt({
       className="size-8 shrink-0 overflow-hidden rounded-sm bg-black"
     >
       <Image
+        alt=""
         source={require("@game/data/assets/controller-prompts/ControllerPrompts.png")}
         className="absolute"
         style={{
