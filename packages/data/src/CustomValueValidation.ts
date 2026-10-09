@@ -61,6 +61,14 @@ function hasDuplicateName({
   readonly excludedCustomValueId?: CustomValueId | null
 }) {
   const comparisonKey = normalizeValueNameForComparison(name)
+  const retainedValue = existingCustomValues.find(
+    (value) => value.id === excludedCustomValueId,
+  )
+  if (
+    retainedValue &&
+    normalizeValueNameForComparison(retainedValue.name) === comparisonKey
+  ) return false
+
   return (
     canonicalValueNameComparisonKeys.includes(comparisonKey) ||
     existingCustomValues.some(

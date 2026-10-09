@@ -28,9 +28,9 @@ function compareStableValueOrder(
   }
 
   const firstOrdinal =
-    first.kind === "canonical" ? first.sourceOrdinal : first.creationOrdinal
+    first.kind === "canonical" ? first.catalogOrdinal : first.creationOrdinal
   const secondOrdinal =
-    second.kind === "canonical" ? second.sourceOrdinal : second.creationOrdinal
+    second.kind === "canonical" ? second.catalogOrdinal : second.creationOrdinal
 
   if (firstOrdinal !== secondOrdinal) {
     return firstOrdinal - secondOrdinal
