@@ -1,6 +1,6 @@
+import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
 import { graphemeSegments } from "unicode-segmenter/grapheme"
 import { HEROES99_IDLE_FRAME_COUNT } from "./Heroes99SpatialArchitecture"
-import { PERSONAL_HUB_COPY } from "./PersonalHubCopy"
 import { SEETHING_SWARM_CALM_FRAME_DURATION_MS } from "./SeethingSwarmAnimalPresentation"
 import {
   VALUES_CARD_COPY,
