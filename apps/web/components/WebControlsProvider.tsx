@@ -60,10 +60,15 @@ export default function WebControlsProvider({
   children: ReactNode
 }) {
   const handlers = useRef(new Set<ControllerHandler>())
-  const registerControllerHandler = useCallback((handler: ControllerHandler) => {
-    handlers.current.add(handler)
-    return () => { handlers.current.delete(handler) }
-  }, [])
+  const registerControllerHandler = useCallback(
+    (handler: ControllerHandler) => {
+      handlers.current.add(handler)
+      return () => {
+        handlers.current.delete(handler)
+      }
+    },
+    [],
+  )
   const [controller, setController] = useState<ActiveWebController | null>(null)
   const inputModality = useWebControlHintInputModality(() =>
     setController(null),

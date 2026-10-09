@@ -6,7 +6,9 @@ const CONTROLLER_FOCUS_TARGETS =
 const CONTROLLER_SCROLL_STEP = 96
 
 function getControllerFocusTargets() {
-  const dialogs = document.querySelectorAll<HTMLElement>('[role="dialog"], [role="alertdialog"]')
+  const dialogs = document.querySelectorAll<HTMLElement>(
+    '[role="dialog"], [role="alertdialog"]',
+  )
   const scope =
     dialogs.item(dialogs.length - 1) ??
     document.querySelector<HTMLElement>('[data-slot="mapache-screen"]')
@@ -27,9 +29,11 @@ function getControllerFocusTargets() {
 }
 
 export function activateWebControllerMenu() {
-  const menu = getControllerFocusTargets().find((element) =>
-    element instanceof HTMLButtonElement &&
-    (element.getAttribute("aria-label") ?? element.textContent?.trim()) === PRODUCT_MENU_COPY.openAction,
+  const menu = getControllerFocusTargets().find(
+    (element) =>
+      element instanceof HTMLButtonElement &&
+      (element.getAttribute("aria-label") ?? element.textContent?.trim()) ===
+        PRODUCT_MENU_COPY.openAction,
   )
   menu?.click()
 }
@@ -39,11 +43,7 @@ export function moveWebControllerFocus(command: ControllerCommand) {
   const active = document.activeElement
   if (command === "confirm") {
     if (active instanceof HTMLElement && targets.includes(active)) {
-      if (
-        !active.matches(
-          '[role="region"], [data-controller-scroll]',
-        )
-      )
+      if (!active.matches('[role="region"], [data-controller-scroll]'))
         active.click()
     } else targets[0]?.focus()
     return

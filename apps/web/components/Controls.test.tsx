@@ -61,7 +61,9 @@ describe("Controls Component Integration", () => {
         name: "Touch & Pointer",
       }),
     ).toBeVisible()
-    expect(within(dialog).getByRole("heading", { name: "Controller" })).toBeVisible()
+    expect(
+      within(dialog).getByRole("heading", { name: "Controller" }),
+    ).toBeVisible()
     expect(within(dialog).getByText("Left shoulder or trigger")).toBeVisible()
     expect(within(dialog).queryByText(/remap/i)).toBeNull()
   })

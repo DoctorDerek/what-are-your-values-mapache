@@ -25,8 +25,8 @@ import {
 } from "@testing-library/react"
 import { Profiler, type ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import Crucible from "./Crucible"
 import WebControlsProvider from "@/components/WebControlsProvider"
+import Crucible from "./Crucible"
 
 function render(ui: ReactNode, options?: RenderOptions) {
   return renderComponent(ui, { wrapper: WebControlsProvider, ...options })
