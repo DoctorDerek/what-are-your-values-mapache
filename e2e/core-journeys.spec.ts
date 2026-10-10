@@ -1,8 +1,8 @@
+import { expect, type Locator } from "@playwright/test"
 import {
   CUSTOM_VALUE_INVITATION_COPY as copy,
   CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
-} from "@game/data/src/CustomValueInvitationCopy"
-import { expect, type Locator } from "@playwright/test"
+} from "#game/data/src/CustomValueInvitationCopy"
 import { test } from "./fixtures"
 
 const getChoiceValueName = async (choice: Locator) => {
