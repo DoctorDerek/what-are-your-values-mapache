@@ -89,8 +89,8 @@ describe("Deck Revision", () => {
     if (candidate.scheduler.scheduleKind !== JOIN_PASS_SCHEDULE_KIND) {
       throw new Error("Expected an Ingenuity Join Pass")
     }
-    expect(candidate.scheduler.joinPairCount).toBe(100)
-    expect(candidate.scheduler.pairCount).toBe(5_050)
+    expect(candidate.scheduler.joinPairCount).toBe(103)
+    expect(candidate.scheduler.pairCount).toBe(5_356)
     expect(candidate.progressById.get(curiosityId)).toEqual({
       ...curiosityProgress,
       currentCycleWins: 0,
@@ -131,8 +131,8 @@ describe("Deck Revision", () => {
     if (candidate.scheduler.scheduleKind !== JOIN_PASS_SCHEDULE_KIND) {
       throw new Error("Expected a multi-value Join Pass")
     }
-    expect(candidate.scheduler.joinPairCount).toBe(303)
-    expect(candidate.scheduler.pairCount).toBe(5_253)
+    expect(candidate.scheduler.joinPairCount).toBe(312)
+    expect(candidate.scheduler.pairCount).toBe(5_565)
   })
 
   it("preserves identity through edits and starts a fresh full cycle", () => {

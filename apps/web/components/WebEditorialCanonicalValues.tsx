@@ -11,7 +11,7 @@ export default function WebEditorialCanonicalValues() {
         id="included-values-title"
         className="border-b-4 border-black pb-4 text-3xl leading-tight font-black uppercase xl:text-5xl"
       >
-        100 Included Values
+        {CANONICAL_VALUES.length} Included Values
       </h2>
       <dl className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
         {CANONICAL_VALUES.map((canonicalValue) => (

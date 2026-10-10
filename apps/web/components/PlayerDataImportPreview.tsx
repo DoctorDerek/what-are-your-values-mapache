@@ -1,6 +1,5 @@
 "use client"
 
-import { CANONICAL_VALUES } from "@game/data/src/CanonicalValues"
 import { playerDataPortabilityCopy } from "@game/machines/src/PlayerDataPortabilityCopy"
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
 import { useEffect, useRef, type ReactNode } from "react"
@@ -83,7 +82,7 @@ export default function PlayerDataImportPreview({
           {preview.canonicalCatalogVersion}
         </PreviewFact>
         <PreviewFact label="Included Values">
-          {CANONICAL_VALUES.length}
+          {preview.activeValueCount - preview.customValueCount}
         </PreviewFact>
         <PreviewFact label="Custom Values">
           {preview.customValueCount}

@@ -14,7 +14,7 @@ describe("Introduction Component Integration", () => {
     ).toBeVisible()
     expect(
       screen.getByText(
-        "Compare 100 included values in quick one-on-one battles. If something important is missing, add private Custom Values with names and definitions you choose.",
+        "Compare 103 included values in quick one-on-one battles. If something important is missing, add private Custom Values with names and definitions you choose.",
       ),
     ).toBeVisible()
     expect(

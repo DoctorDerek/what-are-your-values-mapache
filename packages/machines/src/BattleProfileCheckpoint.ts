@@ -1,4 +1,7 @@
-import { CANONICAL_CATALOG_VERSION } from "@game/data/src/Value"
+import {
+  isCanonicalCatalogVersion,
+  type CanonicalCatalogVersion,
+} from "@game/data/src/Value"
 import { parsePersistedJson, serializePersistedJson } from "./PersistedJson"
 import {
   readIsoTimestamp,
@@ -28,7 +31,7 @@ export type BattleProfileCheckpoint = {
   readonly createdAt: string
   readonly updatedAt: string
   readonly appVersion: string
-  readonly canonicalCatalogVersion: typeof CANONICAL_CATALOG_VERSION
+  readonly canonicalCatalogVersion: CanonicalCatalogVersion
   readonly playerData: PlayerData
   readonly contentHash: string
   readonly playerDataCodecVersion: PlayerDataCodecVersion
@@ -103,7 +106,7 @@ function freezeCheckpoint(
     createdAt: hashableCheckpoint[4],
     updatedAt: hashableCheckpoint[5],
     appVersion: hashableCheckpoint[6],
-    canonicalCatalogVersion: CANONICAL_CATALOG_VERSION,
+    canonicalCatalogVersion: playerData.profile.activeDeck.catalogVersion,
     playerData,
     contentHash,
     playerDataCodecVersion: hashableCheckpoint[8][0],
@@ -209,7 +212,7 @@ export async function decodeBattleProfileCheckpoint(serialized: string) {
       `Unsupported checkpoint schema version: ${String(tuple[1])}`,
     )
   }
-  if (tuple[7] !== CANONICAL_CATALOG_VERSION) {
+  if (!isCanonicalCatalogVersion(tuple[7])) {
     throw new Error(
       `Unsupported checkpoint catalog version: ${String(tuple[7])}`,
     )
@@ -235,6 +238,9 @@ export async function decodeBattleProfileCheckpoint(serialized: string) {
   }
 
   const playerData = decodePlayerData(tuple[8])
+  if (playerData.profile.activeDeck.catalogVersion !== tuple[7]) {
+    throw new Error("Checkpoint catalog version does not match its player data")
+  }
   const checkpoint = freezeCheckpoint(
     createHashableCheckpoint({
       ...metadata,

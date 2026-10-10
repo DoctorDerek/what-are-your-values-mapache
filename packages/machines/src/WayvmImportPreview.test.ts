@@ -91,13 +91,13 @@ describe("WAYVM Import Preview", () => {
       sourceAppVersion: "0.1.0",
       sourceBuild: "preview-build",
       saveSchemaVersion: 1,
-      canonicalCatalogVersion: "pvcs-2011-100-v1",
+      canonicalCatalogVersion: "wayvm-103-v1",
       totalComparisons: 1,
       currentCycle: 1,
       customValueCount: 0,
       customValueNames: [],
-      activeValueCount: 100,
-      activePairCycleSize: 4_950,
+      activeValueCount: 103,
+      activePairCycleSize: 5_253,
       deckRevision: 0,
       progressGeneration: 0,
       unlockedAchievementCount: 1,
@@ -112,15 +112,15 @@ describe("WAYVM Import Preview", () => {
       schedulerSeed: "import-preview-custom-value-seed",
       createdAt: "2026-07-29T00:00:00.000Z",
     })
-    const withIngenuity = addCustomValue({
+    const withCraftsmanship = addCustomValue({
       playerData: initialPlayerData,
-      name: "Ingenuity",
+      name: "Craftsmanship",
       randomUuid: "00000000-0000-4000-8000-000000000001",
       occurredAt: "2026-07-29T00:01:00.000Z",
     })
-    const withDestiny = addCustomValue({
-      playerData: withIngenuity,
-      name: "Destiny",
+    const withStargazing = addCustomValue({
+      playerData: withCraftsmanship,
+      name: "Stargazing",
       randomUuid: "00000000-0000-4000-8000-000000000002",
       occurredAt: "2026-07-29T00:02:00.000Z",
     })
@@ -128,12 +128,12 @@ describe("WAYVM Import Preview", () => {
       exportedAt: "2026-07-29T00:03:00.000Z",
       sourceAppVersion: "0.1.0",
       sourceBuild: "custom-value-preview-build",
-      playerData: withDestiny,
+      playerData: withStargazing,
     })
     const preview = createWayvmImportPreview(wayvmExport)
 
     expect(preview.customValueCount).toBe(2)
-    expect(preview.customValueNames).toEqual(["Ingenuity", "Destiny"])
+    expect(preview.customValueNames).toEqual(["Craftsmanship", "Stargazing"])
     expect(Object.isFrozen(preview.customValueNames)).toBe(true)
   })
 

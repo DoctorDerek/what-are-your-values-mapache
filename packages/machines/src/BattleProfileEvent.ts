@@ -197,6 +197,7 @@ export function replayBattleProfileEvent(
       applyDeckRevision({
         profile,
         revisedCustomValues: event.activeDeck.customValues,
+        catalogVersion: event.activeDeck.catalogVersion,
       }),
       event,
     )

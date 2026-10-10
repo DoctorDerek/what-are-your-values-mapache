@@ -226,7 +226,7 @@ test("battle results show committed progress without delaying either exit", asyn
     page
       .getByRole("list", { name: "Your value results" })
       .getByRole("listitem"),
-  ).toHaveCount(100)
+  ).toHaveCount(103)
   await expect(
     page.getByRole("region", { name: "Profile progress" }),
   ).toContainText("Profile XP 4")
@@ -353,9 +353,13 @@ for (const viewport of [
       "true",
     )
     const roster = page.getByRole("list", { name: "Your value results" })
-    await expect(roster.getByRole("listitem").first()).toHaveCSS(
-      "z-index",
-      "100",
+    const stackingOrders = await roster
+      .getByRole("listitem")
+      .evaluateAll((rows) =>
+        rows.map((row) => Number(getComputedStyle(row).zIndex)),
+      )
+    expect(stackingOrders[0]).toBeGreaterThan(
+      Math.max(...stackingOrders.slice(1)),
     )
     await expect(
       page.getByRole("button", { name: "Menu", exact: true }),

@@ -260,7 +260,7 @@ describe("NativeGameClient Menu navigation", () => {
     expect(await screen.findByText("All Values")).toBeOnTheScreen()
 
     await openMenuDestination(user, "Custom Values")
-    expect(await screen.findByText("Custom Value Builder")).toBeOnTheScreen()
+    expect(await screen.findByLabelText("Value Name")).toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Cancel" }))
 
     await openMenuDestination(user, "Achievements")
@@ -346,7 +346,7 @@ describe("NativeGameClient Menu navigation", () => {
     await openMenuDestination(user, "How It Works")
     expect(await screen.findByLabelText("How It Works")).toBeOnTheScreen()
     expect(
-      screen.getByText("Start With 100 Values—or Add Your Own"),
+      screen.getByText("Start With 103 Values—or Add Your Own"),
     ).toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Close" }))
 
@@ -392,7 +392,7 @@ describe("NativeGameClient Menu navigation", () => {
     expect(screen.queryByText("All Values")).not.toBeOnTheScreen()
 
     await user.press(screen.getByRole("button", { name: "Add value" }))
-    expect(await screen.findByText("Custom Value Builder")).toBeOnTheScreen()
+    expect(await screen.findByLabelText("Value Name")).toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Cancel" }))
     await user.press(screen.getByRole("button", { name: "Close" }))
 
@@ -705,34 +705,41 @@ describe("NativeGameClient file operations and destructive actions", () => {
 
     await user.press(await screen.findByRole("button", { name: "Start" }))
     await user.press(await screen.findByRole("button", { name: "Add value" }))
-    await user.press(
-      screen.getByRole("button", { name: /^\+ Start with Ingenuity/ }),
+    await user.type(screen.getByLabelText("Value Name"), "Craftsmanship")
+    await user.type(
+      screen.getByLabelText("What This Value Means to Me"),
+      "To hone my craft.",
     )
     await user.press(screen.getByRole("button", { name: "Save Value" }))
 
-    await user.type(screen.getByLabelText("Search All Values"), "Ingenuity")
-    const ingenuity = await screen.findByLabelText("Ingenuity details")
-    await user.press(within(ingenuity).getByRole("button", { name: "Edit" }))
+    await user.type(screen.getByLabelText("Search All Values"), "Craftsmanship")
+    const craftsmanship = await screen.findByLabelText("Craftsmanship details")
+    await user.press(
+      within(craftsmanship).getByRole("button", { name: "Edit" }),
+    )
     const definition = screen.getByLabelText("What This Value Means to Me")
     await user.clear(definition)
     await user.type(definition, "Resourceful and original problem solving.")
     await user.press(screen.getByRole("button", { name: "Review Update" }))
     await user.press(screen.getByRole("button", { name: "Update Value" }))
 
-    await user.type(screen.getByLabelText("Search All Values"), "Ingenuity")
+    await user.type(screen.getByLabelText("Search All Values"), "Craftsmanship")
     expect(
       await screen.findByText("“Resourceful and original problem solving.”"),
     ).toBeOnTheScreen()
     await user.press(
-      within(screen.getByLabelText("Ingenuity details")).getByRole("button", {
-        name: "Delete",
-      }),
+      within(screen.getByLabelText("Craftsmanship details")).getByRole(
+        "button",
+        {
+          name: "Delete",
+        },
+      ),
     )
     await user.press(screen.getByRole("button", { name: "Remove Value" }))
 
     await waitFor(() =>
       expect(
-        screen.queryByLabelText("Ingenuity details"),
+        screen.queryByLabelText("Craftsmanship details"),
       ).not.toBeOnTheScreen(),
     )
   }, 10_000)
@@ -967,8 +974,10 @@ describe("NativeGameClient file operations and destructive actions", () => {
 
     await user.press(await screen.findByRole("button", { name: "Start" }))
     await user.press(await screen.findByRole("button", { name: "Add value" }))
-    await user.press(
-      screen.getByRole("button", { name: /^\+ Start with Ingenuity/ }),
+    await user.type(screen.getByLabelText("Value Name"), "Craftsmanship")
+    await user.type(
+      screen.getByLabelText("What This Value Means to Me"),
+      "To hone my craft.",
     )
     await user.press(screen.getByRole("button", { name: "Save Value" }))
     await user.press(await screen.findByRole("button", { name: "Close" }))

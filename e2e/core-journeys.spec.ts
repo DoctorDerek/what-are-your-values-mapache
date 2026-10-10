@@ -1,4 +1,8 @@
 import { expect, type Locator } from "@playwright/test"
+import {
+  CUSTOM_VALUE_INVITATION_COPY as copy,
+  CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
+} from "#game/data/src/CustomValueInvitationCopy"
 import { test } from "./fixtures"
 
 const getChoiceValueName = async (choice: Locator) => {
@@ -110,7 +114,7 @@ test("a new player starts immediately and reviews the complete ranking", async (
   await expect(page.getByText("Not ranked yet")).toBeVisible()
   await expect(editorial).toBeHidden()
   const roster = page.getByRole("region", { name: "Included values" })
-  await expect(roster.getByRole("listitem")).toHaveCount(100)
+  await expect(roster.getByRole("listitem")).toHaveCount(103)
   await roster.focus()
   await page.keyboard.press("End")
   await expect(roster.getByRole("listitem").last()).toBeInViewport()
@@ -120,14 +124,24 @@ test("a new player starts immediately and reviews the complete ranking", async (
   await expect(
     page.getByRole("heading", { level: 1, name: "All Values" }),
   ).toBeVisible()
-  await expect(page.getByText("100 Active Values")).toBeVisible()
-  await expect(page.getByRole("listitem")).toHaveCount(100)
+  await expect(page.getByText("103 Active Values")).toBeVisible()
+  await expect(page.getByRole("listitem")).toHaveCount(103)
 
   await page
     .getByRole("searchbox", { name: "Search All Values" })
     .fill("health")
   await expect(page.getByRole("listitem")).toHaveCount(1)
   await expect(page.getByRole("heading", { name: "Health" })).toBeVisible()
+
+  for (const name of ["Ingenuity", "Destiny", "Pets"]) {
+    await page.getByRole("searchbox", { name: "Search All Values" }).fill(name)
+    const row = page.getByRole("listitem")
+    await expect(row).toHaveCount(1)
+    await expect(row.getByRole("heading", { name, exact: true })).toBeVisible()
+    await expect(
+      row.getByRole("button", { name: "Edit", exact: true }),
+    ).toHaveCount(0)
+  }
 
   await page.getByRole("button", { name: "Close" }).click()
   await expect(
@@ -146,6 +160,46 @@ test("a new player starts immediately and reviews the complete ranking", async (
   await page.reload()
   await expect(page.getByText("Home screen", { exact: true })).toBeVisible()
   await expect(editorial).toBeHidden()
+})
+
+test("a player uses the informational example to author a custom value and retains it after reload", async ({
+  page,
+}) => {
+  await page.goto("/")
+  await page.getByRole("button", { name: "Start", exact: true }).click()
+  await expect(page.getByText(copy.example)).toHaveCount(0)
+  await page.getByRole("button", { name: "Add value", exact: true }).click()
+  await expect(page.getByLabel("Value name", { exact: true })).toHaveValue("")
+  await expect(page.getByLabel("Definition", { exact: true })).toHaveValue("")
+  await expect(page.getByText(copy.example)).toBeVisible()
+  await expect(
+    page.getByRole("button", { name: "Save", exact: true }),
+  ).toBeDisabled()
+  await expect(page.getByRole("button", { name: "Add all three" })).toHaveCount(
+    0,
+  )
+  await page.getByLabel("Value name", { exact: true }).fill(example.name)
+  await page.getByLabel("Definition", { exact: true }).fill(example.definition)
+  await page.getByRole("button", { name: "Save", exact: true }).click()
+  await expect(
+    page.getByText("Your Custom Values are saved and ready to battle."),
+  ).toBeVisible()
+  await page.reload()
+  await page
+    .getByRole("button", { name: "Browse All Values", exact: true })
+    .click()
+  await expect(page.getByText("104 Active Values")).toBeVisible()
+  await page
+    .getByRole("searchbox", { name: "Search All Values" })
+    .fill("Craftsmanship")
+  const row = page.getByRole("listitem")
+  await expect(row).toHaveCount(1)
+  await expect(
+    row.getByText("“to take care and pride in making things well”"),
+  ).toBeVisible()
+  await expect(
+    row.getByRole("button", { name: "Edit", exact: true }),
+  ).toBeVisible()
 })
 
 test("a returning player keeps Undo and Redo across reloads", async ({
@@ -190,7 +244,7 @@ test("a returning player keeps Undo and Redo across reloads", async ({
   const firstRankedValue = winningValue
   await expect(firstRankedValue).toContainText(firstChoiceName)
   await expect(firstRankedValue).toContainText("Level 3")
-  await expect(page.getByRole("listitem")).toHaveCount(100)
+  await expect(page.getByRole("listitem")).toHaveCount(103)
 })
 
 test("a secondary tab stays read-only then inherits released writer ownership", async ({

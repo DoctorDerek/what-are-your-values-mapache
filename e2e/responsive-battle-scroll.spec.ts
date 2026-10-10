@@ -38,7 +38,7 @@ for (const width of [320, 390, 1280]) {
     await page.getByRole("button", { name: "Start", exact: true }).click()
     for (const hasComparisons of [false, true]) {
       const rows = page.getByRole("listitem")
-      await expect(rows).toHaveCount(100)
+      await expect(rows).toHaveCount(103)
       await rows.first().scrollIntoViewIfNeeded()
       await page.screenshot({
         path: test
@@ -52,9 +52,9 @@ for (const width of [320, 390, 1280]) {
       await page
         .getByRole("button", { name: "Browse All Values", exact: true })
         .click()
-      await expect(rows).toHaveCount(100)
+      await expect(rows).toHaveCount(103)
       await page.getByRole("button", { name: "Close", exact: true }).click()
-      await expect(rows).toHaveCount(100)
+      await expect(rows).toHaveCount(103)
       const editorial = page.getByRole("article", {
         name: "What Are Your Values, Mapache? information",
         includeHidden: true,

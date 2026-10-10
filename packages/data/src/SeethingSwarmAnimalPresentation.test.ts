@@ -165,13 +165,13 @@ describe("SeethingSwarm animal presentation", () => {
     expect(SEETHING_SWARM_BATTLE_FRAME_DURATION_MS).toBe(100)
   })
 
-  it("resolves all 100 canonical values through calm catalog clips", () => {
+  it("resolves all canonical values through calm catalog clips", () => {
     const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
     const resolutions = CANONICAL_VALUES.map((value) =>
       resolveValueAnimalPresentation(value, catalog),
     )
 
-    expect(resolutions).toHaveLength(100)
+    expect(resolutions).toHaveLength(103)
     expect(resolutions.every(({ kind }) => kind === "animal")).toBe(true)
     expect(
       new Set(
@@ -267,6 +267,7 @@ describe("SeethingSwarm animal presentation", () => {
           kind: "canonical",
           id: createCanonicalValueId("pvcs-2011:invented"),
           sourceOrdinal: 101,
+          catalogOrdinal: 101,
           englishName: "Invented",
           sourceDefinition: "not canonical",
         },

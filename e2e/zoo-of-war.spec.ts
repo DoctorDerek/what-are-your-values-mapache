@@ -24,7 +24,7 @@ test("defers distant roster art and prepares animals when scrolling reaches them
   const rows = page
     .getByRole("listitem")
     .filter({ has: page.locator("[data-hub-active-clip]") })
-  await expect(rows).toHaveCount(100)
+  await expect(rows).toHaveCount(103)
   await expect(
     rows.first().locator('[data-hub-active-clip="true"] [data-playback-ready]'),
   ).toHaveAttribute("data-playback-ready", "true")
@@ -309,11 +309,11 @@ test("cached matchup changes preserve animal pixels without layout-position jump
 for (const { animalId, seed } of [
   {
     animalId: "mousepack/mouse02_brown",
-    seed: "982bdf8f-6f7e-421b-9888-282be4a9a60e",
+    seed: "00000000-0000-4000-8000-000000000077",
   },
   {
     animalId: "bunnypack",
-    seed: "16385167-7073-40e0-a660-0513608bcfd9",
+    seed: "00000000-0000-4000-8000-000000000073",
   },
 ]) {
   test(`${animalId} completes equal-duration windup and contact segments`, async ({

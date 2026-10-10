@@ -1,4 +1,5 @@
 import { getPairCount } from "@game/data/src/ActiveDeck"
+import { CANONICAL_VALUES } from "@game/data/src/CanonicalValues"
 import {
   createCustomValueId,
   type CustomValueDefinition,
@@ -66,14 +67,12 @@ describe("Battle Cycle", () => {
       battleCycle.scheduler,
     )
 
-    expect(battleCycle.activeDeck.valueIds).toHaveLength(100)
-    expect(
-      battleCycle.activeDeck.valueIds.every((valueId) =>
-        valueId.startsWith("pvcs-2011:"),
-      ),
-    ).toBe(true)
-    expect(battleCycle.progressById.size).toBe(100)
-    expect(battleCycle.cyclePayoutTierSnapshot.size).toBe(100)
+    expect(battleCycle.activeDeck.valueIds).toHaveLength(103)
+    expect(battleCycle.activeDeck.valueIds).toEqual(
+      CANONICAL_VALUES.map((value) => value.id),
+    )
+    expect(battleCycle.progressById.size).toBe(103)
+    expect(battleCycle.cyclePayoutTierSnapshot.size).toBe(103)
     expect(battleCycle.scheduler.cursor).toBe(0)
     expect(battleCycle.scheduler).not.toHaveProperty("pairs")
     expect(projection.pair).toHaveLength(2)

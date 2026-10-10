@@ -19,12 +19,13 @@ function defineCanonicalValue({
     kind: "canonical",
     id: createCanonicalValueId(id),
     sourceOrdinal,
+    catalogOrdinal: sourceOrdinal,
     englishName,
     sourceDefinition,
   })
 }
 
-export const CANONICAL_VALUES = Object.freeze([
+export const SOURCE_CANONICAL_VALUES = Object.freeze([
   defineCanonicalValue({
     id: "pvcs-2011:acceptance",
     sourceOrdinal: 1,
@@ -627,6 +628,36 @@ export const CANONICAL_VALUES = Object.freeze([
     englishName: "World Peace",
     sourceDefinition: "to work to promote peace in the world",
   }),
+])
+
+export const CANONICAL_VALUES = Object.freeze([
+  ...SOURCE_CANONICAL_VALUES,
+  Object.freeze({
+    kind: "canonical",
+    id: createCanonicalValueId("wayvm:ingenuity"),
+    sourceOrdinal: null,
+    catalogOrdinal: 101,
+    englishName: "Ingenuity",
+    sourceDefinition:
+      "to solve problems in original, resourceful, and practical ways",
+  } satisfies CanonicalValueDefinition),
+  Object.freeze({
+    kind: "canonical",
+    id: createCanonicalValueId("wayvm:destiny"),
+    sourceOrdinal: null,
+    catalogOrdinal: 102,
+    englishName: "Destiny",
+    sourceDefinition: "to pursue the path I believe I am meant to fulfill",
+  } satisfies CanonicalValueDefinition),
+  Object.freeze({
+    kind: "canonical",
+    id: createCanonicalValueId("wayvm:pets"),
+    sourceOrdinal: null,
+    catalogOrdinal: 103,
+    englishName: "Pets",
+    sourceDefinition:
+      "to care for, protect, and share life with companion animals",
+  } satisfies CanonicalValueDefinition),
 ])
 
 const canonicalValuesById = new Map(

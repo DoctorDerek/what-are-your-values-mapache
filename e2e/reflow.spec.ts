@@ -311,7 +311,7 @@ for (const width of [320, 390, 1280]) {
     await startAtHub(page)
     const roster = page.getByRole("region", { name: "Included values" })
     const actions = page.getByRole("navigation", { name: "Value actions" })
-    await expect(roster.getByRole("listitem")).toHaveCount(100)
+    await expect(roster.getByRole("listitem")).toHaveCount(103)
     expect(
       await roster.evaluate(
         (element) => element.scrollHeight > element.clientHeight,

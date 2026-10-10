@@ -766,7 +766,7 @@ describe("GameClient Integration", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     fireEvent.click(await screen.findByRole("button", { name: "Add value" }))
     fireEvent.change(await screen.findByLabelText("Value name"), {
-      target: { value: "Ingenuity" },
+      target: { value: "Craftsmanship" },
     })
     fireEvent.change(screen.getByLabelText("Definition"), {
       target: { value: "To make original solutions." },
@@ -786,7 +786,7 @@ describe("GameClient Integration", () => {
       ),
     ).toBeVisible()
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
-    expect(await screen.findByText("101 Active Values")).toBeVisible()
+    expect(await screen.findByText("104 Active Values")).toBeVisible()
   })
 
   it("carries one canonical battle result back to the earned Hub ranking", async () => {
@@ -899,8 +899,8 @@ describe("GameClient Integration", () => {
     expect(
       await screen.findByRole("heading", { name: "All Values", level: 1 }),
     ).toBeVisible()
-    expect(screen.getByText("100 Active Values")).toBeVisible()
-    expect(screen.getAllByRole("listitem")).toHaveLength(100)
+    expect(screen.getByText("103 Active Values")).toBeVisible()
+    expect(screen.getAllByRole("listitem")).toHaveLength(103)
 
     fireEvent.click(screen.getByRole("button", { name: "Close" }))
 
@@ -934,7 +934,7 @@ describe("GameClient Integration", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     fireEvent.click(await screen.findByRole("button", { name: "Add value" }))
     fireEvent.change(screen.getByLabelText("Value name"), {
-      target: { value: "Ingenuity" },
+      target: { value: "Craftsmanship" },
     })
     fireEvent.change(screen.getByLabelText("Definition"), {
       target: { value: "To solve problems in my own way." },
@@ -964,11 +964,11 @@ describe("GameClient Integration", () => {
       ),
     ).toBeVisible()
     expect(
-      screen.queryByRole("button", { name: "Edit Ingenuity" }),
+      screen.queryByRole("button", { name: "Edit Craftsmanship" }),
     ).not.toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Add value" })).toHaveFocus()
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
-    expect(await screen.findByText("101 Active Values")).toBeVisible()
+    expect(await screen.findByText("104 Active Values")).toBeVisible()
   })
 
   it("preserves the active pair while Menu resumes or routes through Browse All Values", async () => {
@@ -1151,7 +1151,7 @@ describe("GameClient Integration", () => {
       await screen.findByRole("dialog", { name: "How It Works" }),
     ).toBeVisible()
     expect(
-      screen.getByText("Start With 100 Values—or Add Your Own"),
+      screen.getByText("Start With 103 Values—or Add Your Own"),
     ).toBeVisible()
     fireEvent.click(screen.getByRole("button", { name: "Close" }))
 
@@ -1241,11 +1241,11 @@ describe("GameClient Integration", () => {
       await screen.findByRole("button", { name: "Browse All Values" }),
     )
     fireEvent.change(screen.getByLabelText("Search All Values"), {
-      target: { value: "My ingenuity" },
+      target: { value: "My craftsmanship" },
     })
     fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
     expect(await screen.findByLabelText("Value name")).toHaveValue(
-      "My ingenuity",
+      "My craftsmanship",
     )
     expect(
       screen.getAllByRole("form", { name: "Add Custom Value" }),
@@ -1472,7 +1472,7 @@ describe("GameClient Integration", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Add value" }))
 
     fireEvent.change(await screen.findByLabelText("Value name"), {
-      target: { value: "Ingenuity" },
+      target: { value: "Craftsmanship" },
     })
     fireEvent.change(screen.getByLabelText("Definition"), {
       target: { value: "To make original solutions." },
@@ -1480,11 +1480,11 @@ describe("GameClient Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }))
     await screen.findByText("Your Custom Values are saved and ready to battle.")
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
-    await screen.findByText("101 Active Values")
+    await screen.findByText("104 Active Values")
 
     const customValueRow = await waitFor(() => {
       const valueText = screen
-        .getAllByText("Ingenuity")
+        .getAllByText("Craftsmanship")
         .find((element) => element.closest("li"))
       const valueRow = valueText?.closest("li")
       if (!valueRow) {
@@ -1518,7 +1518,7 @@ describe("GameClient Integration", () => {
       return valueRow
     })
     expect(
-      screen.queryByRole("alertdialog", { name: "Update Ingenuity?" }),
+      screen.queryByRole("alertdialog", { name: "Update Craftsmanship?" }),
     ).not.toBeInTheDocument()
     fireEvent.click(
       within(updatedValueRow).getByRole("button", { name: "Delete" }),
@@ -1526,9 +1526,9 @@ describe("GameClient Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete Value" }))
 
     await waitFor(() =>
-      expect(screen.getAllByRole("listitem")).toHaveLength(100),
+      expect(screen.getAllByRole("listitem")).toHaveLength(103),
     )
-    expect(screen.getByText("100 Active Values")).toBeVisible()
+    expect(screen.getByText("103 Active Values")).toBeVisible()
   })
 
   it("downloads a private JSON backup and restores Hub focus after closing", async () => {
@@ -1575,7 +1575,7 @@ describe("GameClient Integration", () => {
     })
     const customValueCommit = createCustomValueAddCommit({
       profile: initialPlayerData.profile,
-      name: "Ingenuity",
+      name: "Craftsmanship",
       definition: "To make original solutions.",
       now: () => createdAt,
       randomUuid: () => "00000000-0000-4000-8000-000000000049",
@@ -1613,13 +1613,13 @@ describe("GameClient Integration", () => {
       await screen.findByRole("heading", { name: "Review Import" }),
     ).toBeVisible()
     expect(screen.getByText("portable-build-49")).toBeVisible()
-    expect(screen.queryByText("Ingenuity")).not.toBeInTheDocument()
+    expect(screen.queryByText("Craftsmanship")).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
     expect(
       await screen.findByText(playerDataPortabilityCopy.importCancelled),
     ).toBeVisible()
     expect(screen.getByRole("button", { name: "Choose Backup" })).toHaveFocus()
-    expect(screen.queryByText("Ingenuity")).not.toBeInTheDocument()
+    expect(screen.queryByText("Craftsmanship")).not.toBeInTheDocument()
 
     fireEvent.change(screen.getByLabelText("Choose WAYVM JSON backup"), {
       target: { files: [backupFile] },
@@ -1635,11 +1635,11 @@ describe("GameClient Integration", () => {
     expect(
       await screen.findByText(playerDataPortabilityCopy.importSuccess),
     ).toBeVisible()
-    expect(screen.getAllByRole("listitem")).toHaveLength(101)
+    expect(screen.getAllByRole("listitem")).toHaveLength(104)
     expect(screen.getByRole("button", { name: "Menu" })).toHaveFocus()
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
-    expect(await screen.findByText("Ingenuity")).toBeVisible()
-    expect(screen.getAllByRole("listitem")).toHaveLength(101)
+    expect(await screen.findByText("Craftsmanship")).toBeVisible()
+    expect(screen.getAllByRole("listitem")).toHaveLength(104)
   })
 
   it("reports browser backup delivery failure without leaving private bytes pending", async () => {
@@ -1682,7 +1682,7 @@ describe("GameClient Integration", () => {
     expect(screen.getByRole("button", { name: "Choose Backup" })).toBeEnabled()
 
     fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
-    expect(await screen.findAllByRole("listitem")).toHaveLength(100)
+    expect(await screen.findAllByRole("listitem")).toHaveLength(103)
   })
 
   it("normalizes an unreadable browser file and keeps backup selection retryable", async () => {
@@ -1720,7 +1720,7 @@ describe("GameClient Integration", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     fireEvent.click(await screen.findByRole("button", { name: "Add value" }))
     fireEvent.change(await screen.findByLabelText("Value name"), {
-      target: { value: "Ingenuity" },
+      target: { value: "Craftsmanship" },
     })
     fireEvent.change(screen.getByLabelText("Definition"), {
       target: { value: "To make original solutions." },
@@ -1728,8 +1728,8 @@ describe("GameClient Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }))
     await screen.findByText("Your Custom Values are saved and ready to battle.")
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
-    await screen.findByText("101 Active Values")
-    expect(await screen.findByText("101 Active Values")).toBeVisible()
+    await screen.findByText("104 Active Values")
+    expect(await screen.findByText("104 Active Values")).toBeVisible()
     fireEvent.click(screen.getByRole("button", { name: "Close" }))
     await openProductMenuDestination("Import & Export")
 
@@ -1742,7 +1742,7 @@ describe("GameClient Integration", () => {
       }),
     ).toBeVisible()
     expect(
-      screen.getByText(/The active deck returns to the 100 canonical values/),
+      screen.getByText(/The active deck returns to the 103 canonical values/),
     ).toBeVisible()
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
     await waitFor(() =>
@@ -1769,9 +1769,9 @@ describe("GameClient Integration", () => {
     ).toBeDisabled()
 
     fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
-    expect(await screen.findAllByRole("listitem")).toHaveLength(100)
+    expect(await screen.findAllByRole("listitem")).toHaveLength(103)
     expect(
-      screen.queryByText("Ingenuity", { selector: "span" }),
+      screen.queryByText("Craftsmanship", { selector: "span" }),
     ).not.toBeInTheDocument()
   })
 
@@ -1817,7 +1817,7 @@ describe("GameClient Integration", () => {
     expect(
       screen.queryByRole("heading", { name: "My Top Five Life Values" }),
     ).toBeNull()
-    expect(screen.getAllByRole("listitem")).toHaveLength(100)
+    expect(screen.getAllByRole("listitem")).toHaveLength(103)
   })
 
   it("exports a private backup without dismissing the reviewed reset", async () => {

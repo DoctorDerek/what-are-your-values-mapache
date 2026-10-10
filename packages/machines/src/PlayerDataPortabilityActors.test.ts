@@ -70,7 +70,7 @@ describe("Player Data Portability Actors", () => {
     expect(preparedImport.preview).toMatchObject({
       sourceAppVersion: "0.1.0",
       sourceBuild: "test-build",
-      activeValueCount: 100,
+      activeValueCount: 103,
       customValueCount: 0,
       replacesCurrentLocalData: true,
     })

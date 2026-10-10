@@ -17,7 +17,7 @@ const existingCustomValue = Object.freeze({
 }) satisfies CustomValueDefinition
 
 function validateDraft({
-  name = "Ingenuity",
+  name = "Craftsmanship",
   definition = "To solve problems in original and resourceful ways.",
   existingCustomValues = [],
   excludedCustomValueId,
@@ -93,6 +93,30 @@ describe("Custom Value Validation", () => {
     expect(validation.isValid).toBe(false)
     expect(validation.name.validationCode).toBe("duplicate_name")
   })
+
+  it.each(["Ingenuity", "Destiny", "Pets"])(
+    "rejects new %s duplicates but preserves an unchanged legacy name",
+    (name) => {
+      const retainedCustomValue = { ...existingCustomValue, name }
+      expect(
+        validateDraft({ name: name.toUpperCase() }).name.validationCode,
+      ).toBe("duplicate_name")
+      expect(
+        validateDraft({
+          name: name.toUpperCase(),
+          existingCustomValues: [retainedCustomValue],
+          excludedCustomValueId: retainedCustomValue.id,
+        }).isValid,
+      ).toBe(true)
+      expect(
+        validateDraft({
+          name,
+          existingCustomValues: [existingCustomValue],
+          excludedCustomValueId: existingCustomValue.id,
+        }).name.validationCode,
+      ).toBe("duplicate_name")
+    },
+  )
 
   it("blocks other Custom Value names but permits an unchanged edited identity", () => {
     expect(

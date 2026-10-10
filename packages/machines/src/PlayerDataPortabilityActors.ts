@@ -4,6 +4,7 @@ import { createBattleProfileJournalCommit } from "./BattleProfileJournal"
 import type { BattleProfileStoreState } from "./BattleProfileStore"
 import { replaceBattleProfileStorePlayerData } from "./BattleProfileStore"
 import type { DurableStoreAdapter } from "./DurableStoreAdapter"
+import { upgradePlayerDataCatalog } from "./PlayerCatalogUpgrade"
 import type { PlayerData } from "./PlayerData"
 import {
   createWayvmExport,
@@ -86,5 +87,11 @@ export const prepareWayvmImportActor = fromPromise(
 
 export const replacePlayerDataActor = fromPromise(
   async ({ input }: { input: ReplacePlayerDataInput }) =>
-    replaceBattleProfileStorePlayerData(input),
+    replaceBattleProfileStorePlayerData({
+      ...input,
+      playerData: upgradePlayerDataCatalog({
+        playerData: input.playerData,
+        upgradedAt: input.replacedAt,
+      }),
+    }),
 )

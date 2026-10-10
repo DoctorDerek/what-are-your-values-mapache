@@ -5,6 +5,7 @@ import {
   replaceUnrecoverableBattleProfileStorePlayerData,
 } from "./BattleProfileStore"
 import type { DurableStoreAdapter } from "./DurableStoreAdapter"
+import { upgradePlayerDataCatalog } from "./PlayerCatalogUpgrade"
 import type { PlayerData } from "./PlayerData"
 
 type CreateRecoveryBundleInput = {
@@ -35,7 +36,13 @@ export const createRecoveryBundleActor = fromPromise(
 
 export const replaceUnrecoverablePlayerDataActor = fromPromise(
   async ({ input }: { input: ReplaceUnrecoverablePlayerDataInput }) =>
-    replaceUnrecoverableBattleProfileStorePlayerData(input),
+    replaceUnrecoverableBattleProfileStorePlayerData({
+      ...input,
+      playerData: upgradePlayerDataCatalog({
+        playerData: input.playerData,
+        upgradedAt: input.replacedAt,
+      }),
+    }),
 )
 
 export const deleteUnrecoverablePlayerDataActor = fromPromise(

@@ -1,9 +1,11 @@
-import { CANONICAL_VALUES } from "./CanonicalValues"
+import { CANONICAL_VALUES, SOURCE_CANONICAL_VALUES } from "./CanonicalValues"
 import {
   CANONICAL_CATALOG_VERSION,
   isCustomValueId,
   normalizeValueNameForComparison,
+  SOURCE_CATALOG_VERSION,
   type ActiveValueDefinition,
+  type CanonicalCatalogVersion,
   type CustomValueDefinition,
   type ValueId,
 } from "./Value"
@@ -15,7 +17,7 @@ export type ActiveDeckFingerprint = string & {
 }
 
 export type ActiveDeck = {
-  readonly catalogVersion: typeof CANONICAL_CATALOG_VERSION
+  readonly catalogVersion: CanonicalCatalogVersion
   readonly customValues: readonly CustomValueDefinition[]
   readonly values: readonly ActiveValueDefinition[]
   readonly valueIds: readonly ValueId[]
@@ -60,9 +62,10 @@ function validateCustomValue(value: CustomValueDefinition) {
 
 function createActiveDeckFingerprint(
   customValues: readonly CustomValueDefinition[],
+  catalogVersion: CanonicalCatalogVersion,
 ) {
   return JSON.stringify([
-    CANONICAL_CATALOG_VERSION,
+    catalogVersion,
     customValues.map(({ id, creationOrdinal, name, definition }) => [
       id,
       creationOrdinal,
@@ -74,6 +77,7 @@ function createActiveDeckFingerprint(
 
 export function createActiveDeck(
   candidateCustomValues: readonly CustomValueDefinition[],
+  catalogVersion: CanonicalCatalogVersion = CANONICAL_CATALOG_VERSION,
 ) {
   candidateCustomValues.forEach(validateCustomValue)
 
@@ -92,7 +96,7 @@ export function createActiveDeck(
   }
 
   const valueNameKeys = new Set(
-    [...CANONICAL_VALUES, ...candidateCustomValues].map((value) =>
+    [...SOURCE_CANONICAL_VALUES, ...candidateCustomValues].map((value) =>
       normalizeValueNameForComparison(
         value.kind === "canonical" ? value.englishName : value.name,
       ),
@@ -100,7 +104,7 @@ export function createActiveDeck(
   )
   if (
     valueNameKeys.size !==
-    CANONICAL_VALUES.length + candidateCustomValues.length
+    SOURCE_CANONICAL_VALUES.length + candidateCustomValues.length
   ) {
     throw new Error("Active Deck contains duplicate value names")
   }
@@ -108,15 +112,19 @@ export function createActiveDeck(
   const customValues = Object.freeze(
     candidateCustomValues.map(freezeCustomValue).sort(compareCustomValues),
   )
-  const values = Object.freeze([...CANONICAL_VALUES, ...customValues])
+  const canonicalValues =
+    catalogVersion === SOURCE_CATALOG_VERSION
+      ? SOURCE_CANONICAL_VALUES
+      : CANONICAL_VALUES
+  const values = Object.freeze([...canonicalValues, ...customValues])
   const valueIds = Object.freeze(values.map(({ id }) => id))
 
   return Object.freeze({
-    catalogVersion: CANONICAL_CATALOG_VERSION,
+    catalogVersion,
     customValues,
     values,
     valueIds,
-    fingerprint: createActiveDeckFingerprint(customValues),
+    fingerprint: createActiveDeckFingerprint(customValues, catalogVersion),
   }) satisfies ActiveDeck
 }
 

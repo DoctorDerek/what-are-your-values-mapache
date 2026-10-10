@@ -16,8 +16,8 @@ export const playerDataResetCopy = Object.freeze({
     confirmationTitle: "Delete All Custom Values?",
     confirmationBody: Object.freeze([
       "This permanently removes every player-authored Custom Value and that value’s XP, level, win/loss counters, and scheduler participation.",
-      "It keeps the 100 canonical values and their progress, achievements and lifetime achievement progress, language, accessibility settings, controls, avatar customization, and other preferences.",
-      "The active deck returns to the 100 canonical values. The deck revision advances, the current pair cycle and Undo and Redo history clear, and a fresh canonical schedule begins.",
+      "It keeps the 103 canonical values and their progress, achievements and lifetime achievement progress, language, accessibility settings, controls, avatar customization, and other preferences.",
+      "The active deck returns to the 103 canonical values. The deck revision advances, the current pair cycle and Undo and Redo history clear, and a fresh canonical schedule begins.",
       "This cannot be undone after you confirm. Export your data first if you may want it later.",
     ]),
     successAnnouncement:

@@ -21,7 +21,7 @@ describe("Cycle Payout Tier Snapshot", () => {
 
     const snapshot = createCyclePayoutTierSnapshot(activeDeck, progressById)
 
-    expect(snapshot.size).toBe(100)
+    expect(snapshot.size).toBe(103)
     expect(snapshot.get(firstValueId)).toBe(15)
     expect(new Set(snapshot.values())).toEqual(new Set([1, 15]))
   })

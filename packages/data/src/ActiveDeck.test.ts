@@ -3,6 +3,7 @@ import { createActiveDeck, getPairCount } from "./ActiveDeck"
 import {
   CANONICAL_CATALOG_VERSION,
   createCustomValueId,
+  SOURCE_CATALOG_VERSION,
   type CustomValueDefinition,
   type CustomValueId,
 } from "./Value"
@@ -30,8 +31,8 @@ describe("Active Deck", () => {
     const activeDeck = createActiveDeck([])
 
     expect(activeDeck.catalogVersion).toBe(CANONICAL_CATALOG_VERSION)
-    expect(activeDeck.values).toHaveLength(100)
-    expect(activeDeck.valueIds).toHaveLength(100)
+    expect(activeDeck.values).toHaveLength(103)
+    expect(activeDeck.valueIds).toHaveLength(103)
     expect(activeDeck.customValues).toEqual([])
   })
 
@@ -47,7 +48,7 @@ describe("Active Deck", () => {
         { length: customValueCount },
         (_, index) => createCustomValue(index + 1),
       )
-      const activeDeck = createActiveDeck(customValues)
+      const activeDeck = createActiveDeck(customValues, SOURCE_CATALOG_VERSION)
 
       expect(activeDeck.values).toHaveLength(activeValueCount)
       expect(getPairCount(activeDeck.values.length)).toBe(expectedPairCount)
@@ -63,8 +64,8 @@ describe("Active Deck", () => {
       first.id,
       second.id,
     ])
-    expect(activeDeck.values.at(100)?.id).toBe(first.id)
-    expect(activeDeck.values.at(101)?.id).toBe(second.id)
+    expect(activeDeck.values.at(103)?.id).toBe(first.id)
+    expect(activeDeck.values.at(104)?.id).toBe(second.id)
   })
 
   it("fingerprints deck meaning independently from timestamps and input order", () => {
@@ -109,8 +110,33 @@ describe("Active Deck", () => {
     )
     const activeDeck = createActiveDeck(customValues)
 
-    expect(activeDeck.values).toHaveLength(1_100)
-    expect(getPairCount(activeDeck.values.length)).toBe(604_450)
+    expect(activeDeck.values).toHaveLength(1_103)
+    expect(getPairCount(activeDeck.values.length)).toBe(607_753)
+  })
+
+  it.each([
+    [0, 103, 5253],
+    [1, 104, 5356],
+    [2, 105, 5460],
+    [3, 106, 5565],
+  ])(
+    "derives the current K=%i pair count",
+    (customValueCount, activeValueCount, expectedPairCount) => {
+      const activeDeck = createActiveDeck(
+        Array.from({ length: customValueCount }, (_, index) =>
+          createCustomValue(index + 1),
+        ),
+      )
+      expect(activeDeck.values).toHaveLength(activeValueCount)
+      expect(getPairCount(activeValueCount)).toBe(expectedPairCount)
+    },
+  )
+
+  it("retains preexisting custom values named after the new built-ins", () => {
+    const customValues = ["Ingenuity", "Destiny", "Pets"].map((name, index) =>
+      createCustomValue(index + 1, { name }),
+    )
+    expect(createActiveDeck(customValues).customValues).toEqual(customValues)
   })
 
   it("rejects duplicate identities and creation ordinals", () => {

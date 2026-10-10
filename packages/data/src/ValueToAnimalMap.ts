@@ -123,4 +123,7 @@ export const VALUE_TO_ANIMAL_MAP = Object.freeze([
   defineAnimalMapping("pvcs-2011:virtue", "cranepack"),
   defineAnimalMapping("pvcs-2011:wealth", "pigpack"),
   defineAnimalMapping("pvcs-2011:world-peace", "turtle"),
+  defineAnimalMapping("wayvm:ingenuity", "raccoonpack"),
+  defineAnimalMapping("wayvm:destiny", "falconpack"),
+  defineAnimalMapping("wayvm:pets", "dogpack"),
 ])

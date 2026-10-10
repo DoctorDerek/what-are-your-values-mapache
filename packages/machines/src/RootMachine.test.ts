@@ -202,9 +202,9 @@ describe("Semantic Back through the root navigation owner", () => {
 
 describe("Hub atomic Custom Value batches", () => {
   const drafts = [
-    { name: "Ingenuity", definition: "To solve problems resourcefully." },
-    { name: "Destiny", definition: "To pursue my own path." },
-    { name: "Pets", definition: "To care for companion animals." },
+    { name: "Craftsmanship", definition: "To solve problems resourcefully." },
+    { name: "Stargazing", definition: "To pursue my own path." },
+    { name: "Companions", definition: "To care for companion animals." },
   ]
 
   it("commits one revision, ignores competing navigation and rehydrates every added value", async () => {
@@ -503,7 +503,7 @@ describe("Root Machine", () => {
     expect(snapshot.matches("Splash")).toBe(true)
     expect(
       snapshot.context.playerData?.profile?.activeDeck.valueIds,
-    ).toHaveLength(100)
+    ).toHaveLength(103)
     expect(snapshot.context.playerData?.profile?.history).toEqual([])
     expect(snapshot.context.playerData?.profile?.redo).toEqual([])
     await expect(durableStore.readAll()).resolves.toEqual(new Map())
@@ -1453,7 +1453,7 @@ describe("Root Machine", () => {
     actor.send({ type: "ALL_VALUES.OPEN_REQUESTED" })
     actor.send({
       type: "ALL_VALUES.ADD_REQUESTED",
-      name: "Ingenuity",
+      name: "Craftsmanship",
       definition: "The disciplined practice of creating new solutions.",
     })
 
@@ -1468,7 +1468,7 @@ describe("Root Machine", () => {
       }
 
       const customValue = profile.activeDeck.customValues[0]
-      return customValue?.name === "Ingenuity"
+      return customValue?.name === "Craftsmanship"
     })
     const afterAddProfile = afterAddSnapshot.context.playerData?.profile
     if (!afterAddProfile) {
@@ -1498,7 +1498,7 @@ describe("Root Machine", () => {
     actor.send({ type: "ALL_VALUES.OPEN_REQUESTED" })
     actor.send({
       type: "ALL_VALUES.ADD_REQUESTED",
-      name: "   Ingenuity   ",
+      name: "   Craftsmanship   ",
       definition: "   The disciplined practice of creating new solutions.   ",
     })
 
@@ -1514,7 +1514,7 @@ describe("Root Machine", () => {
 
       return (
         profile.activeDeck.customValues.length === 1 &&
-        profile.activeDeck.customValues[0]?.name === "Ingenuity" &&
+        profile.activeDeck.customValues[0]?.name === "Craftsmanship" &&
         profile.activeDeck.customValues[0]?.definition ===
           "The disciplined practice of creating new solutions."
       )
@@ -1527,7 +1527,7 @@ describe("Root Machine", () => {
       throw new Error("Custom value add did not trim inputs")
     }
 
-    expect(addedValue.name).toBe("Ingenuity")
+    expect(addedValue.name).toBe("Craftsmanship")
     expect(addedValue.definition).toBe(
       "The disciplined practice of creating new solutions.",
     )
@@ -1572,7 +1572,7 @@ describe("Root Machine", () => {
     blankEditRoot.actor.send({ type: "ALL_VALUES.OPEN_REQUESTED" })
     blankEditRoot.actor.send({
       type: "ALL_VALUES.ADD_REQUESTED",
-      name: "Ingenuity",
+      name: "Craftsmanship",
       definition: "The disciplined practice of creating new solutions.",
     })
     const addedSnapshot = await waitFor(blankEditRoot.actor, (candidate) => {
@@ -1608,7 +1608,7 @@ describe("Root Machine", () => {
     })
     blankDefinitionUpdateRoot.actor.send({
       type: "ALL_VALUES.ADD_REQUESTED",
-      name: "Ingenuity",
+      name: "Craftsmanship",
       definition: "The disciplined practice of creating new solutions.",
     })
     const blankDefinitionAddedSnapshot = await waitFor(
@@ -1634,7 +1634,7 @@ describe("Root Machine", () => {
       {
         type: "ALL_VALUES.UPDATE_REQUESTED",
         valueId: blankDefinitionValueId,
-        name: "Ingenuity",
+        name: "Craftsmanship",
         definition: "   ",
       },
       "Custom Value definition is required",
@@ -1681,7 +1681,7 @@ describe("Root Machine", () => {
     actor.send({ type: "ALL_VALUES.OPEN_REQUESTED" })
     actor.send({
       type: "ALL_VALUES.ADD_REQUESTED",
-      name: "Ingenuity",
+      name: "Craftsmanship",
       definition: "The disciplined practice of creating new solutions.",
     })
 
@@ -1691,7 +1691,7 @@ describe("Root Machine", () => {
         candidate.matches({ AllValues: "Browsing" }) &&
         !!profile &&
         profile.activeDeck.customValues.some(
-          (value) => value.name === "Ingenuity",
+          (value) => value.name === "Craftsmanship",
         )
       )
     })
@@ -1770,7 +1770,7 @@ describe("Root Machine", () => {
     actor.send({ type: "ALL_VALUES.OPEN_REQUESTED" })
     actor.send({
       type: "ALL_VALUES.ADD_REQUESTED",
-      name: "Ingenuity",
+      name: "Craftsmanship",
       definition: "The disciplined practice of creating new solutions.",
     })
 
@@ -1780,7 +1780,7 @@ describe("Root Machine", () => {
         candidate.matches({ AllValues: "Browsing" }) &&
         !!profile &&
         profile.activeDeck.customValues.some(
-          (value) => value.name === "Ingenuity",
+          (value) => value.name === "Craftsmanship",
         )
       )
     })
@@ -1835,7 +1835,7 @@ describe("Root Machine", () => {
     actor.send({ type: "ALL_VALUES.OPEN_REQUESTED" })
     actor.send({
       type: "ALL_VALUES.ADD_REQUESTED",
-      name: "Ingenuity",
+      name: "Craftsmanship",
       definition: "The disciplined practice of creating new solutions.",
     })
 
@@ -1872,7 +1872,7 @@ describe("Root Machine", () => {
       throw new Error("Battle profile did not survive Custom Value delete")
     }
 
-    expect(afterDeleteProfile.activeDeck.values).toHaveLength(100)
+    expect(afterDeleteProfile.activeDeck.values).toHaveLength(103)
     expect(afterDeleteProfile.history).toHaveLength(0)
     expect(afterDeleteProfile.redo).toHaveLength(0)
   })
@@ -2335,7 +2335,7 @@ describe("Root Machine", () => {
     shouldFail = true
     actor.send({
       type: "ALL_VALUES.ADD_REQUESTED",
-      name: "Ingenuity",
+      name: "Craftsmanship",
       definition: "The disciplined practice of creating new solutions.",
     })
 
@@ -2704,7 +2704,7 @@ describe("Root Machine", () => {
     expect(reviewSnapshot.context.playerData).toBe(targetPlayerData)
     expect(reviewSnapshot.context.pendingImport?.preview).toMatchObject({
       sourceBuild: "test-build",
-      activeValueCount: 100,
+      activeValueCount: 103,
       replacesCurrentLocalData: true,
     })
 
@@ -2840,7 +2840,7 @@ describe("Root Machine", () => {
     actor.send({ type: "ALL_VALUES.OPEN_REQUESTED" })
     actor.send({
       type: "ALL_VALUES.ADD_REQUESTED",
-      name: "Ingenuity",
+      name: "Craftsmanship",
       definition: "The disciplined practice of creating new solutions.",
     })
     const customValueSnapshot = await waitFor(
@@ -2888,7 +2888,7 @@ describe("Root Machine", () => {
     }
 
     expect(resetProfile.activeDeck.customValues).toEqual([])
-    expect(resetProfile.activeDeck.valueIds).toHaveLength(100)
+    expect(resetProfile.activeDeck.valueIds).toHaveLength(103)
     expect(resetProfile.scheduler.deckRevision).toBe(
       profileBeforeReset.scheduler.deckRevision + 1,
     )
@@ -3115,7 +3115,7 @@ describe("Root Machine", () => {
     )
     expect(
       erasedSnapshot.context.playerData?.profile.activeDeck.valueIds,
-    ).toHaveLength(100)
+    ).toHaveLength(103)
 
     actor.send({ type: "INTRODUCTION.COMPLETED" })
     const freshProfileSnapshot = await waitFor(actor, (candidate) =>
@@ -3544,7 +3544,7 @@ describe("Root Machine", () => {
 
     expect(reviewSnapshot.context.pendingImport?.preview).toMatchObject({
       sourceBuild: "retained-backup-build",
-      activeValueCount: 100,
+      activeValueCount: 103,
       replacesCurrentLocalData: true,
     })
     expect(reviewSnapshot.context.pendingRecoveryImportSource).toBe(

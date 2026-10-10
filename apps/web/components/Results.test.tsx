@@ -141,7 +141,7 @@ describe("Battle-exit Results presentation", () => {
       within(
         screen.getByRole("list", { name: "Your value results" }),
       ).getAllByRole("listitem"),
-    ).toHaveLength(100)
+    ).toHaveLength(103)
     expect(
       within(
         screen.getByRole("region", { name: "Profile progress" }),

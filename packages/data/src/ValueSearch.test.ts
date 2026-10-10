@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 import { createActiveDeck } from "./ActiveDeck"
-import { createCustomValueId, type CustomValueDefinition } from "./Value"
+import {
+  createCanonicalValueId,
+  createCustomValueId,
+  type CustomValueDefinition,
+} from "./Value"
 import { createInitialValueProgress } from "./ValueProgress"
 import { rankValues } from "./ValueRanking"
 import {
@@ -42,12 +46,12 @@ describe("Value Search", () => {
       findRankedValueNameMatches(rankedValues, "ingen").map(
         ({ definition }) => definition.id,
       ),
-    ).toEqual([ingenuityId])
+    ).toEqual([createCanonicalValueId("wayvm:ingenuity"), ingenuityId])
     expect(
       filterRankedValuesByQuery(rankedValues, "resourceful").map(
         ({ definition }) => definition.id,
       ),
-    ).toEqual([ingenuityId])
+    ).toEqual([createCanonicalValueId("wayvm:ingenuity"), ingenuityId])
     expect(filterRankedValuesByQuery(rankedValues, "inventiveness")).toEqual([])
   })
 
@@ -55,7 +59,7 @@ describe("Value Search", () => {
     expect(findRankedValueNameMatches(createRankedValues(), " ")).toEqual([])
   })
 
-  it("detects normalized exact collisions while excluding the edited value", () => {
+  it("detects another same-name identity even when the edited custom value is excluded", () => {
     const rankedValues = createRankedValues()
 
     expect(
@@ -70,7 +74,7 @@ describe("Value Search", () => {
         name: "Ingenuity",
         excludedValueId: ingenuityId,
       }),
-    ).toBe(false)
+    ).toBe(true)
     expect(
       hasExactRankedValueNameCollision({
         rankedValues,

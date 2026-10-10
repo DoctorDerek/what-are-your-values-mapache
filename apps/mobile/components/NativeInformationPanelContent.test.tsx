@@ -22,7 +22,7 @@ describe("NativeInformationPanelContent", () => {
       ),
     ).toBeOnTheScreen()
     expect(
-      screen.getByText("Start With 100 Values—or Add Your Own"),
+      screen.getByText("Start With 103 Values—or Add Your Own"),
     ).toBeOnTheScreen()
     expect(
       screen.getByText(

@@ -11,7 +11,7 @@ const SECOND_TEST_UUID = "00000000-0000-4000-8000-000000000002"
 
 function addCustomValue(
   profile = createInitialBattleProfile("custom-value-command-seed"),
-  name = "Ingenuity",
+  name = "Craftsmanship",
   randomUuid = TEST_UUID,
 ) {
   return createCustomValueAddCommit({
@@ -29,7 +29,7 @@ describe("Custom Value Commands", () => {
     const randomUuid = vi.fn(() => TEST_UUID)
     const commit = createCustomValueAddCommit({
       profile: createInitialBattleProfile("custom-value-timestamp-seed"),
-      name: "  Ingenuity  ",
+      name: "  Craftsmanship  ",
       definition: "  To solve problems in original and resourceful ways.  ",
       now,
       randomUuid,
@@ -39,7 +39,7 @@ describe("Custom Value Commands", () => {
     expect(now).toHaveBeenCalledTimes(1)
     expect(randomUuid).toHaveBeenCalledTimes(1)
     expect(customValue).toMatchObject({
-      name: "Ingenuity",
+      name: "Craftsmanship",
       definition: "To solve problems in original and resourceful ways.",
       createdAt: TEST_TIMESTAMP,
       updatedAt: TEST_TIMESTAMP,
@@ -75,7 +75,7 @@ describe("Custom Value Commands", () => {
     const createCommit = (definition: string) =>
       createCustomValueAddCommit({
         profile,
-        name: "Ingenuity",
+        name: "Craftsmanship",
         definition,
         now: () => TEST_TIMESTAMP,
         randomUuid: () => TEST_UUID,
@@ -90,32 +90,32 @@ describe("Custom Value Commands", () => {
   })
 
   it("permits an unchanged edited name but rejects another Custom Value identity", () => {
-    const ingenuityCommit = addCustomValue()
-    const ingenuity = ingenuityCommit.profile.activeDeck.customValues[0]
-    if (!ingenuity) {
-      throw new Error("Expected Ingenuity in the revised deck")
+    const craftsmanshipCommit = addCustomValue()
+    const craftsmanship = craftsmanshipCommit.profile.activeDeck.customValues[0]
+    if (!craftsmanship) {
+      throw new Error("Expected Craftsmanship in the revised deck")
     }
 
-    const destinyCommit = addCustomValue(
-      ingenuityCommit.profile,
-      "Destiny",
+    const stargazingCommit = addCustomValue(
+      craftsmanshipCommit.profile,
+      "Stargazing",
       SECOND_TEST_UUID,
     )
     expect(() =>
       createCustomValueUpdateCommit({
-        profile: destinyCommit.profile,
-        valueId: ingenuity.id,
-        name: "INGENUITY",
-        definition: ingenuity.definition,
+        profile: stargazingCommit.profile,
+        valueId: craftsmanship.id,
+        name: "CRAFTSMANSHIP",
+        definition: craftsmanship.definition,
         now: () => TEST_TIMESTAMP,
       }),
     ).not.toThrow()
     expect(() =>
       createCustomValueUpdateCommit({
-        profile: destinyCommit.profile,
-        valueId: ingenuity.id,
-        name: "DESTINY",
-        definition: ingenuity.definition,
+        profile: stargazingCommit.profile,
+        valueId: craftsmanship.id,
+        name: "STARGAZING",
+        definition: craftsmanship.definition,
         now: () => TEST_TIMESTAMP,
       }),
     ).toThrow("Custom Value name already exists")

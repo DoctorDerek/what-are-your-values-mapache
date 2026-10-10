@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest"
-import { CANONICAL_VALUES, getCanonicalValueById } from "./CanonicalValues"
+import {
+  CANONICAL_VALUES,
+  getCanonicalValueById,
+  SOURCE_CANONICAL_VALUES,
+} from "./CanonicalValues"
 import {
   createCanonicalValueId,
   createCustomValueId,
@@ -12,7 +16,7 @@ const canonicalCatalogContentHash =
 
 function serializeCanonicalCatalog() {
   return JSON.stringify(
-    CANONICAL_VALUES.map(
+    SOURCE_CANONICAL_VALUES.map(
       ({ id, sourceOrdinal, englishName, sourceDefinition }) => ({
         id,
         sourceOrdinal,
@@ -36,22 +40,27 @@ async function createSha256Hash(value: string) {
 
 describe("canonical values", () => {
   it("preserves the complete verified 2011 source catalog", async () => {
-    expect(CANONICAL_VALUES).toHaveLength(100)
+    expect(SOURCE_CANONICAL_VALUES).toHaveLength(100)
     expect(await createSha256Hash(serializeCanonicalCatalog())).toBe(
       canonicalCatalogContentHash,
     )
   })
 
-  it("uses unique semantic IDs and contiguous source ordinals", () => {
+  it("uses unique semantic IDs and separate source and catalog ordinals", () => {
     const ids = CANONICAL_VALUES.map(({ id }) => id)
-    const ordinals = CANONICAL_VALUES.map(({ sourceOrdinal }) => sourceOrdinal)
+    const ordinals = SOURCE_CANONICAL_VALUES.map(
+      ({ sourceOrdinal }) => sourceOrdinal,
+    )
 
-    expect(new Set(ids).size).toBe(100)
+    expect(new Set(ids).size).toBe(103)
     expect(new Set(ordinals).size).toBe(100)
     expect(ordinals).toEqual(
       Array.from({ length: 100 }, (_, index) => index + 1),
     )
     expect(ids.every(isCanonicalValueId)).toBe(true)
+    expect(
+      CANONICAL_VALUES.map(({ catalogOrdinal }) => catalogOrdinal),
+    ).toEqual(Array.from({ length: 103 }, (_, index) => index + 1))
   })
 
   it("keeps every static record immutable", () => {
@@ -69,14 +78,42 @@ describe("canonical values", () => {
     })
   })
 
-  it("does not silently insert examples or historical labels", () => {
+  it("includes the three product-authored additions without fabricated source attribution", () => {
+    expect(CANONICAL_VALUES.slice(100)).toEqual([
+      {
+        kind: "canonical",
+        id: "wayvm:ingenuity",
+        sourceOrdinal: null,
+        catalogOrdinal: 101,
+        englishName: "Ingenuity",
+        sourceDefinition:
+          "to solve problems in original, resourceful, and practical ways",
+      },
+      {
+        kind: "canonical",
+        id: "wayvm:destiny",
+        sourceOrdinal: null,
+        catalogOrdinal: 102,
+        englishName: "Destiny",
+        sourceDefinition: "to pursue the path I believe I am meant to fulfill",
+      },
+      {
+        kind: "canonical",
+        id: "wayvm:pets",
+        sourceOrdinal: null,
+        catalogOrdinal: 103,
+        englishName: "Pets",
+        sourceDefinition:
+          "to care for, protect, and share life with companion animals",
+      },
+    ])
+  })
+
+  it("does not insert superseded historical labels", () => {
     const englishNames = new Set(
       CANONICAL_VALUES.map(({ englishName }) => englishName),
     )
 
-    expect(englishNames).not.toContain("Ingenuity")
-    expect(englishNames).not.toContain("Destiny")
-    expect(englishNames).not.toContain("Pets")
     expect(englishNames).not.toContain("Change")
     expect(englishNames).not.toContain("Helpfulness")
   })
@@ -87,6 +124,7 @@ describe("value identity construction", () => {
     expect(createCanonicalValueId("pvcs-2011:self-knowledge")).toBe(
       "pvcs-2011:self-knowledge",
     )
+    expect(createCanonicalValueId("wayvm:ingenuity")).toBe("wayvm:ingenuity")
     expect(() => createCanonicalValueId("pvcs-2001:self-knowledge")).toThrow(
       "Invalid canonical value ID",
     )

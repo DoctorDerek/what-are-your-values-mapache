@@ -696,6 +696,7 @@ export const rootMachine = setup({
         input: ({ context }) => ({
           store: context.durableStore,
           appVersion: context.appVersion,
+          now: context.now,
         }),
         onDone: [
           {

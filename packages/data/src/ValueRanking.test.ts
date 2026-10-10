@@ -89,13 +89,13 @@ describe("Value Ranking", () => {
     )
 
     expect(ranking.map(({ rank }) => rank)).toEqual(
-      Array.from({ length: 102 }, (_, index) => index + 1),
+      Array.from({ length: 105 }, (_, index) => index + 1),
     )
     expect(
-      ranking.slice(0, 100).map(({ definition }) => definition.id),
-    ).toEqual(activeDeck.valueIds.slice(0, 100))
-    expect(ranking.at(100)?.definition.id).toBe(firstCustomValue.id)
-    expect(ranking.at(101)?.definition.id).toBe(secondCustomValue.id)
+      ranking.slice(0, 103).map(({ definition }) => definition.id),
+    ).toEqual(activeDeck.valueIds.slice(0, 103))
+    expect(ranking.at(103)?.definition.id).toBe(firstCustomValue.id)
+    expect(ranking.at(104)?.definition.id).toBe(secondCustomValue.id)
   })
 
   it("returns immutable projections without mutating deck or progress order", () => {
@@ -132,6 +132,6 @@ describe("Value Ranking", () => {
       kind: "custom",
       name: "Custom Value 1",
     })
-    expect(alphabetizedValues[customValueIndex]?.rank).toBe(101)
+    expect(alphabetizedValues[customValueIndex]?.rank).toBe(104)
   })
 })
