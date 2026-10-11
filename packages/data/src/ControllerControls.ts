@@ -79,7 +79,7 @@ export const CONTROLLER_BINDINGS = [
 export const CONTROLLER_COPY = {
   title: "Controller",
   introduction:
-    "Use a controller with a standard browser mapping. D-pad or left stick moves focus; the south face button activates it. In a focused scrolling panel, Up and Down scroll; Left and Right return to controls. Text entry and browser file dialogs use your keyboard or pointer.",
+    "Use a controller with a standard browser mapping. D-pad or left stick moves focus; the south face button activates it. In a focused scrolling panel or value list, Up and Down scroll; Left and Right return to controls. On Steam Deck, focus a text field, then press Steam + X to open Steam’s keyboard while Steam is running. Browser file dialogs use the system’s controls.",
   activate: "Press a controller button to use controller hints.",
   unsupported:
     "This controller has no standard browser mapping. Keyboard, pointer, and touch remain available.",

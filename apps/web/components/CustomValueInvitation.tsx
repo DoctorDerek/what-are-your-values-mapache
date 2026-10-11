@@ -11,6 +11,7 @@ import { getErrorMessage } from "@game/utils/src/Errors"
 import { useEffect, useState } from "react"
 import CustomValueDraftEditor from "@/components/CustomValueDraftEditor"
 import { Button } from "@/components/ui/button"
+import { useWebControllerActions } from "@/components/WebControlsProvider"
 
 type DraftEntry = CustomValueDraft & Readonly<{ key: string }>
 const EMPTY_DRAFT: CustomValueDraft = Object.freeze({
@@ -134,6 +135,13 @@ export default function CustomValueInvitation({
       setIsExporting(false)
     }
   }
+
+  useWebControllerActions(1, (command) => {
+    if (!isNavigationBlocked || (command !== "back" && command !== "cancel"))
+      return false
+    if (writing && !isSaving && !isExporting) closeEditor()
+    return true
+  })
 
   if (!isNavigationBlocked) return null
 

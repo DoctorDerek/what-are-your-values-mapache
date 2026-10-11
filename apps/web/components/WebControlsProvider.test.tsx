@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react"
 import { useState } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import CustomValueInvitation from "@/components/CustomValueInvitation"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import WebControlsProvider, {
   useWebControllerActions,
@@ -214,6 +215,148 @@ describe("scoped controller input", () => {
     expect(choose).toHaveBeenCalledTimes(2)
     unmount()
     expect(frames.size).toBe(0)
+  })
+
+  it("requires a fresh direction before repeating after connection or resume", () => {
+    controller.buttons[15] = { pressed: true, touched: true, value: 1 }
+    render(
+      <WebControlsProvider>
+        <Harness />
+      </WebControlsProvider>,
+    )
+    const menu = screen.getByRole("button", { name: "Menu" })
+    menu.focus()
+    tick(1000)
+    expect(menu).toHaveFocus()
+    button(15, false)
+    button(15, true)
+    expect(screen.getByRole("region", { name: "Values" })).toHaveFocus()
+    tick(500)
+    expect(screen.getByRole("button", { name: "Choose value" })).toHaveFocus()
+    fireEvent(window, new Event("blur"))
+    fireEvent(window, new Event("focus"))
+    tick(1000)
+    expect(screen.getByRole("button", { name: "Choose value" })).toHaveFocus()
+    button(15, false)
+    button(15, true)
+    expect(screen.getByRole("radio", { name: "Speed 2×" })).toHaveFocus()
+  })
+
+  it("reconciles a disconnected controller after the window was unfocused", () => {
+    render(
+      <WebControlsProvider>
+        <Harness />
+      </WebControlsProvider>,
+    )
+    button(4, true)
+    expect(screen.getByRole("status")).toHaveTextContent("xbox")
+    fireEvent(window, new Event("blur"))
+    controllers = []
+    fireEvent(window, new Event("focus"))
+    expect(screen.getByRole("status")).toHaveTextContent("keyboard")
+    expect(frames.size).toBe(0)
+  })
+
+  it("retries controller access on focus after a browser access failure", () => {
+    const getGamepads = vi.spyOn(navigator, "getGamepads")
+    getGamepads.mockImplementationOnce(() => {
+      throw new DOMException("Temporarily unavailable", "SecurityError")
+    })
+    const choose = vi.fn()
+    render(
+      <WebControlsProvider>
+        <Harness onChoose={choose} />
+      </WebControlsProvider>,
+    )
+    expect(frames.size).toBe(0)
+    fireEvent(window, new Event("focus"))
+    button(4, true)
+    expect(choose).toHaveBeenCalledOnce()
+  })
+
+  it("reaches disclosure controls and scrolls the page from the value-list region", () => {
+    const scroll = vi.spyOn(window, "scrollBy")
+    render(
+      <WebControlsProvider>
+        <main data-slot="mapache-screen">
+          <div
+            role="region"
+            aria-label="Values"
+            tabIndex={0}
+            data-controller-scroll="document"
+          />
+          <details>
+            <summary tabIndex={0}>Technical details</summary>
+            <p>Error explanation</p>
+          </details>
+          <div role="dialog" hidden>
+            <button>Hidden action</button>
+          </div>
+        </main>
+      </WebControlsProvider>,
+    )
+    button(15, true)
+    expect(screen.getByRole("region", { name: "Values" })).toHaveFocus()
+    button(15, false)
+    button(13, true)
+    expect(scroll).toHaveBeenCalledWith({ top: 96, behavior: "instant" })
+    button(13, false)
+    button(15, true)
+    expect(screen.getByText("Technical details")).toHaveFocus()
+    button(15, false)
+    button(0, true)
+    expect(
+      screen.getByText("Error explanation").closest("details"),
+    ).toHaveAttribute("open")
+  })
+
+  it("retains a controller-dismissed custom draft and prevents cancellation during save", () => {
+    const apply = vi.fn()
+    const props = {
+      editorRequestId: 1,
+      existingCustomValues: [],
+      isSaving: false,
+      saveIssue: null,
+      onApply: apply,
+      onExport: vi.fn(async () => {}),
+      onNavigationBlockedChange: vi.fn(),
+    }
+    const view = (isSaving = false) => (
+      <WebControlsProvider>
+        <main data-slot="mapache-screen">
+          <button id="hub-add-custom-value-button">Add value</button>
+          <CustomValueInvitation {...props} isSaving={isSaving} />
+        </main>
+      </WebControlsProvider>
+    )
+    const { rerender } = render(view())
+    fireEvent.change(screen.getByLabelText("Value name"), {
+      target: { value: "Craftsmanship" },
+    })
+    fireEvent.change(screen.getByLabelText("Definition"), {
+      target: { value: "To make things well." },
+    })
+    button(1, true)
+    expect(screen.queryByLabelText("Value name")).toBeNull()
+    expect(screen.getByRole("button", { name: "Add value" })).toHaveFocus()
+    expect(apply).not.toHaveBeenCalled()
+    button(1, false)
+    button(15, true)
+    expect(
+      screen.getByRole("button", { name: "Continue editing" }),
+    ).toHaveFocus()
+    button(15, false)
+    button(0, true)
+    expect(screen.getByLabelText("Value name")).toHaveValue("Craftsmanship")
+    expect(screen.getByLabelText("Definition")).toHaveValue(
+      "To make things well.",
+    )
+    button(0, false)
+    rerender(view(true))
+    button(8, true)
+    expect(screen.getByLabelText("Value name")).toBeDisabled()
+    expect(screen.getByRole("status")).toHaveTextContent("Saving")
+    expect(apply).not.toHaveBeenCalled()
   })
 
   it("switches family by the most recently used device and restores non-controller hints after disconnect", () => {
