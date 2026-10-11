@@ -17,7 +17,7 @@ import {
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import type { StaticImageData } from "next/image"
 import type { FormEvent } from "react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import AllValuesValueRow from "@/components/AllValuesValueRow"
 import CustomValueFieldFeedback from "@/components/CustomValueFieldFeedback"
 import MapacheScreen from "@/components/MapacheScreen"
@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import ValueLevelProgress from "@/components/ValueLevelProgress"
+import { useWebControllerActions } from "@/components/WebControlsProvider"
 
 export default function AllValues({
   rankedValues,
@@ -60,6 +61,7 @@ export default function AllValues({
   onNavigationBlockedChange?: (isBlocked: boolean) => void
 }) {
   const [searchQuery, setSearchQuery] = useState("")
+  const customValueActionRef = useRef<HTMLButtonElement | null>(null)
   const [editingValueId, setEditingValueId] = useState<CustomValueId | null>(
     null,
   )
@@ -155,7 +157,29 @@ export default function AllValues({
     setIsEditNameTouched(false)
     setIsEditDefinitionTouched(false)
     setIsConfirmingEdit(false)
+    customValueActionRef.current?.focus()
   }
+
+  const cancelDelete = () => {
+    setDeletingValueId(null)
+    customValueActionRef.current?.focus()
+  }
+
+  useWebControllerActions(1, (command) => {
+    if (
+      isMenuOpen ||
+      !isNavigationBlocked ||
+      (command !== "back" && command !== "cancel")
+    )
+      return false
+    if (isPersistencePending) return true
+    if (deletingValueId !== null) cancelDelete()
+    else if (isConfirmingEdit) {
+      setIsConfirmingEdit(false)
+      document.getElementById(`custom-value-name-${editingValueId}`)?.focus()
+    } else cancelEdit()
+    return true
+  })
 
   const handleUpdateCustomValue = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -211,13 +235,14 @@ export default function AllValues({
                   <button
                     type="button"
                     disabled={isPersistencePending}
-                    onClick={() =>
+                    onClick={(event) => {
+                      customValueActionRef.current = event.currentTarget
                       startEdit(
                         definition.id,
                         definition.name,
                         definition.definition,
                       )
-                    }
+                    }}
                     className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-lg font-black text-white uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
                   >
                     Edit
@@ -225,7 +250,8 @@ export default function AllValues({
                   <button
                     type="button"
                     disabled={isPersistencePending}
-                    onClick={() => {
+                    onClick={(event) => {
+                      customValueActionRef.current = event.currentTarget
                       setDeletingValueId(definition.id)
                       setEditingValueId(null)
                     }}
@@ -256,7 +282,7 @@ export default function AllValues({
                 <button
                   type="button"
                   disabled={isPersistencePending}
-                  onClick={() => setDeletingValueId(null)}
+                  onClick={cancelDelete}
                   className="bg-mapache-vivid-secondary-purple border-4 border-black px-4 py-2 font-black text-white uppercase"
                 >
                   Cancel
