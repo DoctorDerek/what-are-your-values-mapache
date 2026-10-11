@@ -523,48 +523,53 @@ export default function AllValues({
           tabIndex={0}
           data-controller-scroll="document"
         >
-        {hasComparisons && visibleValues.some(({ rank }) => rank <= 5) ? (
-          <section
-            aria-labelledby="all-values-top-five-heading"
-            className="mt-8"
-          >
-            <h2
-              id="all-values-top-five-heading"
-              className="border-b-4 border-black py-4 text-3xl font-black uppercase"
+          {hasComparisons && visibleValues.some(({ rank }) => rank <= 5) ? (
+            <section
+              aria-labelledby="all-values-top-five-heading"
+              className="mt-8"
             >
-              Top Five
-            </h2>
-            <ol className="mt-5 flex flex-col gap-5">
-              {renderRows(visibleValues.filter(({ rank }) => rank <= 5))}
-            </ol>
-          </section>
-        ) : null}
-        {hasComparisons && visibleValues.some(({ rank }) => rank > 5) ? (
-          <section aria-labelledby="all-values-other-heading" className="mt-8">
-            <h2
-              id="all-values-other-heading"
-              className="bg-mapache-vivid-primary-cyan border-y-8 border-black px-4 py-3 text-center text-2xl font-black text-black uppercase"
+              <h2
+                id="all-values-top-five-heading"
+                className="border-b-4 border-black py-4 text-3xl font-black uppercase"
+              >
+                Top Five
+              </h2>
+              <ol className="mt-5 flex flex-col gap-5">
+                {renderRows(visibleValues.filter(({ rank }) => rank <= 5))}
+              </ol>
+            </section>
+          ) : null}
+          {hasComparisons && visibleValues.some(({ rank }) => rank > 5) ? (
+            <section
+              aria-labelledby="all-values-other-heading"
+              className="mt-8"
             >
-              All Other Values
-            </h2>
-            <ol className="mt-5 flex flex-col gap-5">
-              {renderRows(visibleValues.filter(({ rank }) => rank > 5))}
-            </ol>
-          </section>
-        ) : null}
-        {!hasComparisons ? (
-          <section aria-labelledby="included-values-heading" className="mt-8">
-            <h2 id="included-values-heading" className="sr-only">
-              Included Values
-            </h2>
-            <ol className="flex flex-col gap-5">{renderRows(visibleValues)}</ol>
-          </section>
-        ) : null}
-        {visibleValues.length === 0 ? (
-          <p className="mt-8 border-4 border-black bg-white p-8 text-center text-2xl font-black text-black shadow-[8px_8px_0px_0px_#000000]">
-            No values match your search.
-          </p>
-        ) : null}
+              <h2
+                id="all-values-other-heading"
+                className="bg-mapache-vivid-primary-cyan border-y-8 border-black px-4 py-3 text-center text-2xl font-black text-black uppercase"
+              >
+                All Other Values
+              </h2>
+              <ol className="mt-5 flex flex-col gap-5">
+                {renderRows(visibleValues.filter(({ rank }) => rank > 5))}
+              </ol>
+            </section>
+          ) : null}
+          {!hasComparisons ? (
+            <section aria-labelledby="included-values-heading" className="mt-8">
+              <h2 id="included-values-heading" className="sr-only">
+                Included Values
+              </h2>
+              <ol className="flex flex-col gap-5">
+                {renderRows(visibleValues)}
+              </ol>
+            </section>
+          ) : null}
+          {visibleValues.length === 0 ? (
+            <p className="mt-8 border-4 border-black bg-white p-8 text-center text-2xl font-black text-black shadow-[8px_8px_0px_0px_#000000]">
+              No values match your search.
+            </p>
+          ) : null}
         </section>
       </section>
     </MapacheScreen>

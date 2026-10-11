@@ -219,7 +219,11 @@ describe("scoped controller input", () => {
 
   it("requires a fresh direction before repeating after connection or resume", () => {
     controller.buttons[15] = { pressed: true, touched: true, value: 1 }
-    render(<WebControlsProvider><Harness /></WebControlsProvider>)
+    render(
+      <WebControlsProvider>
+        <Harness />
+      </WebControlsProvider>,
+    )
     const menu = screen.getByRole("button", { name: "Menu" })
     menu.focus()
     tick(1000)
@@ -239,7 +243,11 @@ describe("scoped controller input", () => {
   })
 
   it("reconciles a disconnected controller after the window was unfocused", () => {
-    render(<WebControlsProvider><Harness /></WebControlsProvider>)
+    render(
+      <WebControlsProvider>
+        <Harness />
+      </WebControlsProvider>,
+    )
     button(4, true)
     expect(screen.getByRole("status")).toHaveTextContent("xbox")
     fireEvent(window, new Event("blur"))
@@ -255,7 +263,11 @@ describe("scoped controller input", () => {
       throw new DOMException("Temporarily unavailable", "SecurityError")
     })
     const choose = vi.fn()
-    render(<WebControlsProvider><Harness onChoose={choose} /></WebControlsProvider>)
+    render(
+      <WebControlsProvider>
+        <Harness onChoose={choose} />
+      </WebControlsProvider>,
+    )
     expect(frames.size).toBe(0)
     fireEvent(window, new Event("focus"))
     button(4, true)
@@ -267,9 +279,19 @@ describe("scoped controller input", () => {
     render(
       <WebControlsProvider>
         <main data-slot="mapache-screen">
-          <div role="region" aria-label="Values" tabIndex={0} data-controller-scroll="document" />
-          <details><summary tabIndex={0}>Technical details</summary><p>Error explanation</p></details>
-          <div role="dialog" hidden><button>Hidden action</button></div>
+          <div
+            role="region"
+            aria-label="Values"
+            tabIndex={0}
+            data-controller-scroll="document"
+          />
+          <details>
+            <summary tabIndex={0}>Technical details</summary>
+            <p>Error explanation</p>
+          </details>
+          <div role="dialog" hidden>
+            <button>Hidden action</button>
+          </div>
         </main>
       </WebControlsProvider>,
     )
@@ -283,7 +305,9 @@ describe("scoped controller input", () => {
     expect(screen.getByText("Technical details")).toHaveFocus()
     button(15, false)
     button(0, true)
-    expect(screen.getByText("Error explanation").closest("details")).toHaveAttribute("open")
+    expect(
+      screen.getByText("Error explanation").closest("details"),
+    ).toHaveAttribute("open")
   })
 
   it("retains a controller-dismissed custom draft and prevents cancellation during save", () => {
@@ -306,19 +330,27 @@ describe("scoped controller input", () => {
       </WebControlsProvider>
     )
     const { rerender } = render(view())
-    fireEvent.change(screen.getByLabelText("Value name"), { target: { value: "Craftsmanship" } })
-    fireEvent.change(screen.getByLabelText("Definition"), { target: { value: "To make things well." } })
+    fireEvent.change(screen.getByLabelText("Value name"), {
+      target: { value: "Craftsmanship" },
+    })
+    fireEvent.change(screen.getByLabelText("Definition"), {
+      target: { value: "To make things well." },
+    })
     button(1, true)
     expect(screen.queryByLabelText("Value name")).toBeNull()
     expect(screen.getByRole("button", { name: "Add value" })).toHaveFocus()
     expect(apply).not.toHaveBeenCalled()
     button(1, false)
     button(15, true)
-    expect(screen.getByRole("button", { name: "Continue editing" })).toHaveFocus()
+    expect(
+      screen.getByRole("button", { name: "Continue editing" }),
+    ).toHaveFocus()
     button(15, false)
     button(0, true)
     expect(screen.getByLabelText("Value name")).toHaveValue("Craftsmanship")
-    expect(screen.getByLabelText("Definition")).toHaveValue("To make things well.")
+    expect(screen.getByLabelText("Definition")).toHaveValue(
+      "To make things well.",
+    )
     button(0, false)
     rerender(view(true))
     button(8, true)

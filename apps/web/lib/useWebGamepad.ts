@@ -42,7 +42,10 @@ export default function useWebGamepad({
         id: string
         commands: ReadonlySet<ControllerCommand>
         repeatAt: number
-        repeatDirection: Extract<ControllerCommand, "up" | "down" | "left" | "right"> | null
+        repeatDirection: Extract<
+          ControllerCommand,
+          "up" | "down" | "left" | "right"
+        > | null
       }
     >()
 
@@ -84,13 +87,18 @@ export default function useWebGamepad({
         if (!controller || controller.mapping !== "standard") continue
         const previous = previousSamples.get(controller.index)
         const commands = readControllerCommands(controller, previous?.commands)
-        const isBaseline = shouldBaseline || !previous || previous.id !== controller.id
+        const isBaseline =
+          shouldBaseline || !previous || previous.id !== controller.id
         const next = {
           id: controller.id,
           commands,
-          repeatAt: isBaseline ? now + CONTROLLER_REPEAT_DELAY_MS : previous.repeatAt,
+          repeatAt: isBaseline
+            ? now + CONTROLLER_REPEAT_DELAY_MS
+            : previous.repeatAt,
           repeatDirection:
-            !isBaseline && previous.repeatDirection && commands.has(previous.repeatDirection)
+            !isBaseline &&
+            previous.repeatDirection &&
+            commands.has(previous.repeatDirection)
               ? previous.repeatDirection
               : null,
         }
@@ -99,13 +107,11 @@ export default function useWebGamepad({
         const pressed = [...commands].find(
           (command) => !previous.commands.has(command),
         )
-        const repeated =
-          now >= next.repeatAt ? next.repeatDirection : null
+        const repeated = now >= next.repeatAt ? next.repeatDirection : null
         if (pressed) {
           next.repeatAt = now + CONTROLLER_REPEAT_DELAY_MS
           if (isControllerDirection(pressed)) next.repeatDirection = pressed
-        }
-        else if (repeated) next.repeatAt = now + CONTROLLER_REPEAT_INTERVAL_MS
+        } else if (repeated) next.repeatAt = now + CONTROLLER_REPEAT_INTERVAL_MS
         const command = pressed ?? repeated
         if (command && !dispatched) {
           dispatched = true

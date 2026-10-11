@@ -13,9 +13,11 @@ function isControllerTargetVisible(element: HTMLElement) {
 }
 
 function getControllerFocusTargets() {
-  const dialogs = [...document.querySelectorAll<HTMLElement>(
-    '[role="dialog"], [role="alertdialog"]',
-  )].filter(isControllerTargetVisible)
+  const dialogs = [
+    ...document.querySelectorAll<HTMLElement>(
+      '[role="dialog"], [role="alertdialog"]',
+    ),
+  ].filter(isControllerTargetVisible)
   const scope =
     dialogs.at(-1) ??
     document.querySelector<HTMLElement>('[data-slot="mapache-screen"]')
