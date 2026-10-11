@@ -491,6 +491,12 @@ export default function AllValues({
           Add Custom Value
         </Button>
 
+        <section
+          role="region"
+          aria-label="Values"
+          tabIndex={0}
+          data-controller-scroll="document"
+        >
         {hasComparisons && visibleValues.some(({ rank }) => rank <= 5) ? (
           <section
             aria-labelledby="all-values-top-five-heading"
@@ -533,6 +539,7 @@ export default function AllValues({
             No values match your search.
           </p>
         ) : null}
+        </section>
       </section>
     </MapacheScreen>
   )

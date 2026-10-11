@@ -2,15 +2,22 @@ import type { ControllerCommand } from "@game/data/src/ControllerControls"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
 
 const CONTROLLER_FOCUS_TARGETS =
-  "button, a[href], input, select, textarea, [role=region][tabindex], [data-controller-scroll]"
+  "button, a[href], input, select, textarea, summary, [role=region][tabindex], [data-controller-scroll]"
 const CONTROLLER_SCROLL_STEP = 96
 
-function getControllerFocusTargets() {
-  const dialogs = document.querySelectorAll<HTMLElement>(
-    '[role="dialog"], [role="alertdialog"]',
+function isControllerTargetVisible(element: HTMLElement) {
+  return (
+    !element.closest('[hidden], [inert], [aria-hidden="true"]') &&
+    element.checkVisibility({ visibilityProperty: true, opacityProperty: true })
   )
+}
+
+function getControllerFocusTargets() {
+  const dialogs = [...document.querySelectorAll<HTMLElement>(
+    '[role="dialog"], [role="alertdialog"]',
+  )].filter(isControllerTargetVisible)
   const scope =
-    dialogs.item(dialogs.length - 1) ??
+    dialogs.at(-1) ??
     document.querySelector<HTMLElement>('[data-slot="mapache-screen"]')
   if (!scope) return []
   return [
@@ -20,11 +27,7 @@ function getControllerFocusTargets() {
       (element.tabIndex >= 0 ||
         element.matches('[role="radio"], [role="tab"]')) &&
       !element.matches(":disabled, [aria-disabled=true]") &&
-      !element.closest('[hidden], [inert], [aria-hidden="true"]') &&
-      element.checkVisibility({
-        visibilityProperty: true,
-        opacityProperty: true,
-      }),
+      isControllerTargetVisible(element),
   )
 }
 
@@ -54,7 +57,9 @@ export function moveWebControllerFocus(command: ControllerCommand) {
     active.matches('[role="region"], [data-controller-scroll]') &&
     (command === "up" || command === "down")
   ) {
-    active.scrollBy({
+    const scrollTarget =
+      active.dataset.controllerScroll === "document" ? window : active
+    scrollTarget.scrollBy({
       top: command === "up" ? -CONTROLLER_SCROLL_STEP : CONTROLLER_SCROLL_STEP,
       behavior: "instant",
     })
