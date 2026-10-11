@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test"
+import { expect, type Locator, type Page } from "@playwright/test"
 import { test } from "./fixtures"
 
 async function controllerButton(page: Page, button: number, pressed: boolean) {
@@ -18,6 +18,33 @@ async function controllerButton(page: Page, button: number, pressed: boolean) {
 async function tapControllerButton(page: Page, button: number) {
   await controllerButton(page, button, true)
   await controllerButton(page, button, false)
+}
+
+async function focusWithController(page: Page, target: Locator) {
+  await expect(target).toBeAttached()
+  for (let step = 0; step < 80; step++) {
+    if (await target.evaluate((element) => element === document.activeElement))
+      return
+    await tapControllerButton(page, 15)
+  }
+  await expect(target, "Controller navigation must reach this control").toBeFocused()
+}
+
+async function activateWithController(page: Page, target: Locator) {
+  await expect(target).toBeEnabled()
+  await focusWithController(page, target)
+  await tapControllerButton(page, 0)
+}
+
+async function startWithController(page: Page) {
+  await activateWithController(page, page.getByRole("button", { name: "Start", exact: true }))
+  await expect(page.getByRole("button", { name: "Battle", exact: true })).toBeEnabled()
+}
+
+async function enterKeyboardText(page: Page, target: Locator, text: string) {
+  await focusWithController(page, target)
+  await page.keyboard.press("ControlOrMeta+A")
+  await page.keyboard.insertText(text)
 }
 
 test.beforeEach(async ({ page }) => {
@@ -63,6 +90,7 @@ test.beforeEach(async ({ page }) => {
     })
   })
   await page.emulateMedia({ reducedMotion: "reduce" })
+  await page.setViewportSize({ width: 1280, height: 800 })
   await page.goto("/")
   await page.bringToFront()
 })
@@ -83,20 +111,18 @@ test("controller starts play, makes one held choice, guards overlays, and return
   await expect(
     page.getByRole("heading", { name: "My Values", exact: true }),
   ).toBeVisible()
-  await page.getByRole("button", { name: "Battle", exact: true }).click()
+  await activateWithController(page, page.getByRole("button", { name: "Battle", exact: true }))
   const choices = page.getByRole("button", { name: /^Choose / })
   await expect(choices.first()).toBeEnabled()
-  await page
-    .getByRole("button", { name: "Skip battle animations", exact: true })
-    .click()
+  await activateWithController(page, page.getByRole("button", { name: "Skip battle animations", exact: true }))
   await expect(choices.first()).toBeEnabled()
   const initialChoices = await choices.allTextContents()
   await controllerButton(page, 4, true)
   await expect(
     page.getByRole("button", { name: "Undo", exact: true }),
   ).toBeEnabled()
+  await expect.poll(() => choices.allTextContents()).not.toEqual(initialChoices)
   const nextChoices = await choices.allTextContents()
-  expect(nextChoices).not.toEqual(initialChoices)
   await page.screenshot({
     path: test.info().outputPath("controller-battle.png"),
   })
@@ -135,8 +161,8 @@ test("controller hints stay supplementary and readable at 320px", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 740 })
-  await page.getByRole("button", { name: "Start", exact: true }).click()
-  await page.getByRole("button", { name: "Battle", exact: true }).click()
+  await startWithController(page)
+  await activateWithController(page, page.getByRole("button", { name: "Battle", exact: true }))
   await expect(
     page.getByRole("button", { name: /^Choose / }).first(),
   ).toBeEnabled()
@@ -161,7 +187,7 @@ test("controller hints stay supplementary and readable at 320px", async ({
   ).toBeLessThanOrEqual(320)
   await page.screenshot({ path: test.info().outputPath("controller-320.png") })
   await tapControllerButton(page, 9)
-  await page.getByRole("button", { name: "Controls", exact: true }).click()
+  await activateWithController(page, page.getByRole("button", { name: "Controls", exact: true }))
   await expect(
     page.getByRole("heading", { name: "Controller", exact: true }),
   ).toHaveCount(1)
@@ -169,4 +195,76 @@ test("controller hints stay supplementary and readable at 320px", async ({
   await expect(
     page.getByRole("dialog", { name: "Controls", exact: true }),
   ).toHaveCount(0)
+})
+
+test("controller authors a value, scrolls the catalog and cancels edit and delete reviews", async ({ page }) => {
+  test.info().annotations.push({ type: "evidence-limit", description: "Text input exercises the keyboard event seam; the physical Steam keyboard remains manual Deck QA." })
+  await startWithController(page)
+  await activateWithController(page, page.getByRole("button", { name: "Add value", exact: true }))
+  await enterKeyboardText(page, page.getByRole("textbox", { name: "Value name", exact: true }), "Craftsmanship")
+  await enterKeyboardText(page, page.getByRole("textbox", { name: "Definition", exact: true }), "To take care in making things well.")
+  await tapControllerButton(page, 1)
+  await expect(page.getByRole("textbox", { name: "Value name", exact: true })).toHaveCount(0)
+  await activateWithController(page, page.getByRole("button", { name: "Continue editing", exact: true }))
+  await expect(page.getByRole("textbox", { name: "Value name", exact: true })).toHaveValue("Craftsmanship")
+  await activateWithController(page, page.getByRole("button", { name: "Save", exact: true }))
+  await expect(page.getByRole("textbox", { name: "Value name", exact: true })).toHaveCount(0)
+  await activateWithController(page, page.getByRole("button", { name: "Browse All Values", exact: true }))
+  const values = page.getByRole("region", { name: "Values", exact: true })
+  await focusWithController(page, values)
+  const beforeScroll = await page.evaluate(() => window.scrollY)
+  await tapControllerButton(page, 13)
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(beforeScroll)
+  await enterKeyboardText(page, page.getByRole("searchbox", { name: "Search All Values", exact: true }), "Craftsmanship")
+  const row = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Craftsmanship", exact: true }) })
+  await expect(row).toHaveCount(1)
+  await activateWithController(page, row.getByRole("button", { name: "Edit", exact: true }))
+  await enterKeyboardText(page, page.getByRole("textbox", { name: "What This Value Means to Me", exact: true }), "A reviewed change.")
+  await activateWithController(page, page.getByRole("button", { name: "Review Update", exact: true }))
+  await expect(page.getByRole("alertdialog", { name: "Update Craftsmanship?", exact: true })).toBeVisible()
+  await tapControllerButton(page, 1)
+  await expect(page.getByRole("alertdialog")).toHaveCount(0)
+  await expect(page.getByRole("textbox", { name: "What This Value Means to Me", exact: true })).toHaveValue("A reviewed change.")
+  await tapControllerButton(page, 1)
+  await expect(row.getByRole("button", { name: "Edit", exact: true })).toBeFocused()
+  await expect(row).toContainText("To take care in making things well.")
+  await activateWithController(page, row.getByRole("button", { name: "Delete", exact: true }))
+  await expect(page.getByRole("alertdialog", { name: "Remove Craftsmanship?", exact: true })).toBeVisible()
+  await tapControllerButton(page, 8)
+  await expect(page.getByRole("alertdialog")).toHaveCount(0)
+  await expect(row.getByRole("button", { name: "Delete", exact: true })).toBeFocused()
+  await tapControllerButton(page, 8)
+  await expect(page.getByRole("button", { name: "Battle", exact: true })).toBeVisible()
+})
+
+test("controller changes settings, customizes a hero and saves a shareable PNG", async ({ page }) => {
+  await startWithController(page)
+  await tapControllerButton(page, 9)
+  await activateWithController(page, page.getByRole("button", { name: "Settings", exact: true }))
+  await activateWithController(page, page.getByRole("radio", { name: /^Always/ }))
+  await expect(page.getByRole("radio", { name: /^Always/ })).toBeChecked()
+  await tapControllerButton(page, 8)
+  await activateWithController(page, page.getByRole("button", { name: "Customize my card", exact: true }))
+  const skin = page.getByRole("button", { name: "Skin 2", exact: true })
+  await activateWithController(page, skin)
+  await expect(skin).toHaveAttribute("aria-pressed", "true")
+  await tapControllerButton(page, 8)
+  const review = page.getByRole("dialog", { name: "Keep your changes?", exact: true })
+  await expect(review).toBeVisible()
+  await activateWithController(page, review.getByRole("button", { name: "Keep editing", exact: true }))
+  await expect(review).toHaveCount(0)
+  await expect(skin).toHaveAttribute("aria-pressed", "true")
+  await tapControllerButton(page, 8)
+  await activateWithController(page, review.getByRole("button", { name: "Save and return", exact: true }))
+  await activateWithController(page, page.getByRole("button", { name: "Share my values card", exact: true }))
+  const share = page.getByRole("dialog", { name: "Share my values card", exact: true })
+  await activateWithController(page, share.getByRole("button", { name: "PNG · Still", exact: true }))
+  const save = share.getByRole("button", { name: "Save PNG", exact: true })
+  await expect(save).toBeEnabled()
+  const download = page.waitForEvent("download")
+  await activateWithController(page, save)
+  expect((await download).suggestedFilename()).toBe("my-values-card.png")
+  await tapControllerButton(page, 1)
+  await expect(share).toHaveCount(0)
+  await expect(page.getByRole("button", { name: "Share my values card", exact: true })).toBeFocused()
 })
