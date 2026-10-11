@@ -34,7 +34,7 @@ export default function useWebGamepad({
   useEffect(() => {
     if (typeof navigator.getGamepads !== "function") return
     let animationFrame: number | null = null
-    let available = true
+    let shouldBaseline = true
     let previouslyUnsupported = false
     const previousSamples = new Map<
       number,
@@ -42,23 +42,25 @@ export default function useWebGamepad({
         id: string
         commands: ReadonlySet<ControllerCommand>
         repeatAt: number
+        repeatDirection: Extract<ControllerCommand, "up" | "down" | "left" | "right"> | null
       }
     >()
 
     const stop = () => {
       if (animationFrame !== null) cancelAnimationFrame(animationFrame)
       animationFrame = null
-      previousSamples.clear()
+      shouldBaseline = true
     }
 
     const poll = (now: number) => {
       animationFrame = null
-      if (!available || document.hidden || !document.hasFocus()) return
+      if (document.hidden || !document.hasFocus()) return
       let controllers: (Gamepad | null)[]
       try {
         controllers = navigator.getGamepads()
       } catch {
-        available = false
+        for (const index of previousSamples.keys()) handleDisconnect(index)
+        previousSamples.clear()
         return
       }
       const connected = controllers.filter(
@@ -82,21 +84,27 @@ export default function useWebGamepad({
         if (!controller || controller.mapping !== "standard") continue
         const previous = previousSamples.get(controller.index)
         const commands = readControllerCommands(controller, previous?.commands)
+        const isBaseline = shouldBaseline || !previous || previous.id !== controller.id
         const next = {
           id: controller.id,
           commands,
-          repeatAt: previous?.repeatAt ?? now + CONTROLLER_REPEAT_DELAY_MS,
+          repeatAt: isBaseline ? now + CONTROLLER_REPEAT_DELAY_MS : previous.repeatAt,
+          repeatDirection:
+            !isBaseline && previous.repeatDirection && commands.has(previous.repeatDirection)
+              ? previous.repeatDirection
+              : null,
         }
         previousSamples.set(controller.index, next)
-        if (!previous || previous.id !== controller.id) continue
+        if (isBaseline) continue
         const pressed = [...commands].find(
           (command) => !previous.commands.has(command),
         )
         const repeated =
-          now >= previous.repeatAt
-            ? [...commands].find(isControllerDirection)
-            : undefined
-        if (pressed) next.repeatAt = now + CONTROLLER_REPEAT_DELAY_MS
+          now >= next.repeatAt ? next.repeatDirection : null
+        if (pressed) {
+          next.repeatAt = now + CONTROLLER_REPEAT_DELAY_MS
+          if (isControllerDirection(pressed)) next.repeatDirection = pressed
+        }
         else if (repeated) next.repeatAt = now + CONTROLLER_REPEAT_INTERVAL_MS
         const command = pressed ?? repeated
         if (command && !dispatched) {
@@ -108,6 +116,7 @@ export default function useWebGamepad({
           handleCommand(command)
         }
       }
+      shouldBaseline = false
       if (connected.some((controller) => controller?.mapping === "standard"))
         animationFrame = requestAnimationFrame(poll)
     }
