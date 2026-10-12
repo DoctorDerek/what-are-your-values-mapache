@@ -50,6 +50,7 @@ describe("animal card attention", () => {
     )
     const choice = screen.getByRole("button", { name: /^Choose / })
     expect(screen.getByRole("heading").textContent).toBe(value.englishName)
+    expect(screen.getByRole("heading")).toHaveAttribute("lang", "en")
     expect(choice).toHaveAccessibleDescription(`“${value.sourceDefinition}”`)
     expect(choice.textContent).not.toMatch(/[\u00ad\u200b]/u)
     fireEvent.click(choice)
@@ -78,7 +79,9 @@ describe("animal card attention", () => {
     expect(choice).toHaveAccessibleDescription(
       `“${getValueDisplayDefinition(value)}”`,
     )
-    expect(screen.getAllByText(getValueDisplayName(value))).toHaveLength(1)
+    expect(
+      screen.getAllByRole("heading", { name: getValueDisplayName(value) }),
+    ).toHaveLength(1)
     expect(screen.getByText("Level 1")).toBeVisible()
     const animal = screen.getByText("Animal resting")
     expect(animal.closest("label")).toHaveAttribute("aria-hidden", "true")

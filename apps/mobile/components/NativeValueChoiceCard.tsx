@@ -1,3 +1,4 @@
+import { getBattleValueDisplayName } from "@game/data/src/BattleValueTypography"
 import {
   getValueDisplayDefinition,
   getValueDisplayName,
@@ -82,12 +83,14 @@ function NativeValueChoiceCard(
         >
           <View className="w-full items-center">
             <Text
+              accessibilityLabel={displayName}
               variant="h2"
-              className="w-full min-w-0 text-center text-2xl leading-8 font-black tracking-tight text-white uppercase xl:text-5xl xl:leading-[56px]"
+              className="w-full min-w-0 text-center text-2xl leading-8 font-black tracking-tight text-white xl:text-5xl xl:leading-[56px]"
+              android_hyphenationFrequency="full"
               lineBreakStrategyIOS="push-out"
               textBreakStrategy="balanced"
             >
-              {displayName}
+              {getBattleValueDisplayName(value)}
             </Text>
             <View className="mt-2 w-full min-w-0 flex-row flex-wrap items-center justify-between gap-2 xl:gap-5">
               <Text
@@ -103,7 +106,10 @@ function NativeValueChoiceCard(
                 LVL {level}
               </Text>
             </View>
-            <Text className="mt-3 w-full border-2 border-white bg-black/50 p-3 text-center text-lg leading-7 font-bold text-white xl:mt-6 xl:p-5 xl:text-xl xl:leading-8">
+            <Text
+              android_hyphenationFrequency="full"
+              className="mt-3 w-full border-2 border-white bg-black/50 p-3 text-center text-lg leading-7 font-bold text-white xl:mt-6 xl:p-5 xl:text-xl xl:leading-8"
+            >
               “{displayDefinition}”
             </Text>
           </View>

@@ -69,6 +69,8 @@ describe("values-card composition", () => {
       "#ffe652",
       "#18233e",
       "#384873",
+      "#1e1e1e",
+      "#ffffff",
     ])
     paintValuesCard({ painter, model: card, palette, frame: 0, hero: null })
     expect(painter.rectangle).toHaveBeenCalledWith(
@@ -84,6 +86,8 @@ describe("values-card composition", () => {
       expect.objectContaining({
         value: "Play free at WhatAreYourValuesMapache.com",
         weight: 700,
+        size: 56,
+        color: palette.invitationText,
       }),
     )
   })
@@ -92,7 +96,7 @@ describe("values-card composition", () => {
     expect(() => readValuesCardPalette([undefined])).toThrow("colors")
   })
 
-  it("paints the ranked heading on two equally prominent lines above the values", () => {
+  it("paints one ranked heading and an integrated invitation inside the frame", () => {
     const painter: ValuesCardPainter = {
       rectangle: vi.fn(),
       sprite: vi.fn(),
@@ -106,31 +110,35 @@ describe("values-card composition", () => {
       "#ffe652",
       "#18233e",
       "#384873",
+      "#1e1e1e",
+      "#ffffff",
     ])
     paintValuesCard({
       painter,
-      model: { ...model(), hasComparisons: true },
+      model: {
+        ...model(),
+        hasComparisons: true,
+        title: "My Top Five Life Values",
+      },
       palette,
       frame: 0,
       hero: null,
     })
     expect(painter.text).toHaveBeenCalledWith({
-      value: "My Top Five",
+      value: "My Top Five Life Values",
       x: 800,
-      y: 76,
-      size: 64,
+      y: 125,
+      size: 96,
       weight: 900,
       color: palette.ink,
       align: "center",
     })
-    expect(painter.text).toHaveBeenCalledWith({
-      value: "Life Values",
-      x: 800,
-      y: 148,
-      size: 64,
-      weight: 900,
-      color: palette.ink,
-      align: "center",
-    })
+    expect(painter.text).not.toHaveBeenCalledWith(
+      expect.objectContaining({ value: "Life Values" }),
+    )
+    expect(painter.rectangle).toHaveBeenLastCalledWith(
+      { x: 12, y: 780, width: 1576, height: 108 },
+      palette.invitationBackground,
+    )
   })
 })

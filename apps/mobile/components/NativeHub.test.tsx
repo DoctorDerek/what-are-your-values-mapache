@@ -247,6 +247,13 @@ describe("NativeHub", () => {
       />,
     )
     expect(screen.getByText("My Values")).toBeOnTheScreen()
+    expect(
+      screen.getByRole("header", { name: "What Are Your Values, Mapache?" }),
+    ).toBeOnTheScreen()
+    expect(screen.queryByText("Home screen")).toBeNull()
+    expect(
+      screen.queryByText("Play free at WhatAreYourValuesMapache.com"),
+    ).toBeNull()
     expect(screen.getByText(/Not ranked yet/)).toBeOnTheScreen()
     expect(screen.queryByText("#1")).toBeNull()
     for (const name of ["Acceptance", "Accuracy", "Achievement"])
@@ -274,7 +281,9 @@ describe("NativeHub", () => {
         rankedValues={rankedValues}
       />,
     )
-    expect(screen.getByText("My Top Five Life Values")).toBeOnTheScreen()
+    expect(
+      screen.getByRole("header", { name: "My Top Five Life Values" }),
+    ).toBeOnTheScreen()
     expect(screen.getByText("Your imported data is ready.")).toBeOnTheScreen()
     expect(screen.getByText("#1")).toBeOnTheScreen()
     expect(screen.queryByText("#6")).toBeNull()

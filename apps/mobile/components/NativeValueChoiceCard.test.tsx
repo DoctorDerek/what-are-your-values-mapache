@@ -61,7 +61,7 @@ describe("NativeValueChoiceCard", () => {
       getValueDisplayDefinition(selfAcceptance),
     )
     expect(
-      screen.getAllByText(getValueDisplayName(selfAcceptance), {
+      screen.getAllByLabelText(getValueDisplayName(selfAcceptance), {
         includeHiddenElements: true,
       }),
     ).toHaveLength(1)
@@ -195,13 +195,14 @@ describe("NativeValueChoiceCard", () => {
         <NativeValueChoiceCard {...props} />,
       )
       const displayName = getValueDisplayName(choiceCase.value)
-      const name = screen.getByText(displayName)
+      const name = screen.getByLabelText(displayName)
       const choice = screen.getByRole("button", {
         name: getValueChoiceAccessibilityLabel(choiceCase),
       })
 
       expect(name).toHaveProp("lineBreakStrategyIOS", "push-out")
       expect(name).toHaveProp("textBreakStrategy", "balanced")
+      expect(name).toHaveProp("android_hyphenationFrequency", "full")
       expect(name.props.numberOfLines).toBeUndefined()
       expect(name.props.ellipsizeMode).toBeUndefined()
       expect(choice).toHaveProp(

@@ -1,7 +1,6 @@
 const rankedTitleLines = Object.freeze(["My Top Five", "Life Values"])
 
 export const PERSONAL_HUB_COPY = Object.freeze({
-  screenTitle: "Home screen",
   rankedTitle: rankedTitleLines.join(" "),
   rankedTitleLines,
   unrankedTitle: "My Values",
