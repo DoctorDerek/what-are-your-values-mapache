@@ -2,7 +2,7 @@
 /// <reference lib="webworker" />
 
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist"
-import { CacheFirst, Serwist } from "serwist"
+import { CacheFirst, NetworkFirst, Serwist } from "serwist"
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -16,6 +16,13 @@ const animalCacheName = "wayvm-animal-strips-v1"
 const animalStripPath = /^\/_next\/static\/media\/[^/]+_strip\d+\.[^/]+\.png$/
 const heroLayerPath =
   /^\/_next\/static\/media\/(?:skin_c\d+|face_c\d+|[mf]\d+_c\d+_(?:top|bot)|cloth\d+_c\d+_(?:top|bot)|weapon\d+(?:_c\d+)?_(?:top|bot))\.[^/]+\.png$/
+
+function isArrivalAsset(url: URL) {
+  return (
+    url.origin === self.location.origin &&
+    url.pathname.startsWith("/generated/mapachito/")
+  )
+}
 
 function isOnDemandArtwork(url: URL) {
   return (
@@ -47,6 +54,12 @@ self.addEventListener("install", (event) => {
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST?.filter(
     (entry) =>
+      !isArrivalAsset(
+        new URL(
+          typeof entry === "string" ? entry : entry.url,
+          self.location.href,
+        ),
+      ) &&
       !isOnDemandArtwork(
         new URL(
           typeof entry === "string" ? entry : entry.url,
@@ -55,6 +68,10 @@ const serwist = new Serwist({
       ),
   ),
   runtimeCaching: [
+    {
+      matcher: ({ url }) => isArrivalAsset(url),
+      handler: new NetworkFirst({ cacheName: "wayvm-arrival-v1" }),
+    },
     {
       matcher: ({ url }) => isOnDemandArtwork(url),
       handler: new CacheFirst({ cacheName: animalCacheName }),
