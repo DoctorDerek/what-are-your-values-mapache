@@ -32,13 +32,13 @@ export default function FirstArrivalRaccoon({
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-x-0 bottom-3 overflow-hidden"
+      className="pointer-events-none absolute bottom-3 left-1/2 w-screen -translate-x-1/2 overflow-hidden"
       style={style}
     >
       <div
         data-testid="arrival-raccoon"
         className={cx(
-          "animate-arrival-raccoon w-fit",
+          "animate-arrival-raccoon relative -left-(--arrival-runner-width) w-[calc(100%+var(--arrival-runner-width))]",
           !isReady && "[animation-play-state:paused]",
         )}
         onAnimationEnd={(event) => {
@@ -50,6 +50,7 @@ export default function FirstArrivalRaccoon({
           geometry={raccoon.geometry}
           frameDurationMs={SEETHING_SWARM_ATTENTION_FRAME_DURATION_MS}
           shouldReduceMotion={false}
+          preload
           onReady={handleReady}
           onLoadError={onComplete}
         />

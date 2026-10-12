@@ -63,7 +63,7 @@ export default function NativeFirstArrivalRaccoon({
       accessible={false}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      className="absolute inset-x-0 bottom-3 overflow-hidden"
+      className="absolute bottom-3 left-1/2 w-screen -translate-x-1/2 overflow-hidden"
       style={{ height: raccoon.geometry.height }}
     >
       <Animated.View style={[style, { width: raccoon.geometry.width }]}>

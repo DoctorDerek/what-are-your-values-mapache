@@ -11,10 +11,10 @@
 
 @keyframes arrival-raccoon {
   from {
-    transform: translateX(calc(-1 * var(--arrival-runner-width)));
+    transform: translateX(0);
   }
   to {
-    transform: translateX(100cqw);
+    transform: translateX(100%);
   }
 }
 
