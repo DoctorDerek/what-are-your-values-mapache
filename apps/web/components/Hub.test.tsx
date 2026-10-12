@@ -274,6 +274,16 @@ describe("Hub Component Integration", () => {
       screen.getByRole("heading", { name: "My Values", level: 2 }),
     ).toBeVisible()
     expect(
+      screen.getByRole("heading", {
+        name: "What Are Your Values, Mapache?",
+        level: 1,
+      }),
+    ).toBeVisible()
+    expect(screen.queryByText("Home screen")).not.toBeInTheDocument()
+    expect(
+      screen.queryByText("Play free at WhatAreYourValuesMapache.com"),
+    ).not.toBeInTheDocument()
+    expect(
       screen.getByRole("region", { name: "Included values" }),
     ).toBeVisible()
     expect(screen.getByText(/Not ranked yet/)).toBeVisible()

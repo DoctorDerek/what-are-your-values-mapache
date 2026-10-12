@@ -182,7 +182,9 @@ describe("Crucible Component Integration", () => {
         ({ id }) => id === valueId,
       )
       if (!value) throw new Error("Initial battle value is missing")
-      expect(renderedChoices[0][index]).toContain(getValueDisplayName(value))
+      expect(renderedChoices[0][index]?.replaceAll("\u00ad", "")).toContain(
+        getValueDisplayName(value),
+      )
       expect(renderedChoices[0][index]).toContain(
         getValueDisplayDefinition(value),
       )
@@ -481,8 +483,12 @@ describe("Crucible Component Integration", () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText(getValueDisplayName(winner))).toBeVisible()
-      expect(screen.getByText(getValueDisplayName(loser))).toBeVisible()
+      expect(
+        screen.getByRole("heading", { name: getValueDisplayName(winner) }),
+      ).toBeVisible()
+      expect(
+        screen.getByRole("heading", { name: getValueDisplayName(loser) }),
+      ).toBeVisible()
     })
 
     act(() => {

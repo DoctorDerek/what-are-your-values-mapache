@@ -29,6 +29,8 @@ jest.mock("uniwind", () => ({
     "#ffe652",
     "#18233e",
     "#384873",
+    "#1e1e1e",
+    "#ffffff",
   ],
 }))
 const prepare = jest.mocked(prepareNativeValuesCard)
