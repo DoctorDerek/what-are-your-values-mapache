@@ -75,7 +75,7 @@ describe("Settings", () => {
     )
     expect(
       within(screen.getByRole("region", { name: "Language" })).getByText(
-        "English",
+        "English (US)",
       ),
     ).toBeVisible()
     expect(followSystem).toBeChecked()

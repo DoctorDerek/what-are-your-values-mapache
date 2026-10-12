@@ -494,6 +494,31 @@ function createActorErrorPromise(
 }
 
 describe("Root Machine", () => {
+  it("holds Introduction language in the pending profile until Start commits it", async () => {
+    const { actor, durableStore } = await bootRootActor({
+      skipIntroduction: true,
+    })
+    const pending = actor.getSnapshot().context.playerData!
+    actor.send({ type: "INTRODUCTION.LOCALE_SELECTED", locale: "en" })
+    const selected = actor.getSnapshot().context.playerData!
+    expect(selected.settings.locale).toBe("en")
+    expect(selected.profile).toEqual(pending.profile)
+    expect(selected.achievements).toEqual(pending.achievements)
+    await expect(durableStore.readAll()).resolves.toEqual(new Map())
+    actor.send({ type: "INTRODUCTION.COMPLETED" })
+    const saved = await waitFor(actor, (snapshot) => snapshot.matches("Hub"))
+    expect(
+      saved.context.battleProfileStoreState?.head.playerData.settings,
+    ).toEqual(selected.settings)
+    expect(saved.context.playerData?.profile).toEqual(selected.profile)
+    actor.stop()
+    const restored = await bootRootActor({ durableStore })
+    expect(restored.actor.getSnapshot().matches("Hub")).toBe(true)
+    expect(restored.actor.getSnapshot().context.playerData?.settings).toEqual(
+      selected.settings,
+    )
+    restored.actor.stop()
+  })
   it("hydrates a fresh canonical profile and initializes after introduction", async () => {
     const { actor, durableStore } = await bootRootActor({
       skipIntroduction: true,

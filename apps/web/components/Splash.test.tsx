@@ -3,8 +3,29 @@ import { describe, expect, it, vi } from "vitest"
 import Splash from "@/components/Splash"
 
 describe("Introduction Component Integration", () => {
+  it("places the supported language choice outside the scroll body and preserves the creator link", () => {
+    const onLocaleChange = vi.fn()
+    render(
+      <Splash
+        onComplete={vi.fn()}
+        onLocaleChange={onLocaleChange}
+        shouldReduceMotion
+      />,
+    )
+    const selector = screen.getByRole("combobox", { name: "Language" })
+    expect(screen.getByTestId("information-panel-body")).not.toContainElement(
+      selector,
+    )
+    expect(selector).toHaveDisplayValue("English (US)")
+    fireEvent.change(selector, { target: { value: "en" } })
+    expect(onLocaleChange).toHaveBeenCalledExactlyOnceWith("en")
+    expect(
+      screen.getByRole("link", { name: "DoctorDerek.com" }),
+    ).toHaveAttribute("target", "_blank")
+    expect(screen.queryByTestId("arrival-ice-cream")).toBeNull()
+  })
   it("presents the approved first-contact truth without retired claims", () => {
-    render(<Splash onComplete={vi.fn()} />)
+    render(<Splash onComplete={vi.fn()} onLocaleChange={vi.fn()} />)
 
     expect(
       screen.getByRole("heading", {
@@ -35,7 +56,7 @@ describe("Introduction Component Integration", () => {
   it("starts immediately without requiring the scroll body to reach its end", () => {
     const onComplete = vi.fn()
 
-    render(<Splash onComplete={onComplete} />)
+    render(<Splash onComplete={onComplete} onLocaleChange={vi.fn()} />)
 
     fireEvent.click(screen.getByRole("button", { name: "Start" }))
     expect(onComplete).toHaveBeenCalledTimes(1)
@@ -44,6 +65,7 @@ describe("Introduction Component Integration", () => {
   it("announces completed local erasure before a fresh start", () => {
     render(
       <Splash
+        onLocaleChange={vi.fn()}
         notice="All local WAYVM player data was deleted."
         onComplete={vi.fn()}
       />,
