@@ -18,6 +18,8 @@ export const VALUES_CARD_COLOR_VARIABLES = [
   "--color-player-card-rank",
   "--color-player-card-ink",
   "--color-player-card-muted",
+  "--color-mapache-vivid-dark",
+  "--color-mapache-vivid-white",
 ] as const
 
 export type ValuesCardPalette = Readonly<{
@@ -27,12 +29,14 @@ export type ValuesCardPalette = Readonly<{
   rank: string
   ink: string
   muted: string
+  invitationBackground: string
+  invitationText: string
 }>
 
 export function readValuesCardPalette(
   values: readonly unknown[],
 ): ValuesCardPalette {
-  const [frame, background, plane, rank, ink, muted] = values
+  const [frame, background, plane, rank, ink, muted, invitationBackground, invitationText] = values
   if (
     typeof frame !== "string" ||
     !frame.trim() ||
@@ -45,10 +49,14 @@ export function readValuesCardPalette(
     typeof ink !== "string" ||
     !ink.trim() ||
     typeof muted !== "string" ||
-    !muted.trim()
+    !muted.trim() ||
+    typeof invitationBackground !== "string" ||
+    !invitationBackground.trim() ||
+    typeof invitationText !== "string" ||
+    !invitationText.trim()
   )
     throw new Error("The values-card colors are unavailable")
-  return { frame, background, values: plane, rank, ink, muted }
+  return { frame, background, values: plane, rank, ink, muted, invitationBackground, invitationText }
 }
 
 export const VALUES_CARD_COPY = Object.freeze({

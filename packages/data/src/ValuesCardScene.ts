@@ -1,6 +1,5 @@
 import { graphemeSegments } from "unicode-segmenter/grapheme"
 import { HEROES99_IDLE_FRAME_COUNT } from "./Heroes99SpatialArchitecture"
-import { PERSONAL_HUB_COPY } from "./PersonalHubCopy"
 import { SEETHING_SWARM_CALM_FRAME_DURATION_MS } from "./SeethingSwarmAnimalPresentation"
 import {
   VALUES_CARD_COPY,
@@ -97,20 +96,15 @@ export function paintValuesCard<Asset>({
     palette.background,
   )
   painter.rectangle({ x: 12, y: 170, width: 1576, height: 610 }, palette.values)
-  const titleLines = model.hasComparisons
-    ? PERSONAL_HUB_COPY.rankedTitleLines
-    : [model.title]
-  titleLines.forEach((value, index) =>
-    painter.text({
-      value,
-      x: 800,
-      y: model.hasComparisons ? 76 + index * 72 : 125,
-      size: model.hasComparisons ? 64 : 96,
-      weight: 900,
-      color: palette.ink,
-      align: "center",
-    }),
-  )
+  painter.text({
+    value: model.title,
+    x: 800,
+    y: 125,
+    size: 96,
+    weight: 900,
+    color: palette.ink,
+    align: "center",
+  })
   if (hero) {
     const scale = Math.max(
       1,
@@ -205,13 +199,17 @@ export function paintValuesCard<Asset>({
       align: "right",
     })
   }
+  painter.rectangle(
+    { x: 12, y: 780, width: 1576, height: 108 },
+    palette.invitationBackground,
+  )
   painter.text({
     value: VALUES_CARD_COPY.invitation,
     x: 800,
     y: 856,
-    size: 68,
+    size: 56,
     weight: 700,
-    color: palette.muted,
+    color: palette.invitationText,
     align: "center",
   })
 }
