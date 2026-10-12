@@ -52,6 +52,7 @@ apps/web/generated/seethingswarm/
 apps/mobile/generated/seethingswarm/
 apps/web/generated/heroes99/
 apps/mobile/generated/heroes99/
+apps/web/public/generated/mapachito/
 
 # Other Next.js
 node_modules

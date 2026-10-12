@@ -1,6 +1,7 @@
 import { resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { prepareHeroes99Assets } from "./Heroes99AssetPreparer"
+import { prepareMapachitoAssets } from "./MapachitoAssetPreparer"
 import { generateSeethingSwarmNativeRuntimeClipCatalogModule } from "./SeethingSwarmNativeRuntimeClipCatalogModuleGenerator"
 import {
   prepareSeethingSwarmPresentationAssets,
@@ -57,4 +58,5 @@ const directEntryPath = process.argv[2] ? resolve(process.argv[2]) : ""
 if (directEntryPath === fileURLToPath(import.meta.url)) {
   await runSeethingSwarmPresentationPreparationCli()
   await prepareHeroes99Assets(process.cwd())
+  await prepareMapachitoAssets(process.cwd())
 }
