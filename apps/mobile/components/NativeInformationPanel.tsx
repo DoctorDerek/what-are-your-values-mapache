@@ -48,7 +48,7 @@ function NativeInformationPanelFrame({
           className={cx(
             "relative m-auto w-full flex-1 border-4 border-black bg-white shadow-[8px_8px_0px_0px_#000000]",
             isIntroduction
-              ? "max-h-184 max-w-4xl overflow-visible"
+              ? "max-h-184 max-w-4xl overflow-visible xl:max-w-5xl"
               : "max-h-full max-w-3xl overflow-hidden",
           )}
         >
@@ -65,7 +65,7 @@ function NativeInformationPanelFrame({
               className={cx(
                 "relative z-20 text-center font-black",
                 isIntroduction
-                  ? "text-mapache-vivid-primary-cyan text-[28px] leading-tight xl:text-4xl"
+                  ? "text-mapache-vivid-primary-cyan text-[28px] leading-tight xl:text-[42px]"
                   : "text-mapache-vivid-primary-raspberry text-4xl tracking-tight uppercase",
                 accessibleCloseLabel && "pr-14",
               )}
@@ -102,14 +102,21 @@ function NativeInformationPanelFrame({
           <View
             className={cx(
               "relative z-20 border-t-4 border-black",
-              isIntroduction ? "gap-3 px-4 pt-3 pb-5 xl:px-8" : "p-5",
+              isIntroduction
+                ? "gap-3 px-4 pt-3 pb-5 xl:flex-row xl:items-center xl:gap-6 xl:px-8"
+                : "p-5",
             )}
           >
-            {beforePrimaryAction}
+            {beforePrimaryAction && (
+              <View className={cx(isIntroduction && "xl:flex-1")}>
+                {beforePrimaryAction}
+              </View>
+            )}
             <Button
               size="large"
               onPress={onPrimaryAction}
               disabled={isPrimaryActionPending}
+              className={cx(isIntroduction && "xl:flex-2")}
               accessibilityState={{
                 busy: isPrimaryActionPending,
                 disabled: isPrimaryActionPending,

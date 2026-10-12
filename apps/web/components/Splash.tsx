@@ -44,8 +44,9 @@ export default function Splash({
     <InformationPanel
       presentation="introduction"
       title={introductionCopy.title}
-      titleContent={FIRST_ARRIVAL_PRESENTATION.titleLines.map((line) => (
-        <span className="block" key={line}>
+      titleContent={FIRST_ARRIVAL_PRESENTATION.titleLines.map((line, index) => (
+        <span className="block xl:inline" key={line}>
+          {index > 0 && " "}
           {line}
         </span>
       ))}
@@ -81,16 +82,18 @@ export default function Splash({
       }
       afterActions={
         <div className="relative grid h-38 shrink-0 place-items-center border-t-4 border-black bg-black">
-          <Image
-            src={FIRST_ARRIVAL_PRESENTATION.posterUrl}
-            alt=""
-            fill
-            unoptimized
-            className="object-cover"
-            sizes="(min-width: 1280px) 896px, 100vw"
-          />
-          <div className="relative z-20 text-lg font-medium text-white">
-            <p className="text-2xl font-black xl:text-[26px]">
+          <div className="absolute inset-0 mx-auto max-w-100">
+            <Image
+              src={FIRST_ARRIVAL_PRESENTATION.posterUrl}
+              alt=""
+              fill
+              unoptimized
+              className="object-cover"
+              sizes="(min-width: 400px) 400px, 100vw"
+            />
+          </div>
+          <div className="relative z-20 grid gap-1 text-lg leading-7 font-medium text-white">
+            <p className="text-2xl leading-7 font-black xl:text-[26px]">
               {FIRST_ARRIVAL_PRESENTATION.gameCredit}
             </p>
             <p>{FIRST_ARRIVAL_PRESENTATION.creatorCredit}</p>
@@ -98,7 +101,7 @@ export default function Splash({
               href={FIRST_ARRIVAL_PRESENTATION.creatorWebsiteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center hover:opacity-80 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white active:opacity-70"
+              className="relative justify-self-center after:absolute after:-inset-x-2 after:-inset-y-2 hover:opacity-80 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white active:opacity-70"
             >
               {FIRST_ARRIVAL_PRESENTATION.creatorWebsiteLabel}
             </a>
@@ -109,7 +112,7 @@ export default function Splash({
       onPrimaryAction={onComplete}
       isPrimaryActionPending={isPending}
     >
-      <div className="flex flex-col gap-6 text-black">
+      <div className="mx-auto flex max-w-3xl flex-col gap-6 text-black">
         {notice ? (
           <p
             role="status"

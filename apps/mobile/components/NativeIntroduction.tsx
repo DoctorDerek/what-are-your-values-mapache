@@ -2,7 +2,7 @@ import { FIRST_ARRIVAL_PRESENTATION } from "@game/data/src/FirstArrivalPresentat
 import { introductionCopy } from "@game/data/src/IntroductionCopy"
 import type { SupportedLocale } from "@game/machines/src/PlayerSettings"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
-import { lazy, Suspense, useCallback, useState } from "react"
+import { Fragment, lazy, Suspense, useCallback, useState } from "react"
 import { Alert, Image, Linking, Pressable, View } from "react-native"
 import NativeFirstArrivalRaccoon from "@/components/NativeFirstArrivalRaccoon"
 import NativeInformationPanel from "@/components/NativeInformationPanel"
@@ -40,7 +40,13 @@ export default function NativeIntroduction({
     <NativeInformationPanel
       presentation="introduction"
       title={introductionCopy.title}
-      titleContent={FIRST_ARRIVAL_PRESENTATION.titleLines.join("\n")}
+      titleContent={FIRST_ARRIVAL_PRESENTATION.titleLines.map((line, index) => (
+        <Fragment key={line}>
+          {index > 0 && <Text className="xl:hidden">{"\n"}</Text>}
+          {index > 0 && " "}
+          {line}
+        </Fragment>
+      ))}
       titleDecoration={
         shouldPlay &&
         hasStarted && <NativeFirstArrivalRaccoon onComplete={handleFinished} />
@@ -74,22 +80,25 @@ export default function NativeIntroduction({
       }
       afterActions={
         <View className="relative h-38 shrink-0 items-center justify-center border-t-4 border-black bg-black">
-          <Image
-            source={require("@game/data/assets/mapachito/ice-cream.png")}
-            alt=""
-            accessible={false}
-            resizeMode="cover"
-            className="absolute inset-0 h-full w-full"
-          />
-          <View className="relative z-20 items-center">
-            <Text className="text-center text-2xl font-black text-white xl:text-[26px]">
+          <View className="absolute inset-0 mx-auto w-full max-w-100">
+            <Image
+              source={require("@game/data/assets/mapachito/ice-cream.png")}
+              alt=""
+              accessible={false}
+              resizeMode="cover"
+              className="h-full w-full"
+            />
+          </View>
+          <View className="relative z-20 items-center gap-1 py-2">
+            <Text className="text-center text-2xl leading-7 font-black text-white xl:text-[26px]">
               {FIRST_ARRIVAL_PRESENTATION.gameCredit}
             </Text>
-            <Text className="text-center text-lg font-medium text-white">
+            <Text className="text-center text-lg leading-7 font-medium text-white">
               {FIRST_ARRIVAL_PRESENTATION.creatorCredit}
             </Text>
             <Pressable
               accessibilityRole="link"
+              hitSlop={8}
               onPress={() => {
                 void Linking.openURL(
                   FIRST_ARRIVAL_PRESENTATION.creatorWebsiteUrl,
@@ -100,9 +109,9 @@ export default function NativeIntroduction({
                   ),
                 )
               }}
-              className="min-h-11 justify-center active:opacity-70"
+              className="justify-center active:opacity-70"
             >
-              <Text className="text-center text-lg font-medium text-white">
+              <Text className="text-center text-lg leading-7 font-medium text-white">
                 {FIRST_ARRIVAL_PRESENTATION.creatorWebsiteLabel}
               </Text>
             </Pressable>
