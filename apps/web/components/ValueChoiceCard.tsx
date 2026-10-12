@@ -1,5 +1,6 @@
 "use client"
 
+import { getBattleValueDisplayName } from "@game/data/src/BattleValueTypography"
 import {
   getValueDisplayDefinition,
   getValueDisplayName,
@@ -141,13 +142,15 @@ export const ValueChoiceCard = forwardRef<
               >
                 Level {level}
               </span>
-              <h2
+            <h2
+              aria-label={displayName}
+                lang={value.kind === "canonical" ? "en" : undefined}
                 className={cx(
-                  "clear-both mx-auto flow-root w-max max-w-full min-w-0 pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [overflow-wrap:anywhere] break-words hyphens-auto text-white uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000]",
+                  "clear-both mx-auto flow-root w-max max-w-full min-w-0 pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black [hyphenate-limit-chars:6_3_3] break-words hyphens-auto text-white drop-shadow-[4px_4px_0px_#000000] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000]",
                   Boolean(controlHint) && "xl:clear-none xl:pt-0",
                 )}
               >
-                {displayName}
+              {getBattleValueDisplayName(value)}
               </h2>
             </div>
             <p
