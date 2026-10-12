@@ -481,6 +481,14 @@ function NativeGameClientContent({
   if (state.matches("Splash") || state.matches("InitializingProfile"))
     return (
       <NativeIntroduction
+        locale={playerData?.settings.locale}
+        shouldReduceMotion={resolveShouldReduceMotion(
+          playerData?.settings.reducedMotion ?? "system",
+          systemShouldReduceMotion,
+        )}
+        onLocaleChange={(locale) =>
+          send({ type: "INTRODUCTION.LOCALE_SELECTED", locale })
+        }
         isPending={state.matches("InitializingProfile")}
         notice={state.context.portabilityNotice}
         onComplete={() => send({ type: "INTRODUCTION.COMPLETED" })}

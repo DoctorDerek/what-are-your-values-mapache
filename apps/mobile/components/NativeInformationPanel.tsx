@@ -13,6 +13,12 @@ type NativeInformationPanelFrameProps = Readonly<{
   isPrimaryActionPending?: boolean
   accessibleCloseLabel?: string
   modal?: boolean
+  presentation?: "standard" | "introduction"
+  titleContent?: ReactNode
+  titleDecoration?: ReactNode
+  decoration?: ReactNode
+  beforePrimaryAction?: ReactNode
+  afterActions?: ReactNode
 }>
 
 function NativeInformationPanelFrame({
@@ -23,24 +29,53 @@ function NativeInformationPanelFrame({
   isPrimaryActionPending = false,
   accessibleCloseLabel,
   modal = false,
+  presentation = "standard",
+  titleContent = title,
+  titleDecoration,
+  decoration,
+  beforePrimaryAction,
+  afterActions,
 }: NativeInformationPanelFrameProps) {
+  const isIntroduction = presentation === "introduction"
   return (
     <MapacheScreen
       accessibilityLabel={modal ? title : undefined}
       accessibilityViewIsModal={modal || undefined}
       role={modal ? "dialog" : undefined}
     >
-      <View className="flex-1 p-5">
-        <View className="m-auto max-h-full w-full max-w-3xl flex-1 overflow-hidden border-4 border-black bg-white shadow-[8px_8px_0px_0px_#000000]">
-          <View className="relative border-b-4 border-black p-5">
+      <View className={cx("flex-1", isIntroduction ? "p-4 xl:p-8" : "p-5")}>
+        <View
+          className={cx(
+            "relative m-auto w-full flex-1 border-4 border-black bg-white shadow-[8px_8px_0px_0px_#000000]",
+            isIntroduction
+              ? "max-h-184 max-w-4xl overflow-visible"
+              : "max-h-full max-w-3xl overflow-hidden",
+          )}
+        >
+          {decoration}
+          <View
+            className={cx(
+              "relative z-20 border-b-4 border-black",
+              isIntroduction ? "px-2.5 py-4 xl:px-8 xl:py-6" : "p-5",
+            )}
+          >
+            {titleDecoration}
             <Text
               variant="h1"
               className={cx(
-                "text-mapache-vivid-primary-raspberry text-center text-4xl font-black tracking-tight uppercase",
+                "relative z-20 text-center font-black",
+                isIntroduction
+                  ? "text-mapache-vivid-primary-cyan text-[28px] leading-tight xl:text-4xl"
+                  : "text-mapache-vivid-primary-raspberry text-4xl tracking-tight uppercase",
                 accessibleCloseLabel && "pr-14",
               )}
+              {...(isIntroduction && {
+                adjustsFontSizeToFit: true,
+                numberOfLines: 2,
+                minimumFontScale: 0.7,
+              })}
             >
-              {title}
+              {titleContent}
             </Text>
             {accessibleCloseLabel ? (
               <Button
@@ -56,13 +91,21 @@ function NativeInformationPanelFrame({
           </View>
 
           <ScrollView
-            className="min-h-0 flex-1"
-            contentContainerClassName="gap-4 p-5"
+            className="relative z-20 min-h-0 flex-1"
+            contentContainerClassName={
+              isIntroduction ? "gap-4 px-5 py-4 xl:px-8 xl:py-6" : "gap-4 p-5"
+            }
           >
             {children}
           </ScrollView>
 
-          <View className="border-t-4 border-black p-5">
+          <View
+            className={cx(
+              "relative z-20 border-t-4 border-black",
+              isIntroduction ? "gap-3 px-4 pt-3 pb-5 xl:px-8" : "p-5",
+            )}
+          >
+            {beforePrimaryAction}
             <Button
               size="large"
               onPress={onPrimaryAction}
@@ -72,9 +115,16 @@ function NativeInformationPanelFrame({
                 disabled: isPrimaryActionPending,
               }}
             >
-              <Text>{primaryActionLabel}</Text>
+              <Text
+                {...(isIntroduction && {
+                  className: "text-4xl leading-none font-black uppercase",
+                })}
+              >
+                {primaryActionLabel}
+              </Text>
             </Button>
           </View>
+          {afterActions}
         </View>
       </View>
     </MapacheScreen>
