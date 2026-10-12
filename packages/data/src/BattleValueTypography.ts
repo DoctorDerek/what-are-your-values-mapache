@@ -34,9 +34,14 @@ const BATTLE_VALUE_WORD_BREAKS: ReadonlyMap<string, string> = new Map([
   ["Spirituality", "Spir\u00aditual\u00adity"],
 ])
 
-export function getBattleValueDisplayName(value: ActiveValueDefinition): string {
+export function getBattleValueDisplayName(
+  value: ActiveValueDefinition,
+): string {
   const name = getValueDisplayName(value)
   return value.kind === "canonical"
-    ? name.replace(/[A-Za-z]+/g, (word) => BATTLE_VALUE_WORD_BREAKS.get(word) ?? word)
+    ? name.replace(
+        /[A-Za-z]+/g,
+        (word) => BATTLE_VALUE_WORD_BREAKS.get(word) ?? word,
+      )
     : name
 }

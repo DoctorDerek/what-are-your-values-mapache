@@ -36,7 +36,16 @@ export type ValuesCardPalette = Readonly<{
 export function readValuesCardPalette(
   values: readonly unknown[],
 ): ValuesCardPalette {
-  const [frame, background, plane, rank, ink, muted, invitationBackground, invitationText] = values
+  const [
+    frame,
+    background,
+    plane,
+    rank,
+    ink,
+    muted,
+    invitationBackground,
+    invitationText,
+  ] = values
   if (
     typeof frame !== "string" ||
     !frame.trim() ||
@@ -56,7 +65,16 @@ export function readValuesCardPalette(
     !invitationText.trim()
   )
     throw new Error("The values-card colors are unavailable")
-  return { frame, background, values: plane, rank, ink, muted, invitationBackground, invitationText }
+  return {
+    frame,
+    background,
+    values: plane,
+    rank,
+    ink,
+    muted,
+    invitationBackground,
+    invitationText,
+  }
 }
 
 export const VALUES_CARD_COPY = Object.freeze({

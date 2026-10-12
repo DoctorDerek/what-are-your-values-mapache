@@ -220,13 +220,11 @@ test("controller hints stay supplementary and readable at 320px", async ({
 test("controller authors a value, scrolls the catalog and cancels edit and delete reviews", async ({
   page,
 }) => {
-  test
-    .info()
-    .annotations.push({
-      type: "evidence-limit",
-      description:
-        "Text input exercises the keyboard event seam; the physical Steam keyboard remains manual Deck QA.",
-    })
+  test.info().annotations.push({
+    type: "evidence-limit",
+    description:
+      "Text input exercises the keyboard event seam; the physical Steam keyboard remains manual Deck QA.",
+  })
   await startWithController(page)
   await activateWithController(
     page,
@@ -276,11 +274,9 @@ test("controller authors a value, scrolls the catalog and cancels edit and delet
     page.getByRole("searchbox", { name: "Search All Values", exact: true }),
     "Craftsmanship",
   )
-  const row = page
-    .getByRole("listitem")
-    .filter({
-      has: page.getByRole("heading", { name: "Craftsmanship", exact: true }),
-    })
+  const row = page.getByRole("listitem").filter({
+    has: page.getByRole("heading", { name: "Craftsmanship", exact: true }),
+  })
   await expect(row).toHaveCount(1)
   await activateWithController(
     page,

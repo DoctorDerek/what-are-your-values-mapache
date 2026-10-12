@@ -21,7 +21,9 @@ describe("Battle value typography", () => {
       ["Self-Knowledge", "Self-Knowl\u00adedge"],
       ["Non-Conformity", "Non-Con\u00adform\u00adity"],
     ]) {
-      const value = CANONICAL_VALUES.find(({ englishName }) => englishName === name)!
+      const value = CANONICAL_VALUES.find(
+        ({ englishName }) => englishName === name,
+      )!
       expect(getBattleValueDisplayName(value)).toBe(displayName)
     }
   })

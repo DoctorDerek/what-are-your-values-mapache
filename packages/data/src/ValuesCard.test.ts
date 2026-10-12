@@ -115,7 +115,11 @@ describe("values-card composition", () => {
     ])
     paintValuesCard({
       painter,
-      model: { ...model(), hasComparisons: true, title: "My Top Five Life Values" },
+      model: {
+        ...model(),
+        hasComparisons: true,
+        title: "My Top Five Life Values",
+      },
       palette,
       frame: 0,
       hero: null,

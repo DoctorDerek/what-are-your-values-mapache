@@ -82,15 +82,15 @@ function NativeValueChoiceCard(
           nestedScrollEnabled
         >
           <View className="w-full items-center">
-          <Text
-            accessibilityLabel={displayName}
+            <Text
+              accessibilityLabel={displayName}
               variant="h2"
               className="w-full min-w-0 text-center text-2xl leading-8 font-black tracking-tight text-white xl:text-5xl xl:leading-[56px]"
               android_hyphenationFrequency="full"
               lineBreakStrategyIOS="push-out"
               textBreakStrategy="balanced"
             >
-            {getBattleValueDisplayName(value)}
+              {getBattleValueDisplayName(value)}
             </Text>
             <View className="mt-2 w-full min-w-0 flex-row flex-wrap items-center justify-between gap-2 xl:gap-5">
               <Text
