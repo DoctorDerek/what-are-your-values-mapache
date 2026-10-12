@@ -19,9 +19,9 @@ import { cx } from "classix"
 import { useEffect, useRef } from "react"
 import LanguageSelector from "@/components/LanguageSelector"
 import MapacheScreen from "@/components/MapacheScreen"
-import { Button } from "@/components/ui/button"
 import PlayerDataResetActions from "@/components/PlayerDataResetActions"
 import PlayerDataResetReview from "@/components/PlayerDataResetReview"
+import { Button } from "@/components/ui/button"
 
 type SettingsOption<TValue extends string> = {
   readonly value: TValue
@@ -263,7 +263,9 @@ export default function Settings({
                     locale={settings.locale}
                     disabled={isBusy}
                     onLocaleChange={(locale) =>
-                      onUpdateSettings(createPlayerSettings({ ...settings, locale }))
+                      onUpdateSettings(
+                        createPlayerSettings({ ...settings, locale }),
+                      )
                     }
                   />
                 </div>

@@ -198,7 +198,9 @@ export default function NativeSettings({
                   locale={settings.locale}
                   disabled={isBusy}
                   onLocaleChange={(locale) =>
-                    onUpdateSettings(createPlayerSettings({ ...settings, locale }))
+                    onUpdateSettings(
+                      createPlayerSettings({ ...settings, locale }),
+                    )
                   }
                 />
               </View>

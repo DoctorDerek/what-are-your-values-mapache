@@ -58,7 +58,7 @@ export default function NativeLanguageSelector({
                   onLocaleChange(value)
                   setIsOpen(false)
                 }}
-                className="min-h-12 justify-center border-2 border-black p-3 active:bg-mapache-vivid-primary-cyan"
+                className="active:bg-mapache-vivid-primary-cyan min-h-12 justify-center border-2 border-black p-3"
               >
                 <Text className="font-bold text-black">{label}</Text>
               </Pressable>
