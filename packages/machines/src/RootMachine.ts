@@ -49,7 +49,7 @@ import {
   createInitialPlayerData,
   createPlayerData,
   type PlayerData,
-} from "@game/machines/src/PlayerData"
+} from "./PlayerData"
 import {
   createPendingBattleProfileExportActor,
   createWayvmExportActor,
@@ -80,7 +80,7 @@ import {
   createPlayerSettings,
   type PlayerSettings,
   type SupportedLocale,
-} from "@game/machines/src/PlayerSettings"
+} from "./PlayerSettings"
 import { updatePlayerSettingsActor } from "./PlayerSettingsActors"
 import { areSchedulerIdentitiesEqual } from "./SchedulerIdentity"
 import type { PreparedWayvmImport } from "./WayvmImportPreview"
