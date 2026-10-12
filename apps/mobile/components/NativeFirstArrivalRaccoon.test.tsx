@@ -1,3 +1,4 @@
+import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import {
   afterEach,
   beforeEach,
@@ -14,6 +15,40 @@ import {
   screen,
 } from "@testing-library/react-native"
 import NativeFirstArrivalRaccoon from "@/components/NativeFirstArrivalRaccoon"
+
+jest.mock("@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog", () => ({
+  SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG: {
+    mode: "licensed",
+    evidenceSnapshotId: "first-arrival-test",
+    characterClipCount: 1,
+    auxiliaryEffectClipCount: 0,
+    animals: [
+      {
+        animalId: "raccoonpack",
+        characterClips: [
+          {
+            kind: "character",
+            animalId: "raccoonpack",
+            animationId: "run",
+            relativePath: "raccoonpack/run.png",
+            frameWidth: 4,
+            frameHeight: 4,
+            frameCount: 8,
+            visibleBounds: { left: 1, top: 1, width: 2, height: 2 },
+            asset: 1,
+          },
+        ],
+        auxiliaryEffectClips: [],
+        referencePose: {
+          animationId: "idle",
+          frameIndex: 0,
+          bounds: { left: 1, top: 1, width: 2, height: 2 },
+          anchor: { x: 2, y: 3 },
+        },
+      },
+    ],
+  } satisfies SeethingSwarmRuntimeClipCatalog<number>,
+}))
 
 beforeEach(() => {
   jest.useFakeTimers()
