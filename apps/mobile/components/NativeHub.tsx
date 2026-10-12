@@ -1,6 +1,7 @@
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
 import { DRESSING_ROOM_COPY } from "@game/data/src/Heroes99DressingRoom"
 import { projectHubValues } from "@game/data/src/HubValueProjection"
+import { introductionCopy } from "@game/data/src/IntroductionCopy"
 import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
 import { presentationLoadingCopy } from "@game/data/src/PresentationLoadingCopy"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
@@ -46,7 +47,15 @@ export default function NativeHub({
   return (
     <MapacheScreen>
       <ScrollView contentContainerClassName="items-center gap-5 p-3 pb-10 xl:p-6">
-        <View className="w-full max-w-7xl items-end">
+        <View className="w-full max-w-7xl flex-row items-center justify-between gap-3">
+          <Text
+            accessibilityRole="header"
+            adjustsFontSizeToFit
+            numberOfLines={1}
+            className="min-w-0 flex-1 text-2xl leading-tight font-bold tracking-tight text-white"
+          >
+            {introductionCopy.title}
+          </Text>
           <Button size="compact" variant="secondary" onPress={onOpenMenu}>
             <Text>{PRODUCT_MENU_COPY.openAction}</Text>
           </Button>
@@ -60,14 +69,28 @@ export default function NativeHub({
           </Text>
         )}
         <View className="border-player-card-frame bg-player-card-background w-full max-w-7xl flex-row flex-wrap overflow-hidden border-4">
-          <Text
+          <View
+            accessible
             accessibilityRole="header"
-            className="text-player-card-ink w-2/3 self-center px-3 py-5 text-3xl font-black xl:w-full xl:text-center xl:text-5xl"
+            accessibilityLabel={
+              hasComparisons
+                ? PERSONAL_HUB_COPY.rankedTitle
+                : PERSONAL_HUB_COPY.unrankedTitle
+            }
+            className="w-2/3 self-center px-3 py-5 xl:w-full xl:flex-row xl:justify-center xl:gap-x-3"
           >
-            {hasComparisons
-              ? PERSONAL_HUB_COPY.rankedTitle
-              : PERSONAL_HUB_COPY.unrankedTitle}
-          </Text>
+            {(hasComparisons
+              ? PERSONAL_HUB_COPY.rankedTitleLines
+              : [PERSONAL_HUB_COPY.unrankedTitle]
+            ).map((line) => (
+              <Text
+                key={line}
+                className="text-player-card-ink text-3xl leading-tight font-black xl:text-5xl"
+              >
+                {line}
+              </Text>
+            ))}
+          </View>
           <View className="xl:bg-player-card-values w-1/3 items-center justify-center py-3">
             <NativeHeroes99Hero
               appearance={appearance}

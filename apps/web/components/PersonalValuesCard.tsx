@@ -46,7 +46,7 @@ export default function PersonalValuesCard({
         <div className="min-w-0 flex-[1_1_10rem] self-center px-3 py-4 xl:col-span-2 xl:row-start-1 xl:text-center">
           <h2
             id="your-values-heading"
-            className="text-player-card-ink text-2xl leading-tight font-black xl:text-3xl"
+            className="text-player-card-ink flex flex-col text-2xl leading-tight font-black xl:flex-row xl:justify-center xl:gap-x-[0.25em] xl:text-3xl"
           >
             {hasComparisons
               ? PERSONAL_HUB_COPY.rankedTitleLines.map((line) => (

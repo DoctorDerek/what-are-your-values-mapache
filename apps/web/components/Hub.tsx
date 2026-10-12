@@ -88,25 +88,20 @@ export default function Hub({
       viewport="scrollable"
       className="flex h-[100dvh] min-w-0 flex-col items-center gap-4"
     >
-      <header className="w-full max-w-7xl shrink-0 text-white">
-        <h1 className="text-[min(4.75vw,1.5rem)] leading-tight font-bold whitespace-nowrap">
+      <header className="@container flex w-full max-w-7xl shrink-0 items-center justify-between gap-3 text-white">
+        <h1 className="min-w-0 text-[min(4.375cqw,1.5rem)] leading-tight font-bold tracking-tight whitespace-nowrap">
           {introductionCopy.title}
         </h1>
-        <div className="mt-2 flex items-center justify-between gap-3">
-          <p className="text-sm xl:text-base">
-            {PERSONAL_HUB_COPY.screenTitle}
-          </p>
-          <Button
-            id={HUB_MENU_BUTTON_ID}
-            variant="secondary"
-            size="sm"
-            textCase="normal-case"
-            onClick={onOpenMenu}
-            disabled={isNavigationBlocked}
-          >
-            {PRODUCT_MENU_COPY.openAction}
-          </Button>
-        </div>
+        <Button
+          id={HUB_MENU_BUTTON_ID}
+          variant="secondary"
+          size="sm"
+          textCase="normal-case"
+          onClick={onOpenMenu}
+          disabled={isNavigationBlocked}
+        >
+          {PRODUCT_MENU_COPY.openAction}
+        </Button>
       </header>
       {dataNotice && (
         <p
