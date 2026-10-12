@@ -15,6 +15,12 @@ type InformationPanelFrameProps = Readonly<{
   isPrimaryActionPending?: boolean
   accessibleCloseLabel?: string
   dialogTitle?: boolean
+  presentation?: "standard" | "introduction"
+  titleContent?: ReactNode
+  titleDecoration?: ReactNode
+  decoration?: ReactNode
+  beforePrimaryAction?: ReactNode
+  afterActions?: ReactNode
 }>
 
 function InformationPanelFrame({
@@ -25,10 +31,20 @@ function InformationPanelFrame({
   isPrimaryActionPending = false,
   accessibleCloseLabel,
   dialogTitle = false,
+  presentation = "standard",
+  titleContent = title,
+  titleDecoration,
+  decoration,
+  beforePrimaryAction,
+  afterActions,
 }: InformationPanelFrameProps) {
   const titleId = useId()
+  const isIntroduction = presentation === "introduction"
   const titleClassName = cx(
-    "text-mapache-vivid-primary-cyan text-4xl leading-tight font-black [overflow-wrap:anywhere] uppercase sm:text-5xl lg:text-7xl",
+    "relative z-20 text-mapache-vivid-primary-cyan leading-tight font-black",
+    isIntroduction
+      ? "text-[clamp(21px,6.85vw,36px)]"
+      : "text-4xl [overflow-wrap:anywhere] uppercase sm:text-5xl lg:text-7xl",
     accessibleCloseLabel && "px-12",
   )
 
@@ -36,16 +52,30 @@ function InformationPanelFrame({
     <section
       aria-label={dialogTitle ? title : undefined}
       aria-labelledby={dialogTitle ? undefined : titleId}
-      className="grid min-h-0 w-full max-w-4xl grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden border-4 border-black bg-white shadow-[12px_12px_0px_0px_#000000]"
+      className={cx(
+        "relative isolate grid min-h-0 w-full max-w-4xl overflow-hidden border-4 border-black bg-white",
+        isIntroduction
+          ? "h-full max-h-184 grid-rows-[auto_minmax(0,1fr)_auto_auto] shadow-[8px_8px_0_#000]"
+          : "grid-rows-[auto_minmax(0,1fr)_auto] shadow-[12px_12px_0px_0px_#000000]",
+      )}
     >
-      <header className="relative border-b-4 border-black px-5 py-5 sm:px-10 sm:py-7">
+      {decoration}
+      <header
+        className={cx(
+          "@container relative z-20 border-b-4 border-black",
+          isIntroduction
+            ? "px-2.5 py-4 xl:px-8 xl:py-6"
+            : "px-5 py-5 sm:px-10 sm:py-7",
+        )}
+      >
+        {titleDecoration}
         {dialogTitle ? (
           <DialogTitle className={cx(titleClassName, "xl:text-5xl")}>
-            {title}
+            {titleContent}
           </DialogTitle>
         ) : (
           <h1 id={titleId} className={titleClassName}>
-            {title}
+            {titleContent}
           </h1>
         )}
         {accessibleCloseLabel ? (
@@ -66,12 +96,23 @@ function InformationPanelFrame({
         data-testid="information-panel-body"
         data-controller-scroll
         tabIndex={0}
-        className="min-h-0 overflow-y-auto overscroll-contain px-5 py-6 sm:px-10 sm:py-8"
+        className={cx(
+          "relative z-20 min-h-0 overflow-y-auto overscroll-contain px-5",
+          isIntroduction ? "py-4 xl:px-8 xl:py-6" : "py-6 sm:px-10 sm:py-8",
+        )}
       >
         {children}
       </div>
 
-      <footer className="border-t-4 border-black bg-white px-5 py-5 sm:px-10 sm:py-6">
+      <footer
+        className={cx(
+          "relative z-20 border-t-4 border-black",
+          isIntroduction
+            ? "grid gap-3 px-4 pt-3 pb-5 xl:px-8"
+            : "bg-white px-5 py-5 sm:px-10 sm:py-6",
+        )}
+      >
+        {beforePrimaryAction}
         <Button
           type="button"
           size="lg"
@@ -79,11 +120,16 @@ function InformationPanelFrame({
           disabled={isPrimaryActionPending}
           aria-busy={isPrimaryActionPending}
           className="w-full"
-          typographyClassName="text-4xl sm:text-5xl"
+          typographyClassName={
+            isIntroduction
+              ? "text-4xl leading-none xl:text-[42px]"
+              : "text-4xl sm:text-5xl"
+          }
         >
           {primaryActionLabel}
         </Button>
       </footer>
+      {afterActions}
     </section>
   )
 }
@@ -93,7 +139,12 @@ export default function InformationPanel(props: InformationPanelFrameProps) {
     <MapacheScreen
       spacing="compact"
       viewport="fixed"
-      className="flex items-stretch justify-center text-center"
+      className={cx(
+        "flex justify-center text-center",
+        props.presentation === "introduction"
+          ? "items-center"
+          : "items-stretch",
+      )}
     >
       <InformationPanelFrame {...props} />
     </MapacheScreen>

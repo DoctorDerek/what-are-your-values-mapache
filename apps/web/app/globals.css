@@ -1,6 +1,23 @@
 @import "tailwindcss";
 @import "@game/design-tokens/mapachito-vivid.css";
 
+@utility animate-arrival-raccoon {
+  animation: arrival-raccoon var(--arrival-runner-duration) linear
+    var(--arrival-runner-delay) both;
+  @variant xl {
+    animation-duration: var(--arrival-runner-wide-duration);
+  }
+}
+
+@keyframes arrival-raccoon {
+  from {
+    transform: translateX(calc(-1 * var(--arrival-runner-width)));
+  }
+  to {
+    transform: translateX(100cqw);
+  }
+}
+
 @property --results-travel {
   syntax: "<number>";
   inherits: false;
