@@ -12,16 +12,16 @@ import {
 import {
   CONTROL_HINT_SETTING_OPTIONS,
   PLAYER_SETTINGS_COPY,
-  PLAYER_SETTINGS_LANGUAGE_OPTIONS,
   REDUCED_MOTION_SETTING_OPTIONS,
   SETTINGS_PLAYER_DATA_RESET_KINDS,
 } from "@game/machines/src/PlayerSettingsPresentation"
 import { cx } from "classix"
 import { useEffect, useRef } from "react"
+import LanguageSelector from "@/components/LanguageSelector"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
-import PlayerDataResetActions from "./PlayerDataResetActions"
-import PlayerDataResetReview from "./PlayerDataResetReview"
+import PlayerDataResetActions from "@/components/PlayerDataResetActions"
+import PlayerDataResetReview from "@/components/PlayerDataResetReview"
 
 type SettingsOption<TValue extends string> = {
   readonly value: TValue
@@ -258,13 +258,14 @@ export default function Settings({
                 >
                   {PLAYER_SETTINGS_COPY.languageHeading}
                 </h2>
-                <div className="bg-mapache-vivid-primary-cyan mt-5 flex min-w-0 flex-wrap items-center justify-between gap-3 border-4 border-black p-4 shadow-[5px_5px_0px_0px_#000000]">
-                  <p className="text-xl font-black [overflow-wrap:anywhere] uppercase">
-                    {PLAYER_SETTINGS_LANGUAGE_OPTIONS[0].label}
-                  </p>
-                  <span className="shrink-0 border-2 border-black bg-black px-2 py-1 text-sm font-black text-white uppercase">
-                    Current
-                  </span>
+                <div className="mt-5">
+                  <LanguageSelector
+                    locale={settings.locale}
+                    disabled={isBusy}
+                    onLocaleChange={(locale) =>
+                      onUpdateSettings(createPlayerSettings({ ...settings, locale }))
+                    }
+                  />
                 </div>
               </section>
 

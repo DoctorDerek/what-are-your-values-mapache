@@ -10,13 +10,13 @@ import {
 import {
   CONTROL_HINT_SETTING_OPTIONS,
   PLAYER_SETTINGS_COPY,
-  PLAYER_SETTINGS_LANGUAGE_OPTIONS,
   REDUCED_MOTION_SETTING_OPTIONS,
   SETTINGS_PLAYER_DATA_RESET_KINDS,
 } from "@game/machines/src/PlayerSettingsPresentation"
 import { cx } from "classix"
 import { Pressable, ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
+import NativeLanguageSelector from "@/components/NativeLanguageSelector"
 import NativeOperationMessages from "@/components/NativeOperationMessages"
 import NativePlayerDataResetActions from "@/components/NativePlayerDataResetActions"
 import NativePlayerDataResetReview from "@/components/NativePlayerDataResetReview"
@@ -194,14 +194,13 @@ export default function NativeSettings({
                 >
                   {PLAYER_SETTINGS_COPY.languageHeading}
                 </Text>
-                <View className="bg-mapache-vivid-primary-cyan min-w-0 flex-row flex-wrap items-center justify-between gap-3 border-4 border-black p-4 shadow-[5px_5px_0px_0px_#000000]">
-                  <Text className="text-xl font-black text-black uppercase">
-                    {PLAYER_SETTINGS_LANGUAGE_OPTIONS[0].label}
-                  </Text>
-                  <Text className="border-2 border-black bg-black px-2 py-1 text-sm font-black text-white uppercase">
-                    Current
-                  </Text>
-                </View>
+                <NativeLanguageSelector
+                  locale={settings.locale}
+                  disabled={isBusy}
+                  onLocaleChange={(locale) =>
+                    onUpdateSettings(createPlayerSettings({ ...settings, locale }))
+                  }
+                />
               </View>
 
               <NativeSettingsRadioGroup
