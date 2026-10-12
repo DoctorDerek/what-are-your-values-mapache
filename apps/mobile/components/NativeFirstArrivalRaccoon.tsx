@@ -61,6 +61,8 @@ export default function NativeFirstArrivalRaccoon({
     <View
       pointerEvents="none"
       accessible={false}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
       className="absolute inset-x-0 bottom-3 overflow-hidden"
       style={{ height: raccoon.geometry.height }}
     >
