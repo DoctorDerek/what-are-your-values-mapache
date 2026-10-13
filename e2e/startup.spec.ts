@@ -40,6 +40,10 @@ test("startup preserves its viewport while client code waits and opens the saved
     const afterStartup = await game.boundingBox()
     expect(afterStartup).toEqual(beforeStartup)
     await expect(loading).toHaveCount(0)
+    const language = game.getByRole("combobox", { name: "Language" })
+    await expect(language).toHaveValue("en")
+    await expect(language.getByRole("option")).toHaveText(["English (US)"])
+    await language.selectOption("en")
     await game.getByRole("button", { name: "Start", exact: true }).click()
     await expect(
       game.getByRole("heading", {
@@ -58,6 +62,10 @@ test("startup preserves its viewport while client code waits and opens the saved
     await expect(
       game.getByRole("button", { name: "Start", exact: true }),
     ).toHaveCount(0)
+    await game.getByRole("button", { name: "Menu", exact: true }).click()
+    await game.getByRole("button", { name: "Settings", exact: true }).click()
+    await expect(game.getByRole("combobox", { name: "Language" })).toHaveValue("en")
+    await expect(page.locator("html")).toHaveAttribute("lang", "en-US")
   } finally {
     scriptsReady.resolve()
     await page.unrouteAll({ behavior: "wait" })

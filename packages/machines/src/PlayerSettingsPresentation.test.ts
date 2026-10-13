@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
+import { SHIPPED_LANGUAGE_OPTIONS as PLAYER_SETTINGS_LANGUAGE_OPTIONS } from "@game/data/src/LocalizationCatalog"
 import {
   CONTROL_HINT_SETTING_OPTIONS,
   getInitialWebControlHintInputModality,
   getValueChoiceControlHint,
   PLAYER_SETTINGS_COPY,
-  PLAYER_SETTINGS_LANGUAGE_OPTIONS,
   REDUCED_MOTION_SETTING_OPTIONS,
   resolveShouldReduceMotion,
   SETTINGS_PLAYER_DATA_RESET_KINDS,

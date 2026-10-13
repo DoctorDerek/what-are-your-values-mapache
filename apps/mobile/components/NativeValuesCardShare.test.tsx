@@ -1,4 +1,5 @@
 import { DEFAULT_HEROES99_APPEARANCE } from "@game/data/src/Heroes99Appearance"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import type {
   PreparedValuesCard,
   ValuesCardModel,
@@ -36,9 +37,11 @@ jest.mock("uniwind", () => ({
 const prepare = jest.mocked(prepareNativeValuesCard)
 const model: ValuesCardModel<number> = {
   title: "My Top Five Values",
+  invitation: getLocaleCatalog().card.invitation,
+  copy: getLocaleCatalog().card,
   hasComparisons: true,
   appearance: DEFAULT_HEROES99_APPEARANCE,
-  values: [{ name: "Fun", level: 12, animal: null }],
+  values: [{ name: "Fun", level: 12, levelLabel: "Level 12", rankLabel: "#1", animal: null }],
 }
 let file: PreparedValuesCard
 beforeEach(() => {
