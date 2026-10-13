@@ -14,7 +14,7 @@ import {
   HEROES99_THUMBNAIL,
   type Heroes99RuntimeAssets,
 } from "@game/data/src/Heroes99RuntimeAssets"
-import { VALUES_CARD_COPY } from "@game/data/src/ValuesCard"
+import { VALUES_CARD_COPY } from "@game/data/src/ValuesCardCopy"
 import type { avatarMachine } from "@game/machines/src/AvatarMachine"
 import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { cx } from "classix"

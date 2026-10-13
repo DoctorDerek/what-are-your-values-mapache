@@ -8,6 +8,7 @@ import {
   type ProductMenuRouteDestination,
 } from "@game/data/src/ProductMenu"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import { rankValues } from "@game/data/src/ValueRanking"
 import {
   createValuesCardModel,
@@ -602,6 +603,7 @@ function NativeGameClientContent({
                 rankedValues,
                 appearance,
                 SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG,
+                getLocaleCatalog(playerData.settings.locale),
               ),
             )
           }
@@ -628,6 +630,7 @@ function NativeGameClientContent({
                 rankedValues,
                 playerData.appearance,
                 SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG,
+                getLocaleCatalog(playerData.settings.locale),
               ),
             )
           }
@@ -819,6 +822,7 @@ function NativeGameClientContent({
     return (
       <View className="flex-1">
         <NativeAllValues
+          localization={getLocaleCatalog(playerData.settings.locale)}
           key={`${battleProfile.scheduler.deckRevision}:${customValueBuilderRequestId}`}
           initialValueId={pendingAllValuesValueId}
           isPersistencePending={

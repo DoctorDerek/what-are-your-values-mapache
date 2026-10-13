@@ -1,7 +1,9 @@
 import { getLevelFromXP } from "@game/utils/src/LevelMath"
 import type { Heroes99Appearance } from "./Heroes99Appearance"
 import { projectHubValues } from "./HubValueProjection"
-import { PERSONAL_HUB_COPY } from "./PersonalHubCopy"
+import { createLocaleFormatters } from "./LocaleFormatters"
+import { getLocaleCatalog, type LocalizationCatalog } from "./LocalizationCatalog"
+import { VALUES_CARD_COPY } from "./ValuesCardCopy"
 import { resolveValueAnimalPresentation } from "./SeethingSwarmAnimalPresentation"
 import type {
   SeethingSwarmRuntimeCharacterClip,
@@ -77,40 +79,18 @@ export function readValuesCardPalette(
   }
 }
 
-export const VALUES_CARD_COPY = Object.freeze({
-  title: "Share my values card",
-  gif: "GIF · Animated",
-  png: "PNG · Still",
-  format: "Image format",
-  includeHero: "Include my hero",
-  back: "Back",
-  preparing: "Preparing your card…",
-  delivering: "Opening your file…",
-  retry: "Retry",
-  failure:
-    "Your card could not be prepared. Your values and appearance are unchanged.",
-  deliveryFailure: "Your file is still ready. Try again or save it instead.",
-  unsupportedShare:
-    "Save your card, then attach it wherever you want to share it.",
-  downloadStarted: "Your file is ready in your device’s save or download flow.",
-  handoff: "Your card was handed to your device’s sharing options.",
-  saved: "Card saved.",
-  cancelled: "Cancelled. Your card is still ready.",
-  details: "Technical details",
-  invitation: "Play free at WhatAreYourValuesMapache.com",
-  preview: "Values card preview",
-  save: (format: ValuesCardFormat) => `Save ${format.toUpperCase()}`,
-  share: (format: ValuesCardFormat) => `Share ${format.toUpperCase()}`,
-})
-
 export type ValuesCardFormat = "gif" | "png"
 export type ValuesCardModel<Asset> = Readonly<{
   title: string
+  invitation: string
+  copy: LocalizationCatalog["card"]
   hasComparisons: boolean
   appearance: Heroes99Appearance
   values: readonly Readonly<{
     name: string
     level: number
+    levelLabel: string
+    rankLabel: string
     animal: SeethingSwarmRuntimeCharacterClip<Asset> | null
   }>[]
 }>
@@ -119,20 +99,27 @@ export function createValuesCardModel<Asset>(
   rankedValues: readonly RankedValue[],
   appearance: Heroes99Appearance,
   catalog: SeethingSwarmRuntimeClipCatalog<Asset>,
+  localization: LocalizationCatalog = getLocaleCatalog(),
 ): ValuesCardModel<Asset> {
   const { hasComparisons, topFive } = projectHubValues(rankedValues)
+  const formatters = createLocaleFormatters(localization.metadata.languageTag)
   return Object.freeze({
     title: hasComparisons
-      ? PERSONAL_HUB_COPY.rankedTitle
-      : PERSONAL_HUB_COPY.unrankedTitle,
+      ? localization.hub.rankedTitle
+      : localization.hub.unrankedTitle,
+    invitation: localization.card.invitation,
+    copy: localization.card,
     hasComparisons,
     appearance: Object.freeze({ ...appearance }),
     values: Object.freeze(
-      topFive.map(({ definition, progress }) => {
+      topFive.map(({ definition, progress }, index) => {
         const presentation = resolveValueAnimalPresentation(definition, catalog)
+        const level = getLevelFromXP(progress.totalXp)
         return Object.freeze({
-          name: getValueDisplayName(definition),
-          level: getLevelFromXP(progress.totalXp),
+          name: getValueDisplayName(definition, localization.values),
+          level,
+          levelLabel: localization.hub.level(level),
+          rankLabel: localization.card.rank(formatters.integer(index + 1)),
           animal: presentation.kind === "animal" ? presentation.clip : null,
         })
       }),
@@ -144,16 +131,17 @@ export type ValuesCardDelivery =
   "saved" | "download-started" | "handed-off" | "cancelled"
 export function getValuesCardDeliveryMessage(
   outcome: ValuesCardDelivery | null,
+  copy: LocalizationCatalog["card"] = VALUES_CARD_COPY,
 ) {
   switch (outcome) {
     case "saved":
-      return VALUES_CARD_COPY.saved
+      return copy.saved
     case "download-started":
-      return VALUES_CARD_COPY.downloadStarted
+      return copy.downloadStarted
     case "handed-off":
-      return VALUES_CARD_COPY.handoff
+      return copy.handoff
     case "cancelled":
-      return VALUES_CARD_COPY.cancelled
+      return copy.cancelled
     default:
       return ""
   }

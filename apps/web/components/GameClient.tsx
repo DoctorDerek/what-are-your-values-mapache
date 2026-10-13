@@ -10,6 +10,7 @@ import {
   type ProductMenuRouteDestination,
 } from "@game/data/src/ProductMenu"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import { rankValues } from "@game/data/src/ValueRanking"
 import {
   createValuesCardModel,
@@ -816,6 +817,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
                 rankedValues,
                 appearance,
                 SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
+                getLocaleCatalog(playerData.settings.locale),
               ),
             )
           }}
@@ -845,6 +847,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
                 rankedValues,
                 playerData.appearance,
                 SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
+                getLocaleCatalog(playerData.settings.locale),
               ),
             )
           }}
@@ -1045,6 +1048,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     return (
       <>
         <AllValues
+          localization={getLocaleCatalog(playerData.settings.locale)}
           runtimeClipCatalog={SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG}
           shouldReduceMotion={shouldReduceMotion}
           key={battleProfile.scheduler.deckRevision}
