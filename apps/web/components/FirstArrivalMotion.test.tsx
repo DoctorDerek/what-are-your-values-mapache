@@ -108,9 +108,7 @@ describe("first-arrival decoration lifecycle", () => {
     expect(screen.queryByTestId("arrival-raccoon")).toBeNull()
     await act(async () => vi.advanceTimersByTimeAsync(10000))
     expect(screen.queryByTestId("arrival-ice-cream")).toBeNull()
-    expect(
-      screen.getByRole("button", { name: "Start", exact: true }),
-    ).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Start" })).toBeEnabled()
   })
 
   it.each(["runtime", "sprite"] as const)(
@@ -129,9 +127,7 @@ describe("first-arrival decoration lifecycle", () => {
       }
       expect(screen.queryByTestId("arrival-ice-cream")).toBeNull()
       expect(screen.queryByTestId("arrival-raccoon")).toBeNull()
-      fireEvent.click(
-        screen.getByRole("button", { name: "Start", exact: true }),
-      )
+      fireEvent.click(screen.getByRole("button", { name: "Start" }))
       expect(onComplete).toHaveBeenCalledTimes(1)
     },
   )
