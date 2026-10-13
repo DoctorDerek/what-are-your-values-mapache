@@ -1,6 +1,9 @@
 import { FIRST_ARRIVAL_PRESENTATION } from "@game/data/src/FirstArrivalPresentation"
-import { introductionCopy } from "@game/data/src/IntroductionCopy"
-import type { SupportedLocale } from "@game/machines/src/PlayerSettings"
+import {
+  DEFAULT_LOCALE,
+  type SupportedLocale,
+} from "@game/data/src/LocaleRegistry"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
 import { Fragment, lazy, Suspense, useCallback, useState } from "react"
 import { Alert, Image, Linking, Pressable, View } from "react-native"
@@ -17,7 +20,7 @@ const NativeMapachitoIceCream = lazy(
 export default function NativeIntroduction({
   notice = null,
   isPending = false,
-  locale = "en",
+  locale = DEFAULT_LOCALE,
   shouldReduceMotion = false,
   onLocaleChange,
   onComplete,
@@ -29,6 +32,8 @@ export default function NativeIntroduction({
   onLocaleChange: (locale: SupportedLocale) => void
   onComplete: () => void
 }) {
+  const { introduction: introductionCopy, firstArrival } =
+    getLocaleCatalog(locale)
   const [hasStarted, setHasStarted] = useState(false)
   const [hasFinished, setHasFinished] = useState(false)
   const shouldPlay = useNativeDeferredFirstArrival(
@@ -40,7 +45,7 @@ export default function NativeIntroduction({
     <NativeInformationPanel
       presentation="introduction"
       title={introductionCopy.title}
-      titleContent={FIRST_ARRIVAL_PRESENTATION.titleLines.map((line, index) => (
+      titleContent={firstArrival.titleLines.map((line, index) => (
         <Fragment key={line}>
           {index > 0 && <Text className="xl:hidden">{"\n"}</Text>}
           {index > 0 && " "}
@@ -91,10 +96,10 @@ export default function NativeIntroduction({
           </View>
           <View className="relative z-20 items-center gap-1 py-2">
             <Text className="text-center text-2xl leading-7 font-black text-white xl:text-[26px]">
-              {FIRST_ARRIVAL_PRESENTATION.gameCredit}
+              {firstArrival.gameCredit}
             </Text>
             <Text className="text-center text-lg leading-7 font-medium text-white">
-              {FIRST_ARRIVAL_PRESENTATION.creatorCredit}
+              {firstArrival.creatorCredit}
             </Text>
             <Pressable
               accessibilityRole="link"
@@ -104,15 +109,15 @@ export default function NativeIntroduction({
                   FIRST_ARRIVAL_PRESENTATION.creatorWebsiteUrl,
                 ).catch(() =>
                   Alert.alert(
-                    FIRST_ARRIVAL_PRESENTATION.websiteErrorTitle,
-                    FIRST_ARRIVAL_PRESENTATION.websiteErrorMessage,
+                    firstArrival.websiteErrorTitle,
+                    firstArrival.websiteErrorMessage,
                   ),
                 )
               }}
               className="justify-center active:opacity-70"
             >
               <Text className="text-center text-lg leading-7 font-medium text-white">
-                {FIRST_ARRIVAL_PRESENTATION.creatorWebsiteLabel}
+                {firstArrival.creatorWebsiteLabel}
               </Text>
             </Pressable>
           </View>

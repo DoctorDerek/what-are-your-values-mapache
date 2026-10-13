@@ -2,7 +2,6 @@ import { graphemeSegments } from "unicode-segmenter/grapheme"
 import { HEROES99_IDLE_FRAME_COUNT } from "./Heroes99SpatialArchitecture"
 import { SEETHING_SWARM_CALM_FRAME_DURATION_MS } from "./SeethingSwarmAnimalPresentation"
 import {
-  VALUES_CARD_COPY,
   VALUES_CARD_SIZE,
   type ValuesCardModel,
   type ValuesCardPalette,
@@ -130,7 +129,7 @@ export function paintValuesCard<Asset>({
         palette.rank,
       )
       painter.text({
-        value: `#${index + 1}`,
+        value: value.rankLabel,
         x: 491 + shift,
         y: middle + 20,
         size: 58,
@@ -165,7 +164,7 @@ export function paintValuesCard<Asset>({
         },
       )
     }
-    const level = `Level ${value.level}`
+    const level = value.levelLabel
     const levelWidth = painter.measure(level, 55, 400)
     const nameX = 731 + shift
     const nameWidth = 1542 - levelWidth - 24 - nameX
@@ -204,7 +203,7 @@ export function paintValuesCard<Asset>({
     palette.invitationBackground,
   )
   painter.text({
-    value: VALUES_CARD_COPY.invitation,
+    value: model.invitation,
     x: 800,
     y: 856,
     size: 56,

@@ -1,4 +1,8 @@
-import type { CustomValueDefinition } from "./Value"
+import type {
+  CanonicalValueId,
+  CustomValueDefinition,
+  LocalizedValueCopy,
+} from "./Value"
 import {
   sortRankedValuesAlphabetically,
   type RankedValue,
@@ -15,9 +19,11 @@ export type AllValuesProjection = Readonly<{
 export function projectAllValues({
   rankedValues,
   searchQuery,
+  translations,
 }: {
   readonly rankedValues: readonly RankedValue[]
   readonly searchQuery: string
+  readonly translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>
 }) {
   const hasComparisons = rankedValues.some(
     ({ progress }) => progress.profileComparisons > 0,
@@ -30,7 +36,7 @@ export function projectAllValues({
     hasComparisons,
     orderedValues,
     visibleValues: Object.freeze([
-      ...filterRankedValuesByQuery(orderedValues, searchQuery),
+      ...filterRankedValuesByQuery(orderedValues, searchQuery, translations),
     ]),
     existingCustomValues: Object.freeze(
       rankedValues.flatMap(({ definition }) =>

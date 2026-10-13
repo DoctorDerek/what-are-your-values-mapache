@@ -1,5 +1,10 @@
 "use client"
 
+import {
+  resolveLocale,
+  type SupportedLocale,
+} from "@game/data/src/LocaleRegistry"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import type { DurableStoreAdapter } from "@game/machines/src/DurableStoreAdapter"
 import { rootMachine } from "@game/machines/src/RootMachine"
 import type { RootActor } from "@game/machines/src/RuntimeRecovery"
@@ -11,10 +16,12 @@ import packageMetadata from "@/package.json"
 
 export default function GameSession({
   durableStore,
+  routeLocale,
   children,
   onReopen,
 }: {
   readonly durableStore: DurableStoreAdapter
+  readonly routeLocale?: SupportedLocale
   readonly children: (gameActor: RootActor) => ReactNode
   readonly onReopen: () => void
 }) {
@@ -31,6 +38,10 @@ export default function GameSession({
     {
       input: {
         durableStore,
+        initialLocale: resolveLocale({
+          routeLocale,
+          preferredLanguages: navigator.languages,
+        }),
         appVersion: packageMetadata.version,
         sourceBuild:
           process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? "development",
@@ -49,7 +60,13 @@ export default function GameSession({
   }, [gameActor])
 
   return (
-    <div data-game-surface={isPublicArrival ? "arrival" : "active"}>
+    <div
+      lang={
+        getLocaleCatalog(snapshot.context.playerData?.settings.locale).metadata
+          .languageTag
+      }
+      data-game-surface={isPublicArrival ? "arrival" : "active"}
+    >
       {snapshot.status === "error" ? (
         <RuntimeRecovery gameActor={gameActor} onReopen={onReopen} />
       ) : (

@@ -1,29 +1,41 @@
+import {
+  DEFAULT_LOCALE,
+  SHIPPED_LOCALES,
+  type SupportedLocale,
+} from "@game/data/src/LocaleRegistry"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import type { Metadata } from "next"
 import {
   CANONICAL_WEB_ROOT_URL,
+  getCanonicalLocaleUrl,
   isCanonicalProductionDeployment,
 } from "@/lib/WebDistribution"
 
-export const WEB_METADATA_TITLE =
-  "What Are Your Values, Mapache? A Free Game To Find What You Value in Life" as const
+export const WEB_METADATA_TITLE = getLocaleCatalog().seo.title
 
-export const WEB_METADATA_DESCRIPTION =
-  "What Are Your Values, Mapache? is a fast-paced, value-sorting autobattler to help you find out what you value in life." as const
+export const WEB_METADATA_DESCRIPTION = getLocaleCatalog().seo.description
 
 const SHIPPED_LANGUAGE_ALTERNATES = Object.freeze({
-  en: CANONICAL_WEB_ROOT_URL,
+  ...Object.fromEntries(
+    SHIPPED_LOCALES.map((locale) => [locale, getCanonicalLocaleUrl(locale)]),
+  ),
   "x-default": CANONICAL_WEB_ROOT_URL,
 } as const)
 
-export function createWebMetadata(vercelEnvironment: string | undefined) {
+export function createWebMetadata(
+  vercelEnvironment: string | undefined,
+  locale: SupportedLocale = DEFAULT_LOCALE,
+) {
   const indexingIsPermitted = isCanonicalProductionDeployment(vercelEnvironment)
+  const catalog = getLocaleCatalog(locale)
+  const canonicalUrl = getCanonicalLocaleUrl(locale)
 
   return {
     metadataBase: new URL(CANONICAL_WEB_ROOT_URL),
-    title: WEB_METADATA_TITLE,
-    description: WEB_METADATA_DESCRIPTION,
+    title: catalog.seo.title,
+    description: catalog.seo.description,
     alternates: {
-      canonical: CANONICAL_WEB_ROOT_URL,
+      canonical: canonicalUrl,
       languages: SHIPPED_LANGUAGE_ALTERNATES,
     },
     robots: {
@@ -32,16 +44,16 @@ export function createWebMetadata(vercelEnvironment: string | undefined) {
     },
     openGraph: {
       type: "website",
-      locale: "en_US",
-      url: CANONICAL_WEB_ROOT_URL,
-      siteName: "What Are Your Values, Mapache?",
-      title: WEB_METADATA_TITLE,
-      description: WEB_METADATA_DESCRIPTION,
+      locale: catalog.metadata.openGraphLocale,
+      url: canonicalUrl,
+      siteName: catalog.introduction.title,
+      title: catalog.seo.title,
+      description: catalog.seo.description,
     },
     twitter: {
       card: "summary",
-      title: WEB_METADATA_TITLE,
-      description: WEB_METADATA_DESCRIPTION,
+      title: catalog.seo.title,
+      description: catalog.seo.description,
     },
   } satisfies Metadata
 }

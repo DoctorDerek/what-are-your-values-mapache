@@ -1,4 +1,9 @@
 import {
+  DEFAULT_LOCALE,
+  SHIPPED_LOCALES,
+  type SupportedLocale,
+} from "@game/data/src/LocaleRegistry"
+import {
   BATTLE_ANIMATION_SPEED_MODES,
   DEFAULT_BATTLE_ANIMATION_SPEED,
   type BattleAnimationSpeed,
@@ -7,11 +12,9 @@ import { readString, readTuple } from "./PersistenceValidation"
 
 export const PLAYER_SETTINGS_CODEC_VERSION = 2 as const
 
-export const SUPPORTED_LOCALES = ["en"] as const
 export const REDUCED_MOTION_PREFERENCES = ["system", "on", "off"] as const
 export const CONTROL_HINT_PREFERENCES = ["auto", "always", "off"] as const
 
-export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
 export type ReducedMotionPreference =
   (typeof REDUCED_MOTION_PREFERENCES)[number]
 export type ControlHintPreference = (typeof CONTROL_HINT_PREFERENCES)[number]
@@ -52,7 +55,7 @@ export function createPlayerSettings(
     Partial<Pick<PlayerSettings, "battleAnimationSpeed">>,
 ): PlayerSettings {
   return Object.freeze({
-    locale: readOption(settings.locale, SUPPORTED_LOCALES, "locale"),
+    locale: readOption(settings.locale, SHIPPED_LOCALES, "locale"),
     reducedMotion: readOption(
       settings.reducedMotion,
       REDUCED_MOTION_PREFERENCES,
@@ -71,9 +74,11 @@ export function createPlayerSettings(
   })
 }
 
-export function createInitialPlayerSettings() {
+export function createInitialPlayerSettings(
+  locale: SupportedLocale = DEFAULT_LOCALE,
+) {
   return createPlayerSettings({
-    locale: "en",
+    locale,
     reducedMotion: "system",
     controlHints: "auto",
   })
@@ -111,7 +116,7 @@ export function decodePlayerSettings(value: unknown) {
   const tuple = readTuple(value, version === 1 ? 4 : 5, "Player Settings")
 
   const settings = createPlayerSettings({
-    locale: readOption(tuple[1], SUPPORTED_LOCALES, "locale"),
+    locale: readOption(tuple[1], SHIPPED_LOCALES, "locale"),
     reducedMotion: readOption(
       tuple[2],
       REDUCED_MOTION_PREFERENCES,

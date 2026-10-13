@@ -4,6 +4,7 @@ import {
   INFORMATION_PANELS,
   type InformationPanelId,
 } from "@game/data/src/InformationPanels"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
   PRODUCT_MENU_COPY,
   type ProductMenuDestination,
@@ -816,6 +817,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
                 rankedValues,
                 appearance,
                 SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
+                getLocaleCatalog(playerData.settings.locale),
               ),
             )
           }}
@@ -845,6 +847,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
                 rankedValues,
                 playerData.appearance,
                 SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
+                getLocaleCatalog(playerData.settings.locale),
               ),
             )
           }}
@@ -1045,6 +1048,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     return (
       <>
         <AllValues
+          localization={getLocaleCatalog(playerData.settings.locale)}
           runtimeClipCatalog={SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG}
           shouldReduceMotion={shouldReduceMotion}
           key={battleProfile.scheduler.deckRevision}

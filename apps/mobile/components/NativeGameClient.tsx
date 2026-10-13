@@ -2,6 +2,7 @@ import {
   INFORMATION_PANELS,
   type InformationPanelId,
 } from "@game/data/src/InformationPanels"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
   PRODUCT_MENU_COPY,
   type ProductMenuDestination,
@@ -602,6 +603,7 @@ function NativeGameClientContent({
                 rankedValues,
                 appearance,
                 SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG,
+                getLocaleCatalog(playerData.settings.locale),
               ),
             )
           }
@@ -628,6 +630,7 @@ function NativeGameClientContent({
                 rankedValues,
                 playerData.appearance,
                 SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG,
+                getLocaleCatalog(playerData.settings.locale),
               ),
             )
           }
@@ -819,6 +822,7 @@ function NativeGameClientContent({
     return (
       <View className="flex-1">
         <NativeAllValues
+          localization={getLocaleCatalog(playerData.settings.locale)}
           key={`${battleProfile.scheduler.deckRevision}:${customValueBuilderRequestId}`}
           initialValueId={pendingAllValuesValueId}
           isPersistencePending={

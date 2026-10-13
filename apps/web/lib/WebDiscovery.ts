@@ -1,7 +1,8 @@
+import { SHIPPED_LOCALES } from "@game/data/src/LocaleRegistry"
 import type { MetadataRoute } from "next"
 import {
   CANONICAL_WEB_ORIGIN,
-  CANONICAL_WEB_ROOT_URL,
+  getCanonicalLocaleUrl,
   isCanonicalProductionDeployment,
 } from "@/lib/WebDistribution"
 
@@ -27,9 +28,7 @@ export function createRobotsMetadata(vercelEnvironment: string | undefined) {
 }
 
 export function createSitemapMetadata() {
-  return [
-    {
-      url: CANONICAL_WEB_ROOT_URL,
-    },
-  ] satisfies MetadataRoute.Sitemap
+  return SHIPPED_LOCALES.map((locale) => ({
+    url: getCanonicalLocaleUrl(locale),
+  })) satisfies MetadataRoute.Sitemap
 }

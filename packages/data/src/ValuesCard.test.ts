@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import { createActiveDeck } from "./ActiveDeck"
 import { DEFAULT_HEROES99_APPEARANCE } from "./Heroes99Appearance"
+import { getLocaleCatalog } from "./LocalizationCatalog"
 import { createInitialValueProgress } from "./ValueProgress"
 import { rankValues } from "./ValueRanking"
 import { createValuesCardModel, readValuesCardPalette } from "./ValuesCard"
@@ -20,6 +21,71 @@ function model() {
 }
 
 describe("values-card composition", () => {
+  it("freezes selected catalog text into the model used by both renderers", () => {
+    const english = getLocaleCatalog()
+    const translations = new Map(
+      [...english.values].map(([id, copy]) => [
+        id,
+        { ...copy, name: `⟦${copy.name}⟧` },
+      ]),
+    )
+    const deck = createActiveDeck([])
+    const card = createValuesCardModel(
+      rankValues(deck, createInitialValueProgress(deck)),
+      DEFAULT_HEROES99_APPEARANCE,
+      { mode: "typography-only" },
+      {
+        ...english,
+        values: translations,
+        hub: {
+          ...english.hub,
+          unrankedTitle: "⟦Expanded values heading⟧",
+          level: (level) => `⟦Level ${level}⟧`,
+        },
+        card: {
+          ...english.card,
+          invitation: "⟦Localized invitation⟧",
+          rank: (rank) => `⟦${rank}⟧`,
+        },
+      },
+    )
+    translations.clear()
+    const painter: ValuesCardPainter = {
+      rectangle: vi.fn(),
+      sprite: vi.fn(),
+      text: vi.fn(),
+      measure: (text, size) => text.length * size * 0.52,
+    }
+    paintValuesCard({
+      painter,
+      model: { ...card, hasComparisons: true },
+      palette: readValuesCardPalette([
+        "#009dae",
+        "#71dfe7",
+        "#c2fff9",
+        "#ffe652",
+        "#18233e",
+        "#384873",
+        "#1e1e1e",
+        "#ffffff",
+      ]),
+      frame: 0,
+      hero: null,
+    })
+    for (const value of [
+      "⟦Expanded values heading⟧",
+      "⟦Localized invitation⟧",
+      "⟦Level 1⟧",
+      "⟦1⟧",
+      card.values[0].name,
+    ])
+      expect(painter.text).toHaveBeenCalledWith(
+        expect.objectContaining({ value }),
+      )
+    expect(card.values[0].name).toBe("⟦Acceptance⟧")
+    expect(card.copy.invitation).toBe(card.invitation)
+  })
+
   it("copies presentation data without inventing rankings for an unplayed deck", () => {
     const card = model()
     expect(card.title).toBe("My Values")

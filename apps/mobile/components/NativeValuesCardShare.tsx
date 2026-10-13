@@ -1,5 +1,4 @@
 import {
-  VALUES_CARD_COPY as copy,
   getValuesCardDeliveryMessage,
   readValuesCardPalette,
   VALUES_CARD_COLOR_VARIABLES,
@@ -29,6 +28,7 @@ export default function NativeValuesCardShare({
 }) {
   const colors = useCSSVariable([...VALUES_CARD_COLOR_VARIABLES])
   const [showDetails, setShowDetails] = useState(false)
+  const { copy } = model
   const [state, send, actor] = useMachine(valuesCardShareMachine, {
     input: {
       prepare: (options) =>
@@ -186,7 +186,7 @@ export default function NativeValuesCardShare({
           >
             {isDelivering
               ? copy.delivering
-              : getValuesCardDeliveryMessage(outcome)}
+              : getValuesCardDeliveryMessage(outcome, copy)}
           </Text>
         </ScrollView>
       </MapacheScreen>

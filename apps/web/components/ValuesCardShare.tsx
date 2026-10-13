@@ -1,7 +1,6 @@
 "use client"
 
 import {
-  VALUES_CARD_COPY as copy,
   getValuesCardDeliveryMessage,
   VALUES_CARD_SIZE,
   type ValuesCardModel,
@@ -27,6 +26,7 @@ export default function ValuesCardShare({
     typeof DialogContent
   >["onCloseAutoFocus"]
 }) {
+  const { copy } = model
   const [state, send, actor] = useMachine(valuesCardShareMachine, {
     input: { prepare: (options) => prepareWebValuesCard(model, options) },
   })
@@ -166,7 +166,7 @@ export default function ValuesCardShare({
           <p role="status" className="min-h-7 font-medium text-white">
             {isDelivering
               ? copy.delivering
-              : getValuesCardDeliveryMessage(outcome)}
+              : getValuesCardDeliveryMessage(outcome, copy)}
           </p>
         </div>
       </DialogContent>

@@ -1,4 +1,5 @@
 import "./globals.css"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import { SerwistProvider } from "@serwist/turbopack/react"
 import type { Metadata, Viewport } from "next"
 import WebsiteAnalytics from "@/components/WebsiteAnalytics"
@@ -20,7 +21,7 @@ export default function RootLayout({
     process.env.VERCEL_ENV === "preview"
 
   return (
-    <html lang="en">
+    <html lang={getLocaleCatalog().metadata.languageTag}>
       <body className="min-h-screen antialiased">
         <SerwistProvider
           swUrl="/sw.js"

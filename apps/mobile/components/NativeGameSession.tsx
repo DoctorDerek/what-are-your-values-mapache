@@ -1,8 +1,10 @@
+import { resolveLocale } from "@game/data/src/LocaleRegistry"
 import { rootMachine } from "@game/machines/src/RootMachine"
 import type { RootActor } from "@game/machines/src/RuntimeRecovery"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
 import { useActorRef } from "@xstate/react"
 import * as ExpoCrypto from "expo-crypto"
+import { getLocales } from "expo-localization"
 import { useEffect, useMemo, useReducer, type ReactNode } from "react"
 import NativeRuntimeRecovery from "@/components/NativeRuntimeRecovery"
 import { expoDurableStore } from "@/lib/ExpoDurableStore"
@@ -30,7 +32,16 @@ export default function NativeGameSession({
   const observer = useMemo(() => ({ error: notifyActorFailure }), [])
   const gameActor = useActorRef(
     rootMachine,
-    { input: nativeRootMachineInput },
+    {
+      input: {
+        ...nativeRootMachineInput,
+        initialLocale: resolveLocale({
+          preferredLanguages: getLocales().map(
+            ({ languageTag }) => languageTag,
+          ),
+        }),
+      },
+    },
     observer,
   )
   useEffect(() => {

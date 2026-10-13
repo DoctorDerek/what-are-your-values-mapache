@@ -79,7 +79,7 @@ describe("Root layout", () => {
         "What Are Your Values, Mapache? is a fast-paced, value-sorting autobattler to help you find out what you value in life.",
     })
     expect(metadata).toEqual(createWebMetadata(process.env.VERCEL_ENV))
-    expect(document.documentElement).toHaveAttribute("lang", "en")
+    expect(document.documentElement).toHaveAttribute("lang", "en-US")
     expect(screen.getByText("Values client")).toBeVisible()
     expect(serwistProviderSpy).toHaveBeenCalledWith({
       swUrl: "/sw.js",

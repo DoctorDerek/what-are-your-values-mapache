@@ -1,4 +1,5 @@
 import { DEFAULT_HEROES99_APPEARANCE } from "@game/data/src/Heroes99Appearance"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
   readValuesCardPalette,
   type ValuesCardModel,
@@ -175,12 +176,16 @@ vi.mock("@shopify/react-native-skia", () => ({
 
 const model: ValuesCardModel<number> = {
   title: "My Top Five Values",
+  invitation: getLocaleCatalog().card.invitation,
+  copy: getLocaleCatalog().card,
   hasComparisons: true,
   appearance: DEFAULT_HEROES99_APPEARANCE,
   values: [
     {
       name: "Creativity 🦝 创造力",
       level: 14,
+      levelLabel: "Level 14",
+      rankLabel: "#1",
       animal: {
         kind: "character",
         animalId: "bat",

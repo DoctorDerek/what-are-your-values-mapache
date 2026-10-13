@@ -43,12 +43,28 @@ export type ActiveValueDefinition =
 
 export type ValuePair = readonly [first: ValueId, second: ValueId]
 
-export function getValueDisplayName(value: ActiveValueDefinition) {
-  return value.kind === "canonical" ? value.englishName : value.name
+export type LocalizedValueCopy = Readonly<{ name: string; definition: string }>
+
+export function getValueDisplayName(
+  value: ActiveValueDefinition,
+  translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>,
+) {
+  if (value.kind === "custom") return value.name
+  if (!translations) return value.englishName
+  const translated = translations.get(value.id)
+  if (!translated) throw new Error(`Missing localized value: ${value.id}`)
+  return translated.name
 }
 
-export function getValueDisplayDefinition(value: ActiveValueDefinition) {
-  return value.kind === "canonical" ? value.sourceDefinition : value.definition
+export function getValueDisplayDefinition(
+  value: ActiveValueDefinition,
+  translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>,
+) {
+  if (value.kind === "custom") return value.definition
+  if (!translations) return value.sourceDefinition
+  const translated = translations.get(value.id)
+  if (!translated) throw new Error(`Missing localized value: ${value.id}`)
+  return translated.definition
 }
 
 export function normalizeValueNameForComparison(value: string) {

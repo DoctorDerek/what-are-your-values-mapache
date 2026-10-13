@@ -1,5 +1,6 @@
 import { createActiveDeck, type ActiveDeck } from "@game/data/src/ActiveDeck"
 import { CANONICAL_VALUES } from "@game/data/src/CanonicalValues"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
   createSeethingSwarmTypographyOnlyRuntimeClipCatalog,
   type SeethingSwarmRuntimeClipCatalog,
@@ -115,6 +116,27 @@ function findLegacyCustomRow() {
 }
 
 describe("All Values Component Integration", () => {
+  it("renders and searches the selected value copy while retaining English search aliases", () => {
+    const english = getLocaleCatalog()
+    const source = CANONICAL_VALUES[0]
+    const values = new Map(english.values)
+    values.set(source.id, {
+      name: "⟦Localized value⟧",
+      definition: "⟦Localized meaning⟧",
+    })
+    renderAllValues(undefined, { localization: { ...english, values } })
+    fireEvent.change(screen.getByRole("searchbox"), {
+      target: { value: "localized" },
+    })
+    expect(screen.getByText("⟦Localized value⟧")).toBeVisible()
+    expect(screen.getByText(/⟦Localized meaning⟧/)).toBeVisible()
+    expect(screen.getAllByRole("listitem")).toHaveLength(1)
+    fireEvent.change(screen.getByRole("searchbox"), {
+      target: { value: source.englishName },
+    })
+    expect(screen.getByText("⟦Localized value⟧")).toBeVisible()
+  })
+
   afterEach(() => vi.restoreAllMocks())
   it("retains calm art until attention is ready and preserves focus while the pointer leaves", async () => {
     vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockReturnValue(
