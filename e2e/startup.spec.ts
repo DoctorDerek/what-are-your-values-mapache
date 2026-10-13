@@ -63,3 +63,53 @@ test("startup preserves its viewport while client code waits and opens the saved
     await page.unrouteAll({ behavior: "wait" })
   }
 })
+
+test("first arrival uses the wide composition and completes a full raccoon crossing", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1920, height: 1080 })
+  await page.goto("/")
+  const start = page.getByRole("button", { name: "Start", exact: true })
+  await expect(start).toBeVisible()
+  const title = page.getByRole("heading", {
+    name: "What Are Your Values, Mapache?",
+    exact: true,
+  })
+  const titleGeometry = await title.evaluate((element) => ({
+    height: element.getBoundingClientRect().height,
+    lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight),
+  }))
+  expect(titleGeometry.height).toBeCloseTo(titleGeometry.lineHeight, 1)
+  const poster = page.locator('img[src*="ice-cream.png"]')
+  expect((await poster.boundingBox())!.width).toBeLessThanOrEqual(400)
+  const creditLines = await page
+    .getByRole("link", { name: "DoctorDerek.com" })
+    .evaluate((link) =>
+      Array.from(
+        link.parentElement!.children,
+        (line) => line.getBoundingClientRect().top,
+      ),
+    )
+  expect(creditLines[1] - creditLines[0]).toBeCloseTo(
+    creditLines[2] - creditLines[1],
+    1,
+  )
+
+  const startBefore = await start.boundingBox()
+  const crossing = page.getByTestId("arrival-raccoon")
+  await expect(crossing).toBeAttached({ timeout: 15_000 })
+  const sprite = crossing.locator("[data-animal-id]")
+  expect((await sprite.boundingBox())!.x).toBeLessThan(0)
+  await expect
+    .poll(async () => (await sprite.boundingBox())?.x ?? -1, {
+      timeout: 6000,
+      intervals: [100],
+    })
+    .toBeGreaterThan(1920 * 0.9)
+  await expect(crossing).toHaveCount(0)
+  expect(await start.boundingBox()).toEqual(startBefore)
+  await start.click()
+  await expect(
+    page.getByRole("heading", { name: /^My (?:Top Five Life )?Values$/ }),
+  ).toBeVisible()
+})

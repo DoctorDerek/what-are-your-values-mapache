@@ -57,7 +57,7 @@ describe("NativeSettings", () => {
       name: "Always",
     })
 
-    expect(screen.getByText("English")).toBeOnTheScreen()
+    expect(screen.getByText("English (US) ▾")).toBeOnTheScreen()
     expect(reducedMotionGroup).toHaveProp("accessibilityRole", "radiogroup")
     expect(controlHintsGroup).toHaveProp("accessibilityRole", "radiogroup")
     expect(followSystem).toBeChecked()

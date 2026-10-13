@@ -17,6 +17,7 @@ const { createSerwist, createCacheFirst, addEventListeners } = vi.hoisted(
 vi.mock("serwist", () => ({
   Serwist: createSerwist,
   CacheFirst: createCacheFirst,
+  NetworkFirst: vi.fn(function () {}),
 }))
 
 const origin = "https://whatareyourvaluesmapache.com"
@@ -64,6 +65,9 @@ beforeEach(() => {
       },
       `${origin}${existingPath}`,
       "/icons/icon-192.png",
+      "/generated/mapachito/ice-cream.riv",
+      "/generated/mapachito/rive.wasm",
+      "/generated/mapachito/rive_fallback.wasm",
       `https://other.example${animalPath}`,
     ],
     addEventListener: (

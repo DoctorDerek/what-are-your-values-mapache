@@ -22,7 +22,7 @@ describe("Player Settings presentation", () => {
       savingStatus: "Saving setting…",
     })
     expect(PLAYER_SETTINGS_LANGUAGE_OPTIONS).toEqual([
-      { value: "en", label: "English" },
+      { value: "en", label: "English (US)" },
     ])
     expect(REDUCED_MOTION_SETTING_OPTIONS).toEqual([
       {

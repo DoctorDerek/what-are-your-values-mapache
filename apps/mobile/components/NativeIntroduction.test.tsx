@@ -7,7 +7,9 @@ describe("NativeIntroduction", () => {
   it("presents the approved first-run guidance and completes explicitly", async () => {
     const onComplete = jest.fn()
     const user = userEvent.setup()
-    await render(<NativeIntroduction onComplete={onComplete} />)
+    await render(
+      <NativeIntroduction onComplete={onComplete} onLocaleChange={jest.fn()} />,
+    )
 
     expect(
       screen.getByRole("heading", { name: introductionCopy.title }),
@@ -29,6 +31,7 @@ describe("NativeIntroduction", () => {
     const user = userEvent.setup()
     await render(
       <NativeIntroduction
+        onLocaleChange={jest.fn()}
         notice="Recovered player data."
         onComplete={onComplete}
       />,

@@ -45,7 +45,11 @@ import {
   DurableStoreConflictError,
   type DurableStoreAdapter,
 } from "./DurableStoreAdapter"
-import { createInitialPlayerData, type PlayerData } from "./PlayerData"
+import {
+  createInitialPlayerData,
+  createPlayerData,
+  type PlayerData,
+} from "./PlayerData"
 import {
   createPendingBattleProfileExportActor,
   createWayvmExportActor,
@@ -72,7 +76,11 @@ import {
   playerDataResetBackupReadyNotice,
   playerDataResetCopy,
 } from "./PlayerDataResetCopy"
-import { createPlayerSettings, type PlayerSettings } from "./PlayerSettings"
+import {
+  createPlayerSettings,
+  type PlayerSettings,
+  type SupportedLocale,
+} from "./PlayerSettings"
 import { updatePlayerSettingsActor } from "./PlayerSettingsActors"
 import { areSchedulerIdentitiesEqual } from "./SchedulerIdentity"
 import type { PreparedWayvmImport } from "./WayvmImportPreview"
@@ -139,6 +147,7 @@ type RootMachineEvent =
     }
   | { type: "APP.BACKGROUND_CHECKPOINT_REQUESTED" }
   | { type: "INTRODUCTION.COMPLETED" }
+  | { type: "INTRODUCTION.LOCALE_SELECTED"; locale: SupportedLocale }
   | { type: "BATTLE.START_REQUESTED" }
   | { type: "BATTLE.SPEED_CHANGE_REQUESTED"; speed: BattleAnimationSpeed }
   | { type: "ACHIEVEMENTS.OPEN_REQUESTED" }
@@ -757,6 +766,20 @@ export const rootMachine = setup({
     },
     Splash: {
       on: {
+        "INTRODUCTION.LOCALE_SELECTED": {
+          actions: assign({
+            playerData: ({ context, event }) => {
+              const playerData = requirePlayerData(context)
+              return createPlayerData({
+                ...playerData,
+                settings: createPlayerSettings({
+                  ...playerData.settings,
+                  locale: event.locale,
+                }),
+              })
+            },
+          }),
+        },
         "INTRODUCTION.COMPLETED": {
           target: "InitializingProfile",
           actions: "clearPortabilityFeedback",

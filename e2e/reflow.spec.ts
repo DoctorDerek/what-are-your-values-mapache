@@ -309,6 +309,7 @@ for (const width of [320, 390, 1280]) {
     await page.setViewportSize({ width, height: width === 320 ? 640 : 900 })
     await page.emulateMedia({ reducedMotion: "reduce" })
     await startAtHub(page)
+    await page.mouse.move(0, 0)
     const roster = page.getByRole("region", { name: "Included values" })
     const actions = page.getByRole("navigation", { name: "Value actions" })
     await expect(roster.getByRole("listitem")).toHaveCount(103)
@@ -317,18 +318,26 @@ for (const width of [320, 390, 1280]) {
         (element) => element.scrollHeight > element.clientHeight,
       ),
     ).toBe(true)
-    const titleGeometry = await page
-      .getByRole("heading", { level: 1 })
-      .evaluate((element) => ({
-        height: element.getBoundingClientRect().height,
-        lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight),
-        width: element.clientWidth,
-        scrollWidth: element.scrollWidth,
-      }))
-    expect(titleGeometry.height).toBeLessThanOrEqual(
-      titleGeometry.lineHeight + 1,
-    )
-    expect(titleGeometry.scrollWidth).toBeLessThanOrEqual(titleGeometry.width)
+    for (const fallbackFont of [false, true]) {
+      const fontOverride = fallbackFont
+        ? await page.addStyleTag({
+            content: "body { font-family: monospace; }",
+          })
+        : null
+      const titleGeometry = await page
+        .getByRole("heading", { level: 1 })
+        .evaluate((element) => ({
+          height: element.getBoundingClientRect().height,
+          lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight),
+          width: element.clientWidth,
+          scrollWidth: element.scrollWidth,
+        }))
+      expect(titleGeometry.height).toBeLessThanOrEqual(
+        titleGeometry.lineHeight + 1,
+      )
+      expect(titleGeometry.scrollWidth).toBeLessThanOrEqual(titleGeometry.width)
+      await fontOverride?.evaluate((element) => element.remove())
+    }
     const addBounds = await actions
       .getByRole("button", { name: "Add value", exact: true })
       .boundingBox()

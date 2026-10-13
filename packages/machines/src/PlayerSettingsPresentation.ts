@@ -16,11 +16,17 @@ export const PLAYER_SETTINGS_COPY = Object.freeze({
 })
 
 export const PLAYER_SETTINGS_LANGUAGE_OPTIONS = Object.freeze([
-  Object.freeze({ value: "en", label: "English" }),
+  Object.freeze({ value: "en", label: "English (US)" }),
 ] as const satisfies readonly {
   readonly value: SupportedLocale
   readonly label: string
 }[])
+
+export type LanguageSelectorProps = Readonly<{
+  locale: SupportedLocale
+  disabled?: boolean
+  onLocaleChange: (locale: SupportedLocale) => void
+}>
 
 export const REDUCED_MOTION_SETTING_OPTIONS = Object.freeze([
   Object.freeze({
