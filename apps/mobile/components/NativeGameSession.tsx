@@ -1,3 +1,5 @@
+import { resolveLocale } from "@game/data/src/LocaleRegistry"
+import { getLocales } from "expo-localization"
 import { rootMachine } from "@game/machines/src/RootMachine"
 import type { RootActor } from "@game/machines/src/RuntimeRecovery"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
@@ -30,7 +32,7 @@ export default function NativeGameSession({
   const observer = useMemo(() => ({ error: notifyActorFailure }), [])
   const gameActor = useActorRef(
     rootMachine,
-    { input: nativeRootMachineInput },
+    { input: { ...nativeRootMachineInput, initialLocale: resolveLocale({ preferredLanguages: getLocales().map(({ languageTag }) => languageTag) }) } },
     observer,
   )
   useEffect(() => {
