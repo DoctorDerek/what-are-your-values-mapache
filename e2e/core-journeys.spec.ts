@@ -158,7 +158,13 @@ test("a new player starts immediately and reviews the complete ranking", async (
     .toBe(scrollTop)
   await expect(editorial).toBeHidden()
   await page.reload()
-  await expect(page.getByText("Home screen", { exact: true })).toBeVisible()
+  await expect(
+    page.getByRole("heading", { name: "My Values", exact: true }),
+  ).toBeVisible()
+  await expect(roster.getByRole("listitem")).toHaveCount(103)
+  await expect(
+    page.getByRole("button", { name: "Battle", exact: true }),
+  ).toBeEnabled()
   await expect(editorial).toBeHidden()
 })
 

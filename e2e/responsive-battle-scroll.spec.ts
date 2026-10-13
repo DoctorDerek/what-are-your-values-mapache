@@ -289,6 +289,11 @@ for (const viewport of [
   test(`bottom controls remain reachable while definitions scroll at ${viewport.width}px with ${viewport.textScale}% text${viewport.fontFamily ? " using fallback font metrics" : ""}`, async ({
     page,
   }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(crypto, "randomUUID", {
+        value: () => "00000000-0000-4000-8000-000000012944",
+      })
+    })
     await page.setViewportSize(viewport)
     await page.emulateMedia({ reducedMotion: "reduce" })
     await page.goto("/")
@@ -304,6 +309,12 @@ for (const viewport of [
     const battle = page.getByRole("main", { name: "Value battle" })
     const content = battle.getByRole("region", { name: "Battle choices" })
     const choices = battle.getByRole("button", { name: /^Choose / })
+    await expect(choices.first().getByRole("heading")).toHaveAccessibleName(
+      "Cooperation",
+    )
+    await expect(choices.last().getByRole("heading")).toHaveAccessibleName(
+      "Independence",
+    )
     const actionBar = battle.getByRole("navigation", { name: "Battle actions" })
     const menuAction = actionBar.getByRole("button", {
       name: "Menu",

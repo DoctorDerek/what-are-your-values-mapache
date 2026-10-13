@@ -112,6 +112,8 @@ test("controller starts play, makes one held choice, guards overlays, and return
   await tapControllerButton(page, 15)
   await expect(page.getByTestId("information-panel-body")).toBeFocused()
   await tapControllerButton(page, 15)
+  await expect(page.getByRole("combobox", { name: "Language" })).toBeFocused()
+  await tapControllerButton(page, 15)
   await expect(
     page.getByRole("button", { name: "Start", exact: true }),
   ).toBeFocused()
