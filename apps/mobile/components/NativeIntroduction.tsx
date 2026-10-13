@@ -1,6 +1,9 @@
 import { FIRST_ARRIVAL_PRESENTATION } from "@game/data/src/FirstArrivalPresentation"
+import {
+  DEFAULT_LOCALE,
+  type SupportedLocale,
+} from "@game/data/src/LocaleRegistry"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
-import { DEFAULT_LOCALE, type SupportedLocale } from "@game/data/src/LocaleRegistry"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
 import { Fragment, lazy, Suspense, useCallback, useState } from "react"
 import { Alert, Image, Linking, Pressable, View } from "react-native"
@@ -29,7 +32,8 @@ export default function NativeIntroduction({
   onLocaleChange: (locale: SupportedLocale) => void
   onComplete: () => void
 }) {
-  const { introduction: introductionCopy, firstArrival } = getLocaleCatalog(locale)
+  const { introduction: introductionCopy, firstArrival } =
+    getLocaleCatalog(locale)
   const [hasStarted, setHasStarted] = useState(false)
   const [hasFinished, setHasFinished] = useState(false)
   const shouldPlay = useNativeDeferredFirstArrival(

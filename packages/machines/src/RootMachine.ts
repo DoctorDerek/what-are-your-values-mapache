@@ -1,5 +1,9 @@
 import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import { CUSTOM_VALUE_INVITATION_COPY } from "@game/data/src/CustomValueInvitationCopy"
+import {
+  DEFAULT_LOCALE,
+  type SupportedLocale,
+} from "@game/data/src/LocaleRegistry"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { assign, forwardTo, setup } from "xstate"
@@ -76,11 +80,7 @@ import {
   playerDataResetBackupReadyNotice,
   playerDataResetCopy,
 } from "./PlayerDataResetCopy"
-import {
-  createPlayerSettings,
-  type PlayerSettings,
-} from "./PlayerSettings"
-import { DEFAULT_LOCALE, type SupportedLocale } from "@game/data/src/LocaleRegistry"
+import { createPlayerSettings, type PlayerSettings } from "./PlayerSettings"
 import { updatePlayerSettingsActor } from "./PlayerSettingsActors"
 import { areSchedulerIdentitiesEqual } from "./SchedulerIdentity"
 import type { PreparedWayvmImport } from "./WayvmImportPreview"

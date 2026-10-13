@@ -1,7 +1,8 @@
-import { SHIPPED_LANGUAGE_OPTIONS, getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
-  type LanguageSelectorProps,
-} from "@game/machines/src/PlayerSettingsPresentation"
+  getLocaleCatalog,
+  SHIPPED_LANGUAGE_OPTIONS,
+} from "@game/data/src/LocalizationCatalog"
+import { type LanguageSelectorProps } from "@game/machines/src/PlayerSettingsPresentation"
 import { useState } from "react"
 import { Modal, Pressable, View } from "react-native"
 import { Button } from "@/components/ui/button"
@@ -29,9 +30,7 @@ export default function NativeLanguageSelector({
         onPress={() => setIsOpen(true)}
         className="min-h-12 flex-row items-center justify-between gap-3 border-3 border-black bg-white px-3 py-2 shadow-[3px_3px_0_#000] active:bg-gray-100"
       >
-        <Text className="font-semibold text-black">
-          {copy.heading}
-        </Text>
+        <Text className="font-semibold text-black">{copy.heading}</Text>
         <Text className="font-semibold text-black">
           {selectedOption?.label} ▾
         </Text>

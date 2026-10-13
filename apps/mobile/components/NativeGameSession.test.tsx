@@ -26,7 +26,9 @@ jest.mock("@/lib/ExpoPlayerDataFiles", () => ({
   expoPlayerDataFileAdapter: { exportJson: jest.fn() },
 }))
 jest.mock("expo-crypto", () => ({ randomUUID: () => "native-recovery" }))
-jest.mock("expo-localization", () => ({ getLocales: () => [{ languageTag: "es-MX" }, { languageTag: "en-US" }] }))
+jest.mock("expo-localization", () => ({
+  getLocales: () => [{ languageTag: "es-MX" }, { languageTag: "en-US" }],
+}))
 
 const fault = { render: false }
 const exportJson = jest.mocked(expoPlayerDataFileAdapter.exportJson)

@@ -17,7 +17,15 @@ const model: ValuesCardModel<never> = {
   copy: getLocaleCatalog().card,
   hasComparisons: true,
   appearance: DEFAULT_HEROES99_APPEARANCE,
-  values: [{ name: "Curiosity", level: 12, levelLabel: "Level 12", rankLabel: "#1", animal: null }],
+  values: [
+    {
+      name: "Curiosity",
+      level: 12,
+      levelLabel: "Level 12",
+      rankLabel: "#1",
+      animal: null,
+    },
+  ],
 }
 let file: PreparedValuesCard
 beforeEach(() => {

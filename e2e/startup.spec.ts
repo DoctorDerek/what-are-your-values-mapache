@@ -64,7 +64,9 @@ test("startup preserves its viewport while client code waits and opens the saved
     ).toHaveCount(0)
     await game.getByRole("button", { name: "Menu", exact: true }).click()
     await game.getByRole("button", { name: "Settings", exact: true }).click()
-    await expect(game.getByRole("combobox", { name: "Language" })).toHaveValue("en")
+    await expect(game.getByRole("combobox", { name: "Language" })).toHaveValue(
+      "en",
+    )
     await expect(page.locator("html")).toHaveAttribute("lang", "en-US")
   } finally {
     scriptsReady.resolve()

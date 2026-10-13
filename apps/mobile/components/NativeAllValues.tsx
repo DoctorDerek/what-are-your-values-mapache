@@ -1,5 +1,8 @@
-import { getLocaleCatalog, type LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
 import { projectAllValues } from "@game/data/src/AllValuesProjection"
+import {
+  getLocaleCatalog,
+  type LocalizationCatalog,
+} from "@game/data/src/LocalizationCatalog"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
 import {
   getValueDisplayName,
@@ -73,7 +76,12 @@ export default function NativeAllValues({
     editingValueId !== null ||
     deletingValueId !== null
   const { existingCustomValues, hasComparisons, visibleValues } = useMemo(
-    () => projectAllValues({ rankedValues, searchQuery, translations: localization.values }),
+    () =>
+      projectAllValues({
+        rankedValues,
+        searchQuery,
+        translations: localization.values,
+      }),
     [rankedValues, searchQuery, localization],
   )
 

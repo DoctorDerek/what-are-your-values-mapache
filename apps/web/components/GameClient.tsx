@@ -4,13 +4,13 @@ import {
   INFORMATION_PANELS,
   type InformationPanelId,
 } from "@game/data/src/InformationPanels"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
   PRODUCT_MENU_COPY,
   type ProductMenuDestination,
   type ProductMenuRouteDestination,
 } from "@game/data/src/ProductMenu"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
-import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import { rankValues } from "@game/data/src/ValueRanking"
 import {
   createValuesCardModel,

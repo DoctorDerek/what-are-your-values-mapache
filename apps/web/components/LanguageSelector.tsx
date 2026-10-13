@@ -1,9 +1,10 @@
 "use client"
 
-import { SHIPPED_LANGUAGE_OPTIONS, getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
-  type LanguageSelectorProps,
-} from "@game/machines/src/PlayerSettingsPresentation"
+  getLocaleCatalog,
+  SHIPPED_LANGUAGE_OPTIONS,
+} from "@game/data/src/LocalizationCatalog"
+import { type LanguageSelectorProps } from "@game/machines/src/PlayerSettingsPresentation"
 
 export default function LanguageSelector({
   locale,

@@ -1,4 +1,8 @@
-import type { CustomValueDefinition, CanonicalValueId, LocalizedValueCopy } from "./Value"
+import type {
+  CanonicalValueId,
+  CustomValueDefinition,
+  LocalizedValueCopy,
+} from "./Value"
 import {
   sortRankedValuesAlphabetically,
   type RankedValue,

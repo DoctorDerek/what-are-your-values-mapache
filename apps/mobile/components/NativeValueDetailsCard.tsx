@@ -1,4 +1,7 @@
-import { getLocaleCatalog, type LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
+import {
+  getLocaleCatalog,
+  type LocalizationCatalog,
+} from "@game/data/src/LocalizationCatalog"
 import {
   getValueDisplayDefinition,
   getValueDisplayName,

@@ -1,8 +1,11 @@
 "use client"
 
 import { FIRST_ARRIVAL_PRESENTATION } from "@game/data/src/FirstArrivalPresentation"
+import {
+  DEFAULT_LOCALE,
+  type SupportedLocale,
+} from "@game/data/src/LocaleRegistry"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
-import { DEFAULT_LOCALE, type SupportedLocale } from "@game/data/src/LocaleRegistry"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
 import Image from "next/image"
 import { lazy, Suspense, useCallback, useState } from "react"
@@ -28,7 +31,8 @@ export default function Splash({
   onLocaleChange: (locale: SupportedLocale) => void
   onComplete: () => void
 }) {
-  const { introduction: introductionCopy, firstArrival } = getLocaleCatalog(locale)
+  const { introduction: introductionCopy, firstArrival } =
+    getLocaleCatalog(locale)
   const [hasStarted, setHasStarted] = useState(false)
   const [hasFinished, setHasFinished] = useState(false)
   const [hasIceCreamFinished, setHasIceCreamFinished] = useState(false)

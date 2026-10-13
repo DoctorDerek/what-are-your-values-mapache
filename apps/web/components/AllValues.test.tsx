@@ -120,13 +120,20 @@ describe("All Values Component Integration", () => {
     const english = getLocaleCatalog()
     const source = CANONICAL_VALUES[0]
     const values = new Map(english.values)
-    values.set(source.id, { name: "⟦Localized value⟧", definition: "⟦Localized meaning⟧" })
+    values.set(source.id, {
+      name: "⟦Localized value⟧",
+      definition: "⟦Localized meaning⟧",
+    })
     renderAllValues(undefined, { localization: { ...english, values } })
-    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "localized" } })
+    fireEvent.change(screen.getByRole("searchbox"), {
+      target: { value: "localized" },
+    })
     expect(screen.getByText("⟦Localized value⟧")).toBeVisible()
     expect(screen.getByText(/⟦Localized meaning⟧/)).toBeVisible()
     expect(screen.getAllByRole("listitem")).toHaveLength(1)
-    fireEvent.change(screen.getByRole("searchbox"), { target: { value: source.englishName } })
+    fireEvent.change(screen.getByRole("searchbox"), {
+      target: { value: source.englishName },
+    })
     expect(screen.getByText("⟦Localized value⟧")).toBeVisible()
   })
 

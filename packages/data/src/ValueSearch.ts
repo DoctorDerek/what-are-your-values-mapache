@@ -2,9 +2,9 @@ import {
   getValueDisplayDefinition,
   getValueDisplayName,
   normalizeValueNameForComparison,
-  type ValueId,
   type CanonicalValueId,
   type LocalizedValueCopy,
+  type ValueId,
 } from "./Value"
 import type { RankedValue } from "./ValueRanking"
 
@@ -23,11 +23,16 @@ export function filterRankedValuesByQuery(
       normalizeValueNameForComparison(getValueDisplayName(definition)).includes(
         normalizedQuery,
       ) ||
-      normalizeValueNameForComparison(getValueDisplayDefinition(definition)).includes(normalizedQuery) ||
-      (translations !== undefined && [
-        getValueDisplayName(definition, translations),
-        getValueDisplayDefinition(definition, translations),
-      ].some((text) => normalizeValueNameForComparison(text).includes(normalizedQuery))),
+      normalizeValueNameForComparison(
+        getValueDisplayDefinition(definition),
+      ).includes(normalizedQuery) ||
+      (translations !== undefined &&
+        [
+          getValueDisplayName(definition, translations),
+          getValueDisplayDefinition(definition, translations),
+        ].some((text) =>
+          normalizeValueNameForComparison(text).includes(normalizedQuery),
+        )),
   )
 }
 

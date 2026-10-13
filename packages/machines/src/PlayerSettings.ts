@@ -1,4 +1,8 @@
-import { DEFAULT_LOCALE, SHIPPED_LOCALES, type SupportedLocale } from "@game/data/src/LocaleRegistry"
+import {
+  DEFAULT_LOCALE,
+  SHIPPED_LOCALES,
+  type SupportedLocale,
+} from "@game/data/src/LocaleRegistry"
 import {
   BATTLE_ANIMATION_SPEED_MODES,
   DEFAULT_BATTLE_ANIMATION_SPEED,
@@ -70,7 +74,9 @@ export function createPlayerSettings(
   })
 }
 
-export function createInitialPlayerSettings(locale: SupportedLocale = DEFAULT_LOCALE) {
+export function createInitialPlayerSettings(
+  locale: SupportedLocale = DEFAULT_LOCALE,
+) {
   return createPlayerSettings({
     locale,
     reducedMotion: "system",

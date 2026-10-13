@@ -1,7 +1,12 @@
 export function createLocaleFormatters(languageTag: string) {
-  const integer = new Intl.NumberFormat(languageTag, { maximumFractionDigits: 0 })
+  const integer = new Intl.NumberFormat(languageTag, {
+    maximumFractionDigits: 0,
+  })
   const percent = new Intl.NumberFormat(languageTag, { style: "percent" })
-  const date = new Intl.DateTimeFormat(languageTag, { dateStyle: "medium", timeZone: "UTC" })
+  const date = new Intl.DateTimeFormat(languageTag, {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  })
   const plural = new Intl.PluralRules(languageTag)
   return Object.freeze({
     integer: (value: number) => integer.format(value),

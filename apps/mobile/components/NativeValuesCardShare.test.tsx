@@ -41,7 +41,15 @@ const model: ValuesCardModel<number> = {
   copy: getLocaleCatalog().card,
   hasComparisons: true,
   appearance: DEFAULT_HEROES99_APPEARANCE,
-  values: [{ name: "Fun", level: 12, levelLabel: "Level 12", rankLabel: "#1", animal: null }],
+  values: [
+    {
+      name: "Fun",
+      level: 12,
+      levelLabel: "Level 12",
+      rankLabel: "#1",
+      animal: null,
+    },
+  ],
 }
 let file: PreparedValuesCard
 beforeEach(() => {

@@ -45,7 +45,10 @@ export type ValuePair = readonly [first: ValueId, second: ValueId]
 
 export type LocalizedValueCopy = Readonly<{ name: string; definition: string }>
 
-export function getValueDisplayName(value: ActiveValueDefinition, translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>) {
+export function getValueDisplayName(
+  value: ActiveValueDefinition,
+  translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>,
+) {
   if (value.kind === "custom") return value.name
   if (!translations) return value.englishName
   const translated = translations.get(value.id)
@@ -53,7 +56,10 @@ export function getValueDisplayName(value: ActiveValueDefinition, translations?:
   return translated.name
 }
 
-export function getValueDisplayDefinition(value: ActiveValueDefinition, translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>) {
+export function getValueDisplayDefinition(
+  value: ActiveValueDefinition,
+  translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>,
+) {
   if (value.kind === "custom") return value.definition
   if (!translations) return value.sourceDefinition
   const translated = translations.get(value.id)

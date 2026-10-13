@@ -3,6 +3,7 @@ import {
   readHeroes99Appearance,
   type Heroes99Appearance,
 } from "@game/data/src/Heroes99Appearance"
+import type { SupportedLocale } from "@game/data/src/LocaleRegistry"
 import { getAchievementDefinition } from "./AchievementCatalog"
 import {
   createAchievementState,
@@ -14,7 +15,6 @@ import {
   validateBattleProfile,
   type BattleProfile,
 } from "./BattleProfile"
-import type { SupportedLocale } from "@game/data/src/LocaleRegistry"
 import { readIsoTimestamp } from "./PersistenceValidation"
 import {
   createInitialPlayerSettings,

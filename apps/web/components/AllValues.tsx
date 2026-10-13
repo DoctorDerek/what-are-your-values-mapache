@@ -1,12 +1,15 @@
 "use client"
 
-import { getLocaleCatalog, type LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
 import { projectAllValues } from "@game/data/src/AllValuesProjection"
 import {
   CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES,
   CUSTOM_VALUE_NAME_MAX_GRAPHEMES,
   validateCustomValueDraft,
 } from "@game/data/src/CustomValueValidation"
+import {
+  getLocaleCatalog,
+  type LocalizationCatalog,
+} from "@game/data/src/LocalizationCatalog"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import {
@@ -81,7 +84,12 @@ export default function AllValues({
   )
 
   const { existingCustomValues, hasComparisons, visibleValues } = useMemo(
-    () => projectAllValues({ rankedValues, searchQuery, translations: localization.values }),
+    () =>
+      projectAllValues({
+        rankedValues,
+        searchQuery,
+        translations: localization.values,
+      }),
     [rankedValues, searchQuery, localization],
   )
   const editableCustomValue = rankedValues.find(

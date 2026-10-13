@@ -2,8 +2,10 @@ import { getLevelFromXP } from "@game/utils/src/LevelMath"
 import type { Heroes99Appearance } from "./Heroes99Appearance"
 import { projectHubValues } from "./HubValueProjection"
 import { createLocaleFormatters } from "./LocaleFormatters"
-import { getLocaleCatalog, type LocalizationCatalog } from "./LocalizationCatalog"
-import { VALUES_CARD_COPY } from "./ValuesCardCopy"
+import {
+  getLocaleCatalog,
+  type LocalizationCatalog,
+} from "./LocalizationCatalog"
 import { resolveValueAnimalPresentation } from "./SeethingSwarmAnimalPresentation"
 import type {
   SeethingSwarmRuntimeCharacterClip,
@@ -11,6 +13,7 @@ import type {
 } from "./SeethingSwarmRuntimeClipCatalog"
 import { getValueDisplayName } from "./Value"
 import type { RankedValue } from "./ValueRanking"
+import { VALUES_CARD_COPY } from "./ValuesCardCopy"
 
 export const VALUES_CARD_SIZE = Object.freeze({ width: 1600, height: 900 })
 export const VALUES_CARD_COLOR_VARIABLES = [
