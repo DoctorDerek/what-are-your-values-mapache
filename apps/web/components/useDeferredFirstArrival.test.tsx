@@ -16,6 +16,33 @@ afterEach(() => {
 })
 
 describe("optional arrival scheduling", () => {
+  it("reveals optional art through the frame fallback and cancels on unmount", () => {
+    vi.stubGlobal("requestIdleCallback", undefined)
+    const first = renderHook(() => useDeferredFirstArrival(true))
+    act(() => vi.advanceTimersByTime(4100))
+    expect(first.result.current).toBe(true)
+    first.unmount()
+    const pending = renderHook(() => useDeferredFirstArrival(true))
+    act(() => vi.advanceTimersByTime(4000))
+    pending.unmount()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it("cancels scheduled idle work and does not schedule a hidden introduction", () => {
+    const cancelIdle = vi.fn()
+    vi.stubGlobal("requestIdleCallback", vi.fn(() => 12))
+    vi.stubGlobal("cancelIdleCallback", cancelIdle)
+    const pending = renderHook(() => useDeferredFirstArrival(true))
+    act(() => vi.advanceTimersByTime(4000))
+    pending.unmount()
+    expect(cancelIdle).toHaveBeenCalledWith(12)
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden")
+    const hidden = renderHook(() => useDeferredFirstArrival(true))
+    act(() => vi.advanceTimersByTime(10000))
+    expect(hidden.result.current).toBe(false)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
   it("waits for document load, the delay, and idle work", () => {
     vi.spyOn(document, "readyState", "get").mockReturnValue("loading")
     let idle: IdleRequestCallback | undefined
