@@ -79,8 +79,8 @@ import {
 import {
   createPlayerSettings,
   type PlayerSettings,
-  type SupportedLocale,
 } from "./PlayerSettings"
+import { DEFAULT_LOCALE, type SupportedLocale } from "@game/data/src/LocaleRegistry"
 import { updatePlayerSettingsActor } from "./PlayerSettingsActors"
 import { areSchedulerIdentitiesEqual } from "./SchedulerIdentity"
 import type { PreparedWayvmImport } from "./WayvmImportPreview"
@@ -114,6 +114,7 @@ type RootMachineContext = {
   readonly sourceBuild: string
   readonly now: () => string
   readonly randomUuid: () => string
+  readonly initialLocale: SupportedLocale
   playerData: PlayerData | null
   battleEntryProfile: BattleProfile | null
   resultsExitProfile: BattleProfile | null
@@ -239,6 +240,7 @@ type RootMachineEvent =
   | { type: "STORAGE_RECOVERY.RETURN_REQUESTED" }
 
 type RootMachineInput = {
+  readonly initialLocale?: SupportedLocale
   readonly durableStore: DurableStoreAdapter
   readonly appVersion: string
   readonly sourceBuild: string
@@ -682,6 +684,7 @@ export const rootMachine = setup({
     sourceBuild: input.sourceBuild,
     now: input.now,
     randomUuid: input.randomUuid,
+    initialLocale: input.initialLocale ?? DEFAULT_LOCALE,
   }),
   states: {
     Hydrating: {
@@ -693,6 +696,7 @@ export const rootMachine = setup({
               createInitialPlayerData({
                 schedulerSeed: event.schedulerSeed,
                 createdAt: context.now(),
+                locale: context.initialLocale,
               }),
             persistenceIssue: null,
           }),

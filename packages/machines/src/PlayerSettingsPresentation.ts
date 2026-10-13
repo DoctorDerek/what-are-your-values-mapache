@@ -1,8 +1,8 @@
+import type { SupportedLocale } from "@game/data/src/LocaleRegistry"
 import type { PlayerDataResetKind } from "./PlayerDataReset"
 import type {
   ControlHintPreference,
   ReducedMotionPreference,
-  SupportedLocale,
 } from "./PlayerSettings"
 
 export const PLAYER_SETTINGS_COPY = Object.freeze({
@@ -14,13 +14,6 @@ export const PLAYER_SETTINGS_COPY = Object.freeze({
   resetHeading: "Reset or Delete",
   savingStatus: "Saving setting…",
 })
-
-export const PLAYER_SETTINGS_LANGUAGE_OPTIONS = Object.freeze([
-  Object.freeze({ value: "en", label: "English (US)" }),
-] as const satisfies readonly {
-  readonly value: SupportedLocale
-  readonly label: string
-}[])
 
 export type LanguageSelectorProps = Readonly<{
   locale: SupportedLocale

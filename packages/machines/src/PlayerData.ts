@@ -14,6 +14,7 @@ import {
   validateBattleProfile,
   type BattleProfile,
 } from "./BattleProfile"
+import type { SupportedLocale } from "@game/data/src/LocaleRegistry"
 import { readIsoTimestamp } from "./PersistenceValidation"
 import {
   createInitialPlayerSettings,
@@ -96,16 +97,18 @@ export function createPlayerData({
 export function createInitialPlayerData({
   schedulerSeed,
   createdAt,
+  locale,
 }: {
   readonly schedulerSeed: string
   readonly createdAt: string
+  readonly locale?: SupportedLocale
 }) {
   const profile = createInitialBattleProfile(schedulerSeed)
 
   return createPlayerData({
     profile,
     achievements: createInitialAchievementState(profile.activeDeck),
-    settings: createInitialPlayerSettings(),
+    settings: createInitialPlayerSettings(locale),
     progressGenerationStartedAt: createdAt,
   })
 }
