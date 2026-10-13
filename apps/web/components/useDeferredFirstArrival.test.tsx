@@ -30,7 +30,10 @@ describe("optional arrival scheduling", () => {
 
   it("cancels scheduled idle work and does not schedule a hidden introduction", () => {
     const cancelIdle = vi.fn()
-    vi.stubGlobal("requestIdleCallback", vi.fn(() => 12))
+    vi.stubGlobal(
+      "requestIdleCallback",
+      vi.fn(() => 12),
+    )
     vi.stubGlobal("cancelIdleCallback", cancelIdle)
     const pending = renderHook(() => useDeferredFirstArrival(true))
     act(() => vi.advanceTimersByTime(4000))

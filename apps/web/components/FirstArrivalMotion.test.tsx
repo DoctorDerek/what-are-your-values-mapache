@@ -7,7 +7,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import Splash from "@/components/Splash"
 
 vi.mock("@rive-app/react-canvas-lite", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@rive-app/react-canvas-lite")>()
+  const actual =
+    await importOriginal<typeof import("@rive-app/react-canvas-lite")>()
   return {
     ...actual,
     useRive: vi.fn(() => ({
@@ -22,27 +23,35 @@ vi.mock("@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog", () => ({
     evidenceSnapshotId: "first-arrival-test",
     characterClipCount: 1,
     auxiliaryEffectClipCount: 0,
-    animals: [{
-      animalId: "raccoonpack",
-      characterClips: [{
-        kind: "character",
+    animals: [
+      {
         animalId: "raccoonpack",
-        animationId: "run",
-        relativePath: "raccoonpack/run.png",
-        frameWidth: 4,
-        frameHeight: 4,
-        frameCount: 8,
-        visibleBounds: { left: 1, top: 1, width: 2, height: 2 },
-        asset: { src: "/test-assets/raccoon-run.png", width: 32, height: 4 },
-      }],
-      auxiliaryEffectClips: [],
-      referencePose: {
-        animationId: "idle",
-        frameIndex: 0,
-        bounds: { left: 1, top: 1, width: 2, height: 2 },
-        anchor: { x: 2, y: 3 },
+        characterClips: [
+          {
+            kind: "character",
+            animalId: "raccoonpack",
+            animationId: "run",
+            relativePath: "raccoonpack/run.png",
+            frameWidth: 4,
+            frameHeight: 4,
+            frameCount: 8,
+            visibleBounds: { left: 1, top: 1, width: 2, height: 2 },
+            asset: {
+              src: "/test-assets/raccoon-run.png",
+              width: 32,
+              height: 4,
+            },
+          },
+        ],
+        auxiliaryEffectClips: [],
+        referencePose: {
+          animationId: "idle",
+          frameIndex: 0,
+          bounds: { left: 1, top: 1, width: 2, height: 2 },
+          anchor: { x: 2, y: 3 },
+        },
       },
-    }],
+    ],
   } satisfies SeethingSwarmRuntimeClipCatalog<StaticImageData>,
 }))
 
@@ -99,24 +108,33 @@ describe("first-arrival decoration lifecycle", () => {
     expect(screen.queryByTestId("arrival-raccoon")).toBeNull()
     await act(async () => vi.advanceTimersByTimeAsync(10000))
     expect(screen.queryByTestId("arrival-ice-cream")).toBeNull()
-    expect(screen.getByRole("button", { name: "Start", exact: true })).toBeEnabled()
+    expect(
+      screen.getByRole("button", { name: "Start", exact: true }),
+    ).toBeEnabled()
   })
 
-  it.each(["runtime", "sprite"] as const)("contains a %s load failure without disabling Start", async (failure) => {
-    const onComplete = vi.fn()
-    render(<Splash onComplete={onComplete} onLocaleChange={vi.fn()} />)
-    const runtime = await revealOptionalArt()
-    if (failure === "runtime") {
-      act(() => runtime.onLoadError?.({ type: EventType.LoadError }))
-    } else {
-      act(() => runtime.onAdvance?.({ type: EventType.Advance }))
-      fireEvent.error(screen.getByTestId("arrival-raccoon").querySelector("img")!)
-    }
-    expect(screen.queryByTestId("arrival-ice-cream")).toBeNull()
-    expect(screen.queryByTestId("arrival-raccoon")).toBeNull()
-    fireEvent.click(screen.getByRole("button", { name: "Start", exact: true }))
-    expect(onComplete).toHaveBeenCalledTimes(1)
-  })
+  it.each(["runtime", "sprite"] as const)(
+    "contains a %s load failure without disabling Start",
+    async (failure) => {
+      const onComplete = vi.fn()
+      render(<Splash onComplete={onComplete} onLocaleChange={vi.fn()} />)
+      const runtime = await revealOptionalArt()
+      if (failure === "runtime") {
+        act(() => runtime.onLoadError?.({ type: EventType.LoadError }))
+      } else {
+        act(() => runtime.onAdvance?.({ type: EventType.Advance }))
+        fireEvent.error(
+          screen.getByTestId("arrival-raccoon").querySelector("img")!,
+        )
+      }
+      expect(screen.queryByTestId("arrival-ice-cream")).toBeNull()
+      expect(screen.queryByTestId("arrival-raccoon")).toBeNull()
+      fireEvent.click(
+        screen.getByRole("button", { name: "Start", exact: true }),
+      )
+      expect(onComplete).toHaveBeenCalledTimes(1)
+    },
+  )
 
   it("cancels already revealed decoration when starting a profile", async () => {
     const props = { onComplete: vi.fn(), onLocaleChange: vi.fn() }

@@ -320,7 +320,9 @@ for (const width of [320, 390, 1280]) {
     ).toBe(true)
     for (const fallbackFont of [false, true]) {
       const fontOverride = fallbackFont
-        ? await page.addStyleTag({ content: "body { font-family: monospace; }" })
+        ? await page.addStyleTag({
+            content: "body { font-family: monospace; }",
+          })
         : null
       const titleGeometry = await page
         .getByRole("heading", { level: 1 })
