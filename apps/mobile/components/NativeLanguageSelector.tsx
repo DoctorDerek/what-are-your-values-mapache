@@ -1,6 +1,5 @@
+import { SHIPPED_LANGUAGE_OPTIONS, getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
-  PLAYER_SETTINGS_COPY,
-  PLAYER_SETTINGS_LANGUAGE_OPTIONS,
   type LanguageSelectorProps,
 } from "@game/machines/src/PlayerSettingsPresentation"
 import { useState } from "react"
@@ -13,8 +12,9 @@ export default function NativeLanguageSelector({
   disabled = false,
   onLocaleChange,
 }: LanguageSelectorProps) {
+  const { language: copy } = getLocaleCatalog(locale)
   const [isOpen, setIsOpen] = useState(false)
-  const selectedOption = PLAYER_SETTINGS_LANGUAGE_OPTIONS.find(
+  const selectedOption = SHIPPED_LANGUAGE_OPTIONS.find(
     ({ value }) => value === locale,
   )
 
@@ -22,7 +22,7 @@ export default function NativeLanguageSelector({
     <>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={PLAYER_SETTINGS_COPY.languageHeading}
+        accessibilityLabel={copy.heading}
         accessibilityValue={{ text: selectedOption?.label }}
         accessibilityState={{ disabled, expanded: isOpen }}
         disabled={disabled}
@@ -30,7 +30,7 @@ export default function NativeLanguageSelector({
         className="min-h-12 flex-row items-center justify-between gap-3 border-3 border-black bg-white px-3 py-2 shadow-[3px_3px_0_#000] active:bg-gray-100"
       >
         <Text className="font-semibold text-black">
-          {PLAYER_SETTINGS_COPY.languageHeading}
+          {copy.heading}
         </Text>
         <Text className="font-semibold text-black">
           {selectedOption?.label} ▾
@@ -47,9 +47,9 @@ export default function NativeLanguageSelector({
             className="w-full max-w-lg gap-4 border-4 border-black bg-white p-5"
           >
             <Text accessibilityRole="header" className="text-xl font-black">
-              {PLAYER_SETTINGS_COPY.languageHeading}
+              {copy.heading}
             </Text>
-            {PLAYER_SETTINGS_LANGUAGE_OPTIONS.map(({ value, label }) => (
+            {SHIPPED_LANGUAGE_OPTIONS.map(({ value, label }) => (
               <Pressable
                 key={value}
                 accessibilityRole="radio"
@@ -64,7 +64,7 @@ export default function NativeLanguageSelector({
               </Pressable>
             ))}
             <Button variant="outline" onPress={() => setIsOpen(false)}>
-              <Text>{PLAYER_SETTINGS_COPY.closeAction}</Text>
+              <Text>{copy.closeAction}</Text>
             </Button>
           </View>
         </View>

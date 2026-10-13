@@ -1,8 +1,8 @@
 "use client"
 
 import { FIRST_ARRIVAL_PRESENTATION } from "@game/data/src/FirstArrivalPresentation"
-import { introductionCopy } from "@game/data/src/IntroductionCopy"
-import type { SupportedLocale } from "@game/machines/src/PlayerSettings"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
+import { DEFAULT_LOCALE, type SupportedLocale } from "@game/data/src/LocaleRegistry"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
 import Image from "next/image"
 import { lazy, Suspense, useCallback, useState } from "react"
@@ -16,7 +16,7 @@ const MapachitoIceCream = lazy(() => import("@/components/MapachitoIceCream"))
 export default function Splash({
   notice = null,
   isPending = false,
-  locale = "en",
+  locale = DEFAULT_LOCALE,
   shouldReduceMotion = false,
   onLocaleChange,
   onComplete,
@@ -28,6 +28,7 @@ export default function Splash({
   onLocaleChange: (locale: SupportedLocale) => void
   onComplete: () => void
 }) {
+  const { introduction: introductionCopy, firstArrival } = getLocaleCatalog(locale)
   const [hasStarted, setHasStarted] = useState(false)
   const [hasFinished, setHasFinished] = useState(false)
   const [hasIceCreamFinished, setHasIceCreamFinished] = useState(false)
@@ -44,7 +45,7 @@ export default function Splash({
     <InformationPanel
       presentation="introduction"
       title={introductionCopy.title}
-      titleContent={FIRST_ARRIVAL_PRESENTATION.titleLines.map((line, index) => (
+      titleContent={firstArrival.titleLines.map((line, index) => (
         <span className="block xl:inline" key={line}>
           {index > 0 && " "}
           {line}
@@ -94,16 +95,16 @@ export default function Splash({
           </div>
           <div className="relative z-20 grid gap-1 text-lg leading-7 font-medium text-white">
             <p className="text-2xl leading-7 font-black xl:text-[26px]">
-              {FIRST_ARRIVAL_PRESENTATION.gameCredit}
+              {firstArrival.gameCredit}
             </p>
-            <p>{FIRST_ARRIVAL_PRESENTATION.creatorCredit}</p>
+            <p>{firstArrival.creatorCredit}</p>
             <a
               href={FIRST_ARRIVAL_PRESENTATION.creatorWebsiteUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="relative justify-self-center after:absolute after:-inset-x-2 after:-inset-y-2 hover:opacity-80 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white active:opacity-70"
             >
-              {FIRST_ARRIVAL_PRESENTATION.creatorWebsiteLabel}
+              {firstArrival.creatorWebsiteLabel}
             </a>
           </div>
         </div>
