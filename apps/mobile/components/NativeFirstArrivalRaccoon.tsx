@@ -18,7 +18,7 @@ import { scheduleOnRN } from "react-native-worklets"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
 import { SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG } from "@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog"
 
-const raccoon = resolveFirstArrivalRaccoon(
+const raccoon = resolveFirstArrivalRaccoon<number>(
   SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG,
 )
 

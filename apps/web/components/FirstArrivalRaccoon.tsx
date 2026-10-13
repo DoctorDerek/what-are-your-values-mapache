@@ -4,11 +4,12 @@ import {
 } from "@game/data/src/FirstArrivalPresentation"
 import { SEETHING_SWARM_ATTENTION_FRAME_DURATION_MS } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import { cx } from "classix"
+import type { StaticImageData } from "next/image"
 import { useCallback, useState, type CSSProperties } from "react"
 import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
 import { SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG } from "@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog"
 
-const raccoon = resolveFirstArrivalRaccoon(
+const raccoon = resolveFirstArrivalRaccoon<StaticImageData>(
   SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
 )
 
