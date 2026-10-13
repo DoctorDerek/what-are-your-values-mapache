@@ -1,3 +1,4 @@
+import { getLocaleCatalog, type LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
 import {
   getValueDisplayDefinition,
   getValueDisplayName,
@@ -17,6 +18,7 @@ export default function NativeValueDetailsCard({
   onEdit,
   rankedValue,
   showRank,
+  localization = getLocaleCatalog(),
 }: {
   readonly isHighlighted: boolean
   readonly isPersistencePending: boolean
@@ -24,9 +26,10 @@ export default function NativeValueDetailsCard({
   readonly onEdit: () => void
   readonly rankedValue: RankedValue
   readonly showRank: boolean
+  readonly localization?: LocalizationCatalog
 }) {
   const { definition, progress, rank } = rankedValue
-  const displayName = getValueDisplayName(definition)
+  const displayName = getValueDisplayName(definition, localization.values)
   const { medal, accessibleLabel } = getValueRankPresentation(rank)
 
   return (
@@ -63,7 +66,7 @@ export default function NativeValueDetailsCard({
       </View>
       <NativeValueLevelProgress totalXp={progress.totalXp} />
       <Text className="mt-4 border-t-4 border-black pt-4 text-lg leading-7 font-bold text-black">
-        “{getValueDisplayDefinition(definition)}”
+        “{getValueDisplayDefinition(definition, localization.values)}”
       </Text>
       {definition.kind === "custom" ? (
         <View className="mt-4 flex-row gap-3">

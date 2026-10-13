@@ -1,5 +1,6 @@
 "use client"
 
+import { getLocaleCatalog, type LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
 import { projectAllValues } from "@game/data/src/AllValuesProjection"
 import {
   CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES,
@@ -29,6 +30,7 @@ import { useWebControllerActions } from "@/components/WebControlsProvider"
 
 export default function AllValues({
   rankedValues,
+  localization = getLocaleCatalog(),
   runtimeClipCatalog,
   shouldReduceMotion,
   initialValueId,
@@ -42,6 +44,7 @@ export default function AllValues({
   onDeleteCustomValue,
   onNavigationBlockedChange,
 }: {
+  readonly localization?: LocalizationCatalog
   rankedValues: readonly RankedValue[]
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   shouldReduceMotion: boolean
@@ -78,8 +81,8 @@ export default function AllValues({
   )
 
   const { existingCustomValues, hasComparisons, visibleValues } = useMemo(
-    () => projectAllValues({ rankedValues, searchQuery }),
-    [rankedValues, searchQuery],
+    () => projectAllValues({ rankedValues, searchQuery, translations: localization.values }),
+    [rankedValues, searchQuery, localization],
   )
   const editableCustomValue = rankedValues.find(
     ({ definition }) => definition.id === editingValueId,
@@ -206,7 +209,7 @@ export default function AllValues({
   const renderRows = (values: readonly RankedValue[]) =>
     values.map((rankedValue) => {
       const { definition, progress } = rankedValue
-      const displayName = getValueDisplayName(definition)
+      const displayName = getValueDisplayName(definition, localization.values)
       const isEditing = definition.id === editingValueId
       const isDeleting = definition.id === deletingValueId
       const customValueId = definition.kind === "custom" ? definition.id : null
@@ -415,7 +418,7 @@ export default function AllValues({
             </form>
           ) : (
             <p className="mt-5 overflow-x-auto overflow-y-auto border-t-4 border-black pt-4 text-xl leading-relaxed font-bold [overflow-wrap:anywhere] break-words whitespace-pre-wrap">
-              “{getValueDisplayDefinition(definition)}”
+              “{getValueDisplayDefinition(definition, localization.values)}”
             </p>
           )}
         </AllValuesValueRow>

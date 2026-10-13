@@ -3,12 +3,15 @@ import {
   getValueDisplayName,
   normalizeValueNameForComparison,
   type ValueId,
+  type CanonicalValueId,
+  type LocalizedValueCopy,
 } from "./Value"
 import type { RankedValue } from "./ValueRanking"
 
 export function filterRankedValuesByQuery(
   rankedValues: readonly RankedValue[],
   query: string,
+  translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>,
 ) {
   const normalizedQuery = normalizeValueNameForComparison(query)
   if (normalizedQuery.length === 0) {
@@ -20,9 +23,11 @@ export function filterRankedValuesByQuery(
       normalizeValueNameForComparison(getValueDisplayName(definition)).includes(
         normalizedQuery,
       ) ||
-      getValueDisplayDefinition(definition)
-        .toLocaleLowerCase("en-US")
-        .includes(normalizedQuery),
+      normalizeValueNameForComparison(getValueDisplayDefinition(definition)).includes(normalizedQuery) ||
+      (translations !== undefined && [
+        getValueDisplayName(definition, translations),
+        getValueDisplayDefinition(definition, translations),
+      ].some((text) => normalizeValueNameForComparison(text).includes(normalizedQuery))),
   )
 }
 

@@ -1,3 +1,4 @@
+import { getLocaleCatalog, type LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
 import { projectAllValues } from "@game/data/src/AllValuesProjection"
 import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
 import {
@@ -32,8 +33,10 @@ export default function NativeAllValues({
   openCustomValueBuilder = false,
   persistenceIssue = null,
   rankedValues,
+  localization = getLocaleCatalog(),
   onNavigationBlockedChange,
 }: {
+  readonly localization?: LocalizationCatalog
   readonly initialValueId?: ValueId | null
   readonly isPersistencePending?: boolean
   readonly onAddCustomValue: (name: string, definition: string) => void
@@ -70,8 +73,8 @@ export default function NativeAllValues({
     editingValueId !== null ||
     deletingValueId !== null
   const { existingCustomValues, hasComparisons, visibleValues } = useMemo(
-    () => projectAllValues({ rankedValues, searchQuery }),
-    [rankedValues, searchQuery],
+    () => projectAllValues({ rankedValues, searchQuery, translations: localization.values }),
+    [rankedValues, searchQuery, localization],
   )
 
   useEffect(() => {
@@ -252,6 +255,7 @@ export default function NativeAllValues({
                   </Text>
                 ) : null}
                 <NativeValueDetailsCard
+                  localization={localization}
                   isHighlighted={item.definition.id === highlightedValueId}
                   isPersistencePending={isPersistencePending}
                   onDelete={() => {
