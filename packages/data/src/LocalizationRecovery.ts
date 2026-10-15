@@ -104,7 +104,7 @@ export function resolveLocalizedTextList(
   emergency: readonly string[],
 ): LocalizationResolution<readonly string[]> {
   const isTextList = (value: unknown): value is readonly string[] =>
-    Array.isArray(value) && value.length > 0 && value.every(isLocalizedText)
+    Array.isArray(value) && value.length > 0 && Array.from(value).every(isLocalizedText)
   return resolveCandidates(
     locale,
     key,
