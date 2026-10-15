@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import { createActiveDeck } from "./ActiveDeck"
 import { DEFAULT_HEROES99_APPEARANCE } from "./Heroes99Appearance"
 import { getLocaleCatalog } from "./LocalizationCatalog"
+import { resolveLocalizationCatalog } from "./ResolveLocalizationCatalog"
 import { createInitialValueProgress } from "./ValueProgress"
 import { rankValues } from "./ValueRanking"
 import { createValuesCardModel, readValuesCardPalette } from "./ValuesCard"
@@ -21,6 +22,21 @@ function model() {
 }
 
 describe("values-card composition", () => {
+  it("builds the shared preview and export model despite a lost catalog", () => {
+    const { catalog, issues } = resolveLocalizationCatalog("en", null, null)
+    const deck = createActiveDeck([])
+    const ranked = rankValues(deck, createInitialValueProgress(deck))
+    const before = structuredClone(ranked)
+    const card = createValuesCardModel(ranked, DEFAULT_HEROES99_APPEARANCE, { mode: "typography-only" }, catalog)
+    expect(issues.length).toBeGreaterThan(100)
+    expect(card.values[0].name).toBe("Acceptance")
+    expect(card.values[0].levelLabel).toBe("Level 1")
+    expect(card.values[0].rankLabel).toBe("#1")
+    expect(card.copy.share("gif")).toBe("Share GIF")
+    expect(card.copy.save("png")).toBe("Save PNG")
+    expect(ranked).toEqual(before)
+  })
+
   it("freezes selected catalog text into the model used by both renderers", () => {
     const english = getLocaleCatalog()
     const translations = new Map(

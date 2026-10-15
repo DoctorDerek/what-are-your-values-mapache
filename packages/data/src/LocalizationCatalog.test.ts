@@ -3,7 +3,6 @@ import { createActiveDeck } from "./ActiveDeck"
 import { CANONICAL_VALUES } from "./CanonicalValues"
 import { introductionCopy } from "./IntroductionCopy"
 import {
-  defineLocalizedValues,
   getLocaleCatalog,
   SHIPPED_LANGUAGE_OPTIONS,
 } from "./LocalizationCatalog"
@@ -20,7 +19,7 @@ import { filterRankedValuesByQuery } from "./ValueSearch"
 describe("localization catalogs", () => {
   const english = getLocaleCatalog()
   it("reuses the unchanged English source and every canonical identity", () => {
-    expect(english.introduction).toBe(introductionCopy)
+    expect(english.introduction).toEqual(introductionCopy)
     expect(english.values.size).toBe(103)
     expect(SHIPPED_LANGUAGE_OPTIONS).toEqual([
       { value: "en", label: "English (US)" },
@@ -33,28 +32,15 @@ describe("localization catalogs", () => {
     }
   })
 
-  it("rejects incomplete, duplicate, blank, or missing localized value copy", () => {
-    const entries = [...english.values]
-    expect(() => defineLocalizedValues(entries.slice(1))).toThrow(
-      "exactly once",
-    )
-    expect(() => defineLocalizedValues([...entries, entries[0]])).toThrow(
-      "exactly once",
-    )
-    expect(() =>
-      defineLocalizedValues(
-        entries.map(([id, value], index) => [
-          id,
-          index === 0 ? { ...value, name: " " } : value,
-        ]),
-      ),
-    ).toThrow("blank")
-    expect(() => getValueDisplayName(CANONICAL_VALUES[0], new Map())).toThrow(
-      "Missing localized",
-    )
-    expect(() =>
-      getValueDisplayDefinition(CANONICAL_VALUES[0], new Map()),
-    ).toThrow("Missing localized")
+  it("retains canonical identity and meaning when a translation is absent", () => {
+    const value = CANONICAL_VALUES[0]
+    expect(getValueDisplayName(value, new Map())).toBe(value.englishName)
+    expect(getValueDisplayDefinition(value, new Map())).toBe(value.sourceDefinition)
+    const blank = new Map([[value.id, { name: " ", definition: "" }]])
+    expect(getValueDisplayName(value, blank)).toBe(value.englishName)
+    expect(getValueDisplayDefinition(value, blank)).toBe(value.sourceDefinition)
+    expect(getValueDisplayName({ ...value, englishName: "" }, blank)).toBe("Value 1")
+    expect(getValueDisplayDefinition({ ...value, sourceDefinition: "" }, blank)).toBe("")
   })
 
   it("searches localized and English meanings without translating private custom text or reordering ranks", () => {
