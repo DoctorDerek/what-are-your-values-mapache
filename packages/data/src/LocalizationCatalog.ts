@@ -1,4 +1,5 @@
 import { CANONICAL_VALUES } from "./CanonicalValues"
+import { ENGLISH_LOCALIZATION_CATALOG } from "@game/data/src/EnglishLocalizationCatalog"
 import { FIRST_ARRIVAL_PRESENTATION } from "./FirstArrivalPresentation"
 import { introductionCopy } from "./IntroductionCopy"
 import {
@@ -44,6 +45,11 @@ export type LocalizationCatalog = Readonly<{
   seo: Readonly<{ title: string; description: string }>
 }>
 
+export type AuthoredLocalizationCatalog = Omit<LocalizationCatalog, "values"> &
+  Readonly<{
+    values: readonly (readonly [CanonicalValueId, LocalizedValueCopy])[]
+  }>
+
 export function defineLocalizedValues(
   entries: readonly (readonly [CanonicalValueId, LocalizedValueCopy])[],
 ): ReadonlyMap<CanonicalValueId, LocalizedValueCopy> {
@@ -68,36 +74,8 @@ export function defineLocalizedValues(
 }
 
 const englishCatalog: LocalizationCatalog = Object.freeze({
-  metadata: Object.freeze({
-    languageTag: "en-US",
-    languageName: "English (US)",
-    webPath: "/",
-    openGraphLocale: "en_US",
-  }),
-  introduction: introductionCopy,
-  firstArrival: Object.freeze({
-    titleLines: FIRST_ARRIVAL_PRESENTATION.titleLines,
-    gameCredit: FIRST_ARRIVAL_PRESENTATION.gameCredit,
-    creatorCredit: FIRST_ARRIVAL_PRESENTATION.creatorCredit,
-    creatorWebsiteLabel: FIRST_ARRIVAL_PRESENTATION.creatorWebsiteLabel,
-    websiteErrorTitle: FIRST_ARRIVAL_PRESENTATION.websiteErrorTitle,
-    websiteErrorMessage: FIRST_ARRIVAL_PRESENTATION.websiteErrorMessage,
-  }),
-  language: Object.freeze({ heading: "Language", closeAction: "Back" }),
-  hub: PERSONAL_HUB_COPY,
-  card: VALUES_CARD_COPY,
-  values: defineLocalizedValues(
-    CANONICAL_VALUES.map((value) => [
-      value.id,
-      { name: value.englishName, definition: value.sourceDefinition },
-    ]),
-  ),
-  seo: Object.freeze({
-    title:
-      "What Are Your Values, Mapache? A Free Game To Find What You Value in Life",
-    description:
-      "What Are Your Values, Mapache? is a fast-paced, value-sorting autobattler to help you find out what you value in life.",
-  }),
+  ...ENGLISH_LOCALIZATION_CATALOG,
+  values: defineLocalizedValues(ENGLISH_LOCALIZATION_CATALOG.values),
 })
 
 const shippedCatalogs = Object.freeze({ en: englishCatalog } satisfies Record<
