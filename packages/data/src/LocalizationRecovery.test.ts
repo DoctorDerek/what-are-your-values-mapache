@@ -226,7 +226,7 @@ describe("shared localization recovery", () => {
     })
     expect(catalog.hub.level(36)).toBe("⟦Level 36⟧")
     expect(catalog.hub.level(37)).toBe(english.hub.level(37))
-    const result = resolveLocalizedFormatter(
+    const result = resolveLocalizedFormatter<[number]>(
       "es-MX",
       "hub.level",
       selected,
@@ -243,7 +243,7 @@ describe("shared localization recovery", () => {
       },
     ])
     expect(
-      resolveLocalizedFormatter(
+      resolveLocalizedFormatter<[number]>(
         "es-MX",
         "hub.level",
         false,
