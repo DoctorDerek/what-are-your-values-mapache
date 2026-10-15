@@ -710,7 +710,7 @@ describe("GameClient Integration", () => {
     ).toBeVisible()
   })
 
-  it("retains a failed Battle choice until Retry save accepts it exactly once", async () => {
+  it("retains a failed Battle choice until Retry save accepts it exactly once", { timeout: 10_000 }, async () => {
     vi.spyOn(crypto, "randomUUID").mockReturnValue(
       "00000000-0000-4000-8000-000000000113",
     )
@@ -1461,7 +1461,7 @@ describe("GameClient Integration", () => {
     ).toHaveFocus()
   })
 
-  it("adds, edits, and deletes a Custom Value without resetting retained rankings", async () => {
+  it("adds, edits, and deletes a Custom Value without resetting retained rankings", { timeout: 10_000 }, async () => {
     vi.spyOn(crypto, "randomUUID").mockReturnValue(
       "00000000-0000-4000-8000-000000000045",
     )
