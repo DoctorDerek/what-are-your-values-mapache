@@ -1,4 +1,6 @@
 import { caseFold } from "unicode-case-folding"
+import { LOCALIZATION_EMERGENCY_COPY } from "./LocalizationEmergencyCopy"
+import { readLocalizationField, resolveLocalizedText } from "./LocalizationRecovery"
 
 declare const canonicalValueIdBrand: unique symbol
 declare const customValueIdBrand: unique symbol
@@ -50,10 +52,13 @@ export function getValueDisplayName(
   translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>,
 ) {
   if (value.kind === "custom") return value.name
-  if (!translations) return value.englishName
-  const translated = translations.get(value.id)
-  if (!translated) throw new Error(`Missing localized value: ${value.id}`)
-  return translated.name
+  const selected = translations instanceof Map
+    ? readLocalizationField(translations.get(value.id), "name")
+    : value.englishName
+  return resolveLocalizedText(
+    "en", `values.${value.id}.name`, selected, value.englishName,
+    `${LOCALIZATION_EMERGENCY_COPY.valueName} ${value.catalogOrdinal}`,
+  ).value
 }
 
 export function getValueDisplayDefinition(
@@ -61,10 +66,12 @@ export function getValueDisplayDefinition(
   translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>,
 ) {
   if (value.kind === "custom") return value.definition
-  if (!translations) return value.sourceDefinition
-  const translated = translations.get(value.id)
-  if (!translated) throw new Error(`Missing localized value: ${value.id}`)
-  return translated.definition
+  const selected = translations instanceof Map
+    ? readLocalizationField(translations.get(value.id), "definition")
+    : value.sourceDefinition
+  return resolveLocalizedText(
+    "en", `values.${value.id}.definition`, selected, value.sourceDefinition, "",
+  ).value
 }
 
 export function normalizeValueNameForComparison(value: string) {
