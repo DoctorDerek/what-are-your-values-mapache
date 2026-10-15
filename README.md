@@ -81,6 +81,16 @@ pnpm --filter @game/web build
 pnpm --filter @game/web start
 ```
 
+## Localization recovery
+
+`packages/data/src/EnglishLocalizationCatalog.ts` contains the authored English catalog. `LocalizationCatalog.ts` keeps the authored catalogs separate from the resolved catalogs consumed by web and native. Authored catalogs remain complete, strictly typed contracts; value entries retain duplicate IDs until validation rather than hiding them inside a `Map`.
+
+`ResolveLocalizationCatalog.ts` repairs individual damaged fields using English, then a small set of emergency action labels. Optional prose may disappear only after both sources fail. All 103 canonical value identities remain available, and Custom Values stay verbatim. Recovery does not change the selected language, progress, saves, or gameplay rules.
+
+Recovery is not catalog acceptance. `LocalizationCatalogQuality.test.ts` checks every raw shipped catalog and requires zero recovery diagnostics. Shared fault-injection tests cover missing fields, malformed sections, blank copy, duplicate IDs, throwing formatters, and damaged English. Web and native integration tests remove the entire English catalog while exercising usable controls; the web session test also records a battle and reopens the saved profile.
+
+`LOCALIZATION_CATALOG_RESOLUTIONS` exposes startup diagnostics. `resolveLocalizedFormatter` returns diagnostics for a particular formatter invocation, and `createLocaleFormatters` accepts an optional scoped diagnostic callback. Diagnostics contain only locale, key, reason, and fallback category—not copy, player data, or exception contents. They are not uploaded, logged globally, or shown as repeated player toasts. Formatter probes are representative, not proof of every possible input or translation meaning; locale review and in-context QA remain necessary.
+
 ## Verification
 
 ```powershell
