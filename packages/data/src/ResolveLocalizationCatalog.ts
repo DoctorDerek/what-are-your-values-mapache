@@ -2,8 +2,8 @@ import { ENGLISH_LOCALIZATION_CATALOG } from "./EnglishLocalizationCatalog"
 import type { LocalizationCatalog } from "./LocalizationCatalog"
 import { LOCALIZATION_EMERGENCY_COPY as emergency } from "./LocalizationEmergencyCopy"
 import {
-  isLocalizationObject,
   isLocalizationLanguageTag,
+  isLocalizationObject,
   isLocalizedText,
   readLocalizationField,
   resolveLocalizedFormatter,
@@ -17,22 +17,41 @@ export function resolveLocalizationCatalog(
   locale: string,
   input: unknown,
   englishInput: unknown = ENGLISH_LOCALIZATION_CATALOG,
-): Readonly<{ catalog: LocalizationCatalog; issues: readonly LocalizationIssue[] }> {
+): Readonly<{
+  catalog: LocalizationCatalog
+  issues: readonly LocalizationIssue[]
+}> {
   const issues: LocalizationIssue[] = []
   const field = (source: unknown, section: string, key: string) =>
     readLocalizationField(readLocalizationField(source, section), key)
-  const text = (section: string, key: string, lastResort: string = emergency.unavailable, isValid = isLocalizedText) => {
+  const text = (
+    section: string,
+    key: string,
+    lastResort: string = emergency.unavailable,
+    isValid = isLocalizedText,
+  ) => {
     const resolution = resolveLocalizedText(
-      locale, `${section}.${key}`, field(input, section, key),
-      field(englishInput, section, key), lastResort, isValid,
+      locale,
+      `${section}.${key}`,
+      field(input, section, key),
+      field(englishInput, section, key),
+      lastResort,
+      isValid,
     )
     issues.push(...resolution.issues)
     return resolution.value
   }
-  const list = (section: string, key: string, lastResort: readonly string[]) => {
+  const list = (
+    section: string,
+    key: string,
+    lastResort: readonly string[],
+  ) => {
     const resolution = resolveLocalizedTextList(
-      locale, `${section}.${key}`, field(input, section, key),
-      field(englishInput, section, key), lastResort,
+      locale,
+      `${section}.${key}`,
+      field(input, section, key),
+      field(englishInput, section, key),
+      lastResort,
     )
     issues.push(...resolution.issues)
     return Object.freeze([...resolution.value])
@@ -45,20 +64,32 @@ export function resolveLocalizationCatalog(
   ) => {
     const selected = field(input, section, key)
     const english = field(englishInput, section, key)
-    const resolve = (parameters: Parameters) => resolveLocalizedFormatter(
-      locale, `${section}.${key}`, selected, english, lastResort, parameters,
-    )
+    const resolve = (parameters: Parameters) =>
+      resolveLocalizedFormatter(
+        locale,
+        `${section}.${key}`,
+        selected,
+        english,
+        lastResort,
+        parameters,
+      )
     for (const parameters of samples) issues.push(...resolve(parameters).issues)
     return (...parameters: Parameters) => resolve(parameters).value
   }
   const values = resolveLocalizedValues(
-    locale, readLocalizationField(input, "values"),
+    locale,
+    readLocalizationField(input, "values"),
     readLocalizationField(englishInput, "values"),
   )
   issues.push(...values.issues)
   const catalog: LocalizationCatalog = Object.freeze({
     metadata: Object.freeze({
-      languageTag: text("metadata", "languageTag", "en-US", isLocalizationLanguageTag),
+      languageTag: text(
+        "metadata",
+        "languageTag",
+        "en-US",
+        isLocalizationLanguageTag,
+      ),
       languageName: text("metadata", "languageName", emergency.english),
       webPath: text("metadata", "webPath", "/"),
       openGraphLocale: text("metadata", "openGraphLocale", "en_US"),
@@ -69,13 +100,21 @@ export function resolveLocalizationCatalog(
       body: list("introduction", "body", []),
       startAction: text("introduction", "startAction", emergency.start),
       closeAction: text("introduction", "closeAction", emergency.close),
-      accessibleCloseLabel: text("introduction", "accessibleCloseLabel", emergency.close),
+      accessibleCloseLabel: text(
+        "introduction",
+        "accessibleCloseLabel",
+        emergency.close,
+      ),
     }),
     firstArrival: Object.freeze({
       titleLines: list("firstArrival", "titleLines", [emergency.title]),
       gameCredit: text("firstArrival", "gameCredit", ""),
       creatorCredit: text("firstArrival", "creatorCredit", ""),
-      creatorWebsiteLabel: text("firstArrival", "creatorWebsiteLabel", "DoctorDerek.com"),
+      creatorWebsiteLabel: text(
+        "firstArrival",
+        "creatorWebsiteLabel",
+        "DoctorDerek.com",
+      ),
       websiteErrorTitle: text("firstArrival", "websiteErrorTitle"),
       websiteErrorMessage: text("firstArrival", "websiteErrorMessage"),
     }),
@@ -130,21 +169,42 @@ export function resolveLocalizationCatalog(
   if (isLocalizationObject(input)) {
     for (const key of Object.keys(input)) {
       if (!Object.hasOwn(catalog, key))
-        issues.push({ locale, key: "[unexpected]", reason: "unexpected-key", fallback: null })
+        issues.push({
+          locale,
+          key: "[unexpected]",
+          reason: "unexpected-key",
+          fallback: null,
+        })
     }
     for (const [section, copy] of Object.entries(catalog)) {
       const authoredSection = readLocalizationField(input, section)
-      if (section === "values" || !isLocalizationObject(authoredSection)) continue
+      if (section === "values" || !isLocalizationObject(authoredSection))
+        continue
       for (const key of Object.keys(authoredSection))
         if (!Object.hasOwn(copy, key))
-          issues.push({ locale, key: `${section}.[unexpected]`, reason: "unexpected-key", fallback: null })
+          issues.push({
+            locale,
+            key: `${section}.[unexpected]`,
+            reason: "unexpected-key",
+            fallback: null,
+          })
     }
   }
   return {
     catalog,
-    issues: Object.freeze(issues.filter((issue, index) => issues.findIndex(
-      (candidate) => candidate.locale === issue.locale && candidate.key === issue.key &&
-        candidate.reason === issue.reason && candidate.fallback === issue.fallback,
-    ) === index).map((issue) => Object.freeze(issue))),
+    issues: Object.freeze(
+      issues
+        .filter(
+          (issue, index) =>
+            issues.findIndex(
+              (candidate) =>
+                candidate.locale === issue.locale &&
+                candidate.key === issue.key &&
+                candidate.reason === issue.reason &&
+                candidate.fallback === issue.fallback,
+            ) === index,
+        )
+        .map((issue) => Object.freeze(issue)),
+    ),
   }
 }

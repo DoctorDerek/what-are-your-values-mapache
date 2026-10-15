@@ -15,8 +15,16 @@ describe("native localization resilience", () => {
   it("keeps Start and language selection usable with the entire English catalog missing", async () => {
     const onComplete = jest.fn()
     const onLocaleChange = jest.fn()
-    await render(<NativeIntroduction shouldReduceMotion onComplete={onComplete} onLocaleChange={onLocaleChange} />)
-    expect(LOCALIZATION_CATALOG_RESOLUTIONS.en.issues.length).toBeGreaterThan(100)
+    await render(
+      <NativeIntroduction
+        shouldReduceMotion
+        onComplete={onComplete}
+        onLocaleChange={onLocaleChange}
+      />,
+    )
+    expect(LOCALIZATION_CATALOG_RESOLUTIONS.en.issues.length).toBeGreaterThan(
+      100,
+    )
     expect(screen.getByRole("button", { name: "Start" })).toBeEnabled()
     await fireEvent.press(screen.getByRole("button", { name: "Language" }))
     const english = screen.getByRole("radio", { name: "English (US)" })
@@ -34,16 +42,21 @@ describe("native localization resilience", () => {
     const deck = createActiveDeck([])
     const onClose = jest.fn()
     const onOpenMenu = jest.fn()
-    await render(<NativeAllValues
-      rankedValues={rankValues(deck, createInitialValueProgress(deck))}
-      onClose={onClose}
-      onOpenMenu={onOpenMenu}
-      onAddCustomValue={jest.fn()}
-      onUpdateCustomValue={jest.fn()}
-      onDeleteCustomValue={jest.fn()}
-    />)
+    await render(
+      <NativeAllValues
+        rankedValues={rankValues(deck, createInitialValueProgress(deck))}
+        onClose={onClose}
+        onOpenMenu={onOpenMenu}
+        onAddCustomValue={jest.fn()}
+        onUpdateCustomValue={jest.fn()}
+        onDeleteCustomValue={jest.fn()}
+      />,
+    )
     expect(screen.getByText("Acceptance")).toBeOnTheScreen()
-    await fireEvent.changeText(screen.getByLabelText("Search All Values"), "to be accepted as I am")
+    await fireEvent.changeText(
+      screen.getByLabelText("Search All Values"),
+      "to be accepted as I am",
+    )
     expect(screen.getByText("Acceptance")).toBeOnTheScreen()
     expect(screen.getByText("1 Value Shown")).toBeOnTheScreen()
     await fireEvent.press(screen.getByRole("button", { name: "Menu" }))

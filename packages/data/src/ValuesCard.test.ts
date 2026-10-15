@@ -27,7 +27,12 @@ describe("values-card composition", () => {
     const deck = createActiveDeck([])
     const ranked = rankValues(deck, createInitialValueProgress(deck))
     const before = structuredClone(ranked)
-    const card = createValuesCardModel(ranked, DEFAULT_HEROES99_APPEARANCE, { mode: "typography-only" }, catalog)
+    const card = createValuesCardModel(
+      ranked,
+      DEFAULT_HEROES99_APPEARANCE,
+      { mode: "typography-only" },
+      catalog,
+    )
     expect(issues.length).toBeGreaterThan(100)
     expect(card.values[0].name).toBe("Acceptance")
     expect(card.values[0].levelLabel).toBe("Level 1")

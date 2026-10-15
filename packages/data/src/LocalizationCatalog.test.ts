@@ -35,12 +35,18 @@ describe("localization catalogs", () => {
   it("retains canonical identity and meaning when a translation is absent", () => {
     const value = CANONICAL_VALUES[0]
     expect(getValueDisplayName(value, new Map())).toBe(value.englishName)
-    expect(getValueDisplayDefinition(value, new Map())).toBe(value.sourceDefinition)
+    expect(getValueDisplayDefinition(value, new Map())).toBe(
+      value.sourceDefinition,
+    )
     const blank = new Map([[value.id, { name: " ", definition: "" }]])
     expect(getValueDisplayName(value, blank)).toBe(value.englishName)
     expect(getValueDisplayDefinition(value, blank)).toBe(value.sourceDefinition)
-    expect(getValueDisplayName({ ...value, englishName: "" }, blank)).toBe("Value 1")
-    expect(getValueDisplayDefinition({ ...value, sourceDefinition: "" }, blank)).toBe("")
+    expect(getValueDisplayName({ ...value, englishName: "" }, blank)).toBe(
+      "Value 1",
+    )
+    expect(
+      getValueDisplayDefinition({ ...value, sourceDefinition: "" }, blank),
+    ).toBe("")
   })
 
   it("searches localized and English meanings without translating private custom text or reordering ranks", () => {

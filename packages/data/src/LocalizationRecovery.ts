@@ -104,7 +104,9 @@ export function resolveLocalizedTextList(
   emergency: readonly string[],
 ): LocalizationResolution<readonly string[]> {
   const isTextList = (value: unknown): value is readonly string[] =>
-    Array.isArray(value) && value.length > 0 && Array.from(value).every(isLocalizedText)
+    Array.isArray(value) &&
+    value.length > 0 &&
+    Array.from(value).every(isLocalizedText)
   return resolveCandidates(
     locale,
     key,
@@ -124,7 +126,8 @@ function invokeLocalizedFormatter(
   if (typeof formatter !== "function")
     return {
       value: undefined,
-      reason: formatter == null ? ("missing" as const) : ("invalid-type" as const),
+      reason:
+        formatter == null ? ("missing" as const) : ("invalid-type" as const),
     }
   try {
     const value: unknown = formatter(...parameters)
@@ -134,7 +137,9 @@ function invokeLocalizedFormatter(
   }
 }
 
-export function resolveLocalizedFormatter<Parameters extends readonly unknown[]>(
+export function resolveLocalizedFormatter<
+  Parameters extends readonly unknown[],
+>(
   locale: string,
   key: string,
   selected: unknown,

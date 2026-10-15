@@ -7,9 +7,9 @@ import {
   type SupportedLocale,
 } from "./LocaleRegistry"
 import { PERSONAL_HUB_COPY } from "./PersonalHubCopy"
+import { resolveLocalizationCatalog } from "./ResolveLocalizationCatalog"
 import type { CanonicalValueId, LocalizedValueCopy } from "./Value"
 import { VALUES_CARD_COPY } from "./ValuesCardCopy"
-import { resolveLocalizationCatalog } from "./ResolveLocalizationCatalog"
 
 type LocalizedCopy<Copy> = {
   readonly [Key in keyof Copy]: Copy[Key] extends string
@@ -50,19 +50,24 @@ export type AuthoredLocalizationCatalog = Omit<LocalizationCatalog, "values"> &
     values: readonly (readonly [CanonicalValueId, LocalizedValueCopy])[]
   }>
 
-export const AUTHORED_LOCALIZATION_CATALOGS = Object.freeze({ en: ENGLISH_LOCALIZATION_CATALOG } satisfies Record<
-  SupportedLocale,
-  AuthoredLocalizationCatalog
->)
+export const AUTHORED_LOCALIZATION_CATALOGS = Object.freeze({
+  en: ENGLISH_LOCALIZATION_CATALOG,
+} satisfies Record<SupportedLocale, AuthoredLocalizationCatalog>)
 
 export const LOCALIZATION_CATALOG_RESOLUTIONS = Object.freeze({
   en: resolveLocalizationCatalog("en", AUTHORED_LOCALIZATION_CATALOGS.en),
-} satisfies Record<SupportedLocale, ReturnType<typeof resolveLocalizationCatalog>>)
+} satisfies Record<
+  SupportedLocale,
+  ReturnType<typeof resolveLocalizationCatalog>
+>)
 
 export function getLocaleCatalog(
   locale: SupportedLocale = DEFAULT_LOCALE,
 ): LocalizationCatalog {
-  return (LOCALIZATION_CATALOG_RESOLUTIONS[locale] ?? LOCALIZATION_CATALOG_RESOLUTIONS.en).catalog
+  return (
+    LOCALIZATION_CATALOG_RESOLUTIONS[locale] ??
+    LOCALIZATION_CATALOG_RESOLUTIONS.en
+  ).catalog
 }
 
 export const SHIPPED_LANGUAGE_OPTIONS = Object.freeze(
