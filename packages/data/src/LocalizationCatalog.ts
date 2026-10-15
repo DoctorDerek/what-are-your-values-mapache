@@ -1,5 +1,4 @@
-import { CANONICAL_VALUES } from "./CanonicalValues"
-import { ENGLISH_LOCALIZATION_CATALOG } from "@game/data/src/EnglishLocalizationCatalog"
+import { ENGLISH_LOCALIZATION_CATALOG } from "./EnglishLocalizationCatalog"
 import { FIRST_ARRIVAL_PRESENTATION } from "./FirstArrivalPresentation"
 import { introductionCopy } from "./IntroductionCopy"
 import {
@@ -10,6 +9,7 @@ import {
 import { PERSONAL_HUB_COPY } from "./PersonalHubCopy"
 import type { CanonicalValueId, LocalizedValueCopy } from "./Value"
 import { VALUES_CARD_COPY } from "./ValuesCardCopy"
+import { resolveLocalizationCatalog } from "./ResolveLocalizationCatalog"
 
 type LocalizedCopy<Copy> = {
   readonly [Key in keyof Copy]: Copy[Key] extends string
@@ -50,43 +50,19 @@ export type AuthoredLocalizationCatalog = Omit<LocalizationCatalog, "values"> &
     values: readonly (readonly [CanonicalValueId, LocalizedValueCopy])[]
   }>
 
-export function defineLocalizedValues(
-  entries: readonly (readonly [CanonicalValueId, LocalizedValueCopy])[],
-): ReadonlyMap<CanonicalValueId, LocalizedValueCopy> {
-  const values = new Map(
-    entries.map(([id, copy]) => [id, Object.freeze({ ...copy })]),
-  )
-  if (
-    values.size !== entries.length ||
-    values.size !== CANONICAL_VALUES.length ||
-    CANONICAL_VALUES.some(({ id }) => !values.has(id))
-  )
-    throw new Error(
-      "Localized values must contain every canonical identity exactly once",
-    )
-  if (
-    [...values.values()].some(
-      ({ name, definition }) => !name.trim() || !definition.trim(),
-    )
-  )
-    throw new Error("Localized value names and definitions must not be blank")
-  return values
-}
-
-const englishCatalog: LocalizationCatalog = Object.freeze({
-  ...ENGLISH_LOCALIZATION_CATALOG,
-  values: defineLocalizedValues(ENGLISH_LOCALIZATION_CATALOG.values),
-})
-
-const shippedCatalogs = Object.freeze({ en: englishCatalog } satisfies Record<
+export const AUTHORED_LOCALIZATION_CATALOGS = Object.freeze({ en: ENGLISH_LOCALIZATION_CATALOG } satisfies Record<
   SupportedLocale,
-  LocalizationCatalog
+  AuthoredLocalizationCatalog
 >)
+
+export const LOCALIZATION_CATALOG_RESOLUTIONS = Object.freeze({
+  en: resolveLocalizationCatalog("en", AUTHORED_LOCALIZATION_CATALOGS.en),
+} satisfies Record<SupportedLocale, ReturnType<typeof resolveLocalizationCatalog>>)
 
 export function getLocaleCatalog(
   locale: SupportedLocale = DEFAULT_LOCALE,
 ): LocalizationCatalog {
-  return shippedCatalogs[locale]
+  return (LOCALIZATION_CATALOG_RESOLUTIONS[locale] ?? LOCALIZATION_CATALOG_RESOLUTIONS.en).catalog
 }
 
 export const SHIPPED_LANGUAGE_OPTIONS = Object.freeze(

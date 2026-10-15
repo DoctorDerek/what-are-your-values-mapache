@@ -1,9 +1,9 @@
-import { CANONICAL_VALUES } from "@game/data/src/CanonicalValues"
-import { FIRST_ARRIVAL_PRESENTATION } from "@game/data/src/FirstArrivalPresentation"
-import { introductionCopy } from "@game/data/src/IntroductionCopy"
-import type { AuthoredLocalizationCatalog } from "@game/data/src/LocalizationCatalog"
-import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
-import { VALUES_CARD_COPY } from "@game/data/src/ValuesCardCopy"
+import { CANONICAL_VALUES } from "./CanonicalValues"
+import { FIRST_ARRIVAL_PRESENTATION } from "./FirstArrivalPresentation"
+import { introductionCopy } from "./IntroductionCopy"
+import type { AuthoredLocalizationCatalog } from "./LocalizationCatalog"
+import { PERSONAL_HUB_COPY } from "./PersonalHubCopy"
+import { VALUES_CARD_COPY } from "./ValuesCardCopy"
 
 export const ENGLISH_LOCALIZATION_CATALOG: AuthoredLocalizationCatalog =
   Object.freeze({
