@@ -710,56 +710,61 @@ describe("GameClient Integration", () => {
     ).toBeVisible()
   })
 
-  it("retains a failed Battle choice until Retry save accepts it exactly once", { timeout: 10_000 }, async () => {
-    vi.spyOn(crypto, "randomUUID").mockReturnValue(
-      "00000000-0000-4000-8000-000000000113",
-    )
-    render(<GameClient />)
-    fireEvent.click(await screen.findByRole("button", { name: "Start" }))
-    fireEvent.click(await screen.findByRole("button", { name: "Battle" }))
-    const winnerCard = (await screen.findByText("[1 / A]")).closest("button")
-    if (!winnerCard) throw new Error("The recovery test winner is unavailable")
+  it(
+    "retains a failed Battle choice until Retry save accepts it exactly once",
+    { timeout: 10_000 },
+    async () => {
+      vi.spyOn(crypto, "randomUUID").mockReturnValue(
+        "00000000-0000-4000-8000-000000000113",
+      )
+      render(<GameClient />)
+      fireEvent.click(await screen.findByRole("button", { name: "Start" }))
+      fireEvent.click(await screen.findByRole("button", { name: "Battle" }))
+      const winnerCard = (await screen.findByText("[1 / A]")).closest("button")
+      if (!winnerCard)
+        throw new Error("The recovery test winner is unavailable")
 
-    durableStoreFailure.writeEnabled = true
-    fireEvent.click(winnerCard)
+      durableStoreFailure.writeEnabled = true
+      fireEvent.click(winnerCard)
 
-    expect(
-      await screen.findByRole("heading", {
-        name: "Local save error",
-      }),
-    ).toBeVisible()
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      "IndexedDB write failed",
-    )
-    expect(
-      screen.getByRole("button", { name: "Export pending data" }),
-    ).toBeEnabled()
-    expect(
-      screen.queryByRole("button", { name: "Return Without New Changes" }),
-    ).not.toBeInTheDocument()
-    fireEvent.keyDown(window, { key: "Escape" })
-    expect(
-      screen.getByRole("heading", { name: "Local save error" }),
-    ).toBeVisible()
-    expect(screen.queryByText("Saved locally")).not.toBeInTheDocument()
-    durableStoreFailure.writeEnabled = false
-    fireEvent.click(screen.getByRole("button", { name: "Retry save" }))
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Undo" })).toBeEnabled(),
-    )
-    fireEvent.click(screen.getByRole("button", { name: /Stop/ }))
-    expect(
-      await screen.findByRole("heading", { name: "Results" }),
-    ).toBeVisible()
-    expect(screen.getByText("Saved locally")).toBeVisible()
-    await waitFor(
-      () =>
-        expect(
-          screen.getByRole("region", { name: "Profile progress" }),
-        ).toHaveTextContent("Profile XP 4"),
-      { timeout: 5000 },
-    )
-  })
+      expect(
+        await screen.findByRole("heading", {
+          name: "Local save error",
+        }),
+      ).toBeVisible()
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "IndexedDB write failed",
+      )
+      expect(
+        screen.getByRole("button", { name: "Export pending data" }),
+      ).toBeEnabled()
+      expect(
+        screen.queryByRole("button", { name: "Return Without New Changes" }),
+      ).not.toBeInTheDocument()
+      fireEvent.keyDown(window, { key: "Escape" })
+      expect(
+        screen.getByRole("heading", { name: "Local save error" }),
+      ).toBeVisible()
+      expect(screen.queryByText("Saved locally")).not.toBeInTheDocument()
+      durableStoreFailure.writeEnabled = false
+      fireEvent.click(screen.getByRole("button", { name: "Retry save" }))
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "Undo" })).toBeEnabled(),
+      )
+      fireEvent.click(screen.getByRole("button", { name: /Stop/ }))
+      expect(
+        await screen.findByRole("heading", { name: "Results" }),
+      ).toBeVisible()
+      expect(screen.getByText("Saved locally")).toBeVisible()
+      await waitFor(
+        () =>
+          expect(
+            screen.getByRole("region", { name: "Profile progress" }),
+          ).toHaveTextContent("Profile XP 4"),
+        { timeout: 5000 },
+      )
+    },
+  )
 
   it("preserves a Custom Value review after failed saving and commits on retry", async () => {
     render(<GameClient />)
@@ -1461,75 +1466,81 @@ describe("GameClient Integration", () => {
     ).toHaveFocus()
   })
 
-  it("adds, edits, and deletes a Custom Value without resetting retained rankings", { timeout: 10_000 }, async () => {
-    vi.spyOn(crypto, "randomUUID").mockReturnValue(
-      "00000000-0000-4000-8000-000000000045",
-    )
+  it(
+    "adds, edits, and deletes a Custom Value without resetting retained rankings",
+    { timeout: 10_000 },
+    async () => {
+      vi.spyOn(crypto, "randomUUID").mockReturnValue(
+        "00000000-0000-4000-8000-000000000045",
+      )
 
-    render(<GameClient />)
+      render(<GameClient />)
 
-    fireEvent.click(await screen.findByRole("button", { name: "Start" }))
-    fireEvent.click(await screen.findByRole("button", { name: "Add value" }))
+      fireEvent.click(await screen.findByRole("button", { name: "Start" }))
+      fireEvent.click(await screen.findByRole("button", { name: "Add value" }))
 
-    fireEvent.change(await screen.findByLabelText("Value name"), {
-      target: { value: "Craftsmanship" },
-    })
-    fireEvent.change(screen.getByLabelText("Definition"), {
-      target: { value: "To make original solutions." },
-    })
-    fireEvent.click(screen.getByRole("button", { name: "Save" }))
-    await screen.findByText("Your Custom Values are saved and ready to battle.")
-    fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
-    await screen.findByText("104 Active Values")
+      fireEvent.change(await screen.findByLabelText("Value name"), {
+        target: { value: "Craftsmanship" },
+      })
+      fireEvent.change(screen.getByLabelText("Definition"), {
+        target: { value: "To make original solutions." },
+      })
+      fireEvent.click(screen.getByRole("button", { name: "Save" }))
+      await screen.findByText(
+        "Your Custom Values are saved and ready to battle.",
+      )
+      fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
+      await screen.findByText("104 Active Values")
 
-    const customValueRow = await waitFor(() => {
-      const valueText = screen
-        .getAllByText("Craftsmanship")
-        .find((element) => element.closest("li"))
-      const valueRow = valueText?.closest("li")
-      if (!valueRow) {
-        throw new Error("The added Custom Value row is unavailable")
-      }
-      return valueRow
-    })
-    expect(
-      screen.queryByRole("form", { name: "Add Custom Value" }),
-    ).not.toBeInTheDocument()
-    fireEvent.click(
-      within(customValueRow).getByRole("button", { name: "Edit" }),
-    )
-    fireEvent.change(screen.getByLabelText("Value Name"), {
-      target: { value: "Curiosity Engine" },
-    })
-    fireEvent.change(screen.getByLabelText("What This Value Means to Me"), {
-      target: { value: "To explore how things connect." },
-    })
-    fireEvent.click(screen.getByRole("button", { name: "Review Update" }))
-    fireEvent.click(screen.getByRole("button", { name: "Update Value" }))
+      const customValueRow = await waitFor(() => {
+        const valueText = screen
+          .getAllByText("Craftsmanship")
+          .find((element) => element.closest("li"))
+        const valueRow = valueText?.closest("li")
+        if (!valueRow) {
+          throw new Error("The added Custom Value row is unavailable")
+        }
+        return valueRow
+      })
+      expect(
+        screen.queryByRole("form", { name: "Add Custom Value" }),
+      ).not.toBeInTheDocument()
+      fireEvent.click(
+        within(customValueRow).getByRole("button", { name: "Edit" }),
+      )
+      fireEvent.change(screen.getByLabelText("Value Name"), {
+        target: { value: "Curiosity Engine" },
+      })
+      fireEvent.change(screen.getByLabelText("What This Value Means to Me"), {
+        target: { value: "To explore how things connect." },
+      })
+      fireEvent.click(screen.getByRole("button", { name: "Review Update" }))
+      fireEvent.click(screen.getByRole("button", { name: "Update Value" }))
 
-    const updatedValueRow = await waitFor(() => {
-      const valueText = screen
-        .getAllByText("Curiosity Engine")
-        .find((element) => element.closest("li"))
-      const valueRow = valueText?.closest("li")
-      if (!valueRow) {
-        throw new Error("The updated Custom Value row is unavailable")
-      }
-      return valueRow
-    })
-    expect(
-      screen.queryByRole("alertdialog", { name: "Update Craftsmanship?" }),
-    ).not.toBeInTheDocument()
-    fireEvent.click(
-      within(updatedValueRow).getByRole("button", { name: "Delete" }),
-    )
-    fireEvent.click(screen.getByRole("button", { name: "Delete Value" }))
+      const updatedValueRow = await waitFor(() => {
+        const valueText = screen
+          .getAllByText("Curiosity Engine")
+          .find((element) => element.closest("li"))
+        const valueRow = valueText?.closest("li")
+        if (!valueRow) {
+          throw new Error("The updated Custom Value row is unavailable")
+        }
+        return valueRow
+      })
+      expect(
+        screen.queryByRole("alertdialog", { name: "Update Craftsmanship?" }),
+      ).not.toBeInTheDocument()
+      fireEvent.click(
+        within(updatedValueRow).getByRole("button", { name: "Delete" }),
+      )
+      fireEvent.click(screen.getByRole("button", { name: "Delete Value" }))
 
-    await waitFor(() =>
-      expect(screen.getAllByRole("listitem")).toHaveLength(103),
-    )
-    expect(screen.getByText("103 Active Values")).toBeVisible()
-  })
+      await waitFor(() =>
+        expect(screen.getAllByRole("listitem")).toHaveLength(103),
+      )
+      expect(screen.getByText("103 Active Values")).toBeVisible()
+    },
+  )
 
   it("downloads a private JSON backup and restores Hub focus after closing", async () => {
     vi.spyOn(crypto, "randomUUID").mockReturnValue(
