@@ -1,3 +1,4 @@
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import { Progress } from "@/components/ui/progress"
 
@@ -8,11 +9,18 @@ export default function ValueLevelProgress({
   totalXp: number
   compact?: boolean
 }) {
+  const localizedCopy = useLocaleCatalog()
+
   const { level, earnedXpTowardNextLevel, requiredXpForNextLevel } =
     getLevelProgressFromXP(totalXp)
   return (
     <div
-      aria-label={`Level ${level}: ${earnedXpTowardNextLevel} of ${requiredXpForNextLevel} XP toward Level ${level + 1}`}
+      aria-label={localizedCopy.interfaceCopy.screen.levelProgress(
+        String(level),
+        String(earnedXpTowardNextLevel),
+        String(requiredXpForNextLevel),
+        String(level + 1),
+      )}
       className={
         compact
           ? "text-mapache-vivid-primary-raspberry min-w-0 font-bold"
@@ -26,13 +34,20 @@ export default function ValueLevelProgress({
             : "flex items-baseline justify-between gap-3"
         }
       >
-        <span className={compact ? "text-sm" : "text-xl"}>Level {level}</span>
+        <span className={compact ? "text-sm" : "text-xl"}>
+          {localizedCopy.interfaceCopy.screen.valueLevel(String(level))}
+        </span>
         <span className={compact ? "text-xs" : "text-base"}>
-          {earnedXpTowardNextLevel}/{requiredXpForNextLevel} XP
+          {localizedCopy.interfaceCopy.screen.xpFraction(
+            String(earnedXpTowardNextLevel),
+            String(requiredXpForNextLevel),
+          )}
         </span>
       </div>
       <Progress
-        aria-label={`XP toward Level ${level + 1}`}
+        aria-label={localizedCopy.interfaceCopy.screen.xpTowardLevel(
+          String(level + 1),
+        )}
         value={earnedXpTowardNextLevel}
         max={requiredXpForNextLevel}
         className={

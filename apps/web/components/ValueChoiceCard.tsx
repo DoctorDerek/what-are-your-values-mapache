@@ -1,6 +1,7 @@
 "use client"
 
 import { getBattleValueDisplayName } from "@game/data/src/BattleValueTypography"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValueDisplayDefinition,
   getValueDisplayName,
@@ -53,10 +54,11 @@ export const ValueChoiceCard = forwardRef<
   },
   ref,
 ) {
+  const localizedCopy = useLocaleCatalog()
   const isFirst = position === "first"
   const [isHovered, setIsHovered] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
-  const displayName = getValueDisplayName(value)
+  const displayName = getValueDisplayName(value, localizedCopy.values)
   const isWinner = isAnimating && winnerId === value.id
   const positionClasses = isFirst
     ? "bg-mapache-vivid-primary-cyan col-start-1 border-r-8 border-black"
@@ -110,6 +112,7 @@ export const ValueChoiceCard = forwardRef<
           id={choiceId}
           type="button"
           aria-label={getValueChoiceAccessibilityLabel({
+            localization: localizedCopy,
             position,
             value,
             level,
@@ -140,24 +143,32 @@ export const ValueChoiceCard = forwardRef<
                     : "mx-auto max-w-full",
                 )}
               >
-                Level {level}
+                {localizedCopy.interfaceCopy.screen.valueLevel(String(level))}
               </span>
               <h2
                 aria-label={displayName}
-                lang={value.kind === "canonical" ? "en" : undefined}
+                lang={
+                  value.kind === "canonical"
+                    ? localizedCopy.metadata.languageTag
+                    : undefined
+                }
                 className={cx(
                   "clear-both mx-auto flow-root w-max max-w-full min-w-0 pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black break-words hyphens-auto text-white drop-shadow-[4px_4px_0px_#000000] [hyphenate-limit-chars:6_3_3] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000] @max-[6rem]/choice-title:pr-[0.5ch]",
                   Boolean(controlHint) && "xl:clear-none xl:pt-0",
                 )}
               >
-                {getBattleValueDisplayName(value)}
+                {getBattleValueDisplayName(
+                  value,
+                  localizedCopy.values,
+                  localizedCopy.metadata.languageTag,
+                )}
               </h2>
             </div>
             <p
               id={accessibleDefinitionId}
               className="mx-auto mt-3 max-w-2xl border-2 border-white/20 bg-black/40 px-[min(0.75rem,8%)] py-3 text-[clamp(1rem,2.8vw,1.5rem)] leading-snug font-bold [overflow-wrap:anywhere] break-words hyphens-auto whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] xl:mt-6 xl:p-6 xl:text-[clamp(1.25rem,2vw,1.875rem)] xl:leading-relaxed"
             >
-              “{getValueDisplayDefinition(value)}”
+              “{getValueDisplayDefinition(value, localizedCopy.values)}”
             </p>
           </div>
         </button>

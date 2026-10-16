@@ -79,7 +79,7 @@ describe("Native Battle-exit Results", () => {
       await act(async () => jest.advanceTimersByTime(50))
       const winner = results.values[0]
       const row = screen.getByLabelText(
-        `Rank 1, ${getValueDisplayName(winner.definition)}, Level 3, 4 total XP`,
+        `Rank 1, ${getValueDisplayName(winner.definition)}, Level 3, 4 total XP.`,
       )
       expect(row).toBeOnTheScreen()
       const cells = screen.container.queryAll(
@@ -124,7 +124,9 @@ describe("Native Battle-exit Results", () => {
 
       expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
       await act(async () => jest.advanceTimersByTime(900))
-      const profile = screen.getByLabelText(/Profile Level 3, Profile XP 4/)
+      const profile = screen.getByLabelText(
+        /Profile XP 4, \+4\. Profile Level 3\./,
+      )
       const profileFill = profile.queryAll(
         (element) =>
           typeof StyleSheet.flatten(element.props.style)?.flex === "number",

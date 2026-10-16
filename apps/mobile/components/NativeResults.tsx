@@ -1,10 +1,10 @@
-import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
-import { RESULTS_COPY } from "@game/data/src/ResultsCopy"
+import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
 import {
   resolveValueAnimalPresentation,
   SEETHING_SWARM_HUB_TILE_SIZE,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { getValueDisplayName } from "@game/data/src/Value"
 import {
   BATTLE_RESULTS_PRESENTATION_TICK_MS,
@@ -14,7 +14,6 @@ import {
 } from "@game/machines/src/BattleExitResults"
 import {
   getResultsSaveConfirmationRemainingMs,
-  RESULTS_SAVE_CONFIRMATION_COPY,
   RESULTS_SAVE_CONFIRMATION_FADE_MS,
 } from "@game/machines/src/ResultsSaveStatus"
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
@@ -46,6 +45,12 @@ function NativeResultsValueRow({
   shouldReduceMotion: boolean
   onFocus: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const { integer } = useMemo(
+    () => createLocaleFormatters(localizedCopy.metadata.languageTag),
+    [localizedCopy.metadata.languageTag],
+  )
+
   const { value, rank, totalXp } = frameValue
   const { isAttended, attentionHandlers } = useAnimalAttentionInput()
   const { level, earnedXpTowardNextLevel, requiredXpForNextLevel } =
@@ -64,7 +69,12 @@ function NativeResultsValueRow({
     <Pressable
       accessible
       {...attentionHandlers}
-      accessibilityLabel={`Rank ${value.exitRank}, ${getValueDisplayName(value.definition)}, Level ${finalLevel}, ${value.exitProgress.totalXp} total XP`}
+      accessibilityLabel={localizedCopy.interfaceCopy.screen.valueResult(
+        integer(value.exitRank),
+        getValueDisplayName(value.definition, localizedCopy.values),
+        integer(finalLevel),
+        integer(value.exitProgress.totalXp),
+      )}
       onFocus={onFocus}
       className={cx(
         "mb-1 flex-row flex-wrap items-center gap-2 border-2 border-black bg-white p-1 shadow-[3px_3px_0px_0px_#000000]",
@@ -103,9 +113,11 @@ function NativeResultsValueRow({
       <View className="min-w-0 flex-1 basis-24">
         <View className="flex-row flex-wrap items-baseline justify-between gap-x-2">
           <Text className="min-w-0 flex-1 text-base font-black text-black">
-            {getValueDisplayName(value.definition)}
+            {getValueDisplayName(value.definition, localizedCopy.values)}
           </Text>
-          <Text className="text-sm font-bold text-black">Level {level}</Text>
+          <Text className="text-sm font-bold text-black">
+            {localizedCopy.interfaceCopy.screen.valueLevel(integer(level))}
+          </Text>
         </View>
         <View className="mt-1 h-2 flex-row overflow-hidden border border-black bg-white">
           <View
@@ -115,7 +127,10 @@ function NativeResultsValueRow({
           <View style={{ flex: 100 - frameValue.levelBarPercentage }} />
         </View>
         <Text className="text-xs text-black">
-          {earnedXpTowardNextLevel}/{requiredXpForNextLevel} XP
+          {localizedCopy.interfaceCopy.screen.xpFraction(
+            integer(earnedXpTowardNextLevel),
+            integer(requiredXpForNextLevel),
+          )}
         </Text>
       </View>
     </Pressable>
@@ -141,6 +156,14 @@ export default function NativeResults({
   onSeeValues: () => void
   onKeepBattling: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const { integer } = useMemo(
+    () => createLocaleFormatters(localizedCopy.metadata.languageTag),
+    [localizedCopy.metadata.languageTag],
+  )
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+  const RESULTS_COPY = localizedCopy.interfaceCopy.results
+
   const [isSaveConfirmationVisible, setIsSaveConfirmationVisible] = useState(
     () => getResultsSaveConfirmationRemainingMs(openedAt, Date.now()) > 0,
   )
@@ -241,10 +264,10 @@ export default function NativeResults({
   const change = results.profileXpChange
   const changeLabel =
     change > 0n
-      ? `+${change}`
+      ? `+${integer(change)}`
       : change < 0n
-        ? change.toString()
-        : "No XP change"
+        ? integer(change)
+        : localizedCopy.interfaceCopy.screen.noXpChange
   const changeSummary = results.values.some(
     (value) => value.entryRank !== value.exitRank,
   )
@@ -276,7 +299,7 @@ export default function NativeResults({
               <Text className="text-mapache-vivid-secondary-green text-base">
                 ✓{" "}
               </Text>
-              {RESULTS_SAVE_CONFIRMATION_COPY}
+              {localizedCopy.interfaceCopy.screen.savedLocally}
             </Text>
           </Animated.View>
         </View>
@@ -303,16 +326,20 @@ export default function NativeResults({
       />
       <View
         accessible
-        accessibilityLabel={`${changeSummary}. Profile Level ${finalProfileProgress.level}, Profile XP ${results.exitProfileXp}, ${changeLabel}`}
+        accessibilityLabel={localizedCopy.interfaceCopy.screen.resultSummary(
+          changeSummary,
+          integer(results.exitProfileXp),
+          integer(finalProfileProgress.level),
+          changeLabel,
+        )}
         className="border-2 border-black bg-white p-2"
       >
         <View className="flex-row flex-wrap justify-between gap-x-3">
           <Text className="text-lg font-black text-black">
-            {RESULTS_COPY.profileLevelLabel} {profileProgress.level.toString()}
+            {RESULTS_COPY.profileLevel(integer(profileProgress.level))}
           </Text>
           <Text className="text-base font-semibold text-black">
-            {RESULTS_COPY.profileXpLabel} {frame.profileXp.toString()} ·{" "}
-            {changeLabel}
+            {RESULTS_COPY.profileXp(integer(frame.profileXp))} · {changeLabel}
           </Text>
         </View>
         <View className="mt-1 h-3 flex-row overflow-hidden border border-black">

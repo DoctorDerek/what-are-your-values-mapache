@@ -1,4 +1,5 @@
 import { getBattleValueDisplayName } from "@game/data/src/BattleValueTypography"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValueDisplayDefinition,
   getValueDisplayName,
@@ -40,13 +41,18 @@ function NativeValueChoiceCard(
   }: NativeValueChoiceCardProps,
   ref: ForwardedRef<View>,
 ) {
+  const localizedCopy = useLocaleCatalog()
+
   const isFirst = position === "first"
   const isWinner = isAnimating && winnerId === value.id
   const [isHovered, setIsHovered] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
 
-  const displayName = getValueDisplayName(value)
-  const displayDefinition = getValueDisplayDefinition(value)
+  const displayName = getValueDisplayName(value, localizedCopy.values)
+  const displayDefinition = getValueDisplayDefinition(
+    value,
+    localizedCopy.values,
+  )
   const handleActivate = () => onActivate(value.id)
 
   return (
@@ -55,6 +61,7 @@ function NativeValueChoiceCard(
         ref={ref}
         accessibilityHint={displayDefinition}
         accessibilityLabel={getValueChoiceAccessibilityLabel({
+          localization: localizedCopy,
           position,
           value,
           level,
@@ -90,7 +97,11 @@ function NativeValueChoiceCard(
               lineBreakStrategyIOS="push-out"
               textBreakStrategy="balanced"
             >
-              {getBattleValueDisplayName(value)}
+              {getBattleValueDisplayName(
+                value,
+                localizedCopy.values,
+                localizedCopy.metadata.languageTag,
+              )}
             </Text>
             <View className="mt-2 w-full min-w-0 flex-row flex-wrap items-center justify-between gap-2 xl:gap-5">
               <Text
@@ -103,7 +114,7 @@ function NativeValueChoiceCard(
                 {controlHint}
               </Text>
               <Text className="shrink-0 border-2 border-black bg-white px-2 py-1 text-sm font-black text-black uppercase shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[5px_5px_0px_0px_#000000]">
-                LVL {level}
+                {localizedCopy.interfaceCopy.screen.compactLevel(String(level))}
               </Text>
             </View>
             <Text
