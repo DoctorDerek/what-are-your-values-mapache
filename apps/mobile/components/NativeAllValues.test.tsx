@@ -1,4 +1,5 @@
 import { createActiveDeck, type ActiveDeck } from "@game/data/src/ActiveDeck"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
   createCustomValueId,
   type CustomValueDefinition,
@@ -74,6 +75,49 @@ function getLegacyCustomDetails() {
 }
 
 describe("NativeAllValues", () => {
+  it("renders selected labels and selected included-value meanings without changing private custom text", async () => {
+    const english = getLocaleCatalog()
+    const deck = createIngenuityDeck()
+    const ranked = createRankedValues(deck).filter(
+      ({ definition }) =>
+        definition.id === deck.valueIds[0] || definition.kind === "custom",
+    )
+    const values = new Map(english.values)
+    const first = ranked.find(
+      ({ definition }) => definition.kind === "canonical",
+    )?.definition
+    if (!first || first.kind !== "canonical")
+      throw new Error("Expected an included value")
+    values.set(first.id, {
+      name: "⟦Selected value⟧",
+      definition: "⟦Selected meaning⟧",
+    })
+    const callbacks = createCallbacks()
+    await render(
+      <NativeAllValues
+        {...callbacks}
+        rankedValues={ranked}
+        localization={{
+          ...english,
+          values,
+          interfaceCopy: {
+            ...english.interfaceCopy,
+            screen: { ...english.interfaceCopy.screen, close: "⟦Close⟧" },
+          },
+        }}
+      />,
+    )
+    expect(screen.getByText("⟦Selected value⟧")).toBeOnTheScreen()
+    expect(screen.getByText("“⟦Selected meaning⟧”")).toBeOnTheScreen()
+    expect(screen.getByText("Ingenuity")).toBeOnTheScreen()
+    expect(
+      screen.getByText("“Ability to solve problems creatively.”"),
+    ).toBeOnTheScreen()
+    await userEvent
+      .setup()
+      .press(screen.getByRole("button", { name: "⟦Close⟧" }))
+    expect(callbacks.onClose).toHaveBeenCalledTimes(1)
+  })
   it("routes Menu and Close when no Custom Value work is pending", async () => {
     const callbacks = createCallbacks()
     const user = userEvent.setup()

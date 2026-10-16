@@ -2,8 +2,8 @@
 
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
 import { projectHubValues } from "@game/data/src/HubValueProjection"
-import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import type { StaticImageData } from "next/image"
 import type { Ref } from "react"
@@ -25,6 +25,9 @@ export default function PersonalValuesCard({
   inert?: boolean
   rosterRef?: Ref<HTMLDivElement>
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const PERSONAL_HUB_COPY = localizedCopy.hub
+
   const { hasComparisons, visibleValues, topFive, remainingValues } =
     projectHubValues(rankedValues)
   const renderValue = (value: RankedValue) => (

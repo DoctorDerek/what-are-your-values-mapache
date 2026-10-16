@@ -1,8 +1,8 @@
 "use client"
 
-import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
 import { resolveValueAnimalPresentation } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValueDisplayDefinition,
   getValueDisplayName,
@@ -26,8 +26,14 @@ export default function PersonalValueRow({
   catalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   shouldReduceMotion: boolean
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const PERSONAL_HUB_COPY = localizedCopy.hub
+
   const { isAttended, attentionHandlers } = useAnimalAttentionInput()
-  const { medal, accessibleLabel } = getValueRankPresentation(value.rank)
+  const { medal, accessibleLabel } = getValueRankPresentation(
+    value.rank,
+    localizedCopy.interfaceCopy.rank,
+  )
   return (
     <li
       {...attentionHandlers}
@@ -71,10 +77,10 @@ export default function PersonalValueRow({
       </span>
       <div className="min-w-0 flex-[1_1_8rem] [overflow-wrap:anywhere]">
         <h3 className="text-player-card-ink text-lg leading-tight font-black xl:text-2xl">
-          {getValueDisplayName(value.definition)}
+          {getValueDisplayName(value.definition, localizedCopy.values)}
         </h3>
         <p className="text-player-card-muted mt-1 text-xs leading-snug xl:text-base">
-          {getValueDisplayDefinition(value.definition)}
+          {getValueDisplayDefinition(value.definition, localizedCopy.values)}
         </p>
         <p className="text-player-card-muted mt-1 text-xs xl:text-sm">
           {PERSONAL_HUB_COPY.level(getLevelFromXP(value.progress.totalXp))}

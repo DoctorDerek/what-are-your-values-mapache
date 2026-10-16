@@ -2,6 +2,7 @@
 
 import { resolveValueAnimalPresentation } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { cx } from "classix"
@@ -27,9 +28,13 @@ export default function AllValuesValueRow({
   heading: ReactNode
   children: ReactNode
 }) {
+  const localization = useLocaleCatalog()
   const { isAttended, attentionHandlers } = useAnimalAttentionInput()
   const { definition, rank } = rankedValue
-  const { accessibleLabel } = getValueRankPresentation(rank)
+  const { accessibleLabel } = getValueRankPresentation(
+    rank,
+    localization.interfaceCopy.rank,
+  )
 
   return (
     <li

@@ -1,9 +1,6 @@
 import { projectAllValues } from "@game/data/src/AllValuesProjection"
-import {
-  getLocaleCatalog,
-  type LocalizationCatalog,
-} from "@game/data/src/LocalizationCatalog"
-import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
+import type { LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValueDisplayName,
   type CustomValueId,
@@ -36,7 +33,7 @@ export default function NativeAllValues({
   openCustomValueBuilder = false,
   persistenceIssue = null,
   rankedValues,
-  localization = getLocaleCatalog(),
+  localization: localizationOverride,
   onNavigationBlockedChange,
 }: {
   readonly localization?: LocalizationCatalog
@@ -56,6 +53,10 @@ export default function NativeAllValues({
   readonly rankedValues: readonly RankedValue[]
   readonly onNavigationBlockedChange?: (isBlocked: boolean) => void
 }) {
+  const localizedCopy = useLocaleCatalog(localizationOverride)
+  const localization = localizedCopy
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+
   const listRef = useRef<FlatList<RankedValue>>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [isAddingCustomValue, setIsAddingCustomValue] = useState(
@@ -124,10 +125,12 @@ export default function NativeAllValues({
               variant="h1"
               className="text-mapache-vivid-primary-cyan text-left text-4xl font-black tracking-tight uppercase"
             >
-              All Values
+              {localizedCopy.interfaceCopy.screen.allValues}
             </Text>
             <Text className="mt-1 text-lg font-black text-white uppercase">
-              {rankedValues.length} Active Values
+              {localizedCopy.interfaceCopy.screen.activeValues(
+                String(rankedValues.length),
+              )}
             </Text>
           </View>
           <View className="flex-row gap-3">
@@ -145,7 +148,7 @@ export default function NativeAllValues({
               variant="destructive"
               onPress={onClose}
             >
-              <Text>Close</Text>
+              <Text>{localizedCopy.interfaceCopy.screen.close}</Text>
             </Button>
           </View>
         </View>
@@ -161,19 +164,23 @@ export default function NativeAllValues({
               accessibilityLiveRegion="polite"
               className="border-4 border-black bg-white p-8 text-center text-2xl font-black text-black"
             >
-              No values match your search.
+              {localizedCopy.interfaceCopy.screen.noSearchResults}
             </Text>
           }
           ListHeaderComponent={
             <View className="gap-4">
               <Text className="text-xl font-black text-white uppercase">
-                Search All Values
+                {localizedCopy.interfaceCopy.screen.searchAllValues}
               </Text>
               <TextInput
-                accessibilityLabel="Search All Values"
+                accessibilityLabel={
+                  localizedCopy.interfaceCopy.screen.searchAllValues
+                }
                 className="min-h-14 border-4 border-black bg-white p-3 text-xl font-bold text-black"
                 onChangeText={setSearchQuery}
-                placeholder="Search by value name or definition"
+                placeholder={
+                  localizedCopy.interfaceCopy.screen.searchPlaceholder
+                }
                 returnKeyType="search"
                 value={searchQuery}
               />
@@ -181,21 +188,24 @@ export default function NativeAllValues({
                 accessibilityLiveRegion="polite"
                 className="text-base font-black text-white uppercase"
               >
-                {visibleValues.length}{" "}
-                {visibleValues.length === 1 ? "Value" : "Values"} Shown
+                {localizedCopy.interfaceCopy.screen.valuesShown(
+                  visibleValues.length,
+                  String(visibleValues.length),
+                )}
               </Text>
               {persistenceIssue ? (
                 <View
-                  accessibilityLabel="Custom Value save failed"
+                  accessibilityLabel={
+                    localizedCopy.interfaceCopy.screen.customSaveFailed
+                  }
                   accessibilityRole="alert"
                   className="bg-mapache-vivid-primary-orange gap-2 border-4 border-black p-4"
                 >
                   <Text className="text-2xl font-black text-black uppercase">
-                    That change wasn’t saved.
+                    {localizedCopy.interfaceCopy.screen.changeNotSaved}
                   </Text>
                   <Text className="text-base leading-6 font-bold text-black">
-                    Your current data and draft are unchanged. Review them and
-                    try again.
+                    {localizedCopy.interfaceCopy.screen.draftUnchanged}
                   </Text>
                 </View>
               ) : null}
@@ -218,7 +228,9 @@ export default function NativeAllValues({
                     setIsAddingCustomValue(true)
                   }}
                 >
-                  <Text>Add Custom Value</Text>
+                  <Text>
+                    {localizedCopy.interfaceCopy.screen.addCustomValue}
+                  </Text>
                 </Button>
               )}
             </View>
@@ -251,7 +263,7 @@ export default function NativeAllValues({
                     accessibilityRole="header"
                     className="border-b-4 border-white py-3 text-3xl font-black text-white uppercase"
                   >
-                    Top Five
+                    {localizedCopy.interfaceCopy.screen.topFive}
                   </Text>
                 ) : null}
                 {startsAllOtherValues ? (
@@ -259,7 +271,7 @@ export default function NativeAllValues({
                     accessibilityRole="header"
                     className="bg-mapache-vivid-primary-cyan border-y-8 border-black px-4 py-3 text-center text-2xl font-black text-black uppercase"
                   >
-                    All Other Values
+                    {localizedCopy.interfaceCopy.screen.remainingValues}
                   </Text>
                 ) : null}
                 <NativeValueDetailsCard

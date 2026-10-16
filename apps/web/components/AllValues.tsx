@@ -6,12 +6,9 @@ import {
   CUSTOM_VALUE_NAME_MAX_GRAPHEMES,
   validateCustomValueDraft,
 } from "@game/data/src/CustomValueValidation"
-import {
-  getLocaleCatalog,
-  type LocalizationCatalog,
-} from "@game/data/src/LocalizationCatalog"
-import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
+import type { LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValueDisplayDefinition,
   getValueDisplayName,
@@ -33,7 +30,7 @@ import { useWebControllerActions } from "@/components/WebControlsProvider"
 
 export default function AllValues({
   rankedValues,
-  localization = getLocaleCatalog(),
+  localization: localizationOverride,
   runtimeClipCatalog,
   shouldReduceMotion,
   initialValueId,
@@ -66,6 +63,10 @@ export default function AllValues({
   onDeleteCustomValue: (valueId: CustomValueId) => void
   onNavigationBlockedChange?: (isBlocked: boolean) => void
 }) {
+  const localizedCopy = useLocaleCatalog(localizationOverride)
+  const localization = localizedCopy
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+
   const [searchQuery, setSearchQuery] = useState("")
   const customValueActionRef = useRef<HTMLButtonElement | null>(null)
   const [editingValueId, setEditingValueId] = useState<CustomValueId | null>(
@@ -79,9 +80,7 @@ export default function AllValues({
   const [deletingValueId, setDeletingValueId] = useState<CustomValueId | null>(
     null,
   )
-  const [highlightedValueId, setHighlightedValueId] = useState<ValueId | null>(
-    initialValueId ?? null,
-  )
+  const [highlightedValueId] = useState<ValueId | null>(initialValueId ?? null)
 
   const { existingCustomValues, hasComparisons, visibleValues } = useMemo(
     () =>
@@ -237,7 +236,7 @@ export default function AllValues({
               </h3>
               {customValueId ? (
                 <span className="bg-mapache-vivid-primary-cyan border-4 border-black px-3 py-2 text-lg font-black text-black uppercase">
-                  Yours
+                  {localizedCopy.interfaceCopy.screen.yours}
                 </span>
               ) : null}
               <ValueLevelProgress totalXp={progress.totalXp} />
@@ -256,7 +255,7 @@ export default function AllValues({
                     }}
                     className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-lg font-black text-white uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
                   >
-                    Edit
+                    {localizedCopy.interfaceCopy.screen.edit}
                   </button>
                   <button
                     type="button"
@@ -268,7 +267,7 @@ export default function AllValues({
                     }}
                     className="bg-mapache-vivid-secondary-red border-4 border-black px-3 py-2 text-lg font-black text-black uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
                   >
-                    Delete
+                    {localizedCopy.interfaceCopy.screen.delete}
                   </button>
                 </div>
               ) : null}
@@ -278,16 +277,16 @@ export default function AllValues({
           {isDeleting && customValueId ? (
             <div
               role="alertdialog"
-              aria-label={`Remove ${displayName}?`}
+              aria-label={localizedCopy.interfaceCopy.screen.removeValue(
+                displayName,
+              )}
               className="bg-mapache-vivid-secondary-red/10 mt-5 border-t-4 border-black p-4"
             >
               <h4 className="text-2xl font-black uppercase">
-                Remove {displayName}?
+                {localizedCopy.interfaceCopy.screen.removeValue(displayName)}
               </h4>
               <p className="mt-3 text-lg leading-relaxed font-bold">
-                This permanently removes the name, definition, and progress for
-                this Custom Value. Retained values keep their levels and
-                experience.
+                {localizedCopy.interfaceCopy.screen.customDeleteConsequences}
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
                 <button
@@ -296,7 +295,7 @@ export default function AllValues({
                   onClick={cancelDelete}
                   className="bg-mapache-vivid-secondary-purple border-4 border-black px-4 py-2 font-black text-white uppercase"
                 >
-                  Cancel
+                  {localizedCopy.interfaceCopy.screen.cancel}
                 </button>
                 <button
                   type="button"
@@ -306,7 +305,9 @@ export default function AllValues({
                   }}
                   className="bg-mapache-vivid-secondary-red border-4 border-black px-4 py-2 font-black text-black uppercase"
                 >
-                  {isPersistencePending ? "Deleting…" : "Delete Value"}
+                  {isPersistencePending
+                    ? localizedCopy.interfaceCopy.screen.deleting
+                    : localizedCopy.interfaceCopy.screen.deleteValue}
                 </button>
               </div>
             </div>
@@ -320,7 +321,7 @@ export default function AllValues({
                 htmlFor={`custom-value-name-${definition.id}`}
                 className="mb-3 block text-xl font-black uppercase"
               >
-                Value Name
+                {localizedCopy.interfaceCopy.screen.valueName}
               </label>
               <Input
                 id={`custom-value-name-${definition.id}`}
@@ -350,7 +351,7 @@ export default function AllValues({
                 htmlFor={`custom-value-definition-${definition.id}`}
                 className="mt-4 mb-3 block text-xl font-black uppercase"
               >
-                What This Value Means to Me
+                {localizedCopy.interfaceCopy.screen.definition}
               </label>
               <Textarea
                 id={`custom-value-definition-${definition.id}`}
@@ -376,13 +377,16 @@ export default function AllValues({
               {isConfirmingEdit ? (
                 <div
                   role="alertdialog"
-                  aria-label={`Update ${displayName}?`}
+                  aria-label={localizedCopy.interfaceCopy.screen.updateValue(
+                    displayName,
+                  )}
                   className="border-mapache-vivid-primary-orange bg-mapache-vivid-primary-orange/15 mb-4 border-4 p-4"
                 >
                   <p className="text-lg leading-relaxed font-black">
-                    Earlier comparisons remain part of your progress history.
-                    Updating this Custom Value starts one revised cycle and
-                    clears Undo and Redo.
+                    {
+                      localizedCopy.interfaceCopy.screen
+                        .customUpdateConsequences
+                    }
                   </p>
                   <div className="mt-4 flex flex-wrap gap-3">
                     <button
@@ -391,7 +395,7 @@ export default function AllValues({
                       onClick={() => setIsConfirmingEdit(false)}
                       className="bg-mapache-vivid-secondary-purple border-4 border-black px-4 py-2 font-black text-white uppercase"
                     >
-                      Cancel
+                      {localizedCopy.interfaceCopy.screen.cancel}
                     </button>
                     <button
                       type="button"
@@ -399,7 +403,9 @@ export default function AllValues({
                       onClick={confirmUpdateCustomValue}
                       className="bg-mapache-vivid-primary-orange border-4 border-black px-4 py-2 font-black text-black uppercase"
                     >
-                      {isPersistencePending ? "Saving…" : "Update Value"}
+                      {isPersistencePending
+                        ? localizedCopy.interfaceCopy.screen.saving
+                        : localizedCopy.interfaceCopy.screen.updateValueAction}
                     </button>
                   </div>
                 </div>
@@ -411,7 +417,7 @@ export default function AllValues({
                     disabled={!canSubmitEdit || isPersistencePending}
                     className="bg-mapache-vivid-secondary-green border-4 border-black px-4 py-2 font-black uppercase disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    Review Update
+                    {localizedCopy.interfaceCopy.screen.reviewUpdate}
                   </button>
                   <button
                     type="button"
@@ -419,7 +425,7 @@ export default function AllValues({
                     onClick={cancelEdit}
                     className="bg-mapache-vivid-secondary-red border-4 border-black px-4 py-2 font-black text-black uppercase"
                   >
-                    Cancel
+                    {localizedCopy.interfaceCopy.screen.cancel}
                   </button>
                 </div>
               ) : null}
@@ -443,10 +449,12 @@ export default function AllValues({
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-mapache-vivid-primary-cyan text-4xl font-black [overflow-wrap:anywhere] break-words uppercase drop-shadow-[4px_4px_0px_#000000] sm:text-6xl">
-              All Values
+              {localizedCopy.interfaceCopy.screen.allValues}
             </h1>
             <p className="mt-2 text-xl font-black uppercase sm:text-2xl">
-              {rankedValues.length} Active Values
+              {localizedCopy.interfaceCopy.screen.activeValues(
+                String(rankedValues.length),
+              )}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -465,7 +473,7 @@ export default function AllValues({
               onClick={onClose}
               className="bg-mapache-vivid-secondary-red cursor-pointer border-4 border-black px-5 py-3 text-2xl font-black uppercase shadow-[6px_6px_0px_0px_#000000] hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-x-[6px] active:translate-y-[6px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Close
+              {localizedCopy.interfaceCopy.screen.close}
             </button>
           </div>
         </div>
@@ -476,20 +484,20 @@ export default function AllValues({
         className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8"
       >
         <h2 id="all-values-search-heading" className="sr-only">
-          Search all values
+          {localizedCopy.interfaceCopy.screen.searchAllValues}
         </h2>
         <label
           htmlFor="all-values-search"
           className="mb-3 block text-2xl font-black uppercase"
         >
-          Search All Values
+          {localizedCopy.interfaceCopy.screen.searchAllValues}
         </label>
         <Input
           id="all-values-search"
           type="search"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="Search by value name or definition"
+          placeholder={localizedCopy.interfaceCopy.screen.searchPlaceholder}
           variant="search"
         />
         <p
@@ -497,21 +505,22 @@ export default function AllValues({
           aria-live="polite"
           className="mt-5 text-lg font-black uppercase"
         >
-          {visibleValues.length}{" "}
-          {visibleValues.length === 1 ? "Value" : "Values"} Shown
+          {localizedCopy.interfaceCopy.screen.valuesShown(
+            visibleValues.length,
+            String(visibleValues.length),
+          )}
         </p>
         {persistenceIssue ? (
           <div
             role="alert"
-            aria-label="Custom Value save failed"
+            aria-label={localizedCopy.interfaceCopy.screen.customSaveFailed}
             className="bg-mapache-vivid-primary-orange mt-6 border-4 border-black p-5 text-black shadow-[8px_8px_0px_0px_#000000]"
           >
             <h2 className="text-2xl font-black uppercase">
-              That change wasn’t saved.
+              {localizedCopy.interfaceCopy.screen.changeNotSaved}
             </h2>
             <p className="mt-2 text-lg font-bold">
-              Your current data and draft are unchanged. Review them and try
-              again.
+              {localizedCopy.interfaceCopy.screen.draftUnchanged}
             </p>
           </div>
         ) : null}
@@ -525,12 +534,12 @@ export default function AllValues({
             )
           }
         >
-          Add Custom Value
+          {localizedCopy.interfaceCopy.screen.addCustomValue}
         </Button>
 
         <section
           role="region"
-          aria-label="Values"
+          aria-label={localizedCopy.interfaceCopy.screen.values}
           tabIndex={0}
           data-controller-scroll="document"
         >
@@ -543,7 +552,7 @@ export default function AllValues({
                 id="all-values-top-five-heading"
                 className="border-b-4 border-black py-4 text-3xl font-black uppercase"
               >
-                Top Five
+                {localizedCopy.interfaceCopy.screen.topFive}
               </h2>
               <ol className="mt-5 flex flex-col gap-5">
                 {renderRows(visibleValues.filter(({ rank }) => rank <= 5))}
@@ -559,7 +568,7 @@ export default function AllValues({
                 id="all-values-other-heading"
                 className="bg-mapache-vivid-primary-cyan border-y-8 border-black px-4 py-3 text-center text-2xl font-black text-black uppercase"
               >
-                All Other Values
+                {localizedCopy.interfaceCopy.screen.remainingValues}
               </h2>
               <ol className="mt-5 flex flex-col gap-5">
                 {renderRows(visibleValues.filter(({ rank }) => rank > 5))}
@@ -569,7 +578,7 @@ export default function AllValues({
           {!hasComparisons ? (
             <section aria-labelledby="included-values-heading" className="mt-8">
               <h2 id="included-values-heading" className="sr-only">
-                Included Values
+                {localizedCopy.interfaceCopy.screen.includedValues}
               </h2>
               <ol className="flex flex-col gap-5">
                 {renderRows(visibleValues)}
@@ -578,7 +587,7 @@ export default function AllValues({
           ) : null}
           {visibleValues.length === 0 ? (
             <p className="mt-8 border-4 border-black bg-white p-8 text-center text-2xl font-black text-black shadow-[8px_8px_0px_0px_#000000]">
-              No values match your search.
+              {localizedCopy.interfaceCopy.screen.noSearchResults}
             </p>
           ) : null}
         </section>
