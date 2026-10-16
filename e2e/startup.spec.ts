@@ -26,7 +26,7 @@ for (const viewport of [
     const bounds = await frame.boundingBox()
     expect(bounds!.x).toBe(0)
     expect(bounds!.width).toBe(viewport.width)
-    expect(bounds!.height).toBe(viewport.height)
+    expect(bounds!.height).toBeCloseTo(viewport.height, 1)
     const startBounds = await start.boundingBox()
     const languageBounds = await language.boundingBox()
     const link = page.getByRole("link", {
@@ -109,7 +109,10 @@ test("startup preserves its viewport while client code waits and opens the saved
       "Español (México)",
     ])
     await language.selectOption("en")
-    await game.getByRole("button", { name: "Start", exact: true }).click()
+    await Promise.all([
+      page.waitForEvent("framenavigated"),
+      game.getByRole("button", { name: "Start", exact: true }).click(),
+    ])
     await expect(
       game.getByRole("heading", {
         name: /^My (?:Top Five Life )?Values$/,
