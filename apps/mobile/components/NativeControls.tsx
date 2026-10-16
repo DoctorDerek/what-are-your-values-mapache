@@ -1,9 +1,4 @@
-import {
-  CONTROL_ACTION_LABELS,
-  CONTROL_SEMANTIC_ACTIONS,
-  CONTROLS_COPY,
-  NATIVE_CONTROL_GROUPS,
-} from "@game/data/src/Controls"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { View } from "react-native"
 import { ReopenedNativeInformationPanel } from "@/components/NativeInformationPanel"
 import { Text } from "@/components/ui/text"
@@ -15,6 +10,13 @@ export default function NativeControls({
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const CONTROL_ACTION_LABELS = localizedCopy.interfaceCopy.controlActions
+  const CONTROL_SEMANTIC_ACTIONS =
+    localizedCopy.interfaceCopy.controlDescriptions
+  const CONTROLS_COPY = localizedCopy.interfaceCopy.controls
+  const NATIVE_CONTROL_GROUPS = localizedCopy.interfaceCopy.nativeControls
+
   return (
     <ReopenedNativeInformationPanel
       open={open}

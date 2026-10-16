@@ -1,8 +1,5 @@
-import {
-  BATTLE_ANIMATION_SPEED_GROUP_LABEL,
-  BATTLE_ANIMATION_SPEED_OPTIONS,
-  type BattleAnimationSpeed,
-} from "@game/machines/src/BattleAnimationSpeed"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
+import { type BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
 import { cx } from "classix"
 
 export default function BattleSpeedControl({
@@ -14,10 +11,11 @@ export default function BattleSpeedControl({
   disabled: boolean
   onChange: (speed: BattleAnimationSpeed) => void
 }) {
+  const { interfaceCopy } = useLocaleCatalog()
   return (
     <div
       role="group"
-      aria-label={BATTLE_ANIMATION_SPEED_GROUP_LABEL}
+      aria-label={interfaceCopy.battleSpeed.label}
       onKeyDown={(event) => {
         if (
           [
@@ -35,7 +33,7 @@ export default function BattleSpeedControl({
       }}
       className="mx-auto flex max-w-full flex-wrap overflow-hidden rounded-lg border-2 border-[#7899a4]"
     >
-      {BATTLE_ANIMATION_SPEED_OPTIONS.map((option) => (
+      {interfaceCopy.battleSpeed.options.map((option) => (
         <button
           key={option.value}
           type="button"

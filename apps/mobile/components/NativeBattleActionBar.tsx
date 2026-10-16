@@ -1,3 +1,4 @@
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
 import { View } from "react-native"
 import NativeBattleSpeedControl from "@/components/NativeBattleSpeedControl"
@@ -29,14 +30,16 @@ export default function NativeBattleActionBar({
   onRedo: () => void
   onStop: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+
   return (
     <View
-      accessibilityLabel="Battle actions"
+      accessibilityLabel={localizedCopy.interfaceCopy.screen.battleActions}
       className="w-full max-w-3xl shrink-0 gap-3 self-center p-3 pb-6 xl:gap-4 xl:px-6"
     >
       <View className="min-w-0 flex-row gap-2 xl:gap-4">
         <Button
-          accessibilityLabel="Menu"
+          accessibilityLabel={localizedCopy.interfaceCopy.controlActions.menu}
           className="min-w-0 flex-1"
           disabled={!canOpenMenu}
           size="battle"
@@ -44,11 +47,11 @@ export default function NativeBattleActionBar({
           onPress={onOpenMenu}
         >
           <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1}>
-            Menu
+            {localizedCopy.interfaceCopy.controlActions.menu}
           </Text>
         </Button>
         <Button
-          accessibilityLabel="Undo"
+          accessibilityLabel={localizedCopy.interfaceCopy.controlActions.undo}
           className="min-w-0 flex-1"
           disabled={!canUndo}
           size="battle"
@@ -56,11 +59,11 @@ export default function NativeBattleActionBar({
           onPress={onUndo}
         >
           <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1}>
-            Undo
+            {localizedCopy.interfaceCopy.controlActions.undo}
           </Text>
         </Button>
         <Button
-          accessibilityLabel="Redo"
+          accessibilityLabel={localizedCopy.interfaceCopy.controlActions.redo}
           className="min-w-0 flex-1"
           disabled={!canRedo}
           size="battle"
@@ -68,11 +71,11 @@ export default function NativeBattleActionBar({
           onPress={onRedo}
         >
           <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1}>
-            Redo
+            {localizedCopy.interfaceCopy.controlActions.redo}
           </Text>
         </Button>
         <Button
-          accessibilityLabel="Stop"
+          accessibilityLabel={localizedCopy.interfaceCopy.controlActions.stop}
           className="min-w-0 flex-1"
           disabled={!canStop}
           size="battle"
@@ -80,7 +83,7 @@ export default function NativeBattleActionBar({
           onPress={onStop}
         >
           <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1}>
-            Stop
+            {localizedCopy.interfaceCopy.controlActions.stop}
           </Text>
         </Button>
       </View>

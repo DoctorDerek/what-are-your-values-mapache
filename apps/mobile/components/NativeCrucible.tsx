@@ -1,5 +1,6 @@
 import type { ActiveDeck } from "@game/data/src/ActiveDeck"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type { ValueProgressById } from "@game/data/src/ValueProgress"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
@@ -77,6 +78,8 @@ export default function NativeCrucible({
     expectedScheduler: BattleSchedulerRestorePoint,
   ) => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+
   const actor = useActorRef(combatMachine, {
     input: { initialBattle: battle, animationSpeed, onWinnerSelected },
   })
@@ -153,6 +156,7 @@ export default function NativeCrucible({
     if (!pendingAction || currentBattle !== battle || !isInteractive) return
 
     const message = getBattleAccessibilityAnnouncement({
+      localization: localizedCopy,
       pendingAction,
       activeDeck,
       progressById,
@@ -174,6 +178,7 @@ export default function NativeCrucible({
     battle,
     currentBattle,
     currentPair,
+    localizedCopy,
     isInteractive,
     progressById,
   ])
@@ -188,11 +193,13 @@ export default function NativeCrucible({
     throw new Error("Projected battle is missing Active Deck data")
 
   const firstControlHint = getValueChoiceControlHint({
+    localization: localizedCopy,
     preference: controlHintPreference,
     inputModality: NATIVE_CONTROL_HINT_INPUT_MODALITY,
     position: "first",
   })
   const secondControlHint = getValueChoiceControlHint({
+    localization: localizedCopy,
     preference: controlHintPreference,
     inputModality: NATIVE_CONTROL_HINT_INPUT_MODALITY,
     position: "second",
@@ -200,6 +207,7 @@ export default function NativeCrucible({
   const reward =
     isAnimating && state.context.pendingBattle && !isPersistencePending
       ? getBattleRewardPresentation({
+          localization: localizedCopy,
           pendingAction: rewardAction,
           activeDeck,
           progressById,
@@ -208,7 +216,7 @@ export default function NativeCrucible({
 
   return (
     <MapacheScreen
-      accessibilityLabel="Value battle"
+      accessibilityLabel={localizedCopy.interfaceCopy.screen.battle}
       accessibilityState={{ busy: isPersistencePending }}
     >
       <View className="relative min-h-0 flex-1">

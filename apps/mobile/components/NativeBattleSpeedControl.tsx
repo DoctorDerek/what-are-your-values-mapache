@@ -1,8 +1,5 @@
-import {
-  BATTLE_ANIMATION_SPEED_GROUP_LABEL,
-  BATTLE_ANIMATION_SPEED_OPTIONS,
-  type BattleAnimationSpeed,
-} from "@game/machines/src/BattleAnimationSpeed"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
+import { type BattleAnimationSpeed } from "@game/machines/src/BattleAnimationSpeed"
 import { cx } from "classix"
 import { Pressable, View } from "react-native"
 import { Text } from "@/components/ui/text"
@@ -16,12 +13,13 @@ export default function NativeBattleSpeedControl({
   disabled: boolean
   onChange: (speed: BattleAnimationSpeed) => void
 }) {
+  const { interfaceCopy } = useLocaleCatalog()
   return (
     <View
-      accessibilityLabel={BATTLE_ANIMATION_SPEED_GROUP_LABEL}
+      accessibilityLabel={interfaceCopy.battleSpeed.label}
       className="max-w-full flex-row flex-wrap self-center overflow-hidden rounded-lg border-2 border-[#7899a4]"
     >
-      {BATTLE_ANIMATION_SPEED_OPTIONS.map((option) => (
+      {interfaceCopy.battleSpeed.options.map((option) => (
         <Pressable
           key={option.value}
           accessibilityRole="button"

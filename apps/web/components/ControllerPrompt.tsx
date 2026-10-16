@@ -1,13 +1,17 @@
+"use client"
+
 import atlas from "@game/data/assets/controller-prompts/ControllerPrompts.png"
-import type {
-  ControllerCommand,
-  ControllerFamily,
+import {
+  getControllerButtonLabel,
+  type ControllerCommand,
+  type ControllerFamily,
 } from "@game/data/src/ControllerControls"
 import {
   CONTROLLER_PROMPT_COLUMNS,
   CONTROLLER_PROMPT_ROWS,
   getControllerPrompt,
 } from "@game/data/src/ControllerPrompts"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { CSSProperties } from "react"
 
 export default function ControllerPrompt({
@@ -17,6 +21,7 @@ export default function ControllerPrompt({
   family: ControllerFamily
   command: ControllerCommand
 }) {
+  const localization = useLocaleCatalog()
   const prompt = getControllerPrompt(family, command)
   const style: CSSProperties = {
     backgroundImage: `url(${atlas.src})`,
@@ -26,7 +31,12 @@ export default function ControllerPrompt({
   return (
     <span
       aria-hidden="true"
-      title={prompt.label}
+      title={getControllerButtonLabel(
+        family,
+        command,
+        localization.interfaceCopy.controllerButtonLabels,
+        localization.interfaceCopy.controller.navigate,
+      )}
       className="inline-block size-8 shrink-0 rounded-sm bg-black align-middle"
       style={style}
     />

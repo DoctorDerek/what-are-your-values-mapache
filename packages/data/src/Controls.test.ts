@@ -37,7 +37,8 @@ describe("Controls", () => {
       },
       {
         id: "stop",
-        description: "Stop battling and return to Your Values.",
+        description:
+          "Stop battling. If your progress changed, review your results before returning home.",
       },
     ])
     expect(
