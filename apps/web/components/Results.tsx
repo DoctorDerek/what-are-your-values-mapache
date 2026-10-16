@@ -359,7 +359,7 @@ export default function Results({
               ))}
             </ol>
           </div>
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-50 max-h-full overflow-y-auto overscroll-contain p-2">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-full overflow-y-auto overscroll-contain p-2">
             {notifications}
           </div>
         </div>
