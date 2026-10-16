@@ -5,6 +5,7 @@ test.use({ serviceWorkers: "block", reducedMotion: "reduce", hasTouch: true })
 
 for (const viewport of [
   { width: 320, height: 568 },
+  { width: 320, height: 540 },
   { width: 390, height: 540 },
   { width: 390, height: 640 },
   { width: 1440, height: 900 },
