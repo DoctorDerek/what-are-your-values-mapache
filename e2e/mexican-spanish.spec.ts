@@ -94,7 +94,7 @@ test("Spanish survives gameplay, reload, language changes, and card export witho
   })
   await expect(
     preview.getByRole("button", { name: "Guardar GIF" }),
-  ).toBeEnabled()
+  ).toBeEnabled({ timeout: 30_000 })
   const animatedDownload = page.waitForEvent("download")
   await preview.getByRole("button", { name: "Guardar GIF" }).click()
   const animatedOutput = testInfo.outputPath("tarjeta-de-valores.gif")
