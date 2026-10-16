@@ -1,6 +1,9 @@
+import {
+  getLocaleCatalog,
+  type LocalizationCatalog,
+} from "@game/data/src/LocalizationCatalog"
 import { MAX_PERSISTED_JSON_BYTES } from "@game/machines/src/PersistedJson"
 import type { PreparedWayvmDownload } from "@game/machines/src/PlayerDataPortabilityActors"
-import { playerDataPortabilityCopy } from "@game/machines/src/PlayerDataPortabilityCopy"
 
 export const WAYVM_IMPORT_FILE_ACCEPT = ".json,application/json" as const
 
@@ -26,7 +29,11 @@ export function downloadPlayerDataFile({
   }
 }
 
-export async function readPlayerDataFile(file: File) {
+export async function readPlayerDataFile(
+  file: File,
+  localization: LocalizationCatalog = getLocaleCatalog(),
+) {
+  const playerDataPortabilityCopy = localization.interfaceCopy.portability
   if (file.size > MAX_PERSISTED_JSON_BYTES)
     throw new Error(playerDataPortabilityCopy.importUnsafe)
 

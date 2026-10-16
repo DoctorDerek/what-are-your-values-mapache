@@ -1,8 +1,6 @@
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { PreparedWayvmDownload } from "@game/machines/src/PlayerDataPortabilityActors"
-import {
-  getWayvmImportValidationIssue,
-  playerDataPortabilityCopy,
-} from "@game/machines/src/PlayerDataPortabilityCopy"
+import { getWayvmImportValidationIssue } from "@game/machines/src/PlayerDataPortabilityCopy"
 import { rootMachine } from "@game/machines/src/RootMachine"
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { ActorRefFrom, SnapshotFrom } from "xstate"
@@ -25,6 +23,8 @@ export default function useNativePlayerDataFiles({
   readonly state: RootMachineSnapshot
   readonly send: RootMachineSend
 }) {
+  const localization = useLocaleCatalog()
+  const playerDataPortabilityCopy = localization.interfaceCopy.portability
   const deliveredDownloadsRef = useRef(new Set<PreparedWayvmDownload>())
   const [isReadingImportFile, setIsReadingImportFile] = useState(false)
 
@@ -55,7 +55,7 @@ export default function useNativePlayerDataFiles({
           ),
         ),
       )
-  }, [send, state])
+  }, [send, state, playerDataPortabilityCopy])
 
   const chooseBackup = useCallback(
     async (destination: NativePlayerDataFileDestination) => {
@@ -72,14 +72,14 @@ export default function useNativePlayerDataFiles({
         send(
           createNativePlayerDataFileFailureEvent(
             destination,
-            getWayvmImportValidationIssue(error),
+            getWayvmImportValidationIssue(error, localization),
           ),
         )
       } finally {
         setIsReadingImportFile(false)
       }
     },
-    [send],
+    [send, localization],
   )
 
   return { isReadingImportFile, chooseBackup }

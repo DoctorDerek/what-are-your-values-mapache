@@ -1,5 +1,5 @@
+import { playerDataResetCopy } from "@game/data/src/PlayerDataResetCopy"
 import type { PlayerDataResetReview as PlayerDataResetReviewState } from "@game/machines/src/PlayerDataReset"
-import { playerDataResetCopy } from "@game/machines/src/PlayerDataResetCopy"
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { useState } from "react"

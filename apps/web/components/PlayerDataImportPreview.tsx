@@ -1,6 +1,7 @@
 "use client"
 
-import { playerDataPortabilityCopy } from "@game/machines/src/PlayerDataPortabilityCopy"
+import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
 import { useEffect, useRef, type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
@@ -23,11 +24,11 @@ function PreviewFact({
 }
 
 export default function PlayerDataImportPreview({
-  confirmLabel = playerDataPortabilityCopy.importReplaceAction,
+  confirmLabel,
   isBusy,
   preview,
-  title = playerDataPortabilityCopy.importPreviewTitle,
-  warning = playerDataPortabilityCopy.importPreviewWarning,
+  title,
+  warning,
   onCancel,
   onConfirm,
 }: {
@@ -39,11 +40,13 @@ export default function PlayerDataImportPreview({
   onCancel: () => void
   onConfirm: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const playerDataPortabilityCopy = localizedCopy.interfaceCopy.portability
+
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const formattedExportTimestamp = new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(preview.exportedAt))
+  const formattedExportTimestamp = createLocaleFormatters(
+    localizedCopy.metadata.languageTag,
+  ).dateTime(preview.exportedAt)
 
   useEffect(() => {
     headingRef.current?.focus()
@@ -61,57 +64,77 @@ export default function PlayerDataImportPreview({
         tabIndex={-1}
         className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-3xl font-black uppercase outline-none sm:text-4xl"
       >
-        {title}
+        {title ?? playerDataPortabilityCopy.importPreviewTitle}
       </h2>
 
       <dl className="text-mapache-vivid-dark my-6 grid grid-cols-1 gap-3 xl:grid-cols-2">
-        <PreviewFact label="Backup Created">
+        <PreviewFact label={playerDataPortabilityCopy.preview.backupCreated}>
           <time dateTime={preview.exportedAt}>{formattedExportTimestamp}</time>
         </PreviewFact>
-        <PreviewFact label="Source Application">
-          Version {preview.sourceAppVersion}
+        <PreviewFact
+          label={playerDataPortabilityCopy.preview.sourceApplication}
+        >
+          {localizedCopy.interfaceCopy.screen.versionNumber(
+            preview.sourceAppVersion,
+          )}
         </PreviewFact>
-        <PreviewFact label="Source Build">{preview.sourceBuild}</PreviewFact>
-        <PreviewFact label="Save Schema">
-          Version {preview.saveSchemaVersion}
+        <PreviewFact label={playerDataPortabilityCopy.preview.sourceBuild}>
+          {preview.sourceBuild}
         </PreviewFact>
-        <PreviewFact label="Total Comparisons">
+        <PreviewFact label={playerDataPortabilityCopy.preview.saveSchema}>
+          {localizedCopy.interfaceCopy.screen.versionNumber(
+            String(preview.saveSchemaVersion),
+          )}
+        </PreviewFact>
+        <PreviewFact label={playerDataPortabilityCopy.preview.totalComparisons}>
           {preview.totalComparisons}
         </PreviewFact>
-        <PreviewFact label="Canonical Catalog">
+        <PreviewFact label={playerDataPortabilityCopy.preview.canonicalCatalog}>
           {preview.canonicalCatalogVersion}
         </PreviewFact>
-        <PreviewFact label="Included Values">
+        <PreviewFact label={playerDataPortabilityCopy.preview.includedValues}>
           {preview.activeValueCount - preview.customValueCount}
         </PreviewFact>
-        <PreviewFact label="Custom Values">
+        <PreviewFact label={playerDataPortabilityCopy.preview.customValues}>
           {preview.customValueCount}
         </PreviewFact>
-        <PreviewFact label="Active Values">
+        <PreviewFact label={playerDataPortabilityCopy.preview.activeValues}>
           {preview.activeValueCount}
         </PreviewFact>
-        <PreviewFact label="Current Cycle">{preview.currentCycle}</PreviewFact>
-        <PreviewFact label="Cycle Pairings">
+        <PreviewFact label={playerDataPortabilityCopy.preview.currentCycle}>
+          {preview.currentCycle}
+        </PreviewFact>
+        <PreviewFact label={playerDataPortabilityCopy.preview.cyclePairings}>
           {preview.activePairCycleSize}
         </PreviewFact>
-        <PreviewFact label="Deck Revision">{preview.deckRevision}</PreviewFact>
-        <PreviewFact label="Progress Generation">
+        <PreviewFact label={playerDataPortabilityCopy.preview.deckRevision}>
+          {preview.deckRevision}
+        </PreviewFact>
+        <PreviewFact
+          label={playerDataPortabilityCopy.preview.progressGeneration}
+        >
           {preview.progressGeneration}
         </PreviewFact>
-        <PreviewFact label="Achievements">
+        <PreviewFact label={playerDataPortabilityCopy.preview.achievements}>
           {preview.unlockedAchievementCount}
         </PreviewFact>
-        <PreviewFact label="Achievement Progress Generation">
+        <PreviewFact
+          label={
+            playerDataPortabilityCopy.preview.achievementProgressGeneration
+          }
+        >
           {preview.achievementProgressGeneration}
         </PreviewFact>
-        <PreviewFact label="Language">{preview.locale}</PreviewFact>
-        <PreviewFact label="Replacement">
-          Replaces current data on this device
+        <PreviewFact label={playerDataPortabilityCopy.preview.language}>
+          {preview.locale}
+        </PreviewFact>
+        <PreviewFact label={playerDataPortabilityCopy.preview.replacement}>
+          {localizedCopy.interfaceCopy.screen.replacesCurrentData}
         </PreviewFact>
       </dl>
 
       <p className="bg-mapache-vivid-secondary-gold text-mapache-vivid-black border-4 border-black p-4 text-lg font-black">
-        {warning}
+        {warning ?? playerDataPortabilityCopy.importPreviewWarning}
       </p>
 
       <div className="mt-6 flex flex-col gap-4 xl:flex-row">
@@ -132,7 +155,7 @@ export default function PlayerDataImportPreview({
           onClick={onConfirm}
           className="flex-1"
         >
-          {confirmLabel}
+          {confirmLabel ?? playerDataPortabilityCopy.importReplaceAction}
         </Button>
       </div>
     </section>

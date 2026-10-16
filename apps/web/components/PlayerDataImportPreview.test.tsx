@@ -67,7 +67,7 @@ describe("Player Data Import Preview", () => {
     expect(getPreviewValue("Source Build")).toHaveTextContent("abc123")
     expect(getPreviewValue("Save Schema")).toHaveTextContent("Version 1")
     expect(getPreviewValue("Total Comparisons")).toHaveTextContent("42")
-    expect(getPreviewValue("Canonical Catalog")).toHaveTextContent(
+    expect(getPreviewValue("Included Values Catalog")).toHaveTextContent(
       "pvcs-2011-100-v1",
     )
     expect(getPreviewValue("Included Values")).toHaveTextContent("100")
