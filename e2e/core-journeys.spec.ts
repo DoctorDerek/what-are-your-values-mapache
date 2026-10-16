@@ -56,12 +56,17 @@ test("a player previews every appearance category and retains only saved choices
     .not.toBe(initialAppearance)
   await page.getByRole("button", { name: "Back", exact: true }).click()
   await page.getByRole("button", { name: "Keep editing", exact: true }).click()
+  const returnedToHome = page.waitForEvent(
+    "framenavigated",
+    (frame) => frame === page.mainFrame(),
+  )
   await page
     .getByRole("button", { name: "Save appearance", exact: true })
     .click()
   await expect(
     page.getByRole("heading", { name: "My Values", exact: true }),
   ).toBeVisible()
+  await returnedToHome
   await page.reload()
   await page
     .getByRole("button", { name: "Customize my card", exact: true })
