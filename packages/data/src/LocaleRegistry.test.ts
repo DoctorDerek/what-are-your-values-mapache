@@ -85,7 +85,13 @@ describe("locale resolution", () => {
       expect(formatter.percent(0.25)).toBe("25%")
       expect(formatter.date("2026-10-15T00:00:00.000Z")).toBe("Oct 15, 2026")
       expect(formatter.plural(1)).toBe("one")
-      expect(issues).toHaveLength(4)
+      expect(issues.map(({ key }) => key)).toEqual([
+        "formatters.integer",
+        "formatters.percent",
+        "formatters.date",
+        "formatters.plural",
+        "formatters.dateTime",
+      ])
       expect(
         issues.every(
           ({ locale, fallback }) =>
