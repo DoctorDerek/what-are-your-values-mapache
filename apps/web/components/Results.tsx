@@ -25,6 +25,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type ReactNode,
 } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
@@ -169,6 +170,7 @@ export default function Results({
   runtimeClipCatalog,
   shouldReduceMotion,
   isMenuOpen,
+  notifications,
   onOpenMenu,
   onSeeValues,
   onKeepBattling,
@@ -178,6 +180,7 @@ export default function Results({
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   shouldReduceMotion: boolean
   isMenuOpen: boolean
+  notifications?: ReactNode
   onOpenMenu: () => void
   onSeeValues: () => void
   onKeepBattling: () => void
@@ -331,29 +334,34 @@ export default function Results({
             changeLabel,
           )}
         </p>
-        <div
-          className="[container-type:size] relative isolate min-h-24 flex-1 overflow-y-auto overscroll-contain"
-          onWheelCapture={settleRowPositions}
-          onScroll={settleRowPositions}
-          onFocusCapture={settleRowPositions}
-          onKeyDownCapture={settleRowPositions}
-        >
-          <ol
-            aria-label={RESULTS_COPY.rosterLabel}
-            className="mx-[6%] my-2 grid auto-rows-fr grid-cols-1 gap-y-1"
+        <div className="relative isolate min-h-24 flex-1 overflow-hidden">
+          <div
+            className="[container-type:size] h-full overflow-y-auto overscroll-contain"
+            onWheelCapture={settleRowPositions}
+            onScroll={settleRowPositions}
+            onFocusCapture={settleRowPositions}
+            onKeyDownCapture={settleRowPositions}
           >
-            {frame.values.map((frameValue) => (
-              <ResultsValueRow
-                key={frameValue.value.definition.id}
-                frameValue={frameValue}
-                runtimeClipCatalog={runtimeClipCatalog}
-                shouldReduceMotion={shouldReduceMotion}
-                areRowPositionsSettled={
-                  areRowPositionsSettled || shouldReduceMotion
-                }
-              />
-            ))}
-          </ol>
+            <ol
+              aria-label={RESULTS_COPY.rosterLabel}
+              className="mx-[6%] my-2 grid auto-rows-fr grid-cols-1 gap-y-1"
+            >
+              {frame.values.map((frameValue) => (
+                <ResultsValueRow
+                  key={frameValue.value.definition.id}
+                  frameValue={frameValue}
+                  runtimeClipCatalog={runtimeClipCatalog}
+                  shouldReduceMotion={shouldReduceMotion}
+                  areRowPositionsSettled={
+                    areRowPositionsSettled || shouldReduceMotion
+                  }
+                />
+              ))}
+            </ol>
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-50 max-h-full overflow-y-auto overscroll-contain p-2">
+            {notifications}
+          </div>
         </div>
         <section
           className="border-2 border-black bg-white p-2 text-black shadow-[3px_3px_0_#000]"

@@ -16,7 +16,7 @@ export default function AchievementBanner({
 }: {
   achievements: readonly AchievementPresentation[]
   isAcknowledgementPending: boolean
-  placement?: "battle" | "screen"
+  placement?: "battle" | "screen" | "inline"
   shouldReduceMotion: boolean
   onPresented: (achievementId: AchievementPresentation["id"]) => void
 }) {
@@ -61,7 +61,7 @@ export default function AchievementBanner({
   return (
     <div
       className={
-        placement === "battle"
+        placement !== "screen"
           ? "pointer-events-none relative mx-auto flex w-80 max-w-[calc(100%-8px)] min-w-0 flex-col gap-2 [overflow-anchor:none]"
           : "pointer-events-none fixed right-[max(0.75rem,env(safe-area-inset-right))] bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-[max(0.75rem,env(safe-area-inset-left))] z-[60] mx-auto flex max-w-80 flex-col gap-2 [overflow-anchor:none]"
       }

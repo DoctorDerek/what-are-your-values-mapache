@@ -2,6 +2,7 @@ import { achievementNotificationMachine } from "@game/machines/src/AchievementNo
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
 import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { useActorRef } from "@xstate/react"
+import { cx } from "classix"
 import { useCallback, useEffect } from "react"
 import { AppState, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -16,7 +17,7 @@ export default function NativeAchievementBanner({
 }: {
   achievements: readonly AchievementPresentation[]
   isAcknowledgementPending: boolean
-  placement?: "battle" | "screen"
+  placement?: "battle" | "screen" | "inline"
   shouldReduceMotion: boolean
   onPresented: (achievementId: AchievementPresentation["id"]) => void
 }) {
@@ -65,11 +66,11 @@ export default function NativeAchievementBanner({
     <View
       pointerEvents="box-none"
       testID="achievement-overlay"
-      className={
-        placement === "battle"
-          ? "absolute top-0 right-3 left-3 z-50 items-center gap-2"
-          : "absolute right-3 left-3 z-50 items-center gap-2"
-      }
+      className={cx(
+        "z-50 items-center gap-2",
+        placement === "inline" ? "relative w-full" : "absolute right-3 left-3",
+        placement === "battle" && "top-0",
+      )}
       style={
         placement === "screen"
           ? { bottom: safeAreaInsets.bottom + 12 }

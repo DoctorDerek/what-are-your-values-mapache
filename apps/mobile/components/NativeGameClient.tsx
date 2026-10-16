@@ -561,6 +561,7 @@ function NativeGameClientContent({
     <NativeAchievementBanner
       achievements={pendingAchievementPresentations}
       isAcknowledgementPending={isRecordingAchievementPresentation}
+      placement={isResultsSurface ? "inline" : "screen"}
       shouldReduceMotion={shouldReduceMotion}
       onPresented={handleAchievementPresented}
     />
@@ -692,6 +693,7 @@ function NativeGameClientContent({
     return (
       <View className="flex-1">
         <NativeResults
+          notifications={achievementBanner}
           openedAt={state.context.resultsOpenedAt}
           results={results}
           runtimeClipCatalog={SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG}
@@ -711,7 +713,6 @@ function NativeGameClientContent({
         />
         {reopenedInformationPanel}
         {controls}
-        {achievementBanner}
       </View>
     )
 

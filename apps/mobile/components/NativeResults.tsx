@@ -19,8 +19,14 @@ import {
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import { cx } from "classix"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { FlatList, Pressable, View } from "react-native"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react"
+import { FlatList, Pressable, ScrollView, View } from "react-native"
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
@@ -143,6 +149,7 @@ export default function NativeResults({
   runtimeClipCatalog,
   shouldReduceMotion,
   isMenuOpen,
+  notifications,
   onOpenMenu,
   onSeeValues,
   onKeepBattling,
@@ -152,6 +159,7 @@ export default function NativeResults({
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
   shouldReduceMotion: boolean
   isMenuOpen: boolean
+  notifications?: ReactNode
   onOpenMenu: () => void
   onSeeValues: () => void
   onKeepBattling: () => void
@@ -307,23 +315,32 @@ export default function NativeResults({
           <Text>{PRODUCT_MENU_COPY.openAction}</Text>
         </Button>
       </View>
-      <FlatList
-        className="min-h-0 flex-1"
-        data={positionedValues}
-        CellRendererComponent={NativeResultsValueCell}
-        keyExtractor={({ value }) => value.definition.id}
-        onScrollBeginDrag={settleRowPositions}
-        removeClippedSubviews={false}
-        accessibilityLabel={RESULTS_COPY.rosterLabel}
-        renderItem={({ item }) => (
-          <NativeResultsValueRow
-            frameValue={item}
-            runtimeClipCatalog={runtimeClipCatalog}
-            shouldReduceMotion={shouldReduceMotion}
-            onFocus={settleRowPositions}
-          />
-        )}
-      />
+      <View className="relative min-h-0 flex-1 overflow-hidden">
+        <FlatList
+          className="min-h-0 flex-1"
+          data={positionedValues}
+          CellRendererComponent={NativeResultsValueCell}
+          keyExtractor={({ value }) => value.definition.id}
+          onScrollBeginDrag={settleRowPositions}
+          removeClippedSubviews={false}
+          accessibilityLabel={RESULTS_COPY.rosterLabel}
+          renderItem={({ item }) => (
+            <NativeResultsValueRow
+              frameValue={item}
+              runtimeClipCatalog={runtimeClipCatalog}
+              shouldReduceMotion={shouldReduceMotion}
+              onFocus={settleRowPositions}
+            />
+          )}
+        />
+        <ScrollView
+          pointerEvents="box-none"
+          className="absolute inset-x-0 top-0 z-50 max-h-full"
+          contentContainerClassName="p-2"
+        >
+          {notifications}
+        </ScrollView>
+      </View>
       <View
         accessible
         accessibilityLabel={localizedCopy.interfaceCopy.screen.resultSummary(
