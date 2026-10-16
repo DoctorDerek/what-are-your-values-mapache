@@ -1,9 +1,9 @@
-import { CUSTOM_VALUE_INVITATION_COPY as copy } from "@game/data/src/CustomValueInvitationCopy"
 import {
   CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES,
   CUSTOM_VALUE_NAME_MAX_GRAPHEMES,
   validateCustomValueDraft,
 } from "@game/data/src/CustomValueValidation"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValueDisplayName,
   type CustomValueDefinition,
@@ -41,6 +41,9 @@ export default function NativeCustomValueForm({
   readonly onSubmit: (name: string, definition: string) => void
   readonly rankedValues: readonly RankedValue[]
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const copy = localizedCopy.interfaceCopy.customValues
+
   const definitionInputRef = useRef<TextInput>(null)
   const [name, setName] = useState(initialName)
   const [definition, setDefinition] = useState(initialDefinition)
@@ -91,7 +94,9 @@ export default function NativeCustomValueForm({
   return (
     <View
       accessibilityLabel={
-        mode === "add" ? "Add Custom Value" : `Edit ${initialName}`
+        mode === "add"
+          ? localizedCopy.interfaceCopy.screen.addCustomValue
+          : localizedCopy.interfaceCopy.screen.editValue(initialName)
       }
       className="gap-4 border-4 border-black bg-white p-4 shadow-[6px_6px_0px_0px_#000000]"
     >
@@ -99,10 +104,10 @@ export default function NativeCustomValueForm({
         <Text className="text-sm leading-5 text-black">{copy.example}</Text>
       )}
       <Text className="text-lg font-black text-black uppercase">
-        Value Name
+        {localizedCopy.interfaceCopy.screen.valueName}
       </Text>
       <TextInput
-        accessibilityLabel="Value Name"
+        accessibilityLabel={localizedCopy.interfaceCopy.screen.valueName}
         accessibilityHint={mode === "add" ? copy.example : undefined}
         aria-invalid={isNameTouched && validation.name.validationCode !== null}
         autoCapitalize="words"
@@ -114,7 +119,7 @@ export default function NativeCustomValueForm({
           setIsConfirmingEdit(false)
         }}
         onSubmitEditing={() => definitionInputRef.current?.focus()}
-        placeholder="Value name"
+        placeholder={localizedCopy.interfaceCopy.screen.valueNamePlaceholder}
         returnKeyType="next"
         value={name}
       />
@@ -128,11 +133,11 @@ export default function NativeCustomValueForm({
       />
 
       <Text className="text-lg font-black text-black uppercase">
-        What This Value Means to Me
+        {localizedCopy.interfaceCopy.screen.definition}
       </Text>
       <TextInput
         ref={definitionInputRef}
-        accessibilityLabel="What This Value Means to Me"
+        accessibilityLabel={localizedCopy.interfaceCopy.screen.definition}
         aria-invalid={
           isDefinitionTouched && validation.definition.validationCode !== null
         }
@@ -144,7 +149,7 @@ export default function NativeCustomValueForm({
           setDefinition(value)
           setIsConfirmingEdit(false)
         }}
-        placeholder="Write your personal definition"
+        placeholder={localizedCopy.interfaceCopy.screen.definitionPlaceholder}
         textAlignVertical="top"
         value={definition}
       />
@@ -159,8 +164,8 @@ export default function NativeCustomValueForm({
         <View className="bg-mapache-vivid-primary-cyan/20 gap-3 border-4 border-black p-4">
           <Text className="text-lg font-black text-black uppercase">
             {validation.name.validationCode === "duplicate_name"
-              ? "Matching value"
-              : "Matching values"}
+              ? localizedCopy.interfaceCopy.screen.matchingValue
+              : localizedCopy.interfaceCopy.screen.matchingValues}
           </Text>
           {matchingValues.map(({ definition: matchingDefinition }) => (
             <Button
@@ -169,7 +174,11 @@ export default function NativeCustomValueForm({
               variant="outline"
               onPress={() => onOpenMatchingValue(matchingDefinition.id)}
             >
-              <Text>Open {getValueDisplayName(matchingDefinition)}</Text>
+              <Text>
+                {localizedCopy.interfaceCopy.screen.openValue(
+                  getValueDisplayName(matchingDefinition, localizedCopy.values),
+                )}
+              </Text>
             </Button>
           ))}
         </View>
@@ -181,9 +190,7 @@ export default function NativeCustomValueForm({
           className="bg-mapache-vivid-primary-orange gap-4 border-4 border-black p-4"
         >
           <Text className="text-base leading-6 font-black text-black">
-            Earlier comparisons remain part of your progress history. Updating
-            this Custom Value keeps its progress, starts one revised cycle, and
-            clears Undo and Redo.
+            {localizedCopy.interfaceCopy.screen.customUpdateConsequences}
           </Text>
           <View className="flex-row gap-3">
             <Button
@@ -192,14 +199,18 @@ export default function NativeCustomValueForm({
               variant="secondary"
               onPress={() => setIsConfirmingEdit(false)}
             >
-              <Text>Cancel</Text>
+              <Text>{localizedCopy.interfaceCopy.screen.cancel}</Text>
             </Button>
             <Button
               className="min-w-0 flex-1"
               disabled={!canSubmit}
               onPress={submitDraft}
             >
-              <Text>{isPersistencePending ? "Saving…" : "Update Value"}</Text>
+              <Text>
+                {isPersistencePending
+                  ? localizedCopy.interfaceCopy.screen.saving
+                  : localizedCopy.interfaceCopy.screen.updateValueAction}
+              </Text>
             </Button>
           </View>
         </View>
@@ -212,10 +223,10 @@ export default function NativeCustomValueForm({
           >
             <Text>
               {isPersistencePending
-                ? "Saving…"
+                ? localizedCopy.interfaceCopy.screen.saving
                 : mode === "edit"
-                  ? "Review Update"
-                  : "Save Value"}
+                  ? localizedCopy.interfaceCopy.screen.reviewUpdate
+                  : localizedCopy.interfaceCopy.screen.saveValue}
             </Text>
           </Button>
           <Button
@@ -224,7 +235,7 @@ export default function NativeCustomValueForm({
             variant="destructive"
             onPress={onCancel}
           >
-            <Text>Cancel</Text>
+            <Text>{localizedCopy.interfaceCopy.screen.cancel}</Text>
           </Button>
         </View>
       )}

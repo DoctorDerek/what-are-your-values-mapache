@@ -1,11 +1,13 @@
 import { SHIPPED_LANGUAGE_OPTIONS as PLAYER_SETTINGS_LANGUAGE_OPTIONS } from "@game/data/src/LocalizationCatalog"
-import { describe, expect, it } from "vitest"
 import {
   CONTROL_HINT_SETTING_OPTIONS,
-  getInitialWebControlHintInputModality,
-  getValueChoiceControlHint,
   PLAYER_SETTINGS_COPY,
   REDUCED_MOTION_SETTING_OPTIONS,
+} from "@game/data/src/PlayerSettingsCopy"
+import { describe, expect, it } from "vitest"
+import {
+  getInitialWebControlHintInputModality,
+  getValueChoiceControlHint,
   resolveShouldReduceMotion,
   SETTINGS_PLAYER_DATA_RESET_KINDS,
 } from "./PlayerSettingsPresentation"
@@ -23,6 +25,7 @@ describe("Player Settings presentation", () => {
     })
     expect(PLAYER_SETTINGS_LANGUAGE_OPTIONS).toEqual([
       { value: "en", label: "English (US)" },
+      { value: "es-MX", label: "Español (México)" },
     ])
     expect(REDUCED_MOTION_SETTING_OPTIONS).toEqual([
       {

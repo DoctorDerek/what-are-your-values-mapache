@@ -1,10 +1,10 @@
 "use client"
 
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   runtimeRecoveryMachine,
   type RootActor,
 } from "@game/machines/src/RuntimeRecovery"
-import { RUNTIME_RECOVERY_COPY as copy } from "@game/machines/src/RuntimeRecoveryCopy"
 import { useMachine } from "@xstate/react"
 import { useEffect, useRef, useState } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
@@ -21,6 +21,9 @@ export default function RuntimeRecovery({
   readonly onRetry?: () => void
   readonly onReopen?: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const copy = localizedCopy.interfaceCopy.runtimeRecovery
+
   const headingRef = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
     headingRef.current?.focus()
@@ -68,6 +71,9 @@ function RecoveryActions({
   readonly onRetry?: () => void
   readonly onReopen?: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const copy = localizedCopy.interfaceCopy.runtimeRecovery
+
   const [state, send] = useMachine(runtimeRecoveryMachine, {
     input: { gameActor, deliverDownload: downloadPlayerDataFile },
   })

@@ -1,5 +1,6 @@
 "use client"
 
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { ACHIEVEMENT_NOTIFICATION_DURATION_MILLISECONDS } from "@game/machines/src/AchievementNotificationMachine"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
 import { animate, motion, useMotionValue } from "motion/react"
@@ -20,6 +21,8 @@ export default function AchievementToast({
   onPresented: (achievementId: AchievementPresentation["id"]) => void
   onInteraction: (kind: "hover" | "focus" | "touch", isActive: boolean) => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+
   const remainingTime = useMotionValue(1)
   useEffect(() => {
     if (isPaused || isDismissalPending) return
@@ -35,7 +38,7 @@ export default function AchievementToast({
 
   return (
     <motion.aside
-      aria-label="Achievement unlocked"
+      aria-label={localizedCopy.interfaceCopy.screen.achievementUnlocked}
       initial={{ opacity: shouldReduceMotion ? 1 : 0 }}
       animate={{ opacity: 1 }}
       className="bg-mapache-vivid-white text-mapache-vivid-black pointer-events-auto relative min-w-0 border-2 border-black shadow-[4px_4px_0px_0px_#000000]"
@@ -62,12 +65,17 @@ export default function AchievementToast({
         aria-atomic="true"
         className="sr-only"
       >
-        Achievement unlocked: {achievement.title}. {achievement.unlockReason}
+        {localizedCopy.interfaceCopy.screen.achievementAnnouncement(
+          achievement.title,
+          achievement.unlockReason,
+        )}
       </p>
       <div className="flow-root px-[8px] py-[4px]">
         <button
           type="button"
-          aria-label={`Dismiss achievement: ${achievement.title}`}
+          aria-label={localizedCopy.interfaceCopy.screen.dismissAchievement(
+            achievement.title,
+          )}
           disabled={isDismissalPending}
           onClick={() => onPresented(achievement.id)}
           className="float-right mb-[4px] ml-[8px] inline-grid min-h-[44px] min-w-[44px] cursor-pointer place-items-center border-2 border-black bg-white text-[20px] text-black shadow-[4px_4px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black disabled:cursor-wait disabled:opacity-60"

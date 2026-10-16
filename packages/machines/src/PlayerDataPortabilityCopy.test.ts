@@ -1,8 +1,6 @@
+import { playerDataPortabilityCopy } from "@game/data/src/PlayerDataPortabilityCopy"
 import { describe, expect, it } from "vitest"
-import {
-  getWayvmImportValidationIssue,
-  playerDataPortabilityCopy,
-} from "./PlayerDataPortabilityCopy"
+import { getWayvmImportValidationIssue } from "./PlayerDataPortabilityCopy"
 
 describe("Player Data Portability Copy", () => {
   it.each([

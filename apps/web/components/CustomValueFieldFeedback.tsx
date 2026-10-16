@@ -1,5 +1,5 @@
 import type { CustomValueFieldValidation } from "@game/data/src/CustomValueValidation"
-import { customValueValidationMessages } from "@game/data/src/CustomValueValidationMessages"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 
 export default function CustomValueFieldFeedback({
   id,
@@ -14,6 +14,10 @@ export default function CustomValueFieldFeedback({
   readonly maximumGraphemeCount: number
   readonly showValidationMessage: boolean
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const customValueValidationMessages =
+    localizedCopy.interfaceCopy.customValueValidation
+
   const validationMessage = validation.validationCode
     ? customValueValidationMessages[field][validation.validationCode]
     : null
@@ -21,7 +25,10 @@ export default function CustomValueFieldFeedback({
   return (
     <div id={id} className="flex flex-wrap items-start justify-between gap-2">
       <span className="text-sm font-bold">
-        {validation.graphemeCount} / {maximumGraphemeCount} characters
+        {localizedCopy.interfaceCopy.screen.characterCount(
+          String(validation.graphemeCount),
+          String(maximumGraphemeCount),
+        )}
       </span>
       {showValidationMessage && validationMessage ? (
         <span role="alert" className="text-sm font-black text-black">

@@ -8,6 +8,7 @@ import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import type { DurableStoreAdapter } from "@game/machines/src/DurableStoreAdapter"
 import { rootMachine } from "@game/machines/src/RootMachine"
 import type { RootActor } from "@game/machines/src/RuntimeRecovery"
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
 import { useActorRef } from "@xstate/react"
 import { useEffect, useMemo, useReducer, type ReactNode } from "react"
@@ -60,24 +61,33 @@ export default function GameSession({
   }, [gameActor])
 
   return (
-    <div
-      lang={
-        getLocaleCatalog(snapshot.context.playerData?.settings.locale).metadata
-          .languageTag
+    <LocaleProvider
+      locale={
+        snapshot.context.playerData?.settings.locale ??
+        snapshot.context.initialLocale
       }
-      data-game-surface={isPublicArrival ? "arrival" : "active"}
     >
-      {snapshot.status === "error" ? (
-        <RuntimeRecovery gameActor={gameActor} onReopen={onReopen} />
-      ) : (
-        <RenderRecoveryBoundary
-          fallback={(retry) => (
-            <RuntimeRecovery gameActor={gameActor} onRetry={retry} />
-          )}
-        >
-          {children(gameActor)}
-        </RenderRecoveryBoundary>
-      )}
-    </div>
+      <div
+        lang={
+          getLocaleCatalog(
+            snapshot.context.playerData?.settings.locale ??
+              snapshot.context.initialLocale,
+          ).metadata.languageTag
+        }
+        data-game-surface={isPublicArrival ? "arrival" : "active"}
+      >
+        {snapshot.status === "error" ? (
+          <RuntimeRecovery gameActor={gameActor} onReopen={onReopen} />
+        ) : (
+          <RenderRecoveryBoundary
+            fallback={(retry) => (
+              <RuntimeRecovery gameActor={gameActor} onRetry={retry} />
+            )}
+          >
+            {children(gameActor)}
+          </RenderRecoveryBoundary>
+        )}
+      </div>
+    </LocaleProvider>
   )
 }

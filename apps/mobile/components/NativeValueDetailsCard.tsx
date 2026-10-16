@@ -1,7 +1,5 @@
-import {
-  getLocaleCatalog,
-  type LocalizationCatalog,
-} from "@game/data/src/LocalizationCatalog"
+import type { LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValueDisplayDefinition,
   getValueDisplayName,
@@ -21,7 +19,7 @@ export default function NativeValueDetailsCard({
   onEdit,
   rankedValue,
   showRank,
-  localization = getLocaleCatalog(),
+  localization: localizationOverride,
 }: {
   readonly isHighlighted: boolean
   readonly isPersistencePending: boolean
@@ -31,13 +29,21 @@ export default function NativeValueDetailsCard({
   readonly showRank: boolean
   readonly localization?: LocalizationCatalog
 }) {
+  const localizedCopy = useLocaleCatalog(localizationOverride)
+  const localization = localizedCopy
+
   const { definition, progress, rank } = rankedValue
   const displayName = getValueDisplayName(definition, localization.values)
-  const { medal, accessibleLabel } = getValueRankPresentation(rank)
+  const { medal, accessibleLabel } = getValueRankPresentation(
+    rank,
+    localizedCopy.interfaceCopy.rank,
+  )
 
   return (
     <View
-      accessibilityLabel={`${displayName} details`}
+      accessibilityLabel={localizedCopy.interfaceCopy.screen.valueDetails(
+        displayName,
+      )}
       className={cx(
         "bg-white p-4 shadow-[5px_5px_0px_0px_#000000]",
         isHighlighted
@@ -63,7 +69,7 @@ export default function NativeValueDetailsCard({
         </Text>
         {definition.kind === "custom" ? (
           <Text className="bg-mapache-vivid-primary-cyan border-2 border-black px-2 py-1 text-sm font-black text-black uppercase">
-            Yours
+            {localizedCopy.interfaceCopy.screen.yours}
           </Text>
         ) : null}
       </View>
@@ -79,7 +85,7 @@ export default function NativeValueDetailsCard({
             variant="secondary"
             onPress={onEdit}
           >
-            <Text>Edit</Text>
+            <Text>{localizedCopy.interfaceCopy.screen.edit}</Text>
           </Button>
           <Button
             className="min-w-0 flex-1"
@@ -87,7 +93,7 @@ export default function NativeValueDetailsCard({
             variant="destructive"
             onPress={onDelete}
           >
-            <Text>Delete</Text>
+            <Text>{localizedCopy.interfaceCopy.screen.delete}</Text>
           </Button>
         </View>
       ) : null}

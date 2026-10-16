@@ -1,4 +1,4 @@
-import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { PlayerDataResetReview } from "@game/machines/src/PlayerDataReset"
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
 import { ScrollView, View } from "react-native"
@@ -9,12 +9,7 @@ import NativePlayerDataRecoveryActions from "@/components/NativePlayerDataRecove
 import NativePlayerDataResetReview from "@/components/NativePlayerDataResetReview"
 import { Text } from "@/components/ui/text"
 
-export type NativePlayerDataRecoveryActivity =
-  | "Checking backup…"
-  | "Creating backup…"
-  | "Creating diagnostic file…"
-  | "Deleting data…"
-  | "Restoring backup…"
+export type NativePlayerDataRecoveryActivity = string
 
 type SharedNativePersistenceFailureProps = {
   readonly activity: NativePlayerDataRecoveryActivity | null
@@ -54,6 +49,9 @@ type NativePersistenceFailureProps =
 export default function NativePersistenceFailure(
   props: NativePersistenceFailureProps,
 ) {
+  const localizedCopy = useLocaleCatalog()
+  const playerDataRecoveryCopy = localizedCopy.interfaceCopy.recovery
+
   const isBusy = props.activity !== null
   const title =
     props.mode === "unreadable-data"

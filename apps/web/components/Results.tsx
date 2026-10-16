@@ -1,9 +1,9 @@
 "use client"
 
-import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
-import { RESULTS_COPY } from "@game/data/src/ResultsCopy"
+import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
 import { resolveValueAnimalPresentation } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { getValueDisplayName } from "@game/data/src/Value"
 import {
   BATTLE_RESULTS_PRESENTATION_TICK_MS,
@@ -13,7 +13,6 @@ import {
 } from "@game/machines/src/BattleExitResults"
 import {
   getResultsSaveConfirmationRemainingMs,
-  RESULTS_SAVE_CONFIRMATION_COPY,
   RESULTS_SAVE_CONFIRMATION_FADE_MS,
 } from "@game/machines/src/ResultsSaveStatus"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
@@ -44,6 +43,12 @@ function ResultsValueRow({
   shouldReduceMotion: boolean
   areRowPositionsSettled: boolean
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const { integer } = useMemo(
+    () => createLocaleFormatters(localizedCopy.metadata.languageTag),
+    [localizedCopy.metadata.languageTag],
+  )
+
   const elementRef = useRef<HTMLLIElement>(null)
   const { isAttended, attentionHandlers } = useAnimalAttentionInput()
   const [isNearViewport, setIsNearViewport] = useState(false)
@@ -100,8 +105,12 @@ function ResultsValueRow({
       )}
     >
       <span className="sr-only">
-        Rank {value.exitRank}, {getValueDisplayName(value.definition)}, Level{" "}
-        {finalLevel},{value.exitProgress.totalXp} total XP.
+        {localizedCopy.interfaceCopy.screen.valueResult(
+          integer(value.exitRank),
+          getValueDisplayName(value.definition, localizedCopy.values),
+          integer(finalLevel),
+          integer(value.exitProgress.totalXp),
+        )}
       </span>
       <div
         aria-hidden="true"
@@ -126,10 +135,10 @@ function ResultsValueRow({
         <div className="min-w-0 flex-1 basis-24 [overflow-wrap:anywhere]">
           <div className="flex flex-wrap items-baseline justify-between gap-x-2">
             <span className="text-mapache-vivid-dark min-w-0 font-black">
-              {getValueDisplayName(value.definition)}
+              {getValueDisplayName(value.definition, localizedCopy.values)}
             </span>
             <span className="text-mapache-vivid-dark text-sm font-bold">
-              Level {level}
+              {localizedCopy.interfaceCopy.screen.valueLevel(integer(level))}
             </span>
           </div>
           <Progress
@@ -143,7 +152,10 @@ function ResultsValueRow({
             )}
           />
           <span className="text-mapache-vivid-dark text-xs">
-            {earnedXpTowardNextLevel}/{requiredXpForNextLevel} XP
+            {localizedCopy.interfaceCopy.screen.xpFraction(
+              integer(earnedXpTowardNextLevel),
+              integer(requiredXpForNextLevel),
+            )}
           </span>
         </div>
       </div>
@@ -170,6 +182,14 @@ export default function Results({
   onSeeValues: () => void
   onKeepBattling: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const { integer } = useMemo(
+    () => createLocaleFormatters(localizedCopy.metadata.languageTag),
+    [localizedCopy.metadata.languageTag],
+  )
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+  const RESULTS_COPY = localizedCopy.interfaceCopy.results
+
   const [isSaveConfirmationVisible, setIsSaveConfirmationVisible] = useState(
     () => getResultsSaveConfirmationRemainingMs(openedAt, Date.now()) > 0,
   )
@@ -248,10 +268,10 @@ export default function Results({
   const change = results.profileXpChange
   const changeLabel =
     change > 0n
-      ? `+${change}`
+      ? `+${integer(change)}`
       : change < 0n
-        ? change.toString()
-        : "No XP change"
+        ? integer(change)
+        : localizedCopy.interfaceCopy.screen.noXpChange
   const changeSummary = results.values.some(
     (value) => value.entryRank !== value.exitRank,
   )
@@ -296,7 +316,7 @@ export default function Results({
               >
                 ✓{" "}
               </span>
-              {RESULTS_SAVE_CONFIRMATION_COPY}
+              {localizedCopy.interfaceCopy.screen.savedLocally}
             </span>
           </div>
           <Button size="sm" variant="secondary" onClick={onOpenMenu}>
@@ -304,8 +324,12 @@ export default function Results({
           </Button>
         </header>
         <p className="sr-only" aria-live="polite">
-          {changeSummary}. Profile XP {results.exitProfileXp.toString()},
-          {changeLabel}. Profile Level {finalProfileProgress.level.toString()}.
+          {localizedCopy.interfaceCopy.screen.resultSummary(
+            changeSummary,
+            integer(results.exitProfileXp),
+            integer(finalProfileProgress.level),
+            changeLabel,
+          )}
         </p>
         <div
           className="[container-type:size] relative isolate min-h-24 flex-1 overflow-y-auto overscroll-contain"
@@ -333,15 +357,14 @@ export default function Results({
         </div>
         <section
           className="border-2 border-black bg-white p-2 text-black shadow-[3px_3px_0_#000]"
-          aria-label="Profile progress"
+          aria-label={localizedCopy.interfaceCopy.screen.profileProgress}
         >
           <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
             <span className="text-lg font-black">
-              {RESULTS_COPY.profileLevelLabel}{" "}
-              {profileProgress.level.toString()}
+              {RESULTS_COPY.profileLevel(integer(profileProgress.level))}
             </span>
             <span className="text-sm font-semibold">
-              {RESULTS_COPY.profileXpLabel} {frame.profileXp.toString()} ·{" "}
+              {RESULTS_COPY.profileXp(integer(frame.profileXp))} ·{" "}
               <strong className="text-mapache-vivid-primary-raspberry">
                 {changeLabel}
               </strong>
@@ -356,13 +379,18 @@ export default function Results({
                 ? "transition-none"
                 : "transition-transform duration-75",
             )}
-            aria-label={`Profile XP toward Level ${(profileProgress.level + 1n).toString()}`}
-            aria-valuetext={`${profileProgress.earnedXpTowardNextLevel}/${profileProgress.requiredXpForNextLevel} XP`}
+            aria-label={localizedCopy.interfaceCopy.screen.profileXpTowardLevel(
+              integer(profileProgress.level + 1n),
+            )}
+            aria-valuetext={localizedCopy.interfaceCopy.screen.xpFraction(
+              integer(profileProgress.earnedXpTowardNextLevel),
+              integer(profileProgress.requiredXpForNextLevel),
+            )}
           />
         </section>
         <nav
           className="grid shrink-0 grid-cols-[repeat(auto-fit,minmax(min(100%,8rem),1fr))] gap-2"
-          aria-label="Results actions"
+          aria-label={localizedCopy.interfaceCopy.screen.resultsActions}
         >
           <Button
             size="sm"

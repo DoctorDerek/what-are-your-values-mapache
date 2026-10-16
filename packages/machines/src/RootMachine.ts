@@ -1,9 +1,9 @@
 import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
-import { CUSTOM_VALUE_INVITATION_COPY } from "@game/data/src/CustomValueInvitationCopy"
 import {
   DEFAULT_LOCALE,
   type SupportedLocale,
 } from "@game/data/src/LocaleRegistry"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { assign, forwardTo, setup } from "xstate"
@@ -61,11 +61,7 @@ import {
   replacePlayerDataActor,
   type PreparedWayvmDownload,
 } from "./PlayerDataPortabilityActors"
-import {
-  getWayvmImportValidationIssue,
-  playerDataPortabilityCopy,
-} from "./PlayerDataPortabilityCopy"
-import { playerDataRecoveryCopy } from "./PlayerDataRecoveryCopy"
+import { getWayvmImportValidationIssue } from "./PlayerDataPortabilityCopy"
 import {
   DELETE_ALL_DATA_ACKNOWLEDGMENT,
   type PlayerDataResetKind,
@@ -76,10 +72,6 @@ import {
   applyScopedPlayerDataResetActor,
   deleteAllPlayerDataActor,
 } from "./PlayerDataResetActors"
-import {
-  playerDataResetBackupReadyNotice,
-  playerDataResetCopy,
-} from "./PlayerDataResetCopy"
 import { createPlayerSettings, type PlayerSettings } from "./PlayerSettings"
 import { updatePlayerSettingsActor } from "./PlayerSettingsActors"
 import { areSchedulerIdentitiesEqual } from "./SchedulerIdentity"
@@ -413,10 +405,18 @@ function requireStoredRecoveryBackup(context: RootMachineContext) {
   return backup
 }
 
+function getRootLocalization(context: RootMachineContext) {
+  return getLocaleCatalog(
+    context.playerData?.settings.locale ?? context.initialLocale,
+  )
+}
+
 function getRecoveryReplacementNotice(context: RootMachineContext) {
   return context.pendingRecoveryImportSource === "last-known-good"
-    ? playerDataRecoveryCopy.unreadableData.restoreSuccess
-    : playerDataRecoveryCopy.unreadableData.selectedBackupSuccess
+    ? getRootLocalization(context).interfaceCopy.recovery.unreadableData
+        .restoreSuccess
+    : getRootLocalization(context).interfaceCopy.recovery.unreadableData
+        .selectedBackupSuccess
 }
 
 export const rootMachine = setup({
@@ -928,7 +928,8 @@ export const rootMachine = setup({
             battleProfileStoreState: ({ event }) => event.output,
             pendingCustomValueDrafts: [],
             persistenceIssue: null,
-            portabilityNotice: CUSTOM_VALUE_INVITATION_COPY.saved,
+            portabilityNotice: ({ context }) =>
+              getRootLocalization(context).interfaceCopy.customValues.saved,
           }),
         },
         onError: {
@@ -1189,7 +1190,8 @@ export const rootMachine = setup({
               actions: assign({
                 preparedDownload: ({ event }) => event.output,
                 portabilityIssue: null,
-                portabilityNotice: playerDataResetBackupReadyNotice,
+                portabilityNotice: ({ context }) =>
+                  getRootLocalization(context).interfaceCopy.resetBackupReady,
               }),
             },
             onError: {
@@ -1217,8 +1219,9 @@ export const rootMachine = setup({
                 playerData: ({ event }) => event.output.head.playerData,
                 battleProfileStoreState: ({ event }) => event.output,
                 portabilityNotice: ({ context }) =>
-                  playerDataResetCopy[requirePendingScopedResetKind(context)]
-                    .successAnnouncement,
+                  getRootLocalization(context).interfaceCopy.resets[
+                    requirePendingScopedResetKind(context)
+                  ].successAnnouncement,
                 pendingResetReview: null,
                 preparedDownload: null,
                 portabilityIssue: null,
@@ -1251,8 +1254,10 @@ export const rootMachine = setup({
                 pendingImport: null,
                 pendingImportBytes: null,
                 preImportBackupBytes: null,
-                portabilityNotice:
-                  playerDataResetCopy["delete-all-data"].successAnnouncement,
+                portabilityNotice: ({ context }) =>
+                  getRootLocalization(context).interfaceCopy.resets[
+                    "delete-all-data"
+                  ].successAnnouncement,
               }),
             },
             onError: {
@@ -1380,14 +1385,18 @@ export const rootMachine = setup({
               actions: assign({
                 preparedDownload: ({ event }) => event.output,
                 portabilityIssue: null,
-                portabilityNotice: playerDataPortabilityCopy.exportSuccess,
+                portabilityNotice: ({ context }) =>
+                  getRootLocalization(context).interfaceCopy.portability
+                    .exportSuccess,
               }),
             },
             onError: {
               target: "Browsing",
               actions: assign({
                 preparedDownload: null,
-                portabilityIssue: playerDataPortabilityCopy.exportFailure,
+                portabilityIssue: ({ context }) =>
+                  getRootLocalization(context).interfaceCopy.portability
+                    .exportFailure,
                 portabilityNotice: null,
               }),
             },
@@ -1412,8 +1421,11 @@ export const rootMachine = setup({
               actions: assign({
                 pendingImportBytes: null,
                 pendingImport: null,
-                portabilityIssue: ({ event }) =>
-                  getWayvmImportValidationIssue(event.error),
+                portabilityIssue: ({ context, event }) =>
+                  getWayvmImportValidationIssue(
+                    event.error,
+                    getRootLocalization(context),
+                  ),
               }),
             },
           },
@@ -1435,7 +1447,9 @@ export const rootMachine = setup({
                 pendingImport: null,
                 preImportBackupBytes: null,
                 portabilityIssue: null,
-                portabilityNotice: playerDataPortabilityCopy.importCancelled,
+                portabilityNotice: ({ context }) =>
+                  getRootLocalization(context).interfaceCopy.portability
+                    .importCancelled,
               }),
             },
             "DATA_MANAGEMENT.IMPORT_CONFIRM_REQUESTED": {
@@ -1529,7 +1543,8 @@ export const rootMachine = setup({
               actions: assign({
                 preparedDownload: ({ event }) => event.output,
                 portabilityIssue: null,
-                portabilityNotice: playerDataResetBackupReadyNotice,
+                portabilityNotice: ({ context }) =>
+                  getRootLocalization(context).interfaceCopy.resetBackupReady,
               }),
             },
             onError: {
@@ -1557,8 +1572,9 @@ export const rootMachine = setup({
                 playerData: ({ event }) => event.output.head.playerData,
                 battleProfileStoreState: ({ event }) => event.output,
                 portabilityNotice: ({ context }) =>
-                  playerDataResetCopy[requirePendingScopedResetKind(context)]
-                    .successAnnouncement,
+                  getRootLocalization(context).interfaceCopy.resets[
+                    requirePendingScopedResetKind(context)
+                  ].successAnnouncement,
                 pendingResetReview: null,
                 preparedDownload: null,
                 portabilityIssue: null,
@@ -1594,8 +1610,10 @@ export const rootMachine = setup({
                 preparedDownload: null,
                 persistenceIssue: null,
                 portabilityIssue: null,
-                portabilityNotice:
-                  playerDataResetCopy["delete-all-data"].successAnnouncement,
+                portabilityNotice: ({ context }) =>
+                  getRootLocalization(context).interfaceCopy.resets[
+                    "delete-all-data"
+                  ].successAnnouncement,
               }),
             },
             onError: {
@@ -1625,7 +1643,9 @@ export const rootMachine = setup({
               target: "ReviewingImport",
               actions: assign({
                 preImportBackupBytes: null,
-                portabilityIssue: playerDataPortabilityCopy.exportFailure,
+                portabilityIssue: ({ context }) =>
+                  getRootLocalization(context).interfaceCopy.portability
+                    .exportFailure,
               }),
             },
           },
@@ -1648,15 +1668,18 @@ export const rootMachine = setup({
                 pendingImport: null,
                 preImportBackupBytes: null,
                 portabilityIssue: null,
-                portabilityNotice: playerDataPortabilityCopy.importSuccess,
+                portabilityNotice: ({ context }) =>
+                  getRootLocalization(context).interfaceCopy.portability
+                    .importSuccess,
               }),
             },
             onError: {
               target: "ReviewingImport",
               actions: assign({
                 preImportBackupBytes: null,
-                portabilityIssue:
-                  playerDataPortabilityCopy.importRestoreFailure,
+                portabilityIssue: ({ context }) =>
+                  getRootLocalization(context).interfaceCopy.portability
+                    .importRestoreFailure,
               }),
             },
           },
@@ -2383,10 +2406,10 @@ export const rootMachine = setup({
                 portabilityIssue: null,
                 portabilityNotice: ({ context }) =>
                   context.pendingBattleProfileCommit
-                    ? playerDataRecoveryCopy.storageUnavailable
-                        .pendingBackupReady
-                    : playerDataRecoveryCopy.storageUnavailable
-                        .currentBackupReady,
+                    ? getRootLocalization(context).interfaceCopy.recovery
+                        .storageUnavailable.pendingBackupReady
+                    : getRootLocalization(context).interfaceCopy.recovery
+                        .storageUnavailable.currentBackupReady,
               }),
             },
             onError: {
@@ -2413,8 +2436,9 @@ export const rootMachine = setup({
               actions: assign({
                 preparedDownload: ({ event }) => event.output,
                 portabilityIssue: null,
-                portabilityNotice:
-                  playerDataRecoveryCopy.unreadableData.diagnosticReady,
+                portabilityNotice: ({ context }) =>
+                  getRootLocalization(context).interfaceCopy.recovery
+                    .unreadableData.diagnosticReady,
               }),
             },
             onError: {
@@ -2537,8 +2561,10 @@ export const rootMachine = setup({
                 persistenceFailureOrigin: null,
                 persistenceIssue: null,
                 portabilityIssue: null,
-                portabilityNotice:
-                  playerDataResetCopy["delete-all-data"].successAnnouncement,
+                portabilityNotice: ({ context }) =>
+                  getRootLocalization(context).interfaceCopy.resets[
+                    "delete-all-data"
+                  ].successAnnouncement,
               }),
             },
             onError: {

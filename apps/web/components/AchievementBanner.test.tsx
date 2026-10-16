@@ -1,6 +1,6 @@
 import { ACHIEVEMENT_CATALOG } from "@game/machines/src/AchievementCatalog"
 import {
-  getAchievementEnglishCopy,
+  getAchievementCopy,
   type AchievementPresentation,
 } from "@game/machines/src/AchievementPresentation"
 import { act, fireEvent, render, screen, within } from "@testing-library/react"
@@ -11,7 +11,7 @@ const achievements = ACHIEVEMENT_CATALOG.slice(0, 3).map(
   (achievement) =>
     ({
       id: achievement.id,
-      ...getAchievementEnglishCopy(achievement),
+      ...getAchievementCopy(achievement),
       status: "unlocked",
       progress: null,
       unlockedAt: "2026-09-24T12:00:00.000Z",

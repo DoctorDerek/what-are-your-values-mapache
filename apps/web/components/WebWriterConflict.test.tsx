@@ -1,7 +1,7 @@
+import { webWriterConflictCopy } from "@game/data/src/WebWriterConflictCopy"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import WebWriterConflict from "@/components/WebWriterConflict"
-import { webWriterConflictCopy } from "@/lib/WebWriterConflictCopy"
 
 function renderWebWriterConflict({
   isExportPending = false,

@@ -1,5 +1,6 @@
 import {
   DEFAULT_LOCALE,
+  SHIPPED_LOCALES,
   type SupportedLocale,
 } from "@game/data/src/LocaleRegistry"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
@@ -18,6 +19,21 @@ export function getCanonicalLocaleUrl(locale: SupportedLocale) {
     getLocaleCatalog(locale).metadata.webPath,
     CANONICAL_WEB_ORIGIN,
   ).href
+}
+
+export function getWebRouteLocale(localePath: readonly string[] = []) {
+  const pathname = `/${localePath.join("/")}`
+  return SHIPPED_LOCALES.find(
+    (locale) => getLocaleCatalog(locale).metadata.webPath === pathname,
+  )
+}
+
+export function getStaticLocaleRouteParams() {
+  return SHIPPED_LOCALES.map((locale) => ({
+    localePath: getLocaleCatalog(locale)
+      .metadata.webPath.split("/")
+      .filter(Boolean),
+  }))
 }
 
 export function isCanonicalProductionDeployment(

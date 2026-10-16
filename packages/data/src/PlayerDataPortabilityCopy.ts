@@ -1,0 +1,61 @@
+export const playerDataPortabilityCopy = Object.freeze({
+  activity: {
+    creatingBackup: "Creating backup…",
+    checkingBackup: "Checking backup…",
+    creatingSafetyBackup: "Creating safety backup…",
+    restoringBackup: "Restoring backup…",
+    applyingReset: "Applying reset…",
+    deletingData: "Deleting data…",
+    creatingDiagnostic: "Creating diagnostic file…",
+  },
+  preview: {
+    backupCreated: "Backup Created",
+    sourceApplication: "Source Application",
+    sourceBuild: "Source Build",
+    saveSchema: "Save Schema",
+    totalComparisons: "Total Comparisons",
+    canonicalCatalog: "Included Values Catalog",
+    includedValues: "Included Values",
+    customValues: "Custom Values",
+    activeValues: "Active Values",
+    currentCycle: "Current Cycle",
+    cyclePairings: "Cycle Pairings",
+    deckRevision: "Deck Revision",
+    progressGeneration: "Progress Generation",
+    achievements: "Achievements",
+    achievementProgressGeneration: "Achievement Progress Generation",
+    language: "Language",
+    replacement: "Replacement",
+  },
+  screenTitle: "Import & Export",
+  introduction:
+    "Your progress, Custom Values, achievements, language, and settings are stored on this device. Export a JSON backup to keep a portable copy or move your data between supported WAYVM apps.",
+  exportTitle: "Export Data",
+  exportDescription:
+    "Save a versioned JSON backup of your progress, Custom Values, achievements, language, settings, and other portable WAYVM data. Exporting does not upload your data to us.",
+  exportAction: "Export Data",
+  exportSuccess: "Your WAYVM backup is ready.",
+  exportFailure:
+    "WAYVM could not create a backup. Your saved data was not changed. Please try again or check available device storage.",
+  importTitle: "Import Data",
+  importDescription:
+    "Choose a WAYVM JSON backup. The app will validate it and show you a preview before replacing data on this device.",
+  chooseBackupAction: "Choose Backup",
+  importPreviewTitle: "Review Import",
+  importPreviewWarning:
+    "Importing this backup will replace the current WAYVM data on this device. A local safety backup will be created first.",
+  importCancelAction: "Cancel",
+  importReplaceAction: "Import & Replace",
+  importCancelled: "Import canceled. Your data was not changed.",
+  importSuccess: "Backup restored. Your imported progress is ready.",
+  importInvalid:
+    "This file is not a valid WAYVM backup. Your data was not changed.",
+  importNewer:
+    "This backup was created by a newer version of WAYVM and cannot be opened safely here. Update the app and try again. Your data was not changed.",
+  importUnsupported:
+    "This backup uses a format version WAYVM cannot open safely. Your data was not changed.",
+  importUnsafe:
+    "This backup is too large or contains data WAYVM cannot process safely. Your data was not changed.",
+  importRestoreFailure:
+    "WAYVM could not restore this backup. Your saved data was not changed. Please try again.",
+})

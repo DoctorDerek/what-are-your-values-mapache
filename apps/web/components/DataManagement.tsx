@@ -1,7 +1,6 @@
 "use client"
 
-import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
-import { playerDataPortabilityCopy } from "@game/machines/src/PlayerDataPortabilityCopy"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type {
   PlayerDataResetKind,
   PlayerDataResetReview as PlayerDataResetReviewState,
@@ -15,13 +14,7 @@ import PlayerDataImportPreview from "./PlayerDataImportPreview"
 import PlayerDataResetActions from "./PlayerDataResetActions"
 import PlayerDataResetReview from "./PlayerDataResetReview"
 
-export type DataManagementActivity =
-  | "Creating backup…"
-  | "Checking backup…"
-  | "Creating safety backup…"
-  | "Restoring backup…"
-  | "Applying reset…"
-  | "Deleting data…"
+export type DataManagementActivity = string
 
 export default function DataManagement({
   activity,
@@ -56,6 +49,10 @@ export default function DataManagement({
   onOpenMenu: () => void
   onRequestReset: (resetKind: PlayerDataResetKind) => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+  const playerDataPortabilityCopy = localizedCopy.interfaceCopy.portability
+
   const headingRef = useRef<HTMLHeadingElement>(null)
   const issueRef = useRef<HTMLParagraphElement>(null)
   const importInputRef = useRef<HTMLInputElement>(null)
@@ -135,7 +132,7 @@ export default function DataManagement({
             disabled={isNavigationBlocked}
             onClick={onClose}
           >
-            Back to Your Values
+            {localizedCopy.interfaceCopy.screen.backToValues}
           </Button>
         </div>
       </div>
@@ -236,7 +233,7 @@ export default function DataManagement({
                   type="file"
                   accept={WAYVM_IMPORT_FILE_ACCEPT}
                   disabled={isBusy}
-                  aria-label="Choose WAYVM JSON backup"
+                  aria-label={localizedCopy.interfaceCopy.screen.chooseBackup}
                   className="sr-only"
                   onChange={(event) => {
                     const file = event.currentTarget.files?.[0]

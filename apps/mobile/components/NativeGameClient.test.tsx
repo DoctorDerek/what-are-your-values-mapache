@@ -1,3 +1,9 @@
+import { playerDataPortabilityCopy } from "@game/data/src/PlayerDataPortabilityCopy"
+import { playerDataRecoveryCopy } from "@game/data/src/PlayerDataRecoveryCopy"
+import {
+  playerDataResetBackupReadyNotice,
+  playerDataResetCopy,
+} from "@game/data/src/PlayerDataResetCopy"
 import {
   createSeethingSwarmTypographyOnlyRuntimeClipCatalog,
   type SeethingSwarmRuntimeClipCatalog,
@@ -9,13 +15,7 @@ import {
   BATTLE_PROFILE_SNAPSHOT_A_KEY,
 } from "@game/machines/src/BattleProfileStore"
 import { createInMemoryDurableStore } from "@game/machines/src/InMemoryDurableStore"
-import { playerDataPortabilityCopy } from "@game/machines/src/PlayerDataPortabilityCopy"
-import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
 import { DELETE_ALL_DATA_ACKNOWLEDGMENT } from "@game/machines/src/PlayerDataReset"
-import {
-  playerDataResetBackupReadyNotice,
-  playerDataResetCopy,
-} from "@game/machines/src/PlayerDataResetCopy"
 import { createWayvmExportV1TestVector } from "@game/machines/src/WayvmExportV1TestVector"
 import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import {

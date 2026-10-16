@@ -145,13 +145,13 @@ describe("Achievements", () => {
 
     expect(screen.getByText("1 of 40 unlocked")).toBeVisible()
     const firstBattle = screen.getAllByRole("listitem")[0]!
-    expect(within(firstBattle).getAllByText("Unlocked")).toHaveLength(2)
+    expect(within(firstBattle).getByText("Unlocked")).toBeVisible()
     expect(within(firstBattle).getByRole("time")).toHaveAttribute(
       "datetime",
       UNLOCKED_AT,
     )
     expect(within(firstBattle).getByRole("time")).toHaveTextContent(
-      "Jul 30, 2026",
+      "Unlocked Jul 30, 2026",
     )
     expect(
       within(firstBattle).queryByText("1 of 1 comparisons"),

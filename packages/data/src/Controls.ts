@@ -44,7 +44,8 @@ export const CONTROL_SEMANTIC_ACTIONS = Object.freeze([
   }),
   Object.freeze({
     id: "stop",
-    description: "Stop battling and return to Your Values.",
+    description:
+      "Stop battling. If your progress changed, review your results before returning home.",
   }),
 ] as const satisfies readonly {
   readonly id: ControlActionId

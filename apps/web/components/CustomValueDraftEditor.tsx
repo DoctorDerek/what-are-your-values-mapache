@@ -1,12 +1,12 @@
 "use client"
 
 import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
-import { CUSTOM_VALUE_INVITATION_COPY as copy } from "@game/data/src/CustomValueInvitationCopy"
 import {
   CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES,
   CUSTOM_VALUE_NAME_MAX_GRAPHEMES,
   type CustomValueDraftValidation,
 } from "@game/data/src/CustomValueValidation"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { useEffect, useRef } from "react"
 import CustomValueFieldFeedback from "@/components/CustomValueFieldFeedback"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,9 @@ export default function CustomValueDraftEditor({
   onSubmit: () => void
   onBack: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const copy = localizedCopy.interfaceCopy.customValues
+
   const nameRef = useRef<HTMLInputElement>(null)
   useEffect(() => {
     nameRef.current?.focus()

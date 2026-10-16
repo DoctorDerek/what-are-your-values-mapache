@@ -1,5 +1,6 @@
 "use client"
 
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValuesCardDeliveryMessage,
   VALUES_CARD_SIZE,
@@ -26,6 +27,7 @@ export default function ValuesCardShare({
     typeof DialogContent
   >["onCloseAutoFocus"]
 }) {
+  const localizedCopy = useLocaleCatalog()
   const { copy } = model
   const [state, send, actor] = useMachine(valuesCardShareMachine, {
     input: { prepare: (options) => prepareWebValuesCard(model, options) },
@@ -92,7 +94,10 @@ export default function ValuesCardShare({
                 }
                 width={VALUES_CARD_SIZE.width}
                 height={VALUES_CARD_SIZE.height}
-                alt={`${model.title}: ${model.values.map((value) => value.name).join(", ")}`}
+                alt={localizedCopy.interfaceCopy.screen.cardPreview(
+                  model.title,
+                  model.values.map((value) => value.name),
+                )}
                 className="h-auto w-full"
               />
             ) : (

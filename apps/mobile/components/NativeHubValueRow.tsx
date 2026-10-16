@@ -1,9 +1,9 @@
-import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
 import {
   resolveValueAnimalPresentation,
   SEETHING_SWARM_HUB_TILE_SIZE,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValueDisplayDefinition,
   getValueDisplayName,
@@ -29,6 +29,9 @@ export default function NativeHubValueRow({
   shouldReduceMotion: boolean
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const PERSONAL_HUB_COPY = localizedCopy.hub
+
   const { definition, progress, rank } = rankedValue
   const presentation = resolveValueAnimalPresentation(
     definition,
@@ -78,10 +81,10 @@ export default function NativeHubValueRow({
       </Pressable>
       <View className="min-w-0 flex-1">
         <Text className="text-player-card-ink text-lg font-black xl:text-3xl">
-          {getValueDisplayName(definition)}
+          {getValueDisplayName(definition, localizedCopy.values)}
         </Text>
         <Text className="text-player-card-muted mt-1 text-sm">
-          {getValueDisplayDefinition(definition)}
+          {getValueDisplayDefinition(definition, localizedCopy.values)}
         </Text>
         <Text className="text-player-card-muted mt-1 text-sm">
           {PERSONAL_HUB_COPY.level(getLevelFromXP(progress.totalXp))}

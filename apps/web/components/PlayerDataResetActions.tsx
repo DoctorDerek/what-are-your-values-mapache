@@ -1,10 +1,10 @@
 "use client"
 
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   PLAYER_DATA_RESET_KINDS,
   type PlayerDataResetKind,
 } from "@game/machines/src/PlayerDataReset"
-import { playerDataResetCopy } from "@game/machines/src/PlayerDataResetCopy"
 import { cx } from "classix"
 import { Button } from "@/components/ui/button"
 
@@ -22,6 +22,9 @@ export default function PlayerDataResetActions({
   ) => void
   playerDataResetKinds?: readonly PlayerDataResetKind[]
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const playerDataResetCopy = localizedCopy.interfaceCopy.resets
+
   return (
     <section
       aria-labelledby="player-data-reset-actions-heading"
@@ -31,7 +34,7 @@ export default function PlayerDataResetActions({
         id="player-data-reset-actions-heading"
         className="text-mapache-vivid-primary-cyan border-b-4 border-black pb-4 text-3xl font-black uppercase drop-shadow-[4px_4px_0px_#000000] sm:text-5xl"
       >
-        Reset or Delete
+        {localizedCopy.interfaceCopy.screen.resetOrDelete}
       </h2>
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         {playerDataResetKinds.map((resetKind) => {
@@ -63,7 +66,7 @@ export default function PlayerDataResetActions({
               </p>
               {hasNothingToDelete ? (
                 <p className="text-mapache-vivid-dark mb-4 font-black">
-                  No Custom Values to delete.
+                  {localizedCopy.interfaceCopy.screen.noCustomValues}
                 </p>
               ) : null}
               <Button

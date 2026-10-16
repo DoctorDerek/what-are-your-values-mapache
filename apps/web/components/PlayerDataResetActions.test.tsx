@@ -25,7 +25,9 @@ describe("Player Data Reset Actions", () => {
     expect(
       screen.getByRole("heading", { name: "Reset or Delete" }),
     ).toBeVisible()
-    expect(screen.getByText(/keeping canonical value progress/)).toBeVisible()
+    expect(
+      screen.getByText(/keeping progress for included values/),
+    ).toBeVisible()
     expect(screen.getByText(/keeping your values and ranking/)).toBeVisible()
     expect(screen.queryByRole("button", { name: "Reset" })).toBeNull()
 

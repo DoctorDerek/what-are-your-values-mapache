@@ -1,13 +1,8 @@
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
-import { DRESSING_ROOM_COPY } from "@game/data/src/Heroes99DressingRoom"
 import { projectHubValues } from "@game/data/src/HubValueProjection"
-import { introductionCopy } from "@game/data/src/IntroductionCopy"
-import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
-import { presentationLoadingCopy } from "@game/data/src/PresentationLoadingCopy"
-import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
-import { VALUES_CARD_COPY } from "@game/data/src/ValuesCardCopy"
 import { cx } from "classix"
 import { ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
@@ -43,6 +38,14 @@ export default function NativeHub({
   onCustomize: () => void
   onShare: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const introductionCopy = localizedCopy.introduction
+  const DRESSING_ROOM_COPY = localizedCopy.interfaceCopy.dressingRoom
+  const PERSONAL_HUB_COPY = localizedCopy.hub
+  const presentationLoadingCopy = localizedCopy.interfaceCopy.loading
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+  const VALUES_CARD_COPY = localizedCopy.card
+
   const { hasComparisons, topFive } = projectHubValues(rankedValues)
   return (
     <MapacheScreen>

@@ -2,14 +2,9 @@
 
 import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
-import { DRESSING_ROOM_COPY } from "@game/data/src/Heroes99DressingRoom"
-import { introductionCopy } from "@game/data/src/IntroductionCopy"
-import { PERSONAL_HUB_COPY } from "@game/data/src/PersonalHubCopy"
-import { presentationLoadingCopy } from "@game/data/src/PresentationLoadingCopy"
-import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
-import { VALUES_CARD_COPY } from "@game/data/src/ValuesCardCopy"
 import type { StaticImageData } from "next/image"
 import { useCallback, useEffect, useRef, useState, type Ref } from "react"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
@@ -61,6 +56,14 @@ export default function Hub({
   onCustomize: () => void
   onShare: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const introductionCopy = localizedCopy.introduction
+  const DRESSING_ROOM_COPY = localizedCopy.interfaceCopy.dressingRoom
+  const PERSONAL_HUB_COPY = localizedCopy.hub
+  const presentationLoadingCopy = localizedCopy.interfaceCopy.loading
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+  const VALUES_CARD_COPY = localizedCopy.card
+
   const [isDraftNavigationBlocked, setIsDraftNavigationBlocked] =
     useState(false)
   const isNavigationBlocked =

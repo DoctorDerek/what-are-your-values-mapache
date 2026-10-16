@@ -1,0 +1,346 @@
+import type { AuthoredLocalizationCatalog } from "./LocalizationCatalog"
+import { createCanonicalValueId } from "./Value"
+
+const valueTranslations = [
+  ["pvcs-2011:acceptance", "Aceptación", "que me acepten tal como soy"],
+  ["pvcs-2011:accuracy", "Exactitud", "tener opiniones y creencias acertadas"],
+  ["pvcs-2011:achievement", "Logro", "tener logros importantes"],
+  [
+    "pvcs-2011:adventure",
+    "Aventura",
+    "tener experiencias nuevas y emocionantes",
+  ],
+  ["pvcs-2011:art", "Arte", "apreciar el arte o expresarme a través de él"],
+  ["pvcs-2011:attractiveness", "Atractivo físico", "tener atractivo físico"],
+  ["pvcs-2011:authority", "Autoridad", "estar a cargo de otras personas"],
+  ["pvcs-2011:autonomy", "Autonomía", "decidir por mí y tener independencia"],
+  ["pvcs-2011:beauty", "Belleza", "apreciar la belleza a mi alrededor"],
+  [
+    "pvcs-2011:belonging",
+    "Pertenencia",
+    "sentir que pertenezco, que soy parte de algo",
+  ],
+  ["pvcs-2011:caring", "Cuidado", "cuidar de otras personas"],
+  ["pvcs-2011:challenge", "Desafío", "enfrentar tareas y problemas difíciles"],
+  ["pvcs-2011:comfort", "Comodidad", "tener una vida agradable y cómoda"],
+  [
+    "pvcs-2011:commitment",
+    "Compromiso",
+    "asumir compromisos duraderos y significativos",
+  ],
+  [
+    "pvcs-2011:compassion",
+    "Compasión",
+    "sentir preocupación por otras personas y actuar en consecuencia",
+  ],
+  [
+    "pvcs-2011:complexity",
+    "Complejidad",
+    "acoger los matices y las complejidades de la vida",
+  ],
+  [
+    "pvcs-2011:compromise",
+    "Acuerdo mutuo",
+    "tener disposición para ceder y negociar al llegar a acuerdos",
+  ],
+  [
+    "pvcs-2011:contribution",
+    "Contribución",
+    "hacer una contribución duradera al mundo",
+  ],
+  [
+    "pvcs-2011:cooperation",
+    "Cooperación",
+    "trabajar en colaboración con otras personas",
+  ],
+  [
+    "pvcs-2011:courage",
+    "Valentía",
+    "enfrentar la adversidad con valentía y fortaleza",
+  ],
+  [
+    "pvcs-2011:courtesy",
+    "Cortesía",
+    "tratar a otras personas con consideración y educación",
+  ],
+  ["pvcs-2011:creativity", "Creatividad", "crear cosas o ideas nuevas"],
+  [
+    "pvcs-2011:curiosity",
+    "Curiosidad",
+    "buscar, experimentar y aprender cosas nuevas",
+  ],
+  [
+    "pvcs-2011:dependability",
+    "Confiabilidad",
+    "ser alguien con quien se puede contar y en quien se puede confiar",
+  ],
+  [
+    "pvcs-2011:diligence",
+    "Diligencia",
+    "hacer todo de forma minuciosa y a conciencia",
+  ],
+  ["pvcs-2011:duty", "Deber", "cumplir con mis deberes y obligaciones"],
+  ["pvcs-2011:ecology", "Ecología", "vivir en armonía con el medio ambiente"],
+  [
+    "pvcs-2011:excitement",
+    "Emoción",
+    "tener una vida llena de emociones intensas y estímulos",
+  ],
+  [
+    "pvcs-2011:faithfulness",
+    "Fidelidad",
+    "mantener la lealtad y la fidelidad en mis relaciones",
+  ],
+  ["pvcs-2011:fame", "Fama", "que me conozcan y reconozcan"],
+  ["pvcs-2011:family", "Familia", "tener una familia feliz y cariñosa"],
+  [
+    "pvcs-2011:fitness",
+    "Condición física",
+    "tener buena condición física y fuerza",
+  ],
+  [
+    "pvcs-2011:flexibility",
+    "Flexibilidad",
+    "adaptarme fácilmente a circunstancias nuevas",
+  ],
+  ["pvcs-2011:forgiveness", "Perdón", "perdonar a otras personas"],
+  [
+    "pvcs-2011:freedom",
+    "Libertad",
+    "vivir sin restricciones ni limitaciones indebidas",
+  ],
+  ["pvcs-2011:friendship", "Amistad", "tener amistades cercanas que me apoyen"],
+  ["pvcs-2011:fun", "Diversión", "jugar y divertirme"],
+  ["pvcs-2011:generosity", "Generosidad", "dar a otras personas lo que tengo"],
+  [
+    "pvcs-2011:genuineness",
+    "Autenticidad",
+    "actuar de una manera fiel a quien soy",
+  ],
+  [
+    "pvcs-2011:gods-will",
+    "Voluntad de Dios",
+    "buscar y obedecer la voluntad de Dios",
+  ],
+  ["pvcs-2011:gratitude", "Gratitud", "sentir agradecimiento y aprecio"],
+  ["pvcs-2011:growth", "Crecimiento", "seguir cambiando y creciendo"],
+  ["pvcs-2011:health", "Salud", "tener bienestar físico y buena salud"],
+  [
+    "pvcs-2011:honesty",
+    "Honestidad",
+    "actuar con honestidad y decir la verdad",
+  ],
+  [
+    "pvcs-2011:hope",
+    "Esperanza",
+    "mantener una perspectiva positiva y optimista",
+  ],
+  ["pvcs-2011:humility", "Humildad", "vivir con modestia y sin pretensiones"],
+  ["pvcs-2011:humor", "Humor", "ver el lado divertido de mí y del mundo"],
+  ["pvcs-2011:imagination", "Imaginación", "tener sueños y ver posibilidades"],
+  ["pvcs-2011:independence", "Independencia", "no depender de otras personas"],
+  [
+    "pvcs-2011:industry",
+    "Laboriosidad",
+    "trabajar con esfuerzo y hacer bien las tareas de mi vida",
+  ],
+  ["pvcs-2011:inner-peace", "Paz interior", "sentir paz en mi interior"],
+  [
+    "pvcs-2011:integrity",
+    "Integridad",
+    "vivir cada día de forma coherente con mis valores",
+  ],
+  ["pvcs-2011:intelligence", "Inteligencia", "mantener mi mente ágil y activa"],
+  [
+    "pvcs-2011:intimacy",
+    "Intimidad",
+    "compartir mis vivencias más íntimas con otras personas",
+  ],
+  [
+    "pvcs-2011:justice",
+    "Justicia",
+    "promover un trato justo e igualitario para todas las personas",
+  ],
+  [
+    "pvcs-2011:knowledge",
+    "Conocimiento",
+    "aprender y aportar conocimientos valiosos",
+  ],
+  ["pvcs-2011:leadership", "Liderazgo", "inspirar y guiar a otras personas"],
+  [
+    "pvcs-2011:leisure",
+    "Tiempo libre",
+    "dedicar tiempo a relajarme y disfrutar",
+  ],
+  [
+    "pvcs-2011:loved",
+    "Recibir amor",
+    "recibir amor de las personas cercanas a mí",
+  ],
+  ["pvcs-2011:loving", "Dar amor", "dar amor a otras personas"],
+  [
+    "pvcs-2011:mastery",
+    "Dominio",
+    "desempeñarme con competencia en mis actividades cotidianas",
+  ],
+  [
+    "pvcs-2011:mindfulness",
+    "Atención plena",
+    "vivir con conciencia y atención al momento presente",
+  ],
+  [
+    "pvcs-2011:moderation",
+    "Moderación",
+    "evitar los excesos y encontrar un punto medio",
+  ],
+  [
+    "pvcs-2011:monogamy",
+    "Monogamia",
+    "tener una sola relación amorosa cercana",
+  ],
+  [
+    "pvcs-2011:music",
+    "Música",
+    "disfrutar la música o expresarme a través de ella",
+  ],
+  [
+    "pvcs-2011:non-conformity",
+    "Inconformismo",
+    "cuestionar y desafiar la autoridad y las normas",
+  ],
+  [
+    "pvcs-2011:novelty",
+    "Novedad",
+    "tener una vida llena de cambios y variedad",
+  ],
+  ["pvcs-2011:nurturance", "Apoyo", "alentar y apoyar a otras personas"],
+  [
+    "pvcs-2011:openness",
+    "Apertura",
+    "abrirme a experiencias, ideas y opciones nuevas",
+  ],
+  ["pvcs-2011:order", "Orden", "tener una vida bien ordenada y organizada"],
+  [
+    "pvcs-2011:passion",
+    "Pasión",
+    "sentir intensamente por ideas, actividades o personas",
+  ],
+  ["pvcs-2011:patriotism", "Patriotismo", "amar, servir y proteger a mi país"],
+  ["pvcs-2011:pleasure", "Placer", "sentirme bien"],
+  ["pvcs-2011:popularity", "Popularidad", "agradarle a mucha gente"],
+  ["pvcs-2011:power", "Poder", "tener control sobre otras personas"],
+  [
+    "pvcs-2011:practicality",
+    "Sentido práctico",
+    "centrarme en lo práctico, prudente y sensato",
+  ],
+  [
+    "pvcs-2011:protect",
+    "Proteger",
+    "proteger y mantener a salvo a quienes amo",
+  ],
+  [
+    "pvcs-2011:provide",
+    "Sustento familiar",
+    "proveer lo necesario para mi familia y cuidar de ella",
+  ],
+  ["pvcs-2011:purpose", "Propósito", "tener sentido y dirección en mi vida"],
+  [
+    "pvcs-2011:rationality",
+    "Racionalidad",
+    "guiarme por la razón, la lógica y la evidencia",
+  ],
+  [
+    "pvcs-2011:realism",
+    "Realismo",
+    "ver las cosas y actuar de forma realista y práctica",
+  ],
+  [
+    "pvcs-2011:responsibility",
+    "Responsabilidad",
+    "tomar decisiones responsables y llevarlas a cabo",
+  ],
+  ["pvcs-2011:risk", "Riesgo", "asumir riesgos y atreverme"],
+  [
+    "pvcs-2011:romance",
+    "Romance",
+    "tener un amor intenso y emocionante en mi vida",
+  ],
+  ["pvcs-2011:safety", "Seguridad", "vivir a salvo y con seguridad"],
+  ["pvcs-2011:self-acceptance", "Autoaceptación", "aceptarme tal como soy"],
+  ["pvcs-2011:self-control", "Autocontrol", "actuar con disciplina"],
+  ["pvcs-2011:self-esteem", "Autoestima", "sentirme bien conmigo"],
+  [
+    "pvcs-2011:self-knowledge",
+    "Autoconocimiento",
+    "comprenderme de manera profunda y honesta",
+  ],
+  ["pvcs-2011:service", "Servicio", "ayudar y servir a otras personas"],
+  [
+    "pvcs-2011:sexuality",
+    "Sexualidad",
+    "tener una vida sexual activa y satisfactoria",
+  ],
+  [
+    "pvcs-2011:simplicity",
+    "Sencillez",
+    "vivir de forma sencilla, con pocas necesidades",
+  ],
+  [
+    "pvcs-2011:solitude",
+    "Soledad",
+    "tener tiempo y espacio para estar a solas",
+  ],
+  [
+    "pvcs-2011:spirituality",
+    "Espiritualidad",
+    "crecer y madurar espiritualmente",
+  ],
+  [
+    "pvcs-2011:stability",
+    "Estabilidad",
+    "tener una vida que se mantenga bastante constante",
+  ],
+  [
+    "pvcs-2011:tolerance",
+    "Tolerancia",
+    "aceptar y respetar a quienes son diferentes a mí",
+  ],
+  [
+    "pvcs-2011:tradition",
+    "Tradición",
+    "seguir formas de actuar del pasado que se respetan",
+  ],
+  ["pvcs-2011:virtue", "Virtud", "vivir una vida moralmente pura y excelente"],
+  ["pvcs-2011:wealth", "Riqueza", "tener mucho dinero"],
+  [
+    "pvcs-2011:world-peace",
+    "Paz mundial",
+    "trabajar para promover la paz en el mundo",
+  ],
+  [
+    "wayvm:ingenuity",
+    "Ingenio",
+    "resolver problemas de formas originales, prácticas y con los recursos disponibles",
+  ],
+  [
+    "wayvm:destiny",
+    "Destino",
+    "seguir el camino que creo que me corresponde cumplir",
+  ],
+  [
+    "wayvm:pets",
+    "Mascotas",
+    "cuidar, proteger y compartir la vida con animales de compañía",
+  ],
+] as const
+
+export const MEXICAN_SPANISH_VALUES: AuthoredLocalizationCatalog["values"] =
+  Object.freeze(
+    valueTranslations.map(([id, name, definition]) =>
+      Object.freeze([
+        createCanonicalValueId(id),
+        Object.freeze({ name, definition }),
+      ] as const),
+    ),
+  )

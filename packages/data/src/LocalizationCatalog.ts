@@ -1,3 +1,4 @@
+import type { InterfaceCopy } from "./EnglishInterfaceCopy"
 import { ENGLISH_LOCALIZATION_CATALOG } from "./EnglishLocalizationCatalog"
 import { FIRST_ARRIVAL_PRESENTATION } from "./FirstArrivalPresentation"
 import { introductionCopy } from "./IntroductionCopy"
@@ -6,6 +7,7 @@ import {
   SHIPPED_LOCALES,
   type SupportedLocale,
 } from "./LocaleRegistry"
+import { MEXICAN_SPANISH_LOCALIZATION_CATALOG } from "./MexicanSpanishLocalizationCatalog"
 import { PERSONAL_HUB_COPY } from "./PersonalHubCopy"
 import { resolveLocalizationCatalog } from "./ResolveLocalizationCatalog"
 import type { CanonicalValueId, LocalizedValueCopy } from "./Value"
@@ -20,6 +22,7 @@ type LocalizedCopy<Copy> = {
 }
 
 export type LocalizationCatalog = Readonly<{
+  interfaceCopy: InterfaceCopy
   metadata: Readonly<{
     languageTag: string
     languageName: string
@@ -52,10 +55,15 @@ export type AuthoredLocalizationCatalog = Omit<LocalizationCatalog, "values"> &
 
 export const AUTHORED_LOCALIZATION_CATALOGS = Object.freeze({
   en: ENGLISH_LOCALIZATION_CATALOG,
+  "es-MX": MEXICAN_SPANISH_LOCALIZATION_CATALOG,
 } satisfies Record<SupportedLocale, AuthoredLocalizationCatalog>)
 
 export const LOCALIZATION_CATALOG_RESOLUTIONS = Object.freeze({
   en: resolveLocalizationCatalog("en", AUTHORED_LOCALIZATION_CATALOGS.en),
+  "es-MX": resolveLocalizationCatalog(
+    "es-MX",
+    AUTHORED_LOCALIZATION_CATALOGS["es-MX"],
+  ),
 } satisfies Record<
   SupportedLocale,
   ReturnType<typeof resolveLocalizationCatalog>

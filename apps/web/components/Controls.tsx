@@ -1,16 +1,7 @@
 "use client"
 
-import {
-  CONTROLLER_BINDINGS,
-  CONTROLLER_COPY,
-  getControllerButtonLabel,
-} from "@game/data/src/ControllerControls"
-import {
-  CONTROL_ACTION_LABELS,
-  CONTROL_SEMANTIC_ACTIONS,
-  CONTROLS_COPY,
-  WEB_CONTROL_GROUPS,
-} from "@game/data/src/Controls"
+import { getControllerButtonLabel } from "@game/data/src/ControllerControls"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { ComponentProps } from "react"
 import ControllerPrompt from "@/components/ControllerPrompt"
 import { ReopenedInformationPanel } from "@/components/InformationPanel"
@@ -27,6 +18,15 @@ export default function Controls({
     typeof ReopenedInformationPanel
   >["onCloseAutoFocus"]
 }>) {
+  const localizedCopy = useLocaleCatalog()
+  const CONTROLLER_BINDINGS = localizedCopy.interfaceCopy.controllerBindings
+  const CONTROLLER_COPY = localizedCopy.interfaceCopy.controller
+  const CONTROL_ACTION_LABELS = localizedCopy.interfaceCopy.controlActions
+  const CONTROL_SEMANTIC_ACTIONS =
+    localizedCopy.interfaceCopy.controlDescriptions
+  const CONTROLS_COPY = localizedCopy.interfaceCopy.controls
+  const WEB_CONTROL_GROUPS = localizedCopy.interfaceCopy.webControls
+
   const { controller, hasUnsupportedController } = useWebControls()
   return (
     <ReopenedInformationPanel
@@ -127,6 +127,8 @@ export default function Controls({
                           {getControllerButtonLabel(
                             controller.family,
                             binding.command,
+                            localizedCopy.interfaceCopy.controllerButtonLabels,
+                            CONTROLLER_COPY.navigate,
                           )}
                         </>
                       )}

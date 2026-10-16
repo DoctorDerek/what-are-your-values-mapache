@@ -1,3 +1,4 @@
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
 import { cx } from "classix"
 import { View } from "react-native"
@@ -8,6 +9,8 @@ export default function NativeAchievementCard({
 }: {
   readonly achievement: AchievementPresentation
 }) {
+  const localizedCopy = useLocaleCatalog()
+
   const isUnlocked = achievement.status === "unlocked"
 
   return (
@@ -25,7 +28,9 @@ export default function NativeAchievementCard({
           {achievement.title}
         </Text>
         <Text className="shrink-0 border-4 border-black bg-black px-3 py-1 text-sm font-black text-white uppercase">
-          {isUnlocked ? "Unlocked" : "Not unlocked"}
+          {isUnlocked
+            ? localizedCopy.interfaceCopy.screen.unlocked
+            : localizedCopy.interfaceCopy.screen.locked}
         </Text>
       </View>
       <Text className="mt-3 text-lg leading-7 font-bold text-black">
@@ -40,7 +45,9 @@ export default function NativeAchievementCard({
       ) : null}
       {achievement.unlockedAt && achievement.unlockedDate ? (
         <Text className="mt-4 border-t-4 border-black pt-3 text-base font-black text-black">
-          Unlocked {achievement.unlockedDate}
+          {localizedCopy.interfaceCopy.screen.unlockedOn(
+            achievement.unlockedDate,
+          )}
         </Text>
       ) : null}
     </View>

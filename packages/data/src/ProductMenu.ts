@@ -44,8 +44,11 @@ const PRODUCT_MENU_ROUTE_DESTINATIONS = Object.freeze([
   }),
 ] as const)
 
-export type ProductMenuRouteDestination =
-  (typeof PRODUCT_MENU_ROUTE_DESTINATIONS)[number]
+export type ProductMenuRouteDestination = Readonly<{
+  kind: "route"
+  id: (typeof PRODUCT_MENU_ROUTE_DESTINATIONS)[number]["id"]
+  label: string
+}>
 
 const PRODUCT_MENU_INFORMATION_PANEL_LABEL_OVERRIDES: Readonly<
   Partial<Record<InformationPanelId, string>>
@@ -70,4 +73,10 @@ export const PRODUCT_MENU_DESTINATIONS = Object.freeze([
   ...PRODUCT_MENU_INFORMATION_PANEL_DESTINATIONS,
 ])
 
-export type ProductMenuDestination = (typeof PRODUCT_MENU_DESTINATIONS)[number]
+export type ProductMenuDestination =
+  | ProductMenuRouteDestination
+  | Readonly<{
+      kind: "information-panel"
+      id: InformationPanelId
+      label: string
+    }>

@@ -1,9 +1,9 @@
+import { RUNTIME_RECOVERY_COPY as copy } from "@game/data/src/RuntimeRecoveryCopy"
 import { initializeBattleProfileStore } from "@game/machines/src/BattleProfileStore"
 import { createInMemoryDurableStore } from "@game/machines/src/InMemoryDurableStore"
 import { createInitialPlayerData } from "@game/machines/src/PlayerData"
 import { rootMachine } from "@game/machines/src/RootMachine"
 import type { RootActor } from "@game/machines/src/RuntimeRecovery"
-import { RUNTIME_RECOVERY_COPY as copy } from "@game/machines/src/RuntimeRecoveryCopy"
 import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { afterEach, describe, expect, it, jest } from "@jest/globals"
 import {

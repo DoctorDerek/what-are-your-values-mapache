@@ -1,5 +1,5 @@
+import { playerDataPortabilityCopy } from "@game/data/src/PlayerDataPortabilityCopy"
 import { MAX_PERSISTED_JSON_BYTES } from "@game/machines/src/PersistedJson"
-import { playerDataPortabilityCopy } from "@game/machines/src/PlayerDataPortabilityCopy"
 import { decodeWayvmExport } from "@game/machines/src/WayvmExport"
 import {
   createWayvmExportV1TestVector,

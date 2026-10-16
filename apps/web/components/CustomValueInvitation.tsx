@@ -4,8 +4,7 @@ import {
   validateCustomValueBatch,
   type CustomValueDraft,
 } from "@game/data/src/CustomValueDraft"
-import { CUSTOM_VALUE_INVITATION_COPY as copy } from "@game/data/src/CustomValueInvitationCopy"
-import { customValueValidationMessages } from "@game/data/src/CustomValueValidationMessages"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { CustomValueDefinition } from "@game/data/src/Value"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { useEffect, useState } from "react"
@@ -38,6 +37,11 @@ export default function CustomValueInvitation({
   onExport: () => Promise<void>
   onNavigationBlockedChange: (blocked: boolean) => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const copy = localizedCopy.interfaceCopy.customValues
+  const customValueValidationMessages =
+    localizedCopy.interfaceCopy.customValueValidation
+
   const [drafts, setDrafts] = useState<readonly DraftEntry[]>([])
   const [editorDraft, setEditorDraft] = useState<CustomValueDraft>(EMPTY_DRAFT)
   const [editingKey, setEditingKey] = useState<string | null>(null)
@@ -147,7 +151,7 @@ export default function CustomValueInvitation({
 
   return (
     <aside
-      aria-label="Add your own values"
+      aria-label={localizedCopy.interfaceCopy.screen.addOwnValues}
       className="text-mapache-vivid-dark mb-4 w-full max-w-7xl min-w-0 border-2 border-black bg-white p-3 xl:p-4 [&_button]:max-w-full [&_button]:whitespace-normal"
     >
       <fieldset
@@ -183,7 +187,9 @@ export default function CustomValueInvitation({
                     <Button
                       variant="link"
                       disabled={hasUnfinishedDraft}
-                      aria-label={`${copy.edit} ${draft.name}`}
+                      aria-label={localizedCopy.interfaceCopy.screen.editValue(
+                        draft.name,
+                      )}
                       onClick={() => {
                         setEditingKey(draft.key)
                         setEditorDraft({
@@ -198,7 +204,9 @@ export default function CustomValueInvitation({
                     <Button
                       variant="link"
                       disabled={editingKey === draft.key}
-                      aria-label={`${copy.remove} ${draft.name}`}
+                      aria-label={localizedCopy.interfaceCopy.screen.removeDraft(
+                        draft.name,
+                      )}
                       onClick={() => {
                         setDrafts(
                           drafts.filter((item) => item.key !== draft.key),
@@ -226,7 +234,7 @@ export default function CustomValueInvitation({
         {(writing || hasUnfinishedDraft || drafts.length > 0) && (
           <section
             className="space-y-3 border-t-2 border-black pt-3"
-            aria-label="Save Custom Values"
+            aria-label={localizedCopy.interfaceCopy.screen.saveCustomValues}
           >
             <p className="text-sm">{copy.consequences}</p>
             <div className="flex flex-wrap gap-3">

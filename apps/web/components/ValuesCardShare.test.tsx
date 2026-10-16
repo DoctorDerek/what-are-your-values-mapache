@@ -120,6 +120,6 @@ describe("values-card preview", () => {
     expect(screen.getByRole("img")).toBeVisible()
     expect(close).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole("button", { name: "Share GIF" }))
-    await screen.findByText("Cancelled. Your card is still ready.")
+    await screen.findByText("Canceled. Your card is still ready.")
   })
 })

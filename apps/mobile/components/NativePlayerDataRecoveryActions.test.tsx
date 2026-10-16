@@ -1,4 +1,4 @@
-import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
+import { playerDataRecoveryCopy } from "@game/data/src/PlayerDataRecoveryCopy"
 import { describe, expect, it, jest } from "@jest/globals"
 import { render, screen, userEvent } from "@testing-library/react-native"
 import NativePlayerDataRecoveryActions from "@/components/NativePlayerDataRecoveryActions"

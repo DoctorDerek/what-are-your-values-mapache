@@ -1,13 +1,10 @@
-import {
-  INFORMATION_PANELS,
-  type InformationPanelId,
-} from "@game/data/src/InformationPanels"
+import { type InformationPanelId } from "@game/data/src/InformationPanels"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
-  PRODUCT_MENU_COPY,
   type ProductMenuDestination,
   type ProductMenuRouteDestination,
 } from "@game/data/src/ProductMenu"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { rankValues } from "@game/data/src/ValueRanking"
 import {
@@ -30,10 +27,7 @@ import {
   type PlayerDataResetKind,
   type PlayerDataResetReview,
 } from "@game/machines/src/PlayerDataReset"
-import {
-  PLAYER_SETTINGS_COPY,
-  resolveShouldReduceMotion,
-} from "@game/machines/src/PlayerSettingsPresentation"
+import { resolveShouldReduceMotion } from "@game/machines/src/PlayerSettingsPresentation"
 import { projectRootBackDisposition } from "@game/machines/src/RootNavigation"
 import type { RootActor } from "@game/machines/src/RuntimeRecovery"
 import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPreparation"
@@ -98,6 +92,11 @@ function NativeGameClientContent({
 }: {
   readonly gameActor: RootActor
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const INFORMATION_PANELS = localizedCopy.interfaceCopy.information
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+  const PLAYER_SETTINGS_COPY = localizedCopy.interfaceCopy.settings
+
   const systemShouldReduceMotion = useReducedMotion()
   const [isProductMenuOpen, setIsProductMenuOpen] = useState(false)
   const [isControlsOpen, setIsControlsOpen] = useState(false)
@@ -128,11 +127,12 @@ function NativeGameClientContent({
     () =>
       playerData
         ? projectAchievementCatalog({
+            localization: localizedCopy,
             achievementState: playerData.achievements,
             battleProfile: playerData.profile,
           })
         : [],
-    [playerData],
+    [playerData, localizedCopy],
   )
   const pendingAchievementPresentations = useMemo(() => {
     if (!playerData) return []
@@ -392,15 +392,16 @@ function NativeGameClientContent({
     const recoveryActivity: NativePlayerDataRecoveryActivity | null =
       isReadingImportFile ||
       state.matches({ PersistenceFailure: "PreparingImport" })
-        ? "Checking backup…"
+        ? localizedCopy.interfaceCopy.portability.activity.checkingBackup
         : state.matches({ PersistenceFailure: "ExportingCurrentData" })
-          ? "Creating backup…"
+          ? localizedCopy.interfaceCopy.portability.activity.creatingBackup
           : state.matches({ PersistenceFailure: "ExportingEvidence" })
-            ? "Creating diagnostic file…"
+            ? localizedCopy.interfaceCopy.portability.activity
+                .creatingDiagnostic
             : state.matches({ PersistenceFailure: "ReplacingPlayerData" })
-              ? "Restoring backup…"
+              ? localizedCopy.interfaceCopy.portability.activity.restoringBackup
               : state.matches({ PersistenceFailure: "DeletingAllData" })
-                ? "Deleting data…"
+                ? localizedCopy.interfaceCopy.portability.activity.deletingData
                 : null
     const issue =
       state.context.portabilityIssue ?? state.context.persistenceIssue
@@ -719,11 +720,11 @@ function NativeGameClientContent({
       state.matches({ Settings: "Persisting" }) || isBackgroundCheckpointing
         ? PLAYER_SETTINGS_COPY.savingStatus
         : state.matches({ Settings: "ExportingResetBackup" })
-          ? "Creating backup…"
+          ? localizedCopy.interfaceCopy.portability.activity.creatingBackup
           : state.matches({ Settings: "ApplyingScopedReset" })
-            ? "Applying reset…"
+            ? localizedCopy.interfaceCopy.portability.activity.applyingReset
             : state.matches({ Settings: "DeletingAllData" })
-              ? "Deleting data…"
+              ? localizedCopy.interfaceCopy.portability.activity.deletingData
               : null
 
     return (
@@ -766,18 +767,20 @@ function NativeGameClientContent({
     const activity: NativeDataManagementActivity | null =
       isReadingImportFile ||
       state.matches({ DataManagement: "PreparingImport" })
-        ? "Checking backup…"
+        ? localizedCopy.interfaceCopy.portability.activity.checkingBackup
         : state.matches({ DataManagement: "Exporting" }) ||
             state.matches({ DataManagement: "ExportingResetBackup" })
-          ? "Creating backup…"
+          ? localizedCopy.interfaceCopy.portability.activity.creatingBackup
           : state.matches({ DataManagement: "CreatingPreImportBackup" })
-            ? "Creating safety backup…"
+            ? localizedCopy.interfaceCopy.portability.activity
+                .creatingSafetyBackup
             : state.matches({ DataManagement: "ReplacingImport" })
-              ? "Restoring backup…"
+              ? localizedCopy.interfaceCopy.portability.activity.restoringBackup
               : state.matches({ DataManagement: "ApplyingScopedReset" })
-                ? "Applying reset…"
+                ? localizedCopy.interfaceCopy.portability.activity.applyingReset
                 : state.matches({ DataManagement: "DeletingAllData" })
-                  ? "Deleting data…"
+                  ? localizedCopy.interfaceCopy.portability.activity
+                      .deletingData
                   : null
 
     return (

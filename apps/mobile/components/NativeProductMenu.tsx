@@ -1,8 +1,5 @@
-import {
-  PRODUCT_MENU_COPY,
-  PRODUCT_MENU_DESTINATIONS,
-  type ProductMenuDestination,
-} from "@game/data/src/ProductMenu"
+import { type ProductMenuDestination } from "@game/data/src/ProductMenu"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { Modal, ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
@@ -14,13 +11,15 @@ export default function NativeProductMenu({
   onDestinationSelect,
   onOpenChange,
 }: {
-  readonly contextActionLabel:
-    | typeof PRODUCT_MENU_COPY.closeAction
-    | typeof PRODUCT_MENU_COPY.resumeBattleAction
+  readonly contextActionLabel: string
   readonly open: boolean
   readonly onDestinationSelect: (destination: ProductMenuDestination) => void
   readonly onOpenChange: (open: boolean) => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+  const PRODUCT_MENU_DESTINATIONS = localizedCopy.interfaceCopy.menuDestinations
+
   return (
     <Modal
       animationType="fade"
@@ -49,7 +48,9 @@ export default function NativeProductMenu({
         </View>
 
         <ScrollView
-          accessibilityLabel="Menu destinations"
+          accessibilityLabel={
+            localizedCopy.interfaceCopy.screen.menuDestinations
+          }
           className="min-h-0 flex-1"
           contentContainerClassName="gap-4 p-5 pb-10 xl:p-8 xl:pb-12"
         >

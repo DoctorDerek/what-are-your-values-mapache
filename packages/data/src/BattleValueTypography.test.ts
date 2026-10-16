@@ -4,6 +4,21 @@ import { CANONICAL_VALUES } from "./CanonicalValues"
 import { createCustomValueId, type CustomValueDefinition } from "./Value"
 
 describe("Battle value typography", () => {
+  it("uses selected value text without applying English word breaks to another language", () => {
+    const value = CANONICAL_VALUES[0]
+    const translations = new Map([
+      [
+        value.id,
+        { name: "Acceptance localizada", definition: "Selected meaning" },
+      ],
+    ])
+    expect(getBattleValueDisplayName(value, translations, "es-MX")).toBe(
+      "Acceptance localizada",
+    )
+    expect(getBattleValueDisplayName(value, translations, "en-US")).toBe(
+      "Accep\u00adtance localizada",
+    )
+  })
   it("preserves every canonical name and identity while adding optional display breaks", () => {
     for (const value of CANONICAL_VALUES) {
       const original = { ...value }

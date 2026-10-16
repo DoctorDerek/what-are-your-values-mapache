@@ -247,9 +247,12 @@ describe("All Values Component Integration", () => {
   it("carries an unmatched search name to the Hub editor", () => {
     const onAddCustomValue = vi.fn()
     renderAllValues(undefined, { onAddCustomValue })
-    fireEvent.change(screen.getByLabelText("Search All Values"), {
-      target: { value: "Craftsmanship" },
-    })
+    fireEvent.change(
+      screen.getByRole("searchbox", { name: "Search All Values" }),
+      {
+        target: { value: "Craftsmanship" },
+      },
+    )
     fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
     expect(onAddCustomValue).toHaveBeenCalledExactlyOnceWith("Craftsmanship")
   })

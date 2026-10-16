@@ -1,3 +1,4 @@
+import { playerDataPortabilityCopy } from "@game/data/src/PlayerDataPortabilityCopy"
 import { createCustomValueId } from "@game/data/src/Value"
 import { describe, expect, it, vi } from "vitest"
 import { createActor, fromPromise, waitFor } from "xstate"
@@ -25,7 +26,6 @@ import {
   createWayvmExportActor,
   prepareWayvmImportActor,
 } from "./PlayerDataPortabilityActors"
-import { playerDataPortabilityCopy } from "./PlayerDataPortabilityCopy"
 import { DELETE_ALL_DATA_ACKNOWLEDGMENT } from "./PlayerDataReset"
 import {
   applyScopedPlayerDataResetActor,
@@ -499,9 +499,9 @@ describe("Root Machine", () => {
       skipIntroduction: true,
     })
     const pending = actor.getSnapshot().context.playerData!
-    actor.send({ type: "INTRODUCTION.LOCALE_SELECTED", locale: "en" })
+    actor.send({ type: "INTRODUCTION.LOCALE_SELECTED", locale: "es-MX" })
     const selected = actor.getSnapshot().context.playerData!
-    expect(selected.settings.locale).toBe("en")
+    expect(selected.settings.locale).toBe("es-MX")
     expect(selected.profile).toEqual(pending.profile)
     expect(selected.achievements).toEqual(pending.achievements)
     await expect(durableStore.readAll()).resolves.toEqual(new Map())
@@ -2905,7 +2905,7 @@ describe("Root Machine", () => {
       (candidate) =>
         candidate.matches({ DataManagement: "Browsing" }) &&
         candidate.context.portabilityNotice ===
-          "All Custom Values were deleted. Canonical value progress, achievements, and settings were kept.",
+          "All Custom Values were deleted. Your included values kept their progress. Achievements and settings were kept.",
     )
     const resetProfile = resetSnapshot.context.playerData?.profile
     if (!resetProfile) {

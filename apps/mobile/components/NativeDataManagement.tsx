@@ -1,5 +1,4 @@
-import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
-import { playerDataPortabilityCopy } from "@game/machines/src/PlayerDataPortabilityCopy"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type {
   PlayerDataResetKind,
   PlayerDataResetReview,
@@ -14,13 +13,7 @@ import NativePlayerDataResetReview from "@/components/NativePlayerDataResetRevie
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 
-export type NativeDataManagementActivity =
-  | "Creating backup…"
-  | "Checking backup…"
-  | "Creating safety backup…"
-  | "Restoring backup…"
-  | "Applying reset…"
-  | "Deleting data…"
+export type NativeDataManagementActivity = string
 
 export default function NativeDataManagement({
   activity,
@@ -57,6 +50,10 @@ export default function NativeDataManagement({
   readonly onOpenMenu: () => void
   readonly onRequestReset: (resetKind: PlayerDataResetKind) => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+  const playerDataPortabilityCopy = localizedCopy.interfaceCopy.portability
+
   const isBusy = activity !== null
   const isNavigationBlocked =
     isNavigationPending || isBusy || preview !== null || resetReview !== null
@@ -85,7 +82,7 @@ export default function NativeDataManagement({
             variant="secondary"
             onPress={onClose}
           >
-            <Text>Back to Your Values</Text>
+            <Text>{localizedCopy.interfaceCopy.screen.backToValues}</Text>
           </Button>
         </View>
       </View>

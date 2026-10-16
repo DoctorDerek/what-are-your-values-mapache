@@ -1,10 +1,9 @@
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
 import {
-  DRESSING_ROOM_COPY,
+  getHeroes99Choices,
   getHeroes99PaletteChoices,
   getHeroes99PaletteId,
   HEROES99_CATEGORIES,
-  HEROES99_CHOICES,
   isHeroes99ChoiceSelected,
   type Heroes99Category,
 } from "@game/data/src/Heroes99DressingRoom"
@@ -12,11 +11,12 @@ import {
   HEROES99_THUMBNAIL,
   type Heroes99RuntimeAssets,
 } from "@game/data/src/Heroes99RuntimeAssets"
-import { VALUES_CARD_COPY } from "@game/data/src/ValuesCardCopy"
+import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { avatarMachine } from "@game/machines/src/AvatarMachine"
 import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { cx } from "classix"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Image, Modal, Pressable, ScrollView, View } from "react-native"
 import type { ActorRefFrom } from "xstate"
 import MapacheScreen from "@/components/MapacheScreen"
@@ -36,11 +36,29 @@ export default function NativeDressingRoom({
   shouldReduceMotion: boolean
   onShare: (appearance: Heroes99Appearance) => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const DRESSING_ROOM_COPY = localizedCopy.interfaceCopy.dressingRoom
+  const VALUES_CARD_COPY = localizedCopy.card
+  const choiceCopy = localizedCopy.interfaceCopy.heroChoices
+  const { integer } = useMemo(
+    () => createLocaleFormatters(localizedCopy.metadata.languageTag),
+    [localizedCopy.metadata.languageTag],
+  )
+  const choices = useMemo(
+    () => getHeroes99Choices(choiceCopy, integer),
+    [choiceCopy, integer],
+  )
+
   const state = useRecoverableActorSnapshot(actor)
   const [category, setCategory] = useState<Heroes99Category>("Skin")
   const { draft } = state.context
   const isSaving = state.matches("Saving")
-  const palettes = getHeroes99PaletteChoices(category, draft)
+  const palettes = getHeroes99PaletteChoices(
+    category,
+    draft,
+    choiceCopy,
+    integer,
+  )
   const paletteId = getHeroes99PaletteId(category, draft)
   return (
     <MapacheScreen>
@@ -85,7 +103,7 @@ export default function NativeDressingRoom({
           >
             {HEROES99_CATEGORIES.map((item) => (
               <Pressable
-                key={item}
+                key={choiceCopy.categories[item]}
                 accessibilityRole="button"
                 accessibilityState={{
                   selected: category === item,
@@ -100,15 +118,19 @@ export default function NativeDressingRoom({
                     : "bg-white",
                 )}
               >
-                <Text className="font-black text-black">{item}</Text>
+                <Text className="font-black text-black">
+                  {choiceCopy.categories[item]}
+                </Text>
               </Pressable>
             ))}
           </View>
           <View
-            accessibilityLabel={DRESSING_ROOM_COPY.choices(category)}
+            accessibilityLabel={DRESSING_ROOM_COPY.choices(
+              choiceCopy.categories[category],
+            )}
             className="flex-row flex-wrap gap-3"
           >
-            {HEROES99_CHOICES[category].map((choice) => {
+            {choices[category].map((choice) => {
               const index = assets.thumbnailIndexByChoiceId[choice.id]
               return (
                 <Pressable
@@ -169,7 +191,9 @@ export default function NativeDressingRoom({
           </View>
           {palettes.length > 0 && (
             <View
-              accessibilityLabel={DRESSING_ROOM_COPY.palette(category)}
+              accessibilityLabel={DRESSING_ROOM_COPY.palette(
+                choiceCopy.categories[category],
+              )}
               className="flex-row flex-wrap gap-2"
             >
               {palettes.map((choice, index) => (

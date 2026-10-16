@@ -15,10 +15,11 @@ describe("locale resolution", () => {
 
   it("keeps candidates unavailable until explicitly shipped", () => {
     expect(CANDIDATE_LOCALES).toContain("es-MX")
-    expect(SHIPPED_LOCALES).toEqual(["en"])
+    expect(SHIPPED_LOCALES).toEqual(["en", "es-MX"])
     expect(
-      resolveLocale({ explicitLocale: "es-MX", preferredLanguages: ["fr"] }),
+      resolveLocale({ explicitLocale: "fr", preferredLanguages: ["de"] }),
     ).toBe("en")
+    expect(resolveLocale({ explicitLocale: "es-MX" })).toBe("es-MX")
     expect(() => defineShippedLocales(["fr"])).toThrow("English")
     expect(() => defineShippedLocales(["en", "en"])).toThrow("duplicates")
   })
@@ -85,7 +86,13 @@ describe("locale resolution", () => {
       expect(formatter.percent(0.25)).toBe("25%")
       expect(formatter.date("2026-10-15T00:00:00.000Z")).toBe("Oct 15, 2026")
       expect(formatter.plural(1)).toBe("one")
-      expect(issues).toHaveLength(4)
+      expect(issues.map(({ key }) => key)).toEqual([
+        "formatters.integer",
+        "formatters.percent",
+        "formatters.date",
+        "formatters.plural",
+        "formatters.dateTime",
+      ])
       expect(
         issues.every(
           ({ locale, fallback }) =>

@@ -2,6 +2,7 @@
 
 import type { ActiveDeck } from "@game/data/src/ActiveDeck"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type { ValueProgressById } from "@game/data/src/ValueProgress"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
@@ -103,6 +104,8 @@ export default function Crucible({
     expectedScheduler: BattleSchedulerRestorePoint,
   ) => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+
   const actor = useActorRef(combatMachine, {
     input: { initialBattle: battle, animationSpeed, onWinnerSelected },
   })
@@ -329,6 +332,7 @@ export default function Crucible({
       return
 
     const message = getBattleAccessibilityAnnouncement({
+      localization: localizedCopy,
       pendingAction,
       activeDeck,
       progressById,
@@ -349,6 +353,7 @@ export default function Crucible({
     battle,
     currentBattle,
     currentPair,
+    localizedCopy,
     isInteractive,
     isMenuOpen,
     progressById,
@@ -372,6 +377,7 @@ export default function Crucible({
       />
     ) : (
       getValueChoiceControlHint({
+        localization: localizedCopy,
         preference: controlHintPreference,
         inputModality: controlHintInputModality,
         position: "first",
@@ -385,6 +391,7 @@ export default function Crucible({
       />
     ) : (
       getValueChoiceControlHint({
+        localization: localizedCopy,
         preference: controlHintPreference,
         inputModality: controlHintInputModality,
         position: "second",
@@ -398,6 +405,7 @@ export default function Crucible({
   const reward =
     isAnimating && state.context.pendingBattle && !isPersistencePending
       ? getBattleRewardPresentation({
+          localization: localizedCopy,
           pendingAction: rewardAction,
           activeDeck,
           progressById,
@@ -407,7 +415,7 @@ export default function Crucible({
   return (
     <MapacheScreen
       ref={revealBattleSurface}
-      aria-label="Value battle"
+      aria-label={localizedCopy.interfaceCopy.screen.battle}
       aria-busy={isPersistencePending}
       tabIndex={0}
       spacing="safe-area-only"
@@ -430,7 +438,7 @@ export default function Crucible({
 
       <div
         role="region"
-        aria-label="Battle choices"
+        aria-label={localizedCopy.interfaceCopy.screen.battleChoices}
         tabIndex={0}
         onKeyDown={handleBattleSurfaceKeyDown}
         className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white"

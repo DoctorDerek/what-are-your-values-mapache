@@ -1,8 +1,9 @@
 "use client"
 
-import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
+import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 
@@ -11,6 +12,8 @@ function AchievementCard({
 }: {
   readonly achievement: AchievementPresentation
 }) {
+  const localizedCopy = useLocaleCatalog()
+
   const isUnlocked = achievement.status === "unlocked"
 
   return (
@@ -26,7 +29,9 @@ function AchievementCard({
           {achievement.title}
         </h2>
         <span className="shrink-0 border-4 border-black bg-black px-3 py-1 font-black text-white uppercase">
-          {isUnlocked ? "Unlocked" : "Not unlocked"}
+          {isUnlocked
+            ? localizedCopy.interfaceCopy.screen.unlocked
+            : localizedCopy.interfaceCopy.screen.locked}
         </span>
       </div>
       <p className="mt-3 text-lg font-bold [overflow-wrap:anywhere]">
@@ -49,9 +54,10 @@ function AchievementCard({
       ) : null}
       {achievement.unlockedAt && achievement.unlockedDate ? (
         <p className="mt-4 border-t-4 border-black pt-3 font-black">
-          Unlocked{" "}
           <time dateTime={achievement.unlockedAt}>
-            {achievement.unlockedDate}
+            {localizedCopy.interfaceCopy.screen.unlockedOn(
+              achievement.unlockedDate,
+            )}
           </time>
         </p>
       ) : null}
@@ -70,7 +76,14 @@ export default function Achievements({
   readonly onClose: () => void
   readonly onOpenMenu: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+
   const headingRef = useRef<HTMLHeadingElement>(null)
+  const { integer } = useMemo(
+    () => createLocaleFormatters(localizedCopy.metadata.languageTag),
+    [localizedCopy.metadata.languageTag],
+  )
   const unlockedCount = achievements.filter(
     ({ status }) => status === "unlocked",
   ).length
@@ -87,7 +100,7 @@ export default function Achievements({
           tabIndex={-1}
           className="text-mapache-vivid-primary-cyan text-4xl font-black [overflow-wrap:anywhere] uppercase drop-shadow-[5px_5px_0px_#000000] outline-none sm:text-6xl"
         >
-          Achievements
+          {localizedCopy.interfaceCopy.screen.achievements}
         </h1>
         <div className="flex flex-wrap gap-3">
           <Button
@@ -110,7 +123,7 @@ export default function Achievements({
             wrap
             className="flex-1"
           >
-            Back to Your Values
+            {localizedCopy.interfaceCopy.screen.backToValues}
           </Button>
         </div>
       </header>
@@ -123,13 +136,16 @@ export default function Achievements({
           id="achievement-catalog-heading"
           className="text-mapache-vivid-dark text-3xl font-black uppercase sm:text-4xl"
         >
-          Local Milestones
+          {localizedCopy.interfaceCopy.screen.localMilestones}
         </h2>
         <p className="text-mapache-vivid-dark mt-3 text-lg font-bold sm:text-xl">
-          Private, offline progress. No leaderboards or social comparison.
+          {localizedCopy.interfaceCopy.screen.achievementPrivacy}
         </p>
         <p className="bg-mapache-vivid-secondary-green text-mapache-vivid-dark mt-5 border-4 border-black p-4 text-xl font-black uppercase">
-          {unlockedCount} of {achievements.length} unlocked
+          {localizedCopy.interfaceCopy.screen.achievementsUnlocked(
+            integer(unlockedCount),
+            integer(achievements.length),
+          )}
         </p>
         <ol className="mt-6 flex min-w-0 flex-col gap-5 pr-1 pb-2">
           {achievements.map((achievement) => (

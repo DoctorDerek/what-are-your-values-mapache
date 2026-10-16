@@ -1,5 +1,5 @@
+import { playerDataRecoveryCopy } from "@game/data/src/PlayerDataRecoveryCopy"
 import { describe, expect, it } from "vitest"
-import { playerDataRecoveryCopy } from "./PlayerDataRecoveryCopy"
 
 describe("Player Data Recovery Copy", () => {
   it("freezes the exact unreadable-save and storage-unavailable contracts", () => {

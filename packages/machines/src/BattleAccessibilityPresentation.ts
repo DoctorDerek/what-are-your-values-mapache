@@ -1,4 +1,9 @@
 import type { ActiveDeck } from "@game/data/src/ActiveDeck"
+import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
+import {
+  getLocaleCatalog,
+  type LocalizationCatalog,
+} from "@game/data/src/LocalizationCatalog"
 import {
   getValueDisplayName,
   type ActiveValueDefinition,
@@ -41,14 +46,21 @@ export function getValueChoiceAccessibilityLabel({
   position,
   value,
   level,
+  localization = getLocaleCatalog(),
 }: {
   readonly position: ValueChoicePosition
   readonly value: ActiveValueDefinition
   readonly level: number
+  readonly localization?: LocalizationCatalog
 }) {
   const choiceNumber = position === "first" ? 1 : 2
 
-  return `Choose ${getValueDisplayName(value)}. Level ${level}. Choice ${choiceNumber}.`
+  const { integer } = createLocaleFormatters(localization.metadata.languageTag)
+  return localization.interfaceCopy.progression.choice(
+    getValueDisplayName(value, localization.values),
+    integer(level),
+    integer(choiceNumber),
+  )
 }
 
 export function createPendingBattleAccessibilityAction({
@@ -81,11 +93,15 @@ export function createPendingBattleAccessibilityAction({
   })
 }
 
-function getActiveValueDisplayName(activeDeck: ActiveDeck, valueId: ValueId) {
+function getActiveValueDisplayName(
+  activeDeck: ActiveDeck,
+  valueId: ValueId,
+  localization: LocalizationCatalog,
+) {
   const value = activeDeck.values.find((candidate) => candidate.id === valueId)
   if (!value) throw new Error(`Active Value is unavailable: ${valueId}`)
 
-  return getValueDisplayName(value)
+  return getValueDisplayName(value, localization.values)
 }
 
 export function getCompletedBattleXpChange({
@@ -164,11 +180,13 @@ export function getBattleAccessibilityAnnouncement({
   activeDeck,
   progressById,
   pair,
+  localization = getLocaleCatalog(),
 }: {
   readonly pendingAction: PendingBattleAccessibilityAction
   readonly activeDeck: ActiveDeck
   readonly progressById: ValueProgressById
   readonly pair: ValuePair
+  readonly localization?: LocalizationCatalog
 }) {
   const completedXpChange = getCompletedBattleXpChange({
     pendingAction,
@@ -178,16 +196,25 @@ export function getBattleAccessibilityAnnouncement({
   if (!completedXpChange) return null
 
   const { valueId, xpChange } = completedXpChange
-  const changedValueName = getActiveValueDisplayName(activeDeck, valueId)
-  const comparison = `${getActiveValueDisplayName(activeDeck, pair[0])} or ${getActiveValueDisplayName(activeDeck, pair[1])}`
-  const absoluteXpChange = Math.abs(xpChange)
+  const copy = localization.interfaceCopy.progression
+  const { integer } = createLocaleFormatters(localization.metadata.languageTag)
+  const changedValueName = getActiveValueDisplayName(
+    activeDeck,
+    valueId,
+    localization,
+  )
+  const comparison = copy.nextPair(
+    getActiveValueDisplayName(activeDeck, pair[0], localization),
+    getActiveValueDisplayName(activeDeck, pair[1], localization),
+  )
+  const absoluteXpChange = integer(Math.abs(xpChange))
 
   if (pendingAction.kind === "selection") {
-    return `${changedValueName} chosen. ${absoluteXpChange} XP earned. Next: ${comparison}.`
+    return copy.selection(changedValueName, absoluteXpChange, comparison)
   }
   if (pendingAction.kind === "undo") {
-    return `Undo complete. ${absoluteXpChange} XP removed from ${changedValueName}. Restored: ${comparison}.`
+    return copy.undo(changedValueName, absoluteXpChange, comparison)
   }
 
-  return `Redo complete. ${absoluteXpChange} XP restored to ${changedValueName}. Next: ${comparison}.`
+  return copy.redo(changedValueName, absoluteXpChange, comparison)
 }

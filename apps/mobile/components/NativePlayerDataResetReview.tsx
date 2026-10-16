@@ -1,8 +1,8 @@
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   DELETE_ALL_DATA_ACKNOWLEDGMENT,
   type PlayerDataResetReview,
 } from "@game/machines/src/PlayerDataReset"
-import { playerDataResetCopy } from "@game/machines/src/PlayerDataResetCopy"
 import { useState } from "react"
 import { Switch, View } from "react-native"
 import { Button } from "@/components/ui/button"
@@ -21,6 +21,9 @@ export default function NativePlayerDataResetReview({
   readonly onConfirm: (review: PlayerDataResetReview) => void
   readonly onExport: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const playerDataResetCopy = localizedCopy.interfaceCopy.resets
+
   const [acknowledgedCompleteErasure, setAcknowledgedCompleteErasure] =
     useState(false)
   const copy = playerDataResetCopy[review.resetKind]
@@ -63,10 +66,10 @@ export default function NativePlayerDataResetReview({
 
       <View className="gap-4">
         <Button disabled={isBusy} variant="secondary" onPress={onExport}>
-          <Text>Export Data</Text>
+          <Text>{localizedCopy.interfaceCopy.screen.exportData}</Text>
         </Button>
         <Button disabled={isBusy} variant="outline" onPress={onCancel}>
-          <Text>Cancel</Text>
+          <Text>{localizedCopy.interfaceCopy.screen.cancel}</Text>
         </Button>
         <Button
           disabled={

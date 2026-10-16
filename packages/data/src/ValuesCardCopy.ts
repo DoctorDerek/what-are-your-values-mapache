@@ -18,7 +18,7 @@ export const VALUES_CARD_COPY = Object.freeze({
   downloadStarted: "Your file is ready in your device’s save or download flow.",
   handoff: "Your card was handed to your device’s sharing options.",
   saved: "Card saved.",
-  cancelled: "Cancelled. Your card is still ready.",
+  cancelled: "Canceled. Your card is still ready.",
   details: "Technical details",
   invitation: "Play free at WhatAreYourValuesMapache.com",
   preview: "Values card preview",

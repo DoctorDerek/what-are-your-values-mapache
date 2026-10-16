@@ -20,10 +20,13 @@ describe("web metadata", () => {
         "What Are Your Values, Mapache? A Free Game To Find What You Value in Life",
       description:
         "What Are Your Values, Mapache? is a fast-paced, value-sorting autobattler to help you find out what you value in life.",
+      manifest: "/manifest.webmanifest",
       alternates: {
         canonical: "https://whatareyourvaluesmapache.com/",
         languages: {
           en: "https://whatareyourvaluesmapache.com/",
+          "es-MX":
+            "https://whatareyourvaluesmapache.com/que-valoras-en-la-vida",
           "x-default": "https://whatareyourvaluesmapache.com/",
         },
       },
@@ -44,6 +47,26 @@ describe("web metadata", () => {
         title: WEB_METADATA_TITLE,
         description: WEB_METADATA_DESCRIPTION,
       },
+    })
+  })
+
+  it("publishes Spanish identity with a self-referencing canonical and shared language alternates", () => {
+    const spanish = createWebMetadata("production", "es-MX")
+    expect(spanish.title).toContain("¿Cuáles son tus valores, Mapache?")
+    expect(spanish.manifest).toBe("/manifests/es-MX")
+    expect(spanish.alternates?.canonical).toBe(
+      "https://whatareyourvaluesmapache.com/que-valoras-en-la-vida",
+    )
+    expect(spanish.alternates?.languages).toEqual(
+      createWebMetadata("production").alternates?.languages,
+    )
+    expect(spanish.openGraph).toMatchObject({
+      locale: "es_MX",
+      url: "https://whatareyourvaluesmapache.com/que-valoras-en-la-vida",
+    })
+    expect(createWebMetadata("preview", "es-MX").robots).toEqual({
+      index: false,
+      follow: false,
     })
   })
 

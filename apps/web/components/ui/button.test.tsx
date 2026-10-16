@@ -53,12 +53,12 @@ describe("Button Primitive Integration", () => {
   it("composes the same styles onto a semantic link when requested", () => {
     render(
       <Button asChild variant="secondary">
-        <a href="/values">Browse Values</a>
+        <a href="#values">Browse Values</a>
       </Button>,
     )
 
     const link = screen.getByRole("link", { name: "Browse Values" })
-    expect(link).toHaveAttribute("href", "/values")
+    expect(link).toHaveAttribute("href", "#values")
     expect(link).toHaveAttribute("data-slot", "button")
     expect(link).toHaveClass("bg-secondary")
   })

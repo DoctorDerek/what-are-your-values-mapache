@@ -1,5 +1,7 @@
-import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
+import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
+import { useMemo } from "react"
 import { FlatList, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeAchievementCard from "@/components/NativeAchievementCard"
@@ -17,6 +19,13 @@ export default function NativeAchievements({
   readonly onClose: () => void
   readonly onOpenMenu: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+
+  const { integer } = useMemo(
+    () => createLocaleFormatters(localizedCopy.metadata.languageTag),
+    [localizedCopy.metadata.languageTag],
+  )
   const unlockedCount = achievements.filter(
     ({ status }) => status === "unlocked",
   ).length
@@ -28,7 +37,7 @@ export default function NativeAchievements({
           variant="h1"
           className="text-mapache-vivid-primary-cyan text-left text-4xl font-black tracking-tight uppercase"
         >
-          Achievements
+          {localizedCopy.interfaceCopy.screen.achievements}
         </Text>
         <View className="flex-row gap-3">
           <Button
@@ -45,7 +54,7 @@ export default function NativeAchievements({
             variant="secondary"
             onPress={onClose}
           >
-            <Text>Back to Your Values</Text>
+            <Text>{localizedCopy.interfaceCopy.screen.backToValues}</Text>
           </Button>
         </View>
       </View>
@@ -61,17 +70,20 @@ export default function NativeAchievements({
                 accessibilityRole="header"
                 className="text-3xl font-black text-black uppercase"
               >
-                Local Milestones
+                {localizedCopy.interfaceCopy.screen.localMilestones}
               </Text>
               <Text className="mt-3 text-lg leading-7 font-bold text-black">
-                Private, offline progress. No leaderboards or social comparison.
+                {localizedCopy.interfaceCopy.screen.achievementPrivacy}
               </Text>
             </View>
             <Text
               accessibilityLiveRegion="polite"
               className="bg-mapache-vivid-secondary-green border-4 border-black p-4 text-xl font-black text-black uppercase"
             >
-              {unlockedCount} of {achievements.length} unlocked
+              {localizedCopy.interfaceCopy.screen.achievementsUnlocked(
+                integer(unlockedCount),
+                integer(achievements.length),
+              )}
             </Text>
           </View>
         }

@@ -1,4 +1,9 @@
-import { getValueDisplayName, type ActiveValueDefinition } from "./Value"
+import {
+  getValueDisplayName,
+  type ActiveValueDefinition,
+  type CanonicalValueId,
+  type LocalizedValueCopy,
+} from "./Value"
 
 const BATTLE_VALUE_WORD_BREAKS: ReadonlyMap<string, string> = new Map([
   ["Acceptance", "Accep\u00adtance"],
@@ -36,9 +41,11 @@ const BATTLE_VALUE_WORD_BREAKS: ReadonlyMap<string, string> = new Map([
 
 export function getBattleValueDisplayName(
   value: ActiveValueDefinition,
+  translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>,
+  languageTag = "en-US",
 ): string {
-  const name = getValueDisplayName(value)
-  return value.kind === "canonical"
+  const name = getValueDisplayName(value, translations)
+  return value.kind === "canonical" && languageTag.split("-")[0] === "en"
     ? name.replace(
         /[A-Za-z]+/g,
         (word) => BATTLE_VALUE_WORD_BREAKS.get(word) ?? word,

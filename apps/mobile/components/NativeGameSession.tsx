@@ -1,6 +1,7 @@
 import { resolveLocale } from "@game/data/src/LocaleRegistry"
 import { rootMachine } from "@game/machines/src/RootMachine"
 import type { RootActor } from "@game/machines/src/RuntimeRecovery"
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
 import { useActorRef } from "@xstate/react"
 import * as ExpoCrypto from "expo-crypto"
@@ -25,11 +26,14 @@ export default function NativeGameSession({
   readonly children: (gameActor: RootActor) => ReactNode
   readonly onReopen: () => void
 }) {
-  const [, notifyActorFailure] = useReducer(
+  const [, notifyActorUpdate] = useReducer(
     (revision: number) => revision + 1,
     0,
   )
-  const observer = useMemo(() => ({ error: notifyActorFailure }), [])
+  const observer = useMemo(
+    () => ({ next: notifyActorUpdate, error: notifyActorUpdate }),
+    [],
+  )
   const gameActor = useActorRef(
     rootMachine,
     {
@@ -51,16 +55,25 @@ export default function NativeGameSession({
     })
   }, [gameActor])
 
-  if (gameActor.getSnapshot().status === "error")
-    return <NativeRuntimeRecovery gameActor={gameActor} onReopen={onReopen} />
-
+  const snapshot = gameActor.getSnapshot()
   return (
-    <RenderRecoveryBoundary
-      fallback={(retry) => (
-        <NativeRuntimeRecovery gameActor={gameActor} onRetry={retry} />
-      )}
+    <LocaleProvider
+      locale={
+        snapshot.context.playerData?.settings.locale ??
+        snapshot.context.initialLocale
+      }
     >
-      {children(gameActor)}
-    </RenderRecoveryBoundary>
+      {snapshot.status === "error" ? (
+        <NativeRuntimeRecovery gameActor={gameActor} onReopen={onReopen} />
+      ) : (
+        <RenderRecoveryBoundary
+          fallback={(retry) => (
+            <NativeRuntimeRecovery gameActor={gameActor} onRetry={retry} />
+          )}
+        >
+          {children(gameActor)}
+        </RenderRecoveryBoundary>
+      )}
+    </LocaleProvider>
   )
 }

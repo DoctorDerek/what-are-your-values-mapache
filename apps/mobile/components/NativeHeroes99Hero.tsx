@@ -2,8 +2,8 @@ import {
   HEROES99_IDLE_FRAME_DURATION_MS,
   type Heroes99Appearance,
 } from "@game/data/src/Heroes99Appearance"
-import { DRESSING_ROOM_COPY } from "@game/data/src/Heroes99DressingRoom"
 import { HEROES99_IDLE_FRAME_COUNT } from "@game/data/src/Heroes99SpatialArchitecture"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { useEffect, useState } from "react"
 import { AppState, Image, View } from "react-native"
 import Animated, {
@@ -31,6 +31,9 @@ export default function NativeHeroes99Hero({
   shouldReduceMotion: boolean
   sizeClassName?: string
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const DRESSING_ROOM_COPY = localizedCopy.interfaceCopy.dressingRoom
+
   const sizing = useResolveClassNames(sizeClassName)
   const height = typeof sizing.height === "number" ? sizing.height : 160
   const stageWidth = typeof sizing.width === "number" ? sizing.width : height

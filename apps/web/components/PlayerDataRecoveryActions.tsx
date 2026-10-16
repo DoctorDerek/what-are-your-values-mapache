@@ -1,6 +1,6 @@
 "use client"
 
-import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { Button } from "@/components/ui/button"
 
 export const playerDataRecoveryActionIds = Object.freeze({
@@ -39,6 +39,9 @@ type PlayerDataRecoveryActionsProps =
 export default function PlayerDataRecoveryActions(
   props: PlayerDataRecoveryActionsProps,
 ) {
+  const localizedCopy = useLocaleCatalog()
+  const playerDataRecoveryCopy = localizedCopy.interfaceCopy.recovery
+
   const { actions } = playerDataRecoveryCopy
 
   if (props.mode === "unreadable-data") {

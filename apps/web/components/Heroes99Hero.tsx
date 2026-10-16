@@ -4,9 +4,9 @@ import {
   HEROES99_IDLE_FRAME_DURATION_MS,
   type Heroes99Appearance,
 } from "@game/data/src/Heroes99Appearance"
-import { DRESSING_ROOM_COPY } from "@game/data/src/Heroes99DressingRoom"
 import type { Heroes99RuntimeAssets } from "@game/data/src/Heroes99RuntimeAssets"
 import { HEROES99_IDLE_FRAME_COUNT } from "@game/data/src/Heroes99SpatialArchitecture"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import {
@@ -30,6 +30,9 @@ export default function Heroes99Hero({
   shouldReduceMotion: boolean
   className?: string
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const DRESSING_ROOM_COPY = localizedCopy.interfaceCopy.dressingRoom
+
   const [strip, setStrip] = useState<HeroStrip | null>(null)
   const [failed, setFailed] = useState(false)
   const canvas = useRef<HTMLCanvasElement>(null)

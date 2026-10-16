@@ -3,7 +3,7 @@ import { createActor } from "xstate"
 import { ACHIEVEMENT_CATALOG } from "./AchievementCatalog"
 import { achievementNotificationMachine } from "./AchievementNotificationMachine"
 import {
-  getAchievementEnglishCopy,
+  getAchievementCopy,
   type AchievementPresentation,
 } from "./AchievementPresentation"
 
@@ -11,7 +11,7 @@ const achievements = ACHIEVEMENT_CATALOG.slice(0, 4).map(
   (achievement) =>
     ({
       id: achievement.id,
-      ...getAchievementEnglishCopy(achievement),
+      ...getAchievementCopy(achievement),
       status: "unlocked",
       progress: null,
       unlockedAt: "2026-09-24T12:00:00.000Z",

@@ -50,7 +50,7 @@ describe("animal card attention", () => {
     )
     const choice = screen.getByRole("button", { name: /^Choose / })
     expect(screen.getByRole("heading").textContent).toBe(value.englishName)
-    expect(screen.getByRole("heading")).toHaveAttribute("lang", "en")
+    expect(screen.getByRole("heading")).toHaveAttribute("lang", "en-US")
     expect(choice).toHaveAccessibleDescription(`“${value.sourceDefinition}”`)
     expect(choice.textContent).not.toMatch(/[\u00ad\u200b]/u)
     fireEvent.click(choice)

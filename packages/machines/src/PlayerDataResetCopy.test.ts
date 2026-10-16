@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest"
 import {
   playerDataResetBackupReadyNotice,
   playerDataResetCopy,
-} from "./PlayerDataResetCopy"
+} from "@game/data/src/PlayerDataResetCopy"
+import { describe, expect, it } from "vitest"
 
 describe("Player Data Reset Copy", () => {
   it("defines one exact scope-specific contract for every destructive action", () => {
@@ -19,13 +19,11 @@ describe("Player Data Reset Copy", () => {
     )
     expect(
       playerDataResetCopy["reset-levels-and-experience"].confirmationBody,
-    ).toContain(
-      "It advances the internal progress generation so restored scheduler state cannot cross the reset boundary. Your current value ranking restarts from an all-tied baseline.",
-    )
+    ).toContain("Your value ranking starts over with all values tied.")
     expect(
       playerDataResetCopy["reset-achievements"].confirmationBody,
     ).toContain(
-      "After reset, threshold achievements respond to future qualifying events; a threshold already satisfied does not silently unlock again without a new qualifying event. Use Reset Levels & Experience too if you want to replay level thresholds from the beginning.",
+      "After reset, achievements require new qualifying progress. A milestone you already reached does not unlock again just because you reset achievements. Use Reset Levels & Experience too if you want to earn level milestones again from the beginning.",
     )
     expect(playerDataResetCopy["delete-all-data"].confirmationBody).toContain(
       "You will return to Introduction. This does not uninstall the app or remove the offline program files needed to open it. This cannot be undone. Export your data first if you may want it later.",

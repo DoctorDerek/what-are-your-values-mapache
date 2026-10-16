@@ -32,7 +32,10 @@ export function defineShippedLocales<
   return Object.freeze(locales)
 }
 
-export const SHIPPED_LOCALES = defineShippedLocales([DEFAULT_LOCALE] as const)
+export const SHIPPED_LOCALES = defineShippedLocales([
+  DEFAULT_LOCALE,
+  "es-MX",
+] as const)
 export type SupportedLocale = (typeof SHIPPED_LOCALES)[number]
 
 function canonicalizeLanguageTag(languageTag: string) {
@@ -43,19 +46,27 @@ function canonicalizeLanguageTag(languageTag: string) {
   }
 }
 
-export function resolveLocale<
-  Locale extends CandidateLocale = SupportedLocale,
->({
-  explicitLocale,
-  routeLocale,
-  preferredLanguages = [],
-  shippedLocales = SHIPPED_LOCALES,
-}: {
+type LocaleResolutionOptions<Locale extends CandidateLocale> = {
   readonly explicitLocale?: string | null
   readonly routeLocale?: string | null
   readonly preferredLanguages?: readonly string[]
   readonly shippedLocales?: readonly (Locale | typeof DEFAULT_LOCALE)[]
-} = {}): Locale | typeof DEFAULT_LOCALE {
+}
+
+export function resolveLocale(
+  options?: LocaleResolutionOptions<SupportedLocale>,
+): SupportedLocale
+export function resolveLocale<Locale extends CandidateLocale>(
+  options: LocaleResolutionOptions<Locale> & {
+    readonly shippedLocales: readonly (Locale | typeof DEFAULT_LOCALE)[]
+  },
+): Locale | typeof DEFAULT_LOCALE
+export function resolveLocale({
+  explicitLocale,
+  routeLocale,
+  preferredLanguages = [],
+  shippedLocales = SHIPPED_LOCALES,
+}: LocaleResolutionOptions<CandidateLocale> = {}): CandidateLocale {
   const match = (languageTag: string | null | undefined) => {
     const canonicalTag = languageTag
       ? canonicalizeLanguageTag(languageTag)

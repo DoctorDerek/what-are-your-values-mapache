@@ -110,7 +110,7 @@ export const HOW_IT_WORKS_INFORMATION_PANEL = Object.freeze({
       kind: "section",
       heading: "See Your Top Five—and Every Value",
       paragraphs: Object.freeze([
-        "Your Top Five compresses a large set of possibilities into something memorable. Browse All Values whenever you want the complete picture. Definitions are already visible in Battle and All Values; the Hub uses concise rows and does not hide meaning behind a definition interaction.",
+        "Your Top Five gives you a short summary of what matters most. Browse All Values for your complete ranking and definitions. Definitions are also visible during Battle.",
       ]),
     }),
     Object.freeze({
@@ -124,14 +124,14 @@ export const HOW_IT_WORKS_INFORMATION_PANEL = Object.freeze({
       kind: "section",
       heading: "Change Your Custom Values Carefully",
       paragraphs: Object.freeze([
-        "Adding, editing, or removing a Custom Value changes the meaning or membership of your value deck. WAYVM preserves every retained value’s progress, explains that the current pair cycle and Undo/Redo history will clear, offers a JSON export before confirmation, and starts a deterministic Join Pass when a value joins.",
+        "Adding, editing, or removing a Custom Value restarts battle matching and clears Undo and Redo. Every value you keep retains its progress. You can export a JSON backup before confirming. When you add values, comparisons involving the new values alternate with comparisons among existing values while both kinds remain available.",
       ]),
     }),
     Object.freeze({
       kind: "section",
       heading: "Undo Mistakes",
       paragraphs: Object.freeze([
-        "One tap or click makes a choice. If you choose the wrong card by accident—or simply reconsider—use Undo. Redo restores an undone choice until you create a new branch.",
+        "One tap or click makes a choice. If you choose the wrong card by accident—or simply reconsider—use Undo. Redo restores an undone choice until you make a new choice.",
       ]),
     }),
     Object.freeze({

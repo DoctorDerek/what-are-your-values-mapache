@@ -228,6 +228,32 @@ beforeEach(() => {
 })
 
 describe("native values-card files", () => {
+  it("uses the selected card language for the native share sheet", async () => {
+    const spanish = getLocaleCatalog("es-MX")
+    const card = await prepareNativeValuesCard(
+      {
+        ...model,
+        title: spanish.hub.rankedTitle,
+        invitation: spanish.card.invitation,
+        copy: spanish.card,
+      },
+      palette,
+      {
+        includeHero: false,
+        format: "png",
+        signal: new AbortController().signal,
+      },
+    )
+    expect(await card.share()).toBe("handed-off")
+    expect(native.share).toHaveBeenCalledWith(
+      card.previewUri,
+      expect.objectContaining({
+        dialogTitle: "Compartir mi tarjeta de valores",
+      }),
+    )
+    card.dispose()
+  })
+
   it("passes exact names to native font fallback and copies prepared PNG bytes without overwriting an existing file", async () => {
     const card = await prepare()
     expect(native.fromURI).toHaveBeenCalledWith("asset:1")

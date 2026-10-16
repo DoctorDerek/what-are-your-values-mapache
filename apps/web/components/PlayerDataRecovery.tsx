@@ -1,6 +1,6 @@
 "use client"
 
-import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { PlayerDataResetReview as PlayerDataResetReviewState } from "@game/machines/src/PlayerDataReset"
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
 import { useEffect, useRef } from "react"
@@ -12,12 +12,7 @@ import PlayerDataRecoveryActions, {
 } from "./PlayerDataRecoveryActions"
 import PlayerDataResetReview from "./PlayerDataResetReview"
 
-export type PlayerDataRecoveryActivity =
-  | "Checking backup…"
-  | "Creating backup…"
-  | "Creating diagnostic file…"
-  | "Deleting data…"
-  | "Restoring backup…"
+export type PlayerDataRecoveryActivity = string
 
 type SharedPlayerDataRecoveryProps = {
   readonly activity: PlayerDataRecoveryActivity | null
@@ -55,6 +50,9 @@ type PlayerDataRecoveryProps =
   UnreadableDataRecoveryProps | StorageUnavailableRecoveryProps
 
 export default function PlayerDataRecovery(props: PlayerDataRecoveryProps) {
+  const localizedCopy = useLocaleCatalog()
+  const playerDataRecoveryCopy = localizedCopy.interfaceCopy.recovery
+
   const headingRef = useRef<HTMLHeadingElement>(null)
   const issueRef = useRef<HTMLParagraphElement>(null)
   const importInputRef = useRef<HTMLInputElement>(null)
@@ -180,7 +178,9 @@ export default function PlayerDataRecovery(props: PlayerDataRecoveryProps) {
               type="file"
               accept={WAYVM_IMPORT_FILE_ACCEPT}
               disabled={isBusy}
-              aria-label="Choose WAYVM JSON backup for recovery"
+              aria-label={
+                localizedCopy.interfaceCopy.screen.chooseRecoveryBackup
+              }
               className="sr-only"
               onChange={(event) => {
                 const file = event.currentTarget.files?.[0]
