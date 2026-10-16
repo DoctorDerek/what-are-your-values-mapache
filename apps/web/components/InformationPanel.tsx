@@ -41,10 +41,10 @@ function InformationPanelFrame({
   const titleId = useId()
   const isIntroduction = presentation === "introduction"
   const titleClassName = cx(
-    "relative z-20 text-mapache-vivid-primary-cyan leading-tight font-black",
+    "relative z-20 text-mapache-vivid-primary-cyan font-black",
     isIntroduction
-      ? "text-[clamp(21px,6.85vw,36px)] xl:text-[clamp(2.625rem,4vw,4rem)]"
-      : "text-4xl [overflow-wrap:anywhere] uppercase sm:text-5xl lg:text-7xl",
+      ? "font-arrival-title text-[calc(clamp(21px,6.85vw,36px)*1.3)] leading-[calc(1.25/1.3)] tracking-normal xl:text-[calc(clamp(2.625rem,4vw,4rem)*1.3)]"
+      : "text-4xl leading-tight [overflow-wrap:anywhere] uppercase sm:text-5xl lg:text-7xl",
     accessibleCloseLabel && "px-12",
   )
 

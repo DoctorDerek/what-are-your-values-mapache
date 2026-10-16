@@ -1,3 +1,14 @@
 @import "tailwindcss";
 @import "uniwind";
 @import "@game/design-tokens/mapachito-vivid.css";
+
+@layer theme {
+  :root {
+    @variant ios {
+      --font-arrival-title: "AvenirNextCondensed-Heavy";
+    }
+    @variant android {
+      --font-arrival-title: "sans-serif-condensed";
+    }
+  }
+}
