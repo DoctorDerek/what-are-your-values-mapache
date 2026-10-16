@@ -561,7 +561,7 @@ function NativeGameClientContent({
     <NativeAchievementBanner
       achievements={pendingAchievementPresentations}
       isAcknowledgementPending={isRecordingAchievementPresentation}
-      placement={isResultsSurface ? "inline" : "screen"}
+      placement={isResultsSurface || isHubSurface ? "inline" : "screen"}
       shouldReduceMotion={shouldReduceMotion}
       onPresented={handleAchievementPresented}
     />
@@ -625,6 +625,7 @@ function NativeGameClientContent({
     return (
       <View className="flex-1">
         <NativeHub
+          notifications={achievementBanner}
           appearance={playerData.appearance}
           onShare={() =>
             setSharedCard(
@@ -664,7 +665,6 @@ function NativeGameClientContent({
         />
         {reopenedInformationPanel}
         {controls}
-        {achievementBanner}
       </View>
     )
 

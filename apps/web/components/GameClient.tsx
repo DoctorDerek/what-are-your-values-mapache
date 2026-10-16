@@ -796,7 +796,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     <AchievementBanner
       achievements={pendingAchievementPresentations}
       isAcknowledgementPending={isRecordingAchievementPresentation}
-      placement={isResultsSurface ? "inline" : "screen"}
+      placement={isResultsSurface || isHubSurface ? "inline" : "screen"}
       shouldReduceMotion={shouldReduceMotion}
       onPresented={handleAchievementPresented}
     />
@@ -849,6 +849,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     return (
       <>
         <Hub
+          notifications={achievementBanner}
           appearance={playerData.appearance}
           onShare={() => {
             shareTriggerRef.current =
@@ -926,7 +927,6 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         />
         {reopenedInformationPanel}
         {controls}
-        {achievementBanner}
       </>
     )
   }

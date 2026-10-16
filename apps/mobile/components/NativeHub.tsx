@@ -4,6 +4,7 @@ import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwa
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { cx } from "classix"
+import type { ReactNode } from "react"
 import { ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeHeroes99Hero from "@/components/NativeHeroes99Hero"
@@ -17,6 +18,7 @@ export default function NativeHub({
   rankedValues,
   runtimeClipCatalog,
   dataNotice,
+  notifications,
   shouldReduceMotion,
   onAddCustomValue,
   onBrowseAllValues,
@@ -30,6 +32,7 @@ export default function NativeHub({
   rankedValues: readonly RankedValue[]
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
   dataNotice: string | null
+  notifications?: ReactNode
   shouldReduceMotion: boolean
   onAddCustomValue: () => void
   onBrowseAllValues: () => void
@@ -71,7 +74,7 @@ export default function NativeHub({
             {dataNotice}
           </Text>
         )}
-        <View className="border-player-card-frame bg-player-card-background w-full max-w-7xl flex-row flex-wrap overflow-hidden border-4">
+        <View className="border-player-card-frame bg-player-card-background relative w-full max-w-7xl flex-row flex-wrap overflow-hidden border-4">
           <View
             accessible
             accessibilityRole="header"
@@ -117,6 +120,13 @@ export default function NativeHub({
               {PERSONAL_HUB_COPY.unrankedNotice}
             </Text>
           )}
+          <ScrollView
+            pointerEvents="box-none"
+            className="absolute inset-x-0 top-0 z-50 max-h-full"
+            contentContainerClassName="p-2"
+          >
+            {notifications}
+          </ScrollView>
         </View>
         <View className="w-full max-w-7xl gap-4">
           <View className="gap-4 xl:flex-row">
