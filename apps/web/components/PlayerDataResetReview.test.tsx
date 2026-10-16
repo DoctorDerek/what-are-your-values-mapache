@@ -37,7 +37,7 @@ describe("Player Data Reset Review", () => {
     })
     await waitFor(() => expect(heading).toHaveFocus())
     expect(
-      screen.getByText(/Your current value ranking restarts/),
+      screen.getByText(/Your value ranking starts over with all values tied/),
     ).toBeVisible()
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument()
 

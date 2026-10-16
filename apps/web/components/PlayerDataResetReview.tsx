@@ -1,10 +1,10 @@
 "use client"
 
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   DELETE_ALL_DATA_ACKNOWLEDGMENT,
   type PlayerDataResetReview as PlayerDataResetReviewState,
 } from "@game/machines/src/PlayerDataReset"
-import { playerDataResetCopy } from "@game/machines/src/PlayerDataResetCopy"
 import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 
@@ -21,6 +21,9 @@ export default function PlayerDataResetReview({
   onConfirm: (review: PlayerDataResetReviewState) => void
   onExport: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const playerDataResetCopy = localizedCopy.interfaceCopy.resets
+
   const headingRef = useRef<HTMLHeadingElement>(null)
   const [acknowledgedCompleteErasure, setAcknowledgedCompleteErasure] =
     useState(false)
@@ -77,7 +80,7 @@ export default function PlayerDataResetReview({
           wrap
           className="w-full"
         >
-          Export Data
+          {localizedCopy.interfaceCopy.screen.exportData}
         </Button>
         <Button
           type="button"
@@ -88,7 +91,7 @@ export default function PlayerDataResetReview({
           wrap
           className="w-full"
         >
-          Cancel
+          {localizedCopy.interfaceCopy.screen.cancel}
         </Button>
         <Button
           type="button"

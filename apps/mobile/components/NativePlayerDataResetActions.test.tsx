@@ -1,5 +1,5 @@
+import { playerDataResetCopy } from "@game/data/src/PlayerDataResetCopy"
 import { PLAYER_DATA_RESET_KINDS } from "@game/machines/src/PlayerDataReset"
-import { playerDataResetCopy } from "@game/machines/src/PlayerDataResetCopy"
 import { SETTINGS_PLAYER_DATA_RESET_KINDS } from "@game/machines/src/PlayerSettingsPresentation"
 import { describe, expect, it, jest } from "@jest/globals"
 import { render, screen, userEvent } from "@testing-library/react-native"

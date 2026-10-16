@@ -1,8 +1,8 @@
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   PLAYER_DATA_RESET_KINDS,
   type PlayerDataResetKind,
 } from "@game/machines/src/PlayerDataReset"
-import { playerDataResetCopy } from "@game/machines/src/PlayerDataResetCopy"
 import { cx } from "classix"
 import { View } from "react-native"
 import { Button } from "@/components/ui/button"
@@ -19,13 +19,16 @@ export default function NativePlayerDataResetActions({
   readonly onRequestReset: (resetKind: PlayerDataResetKind) => void
   readonly playerDataResetKinds?: readonly PlayerDataResetKind[]
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const playerDataResetCopy = localizedCopy.interfaceCopy.resets
+
   return (
     <View className="gap-5">
       <Text
         variant="h2"
         className="text-mapache-vivid-primary-cyan border-b-4 border-black pb-2 text-left text-3xl font-black tracking-tight uppercase"
       >
-        Reset or Delete
+        {localizedCopy.interfaceCopy.screen.resetOrDelete}
       </Text>
 
       {playerDataResetKinds.map((resetKind) => {
@@ -55,7 +58,7 @@ export default function NativePlayerDataResetActions({
             </Text>
             {hasNothingToDelete ? (
               <Text className="text-base font-black text-black">
-                No Custom Values to delete.
+                {localizedCopy.interfaceCopy.screen.noCustomValues}
               </Text>
             ) : null}
             <Button
