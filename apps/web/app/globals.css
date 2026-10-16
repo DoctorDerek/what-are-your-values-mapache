@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @import "@game/design-tokens/mapachito-vivid.css";
 
+@font-face {
+  font-family: "WAYVM Condensed";
+  src: url("/fonts/Anton-Latin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 @utility animate-arrival-raccoon {
   animation: arrival-raccoon var(--arrival-runner-duration) linear
     var(--arrival-runner-delay) both;

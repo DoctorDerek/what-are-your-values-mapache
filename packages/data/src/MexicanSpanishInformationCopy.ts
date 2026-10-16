@@ -363,6 +363,14 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
           "El código de la aplicación puede estar disponible bajo la licencia de código abierto que se indica. El arte comercial, las fuentes, la música y otros recursos de terceros conservan sus propias licencias y no se conceden mediante la licencia del código.",
         ],
       },
+      {
+        kind: "resource",
+        title: "Anton de Vernon Adams",
+        description:
+          "El título web usa Anton como fuente condensada alternativa, bajo la SIL Open Font License 1.1. Derechos de autor 2020: The Anton Project Authors.",
+        actionLabel: "Ver Anton",
+        url: "https://github.com/googlefonts/AntonFont",
+      },
     ],
   },
 }

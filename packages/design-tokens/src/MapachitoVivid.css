@@ -1,7 +1,8 @@
 @theme {
   --font-arrival-title:
-    Impact, Haettenschweiler, "Arial Narrow Bold", "Roboto Condensed",
-    "Avenir Next Condensed", "sans-serif-condensed", "Trebuchet MS", sans-serif;
+    Impact, "WAYVM Condensed", Haettenschweiler, "Arial Narrow Bold",
+    "Roboto Condensed", "Avenir Next Condensed", "sans-serif-condensed",
+    "Trebuchet MS", sans-serif;
   --color-player-card-frame: #009dae;
   --color-player-card-background: #71dfe7;
   --color-player-card-values: #c2fff9;
