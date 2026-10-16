@@ -88,7 +88,7 @@ function NativeValueChoiceCard(
           contentContainerClassName="grow px-3 pb-3 xl:px-6"
           nestedScrollEnabled
         >
-          <View className="max-h-6 min-h-2 shrink grow basis-6" />
+          <View className="max-h-6 min-h-2 shrink grow basis-6 xl:max-h-24 xl:min-h-6 xl:basis-24" />
           <View className="w-full shrink-0 items-center">
             <Text
               accessibilityLabel={displayName}
@@ -120,7 +120,7 @@ function NativeValueChoiceCard(
             </View>
             <Text
               android_hyphenationFrequency="full"
-              className="mt-2 w-full border-2 border-white bg-black/50 px-3 py-2 text-center text-lg leading-7 font-bold text-white xl:mt-4 xl:p-4 xl:text-xl xl:leading-8"
+              className="mt-2 w-full border-2 border-white bg-black/50 px-3 py-2 text-center text-lg leading-7 font-bold text-white xl:mt-6 xl:p-6 xl:text-xl xl:leading-8"
             >
               “{displayDefinition}”
             </Text>
