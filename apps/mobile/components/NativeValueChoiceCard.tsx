@@ -85,10 +85,11 @@ function NativeValueChoiceCard(
       >
         <ScrollView
           className="min-h-0 w-full min-w-0 flex-1"
-          contentContainerClassName="grow justify-center px-3 py-3 xl:px-6 xl:py-8"
+          contentContainerClassName="grow px-3 pb-3 xl:px-6"
           nestedScrollEnabled
         >
-          <View className="w-full items-center">
+          <View className="max-h-6 min-h-2 shrink grow basis-6" />
+          <View className="w-full shrink-0 items-center">
             <Text
               accessibilityLabel={displayName}
               variant="h2"
@@ -119,11 +120,12 @@ function NativeValueChoiceCard(
             </View>
             <Text
               android_hyphenationFrequency="full"
-              className="mt-3 w-full border-2 border-white bg-black/50 p-3 text-center text-lg leading-7 font-bold text-white xl:mt-6 xl:p-5 xl:text-xl xl:leading-8"
+              className="mt-2 w-full border-2 border-white bg-black/50 px-3 py-2 text-center text-lg leading-7 font-bold text-white xl:mt-4 xl:p-4 xl:text-xl xl:leading-8"
             >
               “{displayDefinition}”
             </Text>
           </View>
+          <View className="grow" />
         </ScrollView>
         {isWinner ? (
           <View

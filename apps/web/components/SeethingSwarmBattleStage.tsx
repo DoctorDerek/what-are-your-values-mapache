@@ -315,7 +315,7 @@ export default function SeethingSwarmBattleStage({
 
   return (
     <div
-      className="relative grid min-h-min min-w-0 flex-1 grid-cols-2 grid-rows-[max-content_minmax(max-content,1fr)] [--battle-combatant-size:var(--battle-tile-size)] [--battle-visible-size:var(--battle-visible-height)]"
+      className="relative grid min-h-0 min-w-0 flex-1 grid-cols-2 grid-rows-[minmax(0.5rem,1.5rem)_max-content_minmax(0.5rem,1rem)_max-content_minmax(2rem,3rem)_1fr] [--battle-combatant-size:var(--battle-tile-size)] [--battle-visible-size:var(--battle-visible-height)]"
       data-battle-stage-mode={choreography.mode}
       data-battle-stage-state={winnerId ? "resolving" : "awaiting-input"}
       data-choreography-identity={choreography.choreographyIdentity}

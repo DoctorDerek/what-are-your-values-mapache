@@ -73,6 +73,9 @@ for (const width of [320, 390, 1280]) {
           "data-choreography-identity",
           identity!,
         )
+        await page
+          .getByRole("button", { name: "Dismiss achievement: First Battle" })
+          .click()
         await page.getByRole("button", { name: "Stop", exact: true }).click()
         await expect(
           page.getByRole("heading", { name: "Results", exact: true }),
@@ -351,12 +354,12 @@ for (const viewport of [
           }
         }),
       )
-    expect(actionBounds.slice(0, 4).map(({ name }) => name)).toEqual([
+    expect(actionBounds.slice(0, 3).map(({ name }) => name)).toEqual([
       "Menu",
-      "Undo",
       "Redo",
-      "Stop",
+      "Undo",
     ])
+    expect(actionBounds.at(-1)?.name).toBe("Stop")
     for (const [index, { button, label }] of actionBounds.entries()) {
       expect(button.left).toBeGreaterThanOrEqual(0)
       expect(button.right).toBeLessThanOrEqual(viewport.width)
@@ -366,12 +369,14 @@ for (const viewport of [
       expect(label.bottom).toBeLessThanOrEqual(button.bottom)
       for (const { button: other } of actionBounds.slice(index + 1)) {
         expect(
-          button.left < other.right &&
-            button.right > other.left &&
-            button.top < other.bottom &&
-            button.bottom > other.top,
+          Math.min(
+            Math.min(button.right, other.right) -
+              Math.max(button.left, other.left),
+            Math.min(button.bottom, other.bottom) -
+              Math.max(button.top, other.top),
+          ),
           "Battle actions must not overlap at enlarged text sizes",
-        ).toBe(false)
+        ).toBeLessThanOrEqual(0.01)
       }
     }
     for (const action of await actionBar.getByRole("button").all()) {

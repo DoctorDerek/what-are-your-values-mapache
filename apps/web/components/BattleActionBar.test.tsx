@@ -29,12 +29,14 @@ describe("Battle Action Bar", () => {
     const undo = screen.getByRole("button", { name: "Undo" })
     const redo = screen.getByRole("button", { name: "Redo" })
     const menu = screen.getByRole("button", { name: "Menu" })
-    expect(screen.getAllByRole("button").slice(0, 4)).toEqual([
+    expect(screen.getAllByRole("button").slice(0, 3)).toEqual([
       menu,
-      undo,
       redo,
-      screen.getByRole("button", { name: "Stop" }),
+      undo,
     ])
+    expect(screen.getAllByRole("button").at(-1)).toBe(
+      screen.getByRole("button", { name: "Stop" }),
+    )
     expect(
       menu.compareDocumentPosition(screen.getByRole("group")) &
         Node.DOCUMENT_POSITION_FOLLOWING,

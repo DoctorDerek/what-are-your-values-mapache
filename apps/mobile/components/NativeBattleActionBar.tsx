@@ -35,63 +35,57 @@ export default function NativeBattleActionBar({
   return (
     <View
       accessibilityLabel={localizedCopy.interfaceCopy.screen.battleActions}
-      className="w-full max-w-3xl shrink-0 gap-3 self-center p-3 pb-6 xl:gap-4 xl:px-6"
+      className="w-full max-w-3xl shrink-0 gap-2 self-center p-3 pb-6 xl:gap-4 xl:px-6"
     >
-      <View className="min-w-0 flex-row gap-2 xl:gap-4">
+      <View className="min-w-0 flex-row flex-wrap gap-2 xl:gap-4">
         <Button
           accessibilityLabel={localizedCopy.interfaceCopy.controlActions.menu}
-          className="min-w-0 flex-1"
+          className="grow basis-auto"
           disabled={!canOpenMenu}
           size="battle"
           variant="secondary"
           onPress={onOpenMenu}
         >
-          <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1}>
-            {localizedCopy.interfaceCopy.controlActions.menu}
-          </Text>
-        </Button>
-        <Button
-          accessibilityLabel={localizedCopy.interfaceCopy.controlActions.undo}
-          className="min-w-0 flex-1"
-          disabled={!canUndo}
-          size="battle"
-          variant="outline"
-          onPress={onUndo}
-        >
-          <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1}>
-            {localizedCopy.interfaceCopy.controlActions.undo}
-          </Text>
+          <Text>{localizedCopy.interfaceCopy.controlActions.menu}</Text>
         </Button>
         <Button
           accessibilityLabel={localizedCopy.interfaceCopy.controlActions.redo}
-          className="min-w-0 flex-1"
+          className="grow basis-auto"
           disabled={!canRedo}
           size="battle"
           variant="outline"
           onPress={onRedo}
         >
-          <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1}>
-            {localizedCopy.interfaceCopy.controlActions.redo}
-          </Text>
+          <Text>{localizedCopy.interfaceCopy.controlActions.redo}</Text>
         </Button>
         <Button
+          accessibilityLabel={localizedCopy.interfaceCopy.controlActions.undo}
+          className="grow basis-auto"
+          disabled={!canUndo}
+          size="battle"
+          variant="outline"
+          onPress={onUndo}
+        >
+          <Text>{localizedCopy.interfaceCopy.controlActions.undo}</Text>
+        </Button>
+      </View>
+      <View className="min-w-0 flex-row flex-wrap items-stretch gap-2 xl:gap-4">
+        <NativeBattleSpeedControl
+          speed={animationSpeed}
+          disabled={!canChangeAnimationSpeed}
+          onChange={onAnimationSpeedChange}
+        />
+        <Button
           accessibilityLabel={localizedCopy.interfaceCopy.controlActions.stop}
-          className="min-w-0 flex-1"
+          className="grow basis-auto"
           disabled={!canStop}
           size="battle"
           variant="destructive"
           onPress={onStop}
         >
-          <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1}>
-            {localizedCopy.interfaceCopy.controlActions.stop}
-          </Text>
+          <Text>{localizedCopy.interfaceCopy.controlActions.stop}</Text>
         </Button>
       </View>
-      <NativeBattleSpeedControl
-        speed={animationSpeed}
-        disabled={!canChangeAnimationSpeed}
-        onChange={onAnimationSpeedChange}
-      />
     </View>
   )
 }

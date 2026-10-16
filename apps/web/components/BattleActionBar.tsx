@@ -93,7 +93,7 @@ export default function BattleActionBar({
   return (
     <nav
       aria-label={localizedCopy.interfaceCopy.screen.battleActions}
-      className="pointer-events-auto relative z-50 mx-auto flex max-h-[60dvh] w-full max-w-3xl shrink-0 flex-col gap-3 overflow-y-auto overscroll-contain p-3 pb-6 xl:gap-4 xl:px-6"
+      className="pointer-events-auto relative z-50 mx-auto flex max-h-[60dvh] w-full max-w-3xl shrink-0 flex-col gap-2 overflow-y-auto overscroll-contain p-3 pb-6 xl:gap-4 xl:px-6"
     >
       <div className="flex w-full flex-wrap gap-2 xl:gap-4">
         <button
@@ -108,21 +108,6 @@ export default function BattleActionBar({
             controllerFamily={controllerFamily}
             command="menu"
             shortcut="[ESC]"
-            showKeyboardControlHints={showKeyboardControlHints}
-          />
-        </button>
-        <button
-          type="button"
-          aria-label={localizedCopy.interfaceCopy.controlActions.undo}
-          disabled={!canUndo}
-          onClick={onUndo}
-          className={historyActionClasses}
-        >
-          <BattleActionLabel
-            label={localizedCopy.interfaceCopy.controlActions.undo}
-            controllerFamily={controllerFamily}
-            command="cancel"
-            shortcut="[Z]"
             showKeyboardControlHints={showKeyboardControlHints}
           />
         </button>
@@ -143,20 +128,35 @@ export default function BattleActionBar({
         </button>
         <button
           type="button"
-          aria-label={localizedCopy.interfaceCopy.controlActions.stop}
-          disabled={!canStop}
-          onClick={onStop}
-          className="bg-mapache-vivid-secondary-red min-h-12 min-w-max flex-1 cursor-pointer border-4 border-black px-2 py-2 text-sm font-black text-black uppercase shadow-[4px_4px_0px_0px_#000000] hover:shadow-[6px_6px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white active:shadow-[inset_0_2px_5px_#0006] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-[4px_4px_0px_0px_#000000] xl:px-5 xl:py-3 xl:text-xl"
+          aria-label={localizedCopy.interfaceCopy.controlActions.undo}
+          disabled={!canUndo}
+          onClick={onUndo}
+          className={historyActionClasses}
         >
-          {localizedCopy.interfaceCopy.controlActions.stop}
+          <BattleActionLabel
+            label={localizedCopy.interfaceCopy.controlActions.undo}
+            controllerFamily={controllerFamily}
+            command="cancel"
+            shortcut="[Z]"
+            showKeyboardControlHints={showKeyboardControlHints}
+          />
         </button>
       </div>
-      <div className="mx-auto w-max max-w-full">
+      <div className="flex w-full flex-wrap items-stretch gap-2 xl:gap-4">
         <BattleSpeedControl
           speed={animationSpeed}
           disabled={!canChangeAnimationSpeed}
           onChange={onAnimationSpeedChange}
         />
+        <button
+          type="button"
+          aria-label={localizedCopy.interfaceCopy.controlActions.stop}
+          disabled={!canStop}
+          onClick={onStop}
+          className="bg-mapache-vivid-secondary-red min-h-12 min-w-max flex-[1_1_max-content] cursor-pointer border-4 border-black px-2 py-2 text-sm font-black whitespace-nowrap text-black uppercase shadow-[4px_4px_0px_0px_#000000] hover:shadow-[6px_6px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white active:shadow-[inset_0_2px_5px_#0006] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-[4px_4px_0px_0px_#000000] xl:px-5 xl:py-3 xl:text-xl"
+        >
+          {localizedCopy.interfaceCopy.controlActions.stop}
+        </button>
       </div>
     </nav>
   )
