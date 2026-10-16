@@ -22,7 +22,7 @@ export const playerDataPortabilityCopy = Object.freeze({
     "Importing this backup will replace the current WAYVM data on this device. A local safety backup will be created first.",
   importCancelAction: "Cancel",
   importReplaceAction: "Import & Replace",
-  importCancelled: "Import cancelled. Your data was not changed.",
+  importCancelled: "Import canceled. Your data was not changed.",
   importSuccess: "Backup restored. Your imported progress is ready.",
   importInvalid:
     "This file is not a valid WAYVM backup. Your data was not changed.",
