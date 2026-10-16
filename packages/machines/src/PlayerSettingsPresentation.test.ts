@@ -25,6 +25,7 @@ describe("Player Settings presentation", () => {
     })
     expect(PLAYER_SETTINGS_LANGUAGE_OPTIONS).toEqual([
       { value: "en", label: "English (US)" },
+      { value: "es-MX", label: "Español (México)" },
     ])
     expect(REDUCED_MOTION_SETTING_OPTIONS).toEqual([
       {

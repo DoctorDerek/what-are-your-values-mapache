@@ -499,9 +499,9 @@ describe("Root Machine", () => {
       skipIntroduction: true,
     })
     const pending = actor.getSnapshot().context.playerData!
-    actor.send({ type: "INTRODUCTION.LOCALE_SELECTED", locale: "en" })
+    actor.send({ type: "INTRODUCTION.LOCALE_SELECTED", locale: "es-MX" })
     const selected = actor.getSnapshot().context.playerData!
-    expect(selected.settings.locale).toBe("en")
+    expect(selected.settings.locale).toBe("es-MX")
     expect(selected.profile).toEqual(pending.profile)
     expect(selected.achievements).toEqual(pending.achievements)
     await expect(durableStore.readAll()).resolves.toEqual(new Map())

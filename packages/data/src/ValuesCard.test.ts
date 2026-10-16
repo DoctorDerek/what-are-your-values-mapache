@@ -9,6 +9,7 @@ import { createValuesCardModel, readValuesCardPalette } from "./ValuesCard"
 import {
   getValuesCardLoopFrameCount,
   paintValuesCard,
+  type CardText,
   type ValuesCardPainter,
 } from "./ValuesCardScene"
 
@@ -181,6 +182,46 @@ describe("values-card composition", () => {
 
   it("rejects unavailable theme data rather than creating an unrelated palette", () => {
     expect(() => readValuesCardPalette([undefined])).toThrow("colors")
+  })
+
+  it("fits the complete Spanish heading and invitation within both export renderers’ frame", () => {
+    const spanish = getLocaleCatalog("es-MX")
+    const painted: CardText[] = []
+    const painter: ValuesCardPainter = {
+      rectangle: vi.fn(),
+      sprite: vi.fn(),
+      text: (text) => painted.push(text),
+      measure: (value, size) => value.length * size * 0.52,
+    }
+    paintValuesCard({
+      painter,
+      model: {
+        ...model(),
+        title: spanish.hub.rankedTitle,
+        invitation: spanish.card.invitation,
+      },
+      palette: readValuesCardPalette([
+        "#009dae",
+        "#71dfe7",
+        "#c2fff9",
+        "#ffe652",
+        "#18233e",
+        "#384873",
+        "#1e1e1e",
+        "#ffffff",
+      ]),
+      frame: 0,
+      hero: null,
+    })
+    for (const value of [spanish.hub.rankedTitle, spanish.card.invitation]) {
+      const text = painted.find((entry) => entry.value === value)
+      expect(text).toBeDefined()
+      if (!text) throw new Error(`Missing card text: ${value}`)
+      const width = painter.measure(text.value, text.size, text.weight)
+      expect(text.x - width / 2).toBeGreaterThanOrEqual(48)
+      expect(text.x + width / 2).toBeLessThanOrEqual(1552)
+      expect(text.align).toBe("center")
+    }
   })
 
   it("paints one ranked heading and an integrated invitation inside the frame", () => {

@@ -23,6 +23,7 @@ describe("localization catalogs", () => {
     expect(english.values.size).toBe(103)
     expect(SHIPPED_LANGUAGE_OPTIONS).toEqual([
       { value: "en", label: "English (US)" },
+      { value: "es-MX", label: "Español (México)" },
     ])
     for (const value of CANONICAL_VALUES) {
       expect(getValueDisplayName(value, english.values)).toBe(value.englishName)

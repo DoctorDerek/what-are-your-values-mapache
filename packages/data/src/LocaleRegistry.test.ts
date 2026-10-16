@@ -15,10 +15,11 @@ describe("locale resolution", () => {
 
   it("keeps candidates unavailable until explicitly shipped", () => {
     expect(CANDIDATE_LOCALES).toContain("es-MX")
-    expect(SHIPPED_LOCALES).toEqual(["en"])
+    expect(SHIPPED_LOCALES).toEqual(["en", "es-MX"])
     expect(
-      resolveLocale({ explicitLocale: "es-MX", preferredLanguages: ["fr"] }),
+      resolveLocale({ explicitLocale: "fr", preferredLanguages: ["de"] }),
     ).toBe("en")
+    expect(resolveLocale({ explicitLocale: "es-MX" })).toBe("es-MX")
     expect(() => defineShippedLocales(["fr"])).toThrow("English")
     expect(() => defineShippedLocales(["en", "en"])).toThrow("duplicates")
   })

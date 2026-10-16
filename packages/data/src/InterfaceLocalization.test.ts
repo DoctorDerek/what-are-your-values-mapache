@@ -4,6 +4,8 @@ import {
   INTERFACE_FORMATTER_SAMPLES,
 } from "./EnglishInterfaceCopy"
 import { ENGLISH_LOCALIZATION_CATALOG } from "./EnglishLocalizationCatalog"
+import { SHIPPED_LOCALES } from "./LocaleRegistry"
+import { AUTHORED_LOCALIZATION_CATALOGS } from "./LocalizationCatalog"
 import { isLocalizationObject } from "./LocalizationRecovery"
 import { resolveLocalizationCatalog } from "./ResolveLocalizationCatalog"
 import { resolveLocalizedResource } from "./ResolveLocalizedResource"
@@ -27,31 +29,45 @@ describe("shared interface localization", () => {
     })
     expect(result.value.action.trim()).not.toBe("")
   })
-  it("exercises every authored formatter in the raw catalog quality gate", () => {
-    const paths: string[] = []
-    const visit = (value: unknown, path: string) => {
-      if (typeof value === "function") {
-        paths.push(path)
-        const samples = INTERFACE_FORMATTER_SAMPLES[path]
-        expect(samples, path).toBeDefined()
-        expect(samples.length, path).toBeGreaterThan(0)
-        for (const parameters of samples) {
-          const output: unknown = value(...parameters)
-          expect(typeof output, path).toBe("string")
-          expect(output, path).not.toMatch(/undefined|null|NaN/)
+  it.each(SHIPPED_LOCALES)(
+    "exercises every authored formatter in the raw %s catalog quality gate",
+    (locale) => {
+      const paths: string[] = []
+      const visit = (value: unknown, path: string) => {
+        if (typeof value === "function") {
+          paths.push(path)
+          const samples = INTERFACE_FORMATTER_SAMPLES[path]
+          expect(samples, path).toBeDefined()
+          expect(samples.length, path).toBeGreaterThan(0)
+          for (const parameters of samples) {
+            const output: unknown = value(...parameters)
+            expect(typeof output, path).toBe("string")
+            expect(output, path).not.toMatch(/undefined|null|NaN/)
+            for (const parameter of parameters.flat()) {
+              if (typeof parameter === "string") {
+                expect(
+                  String(output).toLocaleLowerCase(),
+                  `${path}: ${parameter}`,
+                ).toContain(parameter.toLocaleLowerCase())
+              }
+            }
+          }
+        } else if (Array.isArray(value)) {
+          value.forEach((entry, index) => visit(entry, `${path}.${index}`))
+        } else if (isLocalizationObject(value)) {
+          for (const [key, entry] of Object.entries(value))
+            visit(entry, `${path}.${key}`)
         }
-      } else if (Array.isArray(value)) {
-        value.forEach((entry, index) => visit(entry, `${path}.${index}`))
-      } else if (isLocalizationObject(value)) {
-        for (const [key, entry] of Object.entries(value))
-          visit(entry, `${path}.${key}`)
       }
-    }
-    visit(ENGLISH_INTERFACE_COPY, "interfaceCopy")
-    expect(paths.toSorted()).toEqual(
-      Object.keys(INTERFACE_FORMATTER_SAMPLES).toSorted(),
-    )
-  })
+      visit(
+        AUTHORED_LOCALIZATION_CATALOGS[locale].interfaceCopy,
+        "interfaceCopy",
+      )
+      expect(paths.toSorted()).toEqual(
+        Object.keys(INTERFACE_FORMATTER_SAMPLES).toSorted(),
+      )
+    },
+  )
 
   it("keeps valid selected text while repairing nested blanks and preserving structural action IDs", () => {
     const english = ENGLISH_LOCALIZATION_CATALOG
