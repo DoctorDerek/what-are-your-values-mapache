@@ -120,9 +120,9 @@ export const ValueChoiceCard = forwardRef<
           aria-describedby={accessibleDefinitionId}
           disabled={!isEnabled}
           onClick={() => onActivate(value.id)}
-          className="row-span-2 grid w-full min-w-0 cursor-pointer grid-rows-subgrid px-[min(0.75rem,8%)] text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8"
+          className="row-start-2 flex w-full min-w-0 cursor-pointer flex-col justify-start px-[min(0.75rem,8%)] text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8"
         >
-          <div className="row-start-2 w-full">
+          <div className="w-full min-w-0">
             <div className="@container/choice-title flow-root w-full min-w-0">
               {controlHint ? (
                 <span
