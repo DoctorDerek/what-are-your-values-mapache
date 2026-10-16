@@ -236,7 +236,7 @@ export async function prepareNativeValuesCard(
           await shareAsync(file.uri, {
             mimeType: `image/${format}`,
             UTI: format === "gif" ? "com.compuserve.gif" : "public.png",
-            dialogTitle: "Share my values card",
+            dialogTitle: model.copy.title,
           })
           return "handed-off"
         } finally {

@@ -51,6 +51,21 @@ export function getValuesCardLoopFrameCount<Asset>(
 export const VALUES_CARD_FRAME_DURATION_MS =
   SEETHING_SWARM_CALM_FRAME_DURATION_MS
 
+function fitSingleLineCardText(
+  value: string,
+  maximumSize: number,
+  weight: CardText["weight"],
+  painter: ValuesCardPainter,
+) {
+  const width = VALUES_CARD_SIZE.width - 2 * 48
+  return Math.min(
+    maximumSize,
+    Math.floor(
+      (width * maximumSize) / painter.measure(value, maximumSize, weight),
+    ),
+  )
+}
+
 function wrapCardName(
   value: string,
   width: number,
@@ -99,7 +114,7 @@ export function paintValuesCard<Asset>({
     value: model.title,
     x: 800,
     y: 125,
-    size: 96,
+    size: fitSingleLineCardText(model.title, 96, 900, painter),
     weight: 900,
     color: palette.ink,
     align: "center",
@@ -206,7 +221,7 @@ export function paintValuesCard<Asset>({
     value: model.invitation,
     x: 800,
     y: 856,
-    size: 56,
+    size: fitSingleLineCardText(model.invitation, 56, 700, painter),
     weight: 700,
     color: palette.invitationText,
     align: "center",
