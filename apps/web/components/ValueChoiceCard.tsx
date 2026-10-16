@@ -93,7 +93,7 @@ export const ValueChoiceCard = forwardRef<
       <div
         className={cx(
           positionClasses,
-          "relative row-start-1 flex min-h-0 min-w-0 flex-col items-center",
+          "relative row-span-2 row-start-1 grid min-h-0 min-w-0 grid-rows-subgrid",
         )}
       >
         <span
@@ -120,9 +120,9 @@ export const ValueChoiceCard = forwardRef<
           aria-describedby={accessibleDefinitionId}
           disabled={!isEnabled}
           onClick={() => onActivate(value.id)}
-          className="flex w-full min-w-0 flex-1 cursor-pointer flex-col justify-start px-[min(0.75rem,8%)] pt-[clamp(2rem,10vh,6rem)] text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8"
+          className="row-span-2 grid w-full min-w-0 cursor-pointer grid-rows-subgrid px-[min(0.75rem,8%)] text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8"
         >
-          <div className="w-full">
+          <div className="row-start-2 w-full">
             <div className="@container/choice-title flow-root w-full min-w-0">
               {controlHint ? (
                 <span
@@ -166,7 +166,7 @@ export const ValueChoiceCard = forwardRef<
             </div>
             <p
               id={accessibleDefinitionId}
-              className="mx-auto mt-3 max-w-2xl border-2 border-white/20 bg-black/40 px-[min(0.75rem,8%)] py-3 text-[clamp(1rem,2.8vw,1.5rem)] leading-snug font-bold [overflow-wrap:anywhere] break-words hyphens-auto whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] xl:mt-6 xl:p-6 xl:text-[clamp(1.25rem,2vw,1.875rem)] xl:leading-relaxed"
+              className="mx-auto mt-2 max-w-2xl border-2 border-white/20 bg-black/40 px-[min(0.75rem,8%)] py-2 text-[clamp(1rem,2.8vw,1.5rem)] leading-snug font-bold [overflow-wrap:anywhere] break-words hyphens-auto whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] xl:mt-4 xl:p-4 xl:text-[clamp(1.25rem,2vw,1.875rem)] xl:leading-relaxed"
             >
               “{getValueDisplayDefinition(value, localizedCopy.values)}”
             </p>
@@ -179,7 +179,7 @@ export const ValueChoiceCard = forwardRef<
           htmlFor={choiceId}
           aria-hidden="true"
           className={cx(
-            "@container relative row-start-2 flex min-w-0 items-start justify-center pt-2 pb-12",
+            "relative row-span-4 row-start-3 grid min-w-0 grid-rows-subgrid justify-items-center",
             isEnabled ? "cursor-pointer" : "cursor-default",
             isWinner ? "z-30" : "z-20",
             isFirst
@@ -192,7 +192,7 @@ export const ValueChoiceCard = forwardRef<
             data-card-focus-outline="animal"
             className="pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-b-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block"
           />
-          <span className="flex w-(--battle-combatant-size) flex-col items-center">
+          <span className="@container row-start-2 flex w-full flex-col items-center">
             {combatant(
               isEnabled && (isHovered || isFocused),
               reward ? (
