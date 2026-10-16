@@ -122,7 +122,7 @@ export default function NativeHub({
           )}
           <ScrollView
             pointerEvents="box-none"
-            className="absolute inset-x-0 top-0 z-50 max-h-full"
+            className="absolute inset-x-0 bottom-0 z-50 max-h-full"
             contentContainerClassName="p-2"
           >
             {notifications}
