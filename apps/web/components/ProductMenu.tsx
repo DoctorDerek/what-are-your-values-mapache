@@ -1,10 +1,7 @@
 "use client"
 
-import {
-  PRODUCT_MENU_COPY,
-  PRODUCT_MENU_DESTINATIONS,
-  type ProductMenuDestination,
-} from "@game/data/src/ProductMenu"
+import { type ProductMenuDestination } from "@game/data/src/ProductMenu"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 
@@ -14,13 +11,15 @@ export default function ProductMenu({
   onDestinationSelect,
   onOpenChange,
 }: {
-  contextActionLabel:
-    | typeof PRODUCT_MENU_COPY.closeAction
-    | typeof PRODUCT_MENU_COPY.resumeBattleAction
+  contextActionLabel: string
   open: boolean
   onDestinationSelect: (destination: ProductMenuDestination) => void
   onOpenChange: (open: boolean) => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+  const PRODUCT_MENU_DESTINATIONS = localizedCopy.interfaceCopy.menuDestinations
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent

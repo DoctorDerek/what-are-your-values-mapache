@@ -1,3 +1,5 @@
+import { playerDataPortabilityCopy } from "@game/data/src/PlayerDataPortabilityCopy"
+import { playerDataResetCopy } from "@game/data/src/PlayerDataResetCopy"
 import type { ProductMenuDestination } from "@game/data/src/ProductMenu"
 import * as AchievementPresentation from "@game/machines/src/AchievementPresentation"
 import { createInitialAchievementState } from "@game/machines/src/AchievementState"
@@ -14,9 +16,7 @@ import {
   createInitialPlayerData,
   createPlayerData,
 } from "@game/machines/src/PlayerData"
-import { playerDataPortabilityCopy } from "@game/machines/src/PlayerDataPortabilityCopy"
 import { DELETE_ALL_DATA_ACKNOWLEDGMENT } from "@game/machines/src/PlayerDataReset"
-import { playerDataResetCopy } from "@game/machines/src/PlayerDataResetCopy"
 import {
   createWayvmExport,
   decodeWayvmExport,
@@ -1245,9 +1245,12 @@ describe("GameClient Integration", () => {
     fireEvent.click(
       await screen.findByRole("button", { name: "Browse All Values" }),
     )
-    fireEvent.change(screen.getByLabelText("Search All Values"), {
-      target: { value: "My craftsmanship" },
-    })
+    fireEvent.change(
+      screen.getByRole("searchbox", { name: "Search All Values" }),
+      {
+        target: { value: "My craftsmanship" },
+      },
+    )
     fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
     expect(await screen.findByLabelText("Value name")).toHaveValue(
       "My craftsmanship",
@@ -1296,7 +1299,7 @@ describe("GameClient Integration", () => {
 
     expect(await screen.findByText("1 of 40 unlocked")).toBeVisible()
     const firstBattle = screen.getAllByRole("listitem")[0]!
-    expect(within(firstBattle).getAllByText("Unlocked")).toHaveLength(2)
+    expect(within(firstBattle).getByText("Unlocked")).toBeVisible()
     expect(within(firstBattle).getByRole("time")).toBeVisible()
     expect(
       within(firstBattle).queryByText("1 of 1 comparisons"),
@@ -1753,7 +1756,7 @@ describe("GameClient Integration", () => {
       }),
     ).toBeVisible()
     expect(
-      screen.getByText(/The active deck returns to the 103 canonical values/),
+      screen.getByText(/Your battles return to the 103 included values/),
     ).toBeVisible()
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
     await waitFor(() =>
@@ -1812,7 +1815,9 @@ describe("GameClient Integration", () => {
       screen.getByRole("button", { name: "Reset Levels & Experience" }),
     )
     expect(
-      await screen.findByText(/Your current value ranking restarts/),
+      await screen.findByText(
+        /Your value ranking starts over with all values tied/,
+      ),
     ).toBeVisible()
     fireEvent.click(
       screen.getByRole("button", { name: "Reset Levels & Experience" }),

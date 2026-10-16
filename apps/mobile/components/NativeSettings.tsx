@@ -1,4 +1,4 @@
-import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type {
   PlayerDataResetKind,
   PlayerDataResetReview,
@@ -7,12 +7,7 @@ import {
   createPlayerSettings,
   type PlayerSettings,
 } from "@game/machines/src/PlayerSettings"
-import {
-  CONTROL_HINT_SETTING_OPTIONS,
-  PLAYER_SETTINGS_COPY,
-  REDUCED_MOTION_SETTING_OPTIONS,
-  SETTINGS_PLAYER_DATA_RESET_KINDS,
-} from "@game/machines/src/PlayerSettingsPresentation"
+import { SETTINGS_PLAYER_DATA_RESET_KINDS } from "@game/machines/src/PlayerSettingsPresentation"
 import { cx } from "classix"
 import { Pressable, ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
@@ -42,6 +37,8 @@ function NativeSettingsRadioGroup<TValue extends string>({
   selectedValue: TValue
   onValueChange: (value: TValue) => void
 }>) {
+  const localizedCopy = useLocaleCatalog()
+
   return (
     <View
       accessibilityLabel={heading}
@@ -85,7 +82,7 @@ function NativeSettingsRadioGroup<TValue extends string>({
                   </Text>
                   {isSelected ? (
                     <Text className="border-2 border-black bg-black px-2 py-1 text-sm font-black text-white uppercase">
-                      Selected
+                      {localizedCopy.interfaceCopy.screen.selected}
                     </Text>
                   ) : null}
                 </View>
@@ -132,6 +129,14 @@ export default function NativeSettings({
   onRequestReset: (resetKind: PlayerDataResetKind) => void
   onUpdateSettings: (settings: PlayerSettings) => void
 }>) {
+  const localizedCopy = useLocaleCatalog()
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+  const CONTROL_HINT_SETTING_OPTIONS =
+    localizedCopy.interfaceCopy.controlHintOptions
+  const PLAYER_SETTINGS_COPY = localizedCopy.interfaceCopy.settings
+  const REDUCED_MOTION_SETTING_OPTIONS =
+    localizedCopy.interfaceCopy.reducedMotionOptions
+
   const isBusy = activity !== null || isNavigationPending
   const isNavigationBlocked = isBusy || resetReview !== null
 

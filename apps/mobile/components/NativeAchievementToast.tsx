@@ -1,3 +1,4 @@
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { ACHIEVEMENT_NOTIFICATION_DURATION_MILLISECONDS } from "@game/machines/src/AchievementNotificationMachine"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
 import { useEffect } from "react"
@@ -30,6 +31,7 @@ export default function NativeAchievementToast({
   onPresented: (achievementId: AchievementPresentation["id"]) => void
   onInteraction: (kind: "hover" | "focus" | "touch", isActive: boolean) => void
 }) {
+  const localizedCopy = useLocaleCatalog()
   const remainingTime = useSharedValue(1)
   const countdownStyle = useAnimatedStyle(() => ({
     transform: [{ scaleX: remainingTime.get() }],
@@ -56,7 +58,10 @@ export default function NativeAchievementToast({
 
   return (
     <Animated.View
-      accessibilityLabel={`Achievement unlocked: ${achievement.title}. ${achievement.unlockReason}`}
+      accessibilityLabel={localizedCopy.interfaceCopy.screen.achievementAnnouncement(
+        achievement.title,
+        achievement.unlockReason,
+      )}
       accessibilityLiveRegion="polite"
       entering={shouldReduceMotion ? undefined : FadeIn}
       className="bg-mapache-vivid-white w-full max-w-80 border-2 border-black shadow-[4px_4px_0px_0px_#000000]"
@@ -77,7 +82,9 @@ export default function NativeAchievementToast({
           </Text>
         </View>
         <Button
-          accessibilityLabel={`Dismiss achievement: ${achievement.title}`}
+          accessibilityLabel={localizedCopy.interfaceCopy.screen.dismissAchievement(
+            achievement.title,
+          )}
           disabled={isDismissalPending}
           variant="outline"
           size="notification"

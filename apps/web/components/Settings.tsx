@@ -1,6 +1,6 @@
 "use client"
 
-import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type {
   PlayerDataResetKind,
   PlayerDataResetReview as PlayerDataResetReviewState,
@@ -9,12 +9,7 @@ import {
   createPlayerSettings,
   type PlayerSettings,
 } from "@game/machines/src/PlayerSettings"
-import {
-  CONTROL_HINT_SETTING_OPTIONS,
-  PLAYER_SETTINGS_COPY,
-  REDUCED_MOTION_SETTING_OPTIONS,
-  SETTINGS_PLAYER_DATA_RESET_KINDS,
-} from "@game/machines/src/PlayerSettingsPresentation"
+import { SETTINGS_PLAYER_DATA_RESET_KINDS } from "@game/machines/src/PlayerSettingsPresentation"
 import { cx } from "classix"
 import { useEffect, useRef } from "react"
 import LanguageSelector from "@/components/LanguageSelector"
@@ -44,6 +39,8 @@ function SettingsRadioGroup<TValue extends string>({
   selectedValue: TValue
   onValueChange: (value: TValue) => void
 }>) {
+  const localizedCopy = useLocaleCatalog()
+
   return (
     <fieldset
       disabled={disabled}
@@ -84,7 +81,7 @@ function SettingsRadioGroup<TValue extends string>({
                   </span>
                   {isSelected ? (
                     <span className="shrink-0 border-2 border-black bg-black px-2 py-1 text-sm font-black text-white uppercase">
-                      Selected
+                      {localizedCopy.interfaceCopy.screen.selected}
                     </span>
                   ) : null}
                 </span>
@@ -132,6 +129,14 @@ export default function Settings({
   onRequestReset: (resetKind: PlayerDataResetKind) => void
   onUpdateSettings: (settings: PlayerSettings) => void
 }>) {
+  const localizedCopy = useLocaleCatalog()
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+  const CONTROL_HINT_SETTING_OPTIONS =
+    localizedCopy.interfaceCopy.controlHintOptions
+  const PLAYER_SETTINGS_COPY = localizedCopy.interfaceCopy.settings
+  const REDUCED_MOTION_SETTING_OPTIONS =
+    localizedCopy.interfaceCopy.reducedMotionOptions
+
   const headingRef = useRef<HTMLHeadingElement>(null)
   const issueRef = useRef<HTMLParagraphElement>(null)
   const resetActionFocusTargetIdRef = useRef<string | null>(null)
@@ -181,7 +186,10 @@ export default function Settings({
         >
           {PLAYER_SETTINGS_COPY.title}
         </h1>
-        <nav aria-label="Settings actions" className="flex flex-wrap gap-3">
+        <nav
+          aria-label={localizedCopy.interfaceCopy.screen.settingsActions}
+          className="flex flex-wrap gap-3"
+        >
           <Button
             type="button"
             variant="secondary"

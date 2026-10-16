@@ -1,15 +1,12 @@
 "use client"
 
-import {
-  INFORMATION_PANELS,
-  type InformationPanelId,
-} from "@game/data/src/InformationPanels"
+import { type InformationPanelId } from "@game/data/src/InformationPanels"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
-  PRODUCT_MENU_COPY,
   type ProductMenuDestination,
   type ProductMenuRouteDestination,
 } from "@game/data/src/ProductMenu"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { rankValues } from "@game/data/src/ValueRanking"
 import {
@@ -30,16 +27,12 @@ import {
 } from "@game/machines/src/BattleScheduler"
 import type { DurableStoreAdapter } from "@game/machines/src/DurableStoreAdapter"
 import { prepareWayvmDownload } from "@game/machines/src/PlayerDataPortabilityActors"
-import { playerDataPortabilityCopy } from "@game/machines/src/PlayerDataPortabilityCopy"
 import {
   DELETE_ALL_DATA_ACKNOWLEDGMENT,
   type PlayerDataResetKind,
   type PlayerDataResetReview,
 } from "@game/machines/src/PlayerDataReset"
-import {
-  PLAYER_SETTINGS_COPY,
-  resolveShouldReduceMotion,
-} from "@game/machines/src/PlayerSettingsPresentation"
+import { resolveShouldReduceMotion } from "@game/machines/src/PlayerSettingsPresentation"
 import { projectRootBackDisposition } from "@game/machines/src/RootNavigation"
 import type { RootActor } from "@game/machines/src/RuntimeRecovery"
 import { getHubPreparationClips } from "@game/machines/src/SeethingSwarmAssetPreparation"
@@ -100,6 +93,9 @@ function ReadOnlyGameClient({
 }: {
   readonly durableStore: DurableStoreAdapter
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const playerDataPortabilityCopy = localizedCopy.interfaceCopy.portability
+
   const [isExportPending, setIsExportPending] = useState(false)
   const [issue, setIssue] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -131,7 +127,11 @@ function ReadOnlyGameClient({
     } finally {
       setIsExportPending(false)
     }
-  }, [durableStore])
+  }, [
+    durableStore,
+    playerDataPortabilityCopy.exportFailure,
+    playerDataPortabilityCopy.exportSuccess,
+  ])
 
   return (
     <WebWriterConflict
@@ -145,6 +145,12 @@ function ReadOnlyGameClient({
 }
 
 function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
+  const localizedCopy = useLocaleCatalog()
+  const INFORMATION_PANELS = localizedCopy.interfaceCopy.information
+  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
+  const playerDataPortabilityCopy = localizedCopy.interfaceCopy.portability
+  const PLAYER_SETTINGS_COPY = localizedCopy.interfaceCopy.settings
+
   const state = useRecoverableActorSnapshot(gameActor)
   const send = gameActor.send
   const systemShouldReduceMotion = useReducedMotion() === true
@@ -192,11 +198,12 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     () =>
       playerData
         ? projectAchievementCatalog({
+            localization: localizedCopy,
             achievementState: playerData.achievements,
             battleProfile: playerData.profile,
           })
         : [],
-    [playerData],
+    [playerData, localizedCopy],
   )
   const pendingAchievementPresentations = useMemo(() => {
     if (!playerData) return []
@@ -461,7 +468,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
       send({ type: "DATA_MANAGEMENT.IMPORT_FILE_READ_REQUESTED" })
       setIsReadingImportFile(true)
       try {
-        const serialized = await readPlayerDataFile(file)
+        const serialized = await readPlayerDataFile(file, localizedCopy)
         send({
           type: "DATA_MANAGEMENT.IMPORT_PREPARE_REQUESTED",
           serialized,
@@ -475,7 +482,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         setIsReadingImportFile(false)
       }
     },
-    [send],
+    [send, localizedCopy],
   )
   const handleResetRequested = useCallback(
     (resetKind: PlayerDataResetKind) => {
@@ -494,7 +501,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     async (file: File) => {
       setIsReadingRecoveryImportFile(true)
       try {
-        const serialized = await readPlayerDataFile(file)
+        const serialized = await readPlayerDataFile(file, localizedCopy)
         send({
           type: "RECOVERY.IMPORT_PREPARE_REQUESTED",
           serialized,
@@ -508,7 +515,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         setIsReadingRecoveryImportFile(false)
       }
     },
-    [send],
+    [send, localizedCopy],
   )
   const handleResetConfirmed = useCallback(
     (review: PlayerDataResetReview) => {
@@ -585,36 +592,38 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           issue: playerDataPortabilityCopy.exportFailure,
         })
     }
-  }, [send, state])
+  }, [send, state, playerDataPortabilityCopy.exportFailure])
 
   const dataManagementActivity: DataManagementActivity | null =
     isReadingImportFile || state.matches({ DataManagement: "PreparingImport" })
-      ? "Checking backup…"
+      ? localizedCopy.interfaceCopy.portability.activity.checkingBackup
       : state.matches({ DataManagement: "Exporting" })
-        ? "Creating backup…"
+        ? localizedCopy.interfaceCopy.portability.activity.creatingBackup
         : state.matches({ DataManagement: "CreatingPreImportBackup" })
-          ? "Creating safety backup…"
+          ? localizedCopy.interfaceCopy.portability.activity
+              .creatingSafetyBackup
           : state.matches({ DataManagement: "ReplacingImport" })
-            ? "Restoring backup…"
+            ? localizedCopy.interfaceCopy.portability.activity.restoringBackup
             : state.matches({ DataManagement: "ExportingResetBackup" })
-              ? "Creating backup…"
+              ? localizedCopy.interfaceCopy.portability.activity.creatingBackup
               : state.matches({ DataManagement: "ApplyingScopedReset" })
-                ? "Applying reset…"
+                ? localizedCopy.interfaceCopy.portability.activity.applyingReset
                 : state.matches({ DataManagement: "DeletingAllData" })
-                  ? "Deleting data…"
+                  ? localizedCopy.interfaceCopy.portability.activity
+                      .deletingData
                   : null
   const playerDataRecoveryActivity: PlayerDataRecoveryActivity | null =
     isReadingRecoveryImportFile ||
     state.matches({ PersistenceFailure: "PreparingImport" })
-      ? "Checking backup…"
+      ? localizedCopy.interfaceCopy.portability.activity.checkingBackup
       : state.matches({ PersistenceFailure: "ExportingCurrentData" })
-        ? "Creating backup…"
+        ? localizedCopy.interfaceCopy.portability.activity.creatingBackup
         : state.matches({ PersistenceFailure: "ExportingEvidence" })
-          ? "Creating diagnostic file…"
+          ? localizedCopy.interfaceCopy.portability.activity.creatingDiagnostic
           : state.matches({ PersistenceFailure: "ReplacingPlayerData" })
-            ? "Restoring backup…"
+            ? localizedCopy.interfaceCopy.portability.activity.restoringBackup
             : state.matches({ PersistenceFailure: "DeletingAllData" })
-              ? "Deleting data…"
+              ? localizedCopy.interfaceCopy.portability.activity.deletingData
               : null
   const isBackgroundCheckpointing = state.matches("BackgroundCheckpointing")
   const isSettingsSurface =
@@ -625,11 +634,11 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     state.matches({ Settings: "Persisting" }) || isBackgroundCheckpointing
       ? PLAYER_SETTINGS_COPY.savingStatus
       : state.matches({ Settings: "ExportingResetBackup" })
-        ? "Creating backup…"
+        ? localizedCopy.interfaceCopy.portability.activity.creatingBackup
         : state.matches({ Settings: "ApplyingScopedReset" })
-          ? "Applying reset…"
+          ? localizedCopy.interfaceCopy.portability.activity.applyingReset
           : state.matches({ Settings: "DeletingAllData" })
-            ? "Deleting data…"
+            ? localizedCopy.interfaceCopy.portability.activity.deletingData
             : null
 
   if (state.matches("Hydrating") || state.matches("LoadingProfile")) {
