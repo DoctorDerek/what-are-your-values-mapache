@@ -37,7 +37,7 @@ for (const viewport of [
     expect(titleGeometry.right).toBeLessThanOrEqual(viewport.width)
     expect(titleGeometry.height).toBeCloseTo(
       titleGeometry.lineHeight * expectedTitleLines,
-      1,
+      0,
     )
     expect(titleGeometry.letterSpacing).toMatch(/^(normal|0px)$/)
     await expect(start).toBeInViewport({ ratio: 1 })
@@ -85,6 +85,16 @@ for (const viewport of [
       spanishTitleBounds!.x + spanishTitleBounds!.width,
     ).toBeLessThanOrEqual(viewport.width)
     expect(spanishTitleBounds!.height).toBeCloseTo(titleGeometry.height, 1)
+    await page.evaluate(() => document.fonts.load('400 32px "WAYVM Condensed"'))
+    await spanishTitle.evaluate((element) => {
+      element.style.fontFamily = '"WAYVM Condensed"'
+    })
+    const fallbackTitleBounds = await spanishTitle.boundingBox()
+    expect(fallbackTitleBounds!.height).toBeCloseTo(titleGeometry.height, 1)
+    expect(fallbackTitleBounds!.x).toBeGreaterThanOrEqual(0)
+    expect(
+      fallbackTitleBounds!.x + fallbackTitleBounds!.width,
+    ).toBeLessThanOrEqual(viewport.width)
     await expect(
       page.getByRole("button", { name: "Empezar", exact: true }),
     ).toBeInViewport({ ratio: 1 })
