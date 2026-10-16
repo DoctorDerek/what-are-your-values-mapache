@@ -336,7 +336,7 @@ export default function Results({
         </p>
         <div className="relative isolate min-h-24 flex-1 overflow-hidden">
           <div
-            className="[container-type:size] h-full overflow-y-auto overscroll-contain"
+            className="[container-type:size] relative isolate h-full overflow-y-auto overscroll-contain"
             onWheelCapture={settleRowPositions}
             onScroll={settleRowPositions}
             onFocusCapture={settleRowPositions}
