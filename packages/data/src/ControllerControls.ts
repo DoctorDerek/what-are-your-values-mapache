@@ -141,66 +141,79 @@ export function readControllerCommands(
   return commands
 }
 
+export const CONTROLLER_BUTTON_LABELS = {
+  generic: {
+    confirm: "South",
+    cancel: "East",
+    redo: "North",
+    "select-first-value": "L1 / L2",
+    "select-second-value": "R1 / R2",
+    menu: "Menu",
+    back: "Back",
+  },
+  xbox: {
+    confirm: "A",
+    cancel: "B",
+    redo: "Y",
+    "select-first-value": "LB / LT",
+    "select-second-value": "RB / RT",
+    menu: "Menu",
+    back: "View",
+  },
+  playstation: {
+    confirm: "Cross",
+    cancel: "Circle",
+    redo: "Triangle",
+    "select-first-value": "L1 / L2",
+    "select-second-value": "R1 / R2",
+    menu: "Options",
+    back: "Share",
+  },
+  nintendo: {
+    confirm: "B",
+    cancel: "A",
+    redo: "X",
+    "select-first-value": "L / ZL",
+    "select-second-value": "R / ZR",
+    menu: "+",
+    back: "−",
+  },
+  "steam-deck": {
+    confirm: "A",
+    cancel: "B",
+    redo: "Y",
+    "select-first-value": "L1 / L2",
+    "select-second-value": "R1 / R2",
+    menu: "Options",
+    back: "View",
+  },
+  steam: {
+    confirm: "A",
+    cancel: "B",
+    redo: "Y",
+    "select-first-value": "LB / LT",
+    "select-second-value": "RB / RT",
+    menu: "Start",
+    back: "Back",
+  },
+} as const
+
 export function getControllerButtonLabel(
   family: ControllerFamily,
   command: ControllerCommand,
+  labels: Readonly<
+    Record<
+      ControllerFamily,
+      Readonly<
+        Record<
+          Exclude<ControllerCommand, "up" | "down" | "left" | "right">,
+          string
+        >
+      >
+    >
+  > = CONTROLLER_BUTTON_LABELS,
+  navigate: string = CONTROLLER_COPY.navigate,
 ) {
-  const labels = {
-    generic: {
-      confirm: "South",
-      cancel: "East",
-      redo: "North",
-      "select-first-value": "L1 / L2",
-      "select-second-value": "R1 / R2",
-      menu: "Menu",
-      back: "Back",
-    },
-    xbox: {
-      confirm: "A",
-      cancel: "B",
-      redo: "Y",
-      "select-first-value": "LB / LT",
-      "select-second-value": "RB / RT",
-      menu: "Menu",
-      back: "View",
-    },
-    playstation: {
-      confirm: "Cross",
-      cancel: "Circle",
-      redo: "Triangle",
-      "select-first-value": "L1 / L2",
-      "select-second-value": "R1 / R2",
-      menu: "Options",
-      back: "Share",
-    },
-    nintendo: {
-      confirm: "B",
-      cancel: "A",
-      redo: "X",
-      "select-first-value": "L / ZL",
-      "select-second-value": "R / ZR",
-      menu: "+",
-      back: "−",
-    },
-    "steam-deck": {
-      confirm: "A",
-      cancel: "B",
-      redo: "Y",
-      "select-first-value": "L1 / L2",
-      "select-second-value": "R1 / R2",
-      menu: "Options",
-      back: "View",
-    },
-    steam: {
-      confirm: "A",
-      cancel: "B",
-      redo: "Y",
-      "select-first-value": "LB / LT",
-      "select-second-value": "RB / RT",
-      menu: "Start",
-      back: "Back",
-    },
-  } as const
-  if (isControllerDirection(command)) return CONTROLLER_COPY.navigate
+  if (isControllerDirection(command)) return navigate
   return labels[family][command]
 }

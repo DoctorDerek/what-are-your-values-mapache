@@ -1,4 +1,5 @@
 import { CANONICAL_VALUES } from "./CanonicalValues"
+import { ENGLISH_INTERFACE_COPY } from "./EnglishInterfaceCopy"
 import { FIRST_ARRIVAL_PRESENTATION } from "./FirstArrivalPresentation"
 import { introductionCopy } from "./IntroductionCopy"
 import type { AuthoredLocalizationCatalog } from "./LocalizationCatalog"
@@ -7,6 +8,7 @@ import { VALUES_CARD_COPY } from "./ValuesCardCopy"
 
 export const ENGLISH_LOCALIZATION_CATALOG: AuthoredLocalizationCatalog =
   Object.freeze({
+    interfaceCopy: ENGLISH_INTERFACE_COPY,
     metadata: Object.freeze({
       languageTag: "en-US",
       languageName: "English (US)",

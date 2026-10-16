@@ -59,10 +59,12 @@ export function createLocaleFormatters(
     "formatters.integer",
     (locale) =>
       new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format,
-    (value: number) =>
-      Number.isFinite(value)
-        ? String(Math.sign(value) * Math.round(Math.abs(value)))
-        : LOCALIZATION_EMERGENCY_COPY.numberUnavailable,
+    (value: number | bigint) =>
+      typeof value === "bigint"
+        ? String(value)
+        : Number.isFinite(value)
+          ? String(Math.sign(value) * Math.round(Math.abs(value)))
+          : LOCALIZATION_EMERGENCY_COPY.numberUnavailable,
     reportIssue,
   )
   const percent = createFormattingOperation(
@@ -104,5 +106,23 @@ export function createLocaleFormatters(
       Math.abs(value) === 1 ? "one" : "other",
     reportIssue,
   )
-  return Object.freeze({ integer, percent, date, plural })
+  const dateTime = createFormattingOperation(
+    languageTag,
+    "formatters.dateTime",
+    (locale) => {
+      const formatter = new Intl.DateTimeFormat(locale, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })
+      return (isoUtc: string) => formatter.format(new Date(isoUtc))
+    },
+    (isoUtc: string) => {
+      const parsed = new Date(isoUtc)
+      return Number.isFinite(parsed.getTime())
+        ? parsed.toISOString()
+        : LOCALIZATION_EMERGENCY_COPY.dateUnavailable
+    },
+    reportIssue,
+  )
+  return Object.freeze({ integer, percent, date, dateTime, plural })
 }

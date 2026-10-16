@@ -6,6 +6,10 @@ import {
   readHeroes99Appearance,
   type Heroes99Appearance,
 } from "./Heroes99Appearance"
+import {
+  HEROES99_CHOICE_COPY,
+  type Heroes99ChoiceCopy,
+} from "./Heroes99ChoiceCopy"
 
 export const HEROES99_CATEGORIES = [
   "Skin",
@@ -23,45 +27,50 @@ export type Heroes99Choice = Readonly<{
 const numbered = (count: number) =>
   Array.from({ length: count }, (_, index) => index + 1)
 
-export const HEROES99_CHOICES: Readonly<
-  Record<Heroes99Category, readonly Heroes99Choice[]>
-> = Object.freeze({
-  Skin: numbered(HEROES99_PALETTE_COUNTS.skin).map((skinPalette) => ({
-    id: `skin-${skinPalette}`,
-    label: `Skin ${skinPalette}`,
-    change: { skinPalette },
-  })),
-  Face: numbered(HEROES99_PALETTE_COUNTS.face).map((facePalette) => ({
-    id: `face-${facePalette}`,
-    label: `Face ${facePalette}`,
-    change: { facePalette },
-  })),
-  Hair: [
-    { id: "hair-none", label: "None", change: { hairStyle: null } },
-    ...HEROES99_HAIR_STYLES.map((hairStyle, index) => ({
-      id: `hair-${hairStyle}`,
-      label: `Style ${index + 1}`,
-      change: { hairStyle },
+export function getHeroes99Choices(
+  copy: Heroes99ChoiceCopy = HEROES99_CHOICE_COPY,
+  formatInteger: (value: number) => string = String,
+): Readonly<Record<Heroes99Category, readonly Heroes99Choice[]>> {
+  return Object.freeze({
+    Skin: numbered(HEROES99_PALETTE_COUNTS.skin).map((skinPalette) => ({
+      id: `skin-${skinPalette}`,
+      label: copy.skin(formatInteger(skinPalette)),
+      change: { skinPalette },
     })),
-  ],
-  Clothing: numbered(HEROES99_CLOTHING_STYLE_COUNT).map((clothingStyle) => ({
-    id: `clothing-${clothingStyle}`,
-    label: `Outfit ${clothingStyle}`,
-    change: { clothingStyle },
-  })),
-  Weapon: [
-    {
-      id: "weapon-none",
-      label: "None",
-      change: { weaponStyle: null, weaponPalette: 1 },
-    },
-    ...HEROES99_WEAPON_STYLES.map((weaponStyle) => ({
-      id: `weapon-${weaponStyle}`,
-      label: weaponStyle.charAt(0).toUpperCase() + weaponStyle.slice(1),
-      change: { weaponStyle, weaponPalette: 1 },
+    Face: numbered(HEROES99_PALETTE_COUNTS.face).map((facePalette) => ({
+      id: `face-${facePalette}`,
+      label: copy.face(formatInteger(facePalette)),
+      change: { facePalette },
     })),
-  ],
-})
+    Hair: [
+      { id: "hair-none", label: copy.none, change: { hairStyle: null } },
+      ...HEROES99_HAIR_STYLES.map((hairStyle, index) => ({
+        id: `hair-${hairStyle}`,
+        label: copy.style(formatInteger(index + 1)),
+        change: { hairStyle },
+      })),
+    ],
+    Clothing: numbered(HEROES99_CLOTHING_STYLE_COUNT).map((clothingStyle) => ({
+      id: `clothing-${clothingStyle}`,
+      label: copy.outfit(formatInteger(clothingStyle)),
+      change: { clothingStyle },
+    })),
+    Weapon: [
+      {
+        id: "weapon-none",
+        label: copy.none,
+        change: { weaponStyle: null, weaponPalette: 1 },
+      },
+      ...HEROES99_WEAPON_STYLES.map((weaponStyle) => ({
+        id: `weapon-${weaponStyle}`,
+        label: copy.weapons[weaponStyle],
+        change: { weaponStyle, weaponPalette: 1 },
+      })),
+    ],
+  })
+}
+
+export const HEROES99_CHOICES = getHeroes99Choices()
 
 export function applyHeroes99Choice(
   appearance: Heroes99Appearance,
@@ -84,6 +93,8 @@ export function isHeroes99ChoiceSelected(
 export function getHeroes99PaletteChoices(
   category: Heroes99Category,
   appearance: Heroes99Appearance,
+  copy: Heroes99ChoiceCopy = HEROES99_CHOICE_COPY,
+  formatInteger: (value: number) => string = String,
 ): readonly Heroes99Choice[] {
   const field =
     category === "Hair" && appearance.hairStyle
@@ -102,7 +113,7 @@ export function getHeroes99PaletteChoices(
         : HEROES99_PALETTE_COUNTS.dagger
   return numbered(count).map((palette) => ({
     id: `${field}-${palette}`,
-    label: `Palette ${palette}`,
+    label: copy.palette(formatInteger(palette)),
     change: { [field]: palette },
   }))
 }
@@ -122,8 +133,8 @@ export const DRESSING_ROOM_COPY = Object.freeze({
   preview: "Appearance preview",
   category: "Appearance category",
   character: "Your Heroes99 character",
-  choices: (category: Heroes99Category) => `${category} choices`,
-  palette: (category: Heroes99Category) => `${category} palette`,
+  choices: (category: string) => `${category} choices`,
+  palette: (category: string) => `${category} palette`,
   title: "Dressing Room",
   customize: "Customize my card",
   randomize: "Randomize",

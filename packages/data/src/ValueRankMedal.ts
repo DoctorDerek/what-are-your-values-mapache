@@ -12,7 +12,24 @@ const VALUE_RANK_MEDAL_TIERS: readonly Readonly<{
   { maximumRank: 15, medal: { emoji: "🥉", color: "bronze" } },
 ])
 
-export function getValueRankPresentation(rank: number): Readonly<{
+export const VALUE_RANK_COPY = Object.freeze({
+  gold: "gold",
+  silver: "silver",
+  bronze: "bronze",
+  rank: (rank: number) => `Rank ${rank}`,
+  medal: (rank: number, color: string) => `Rank ${rank}, ${color} medal`,
+})
+
+export function getValueRankPresentation(
+  rank: number,
+  copy: {
+    readonly gold: string
+    readonly silver: string
+    readonly bronze: string
+    readonly rank: (rank: number) => string
+    readonly medal: (rank: number, color: string) => string
+  } = VALUE_RANK_COPY,
+): Readonly<{
   medal: ValueRankMedal | null
   accessibleLabel: string
 }> {
@@ -23,7 +40,7 @@ export function getValueRankPresentation(rank: number): Readonly<{
   return {
     medal,
     accessibleLabel: medal
-      ? `Rank ${rank}, ${medal.color} medal`
-      : `Rank ${rank}`,
+      ? copy.medal(rank, copy[medal.color])
+      : copy.rank(rank),
   }
 }

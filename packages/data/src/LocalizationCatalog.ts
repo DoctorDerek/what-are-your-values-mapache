@@ -1,3 +1,4 @@
+import type { InterfaceCopy } from "./EnglishInterfaceCopy"
 import { ENGLISH_LOCALIZATION_CATALOG } from "./EnglishLocalizationCatalog"
 import { FIRST_ARRIVAL_PRESENTATION } from "./FirstArrivalPresentation"
 import { introductionCopy } from "./IntroductionCopy"
@@ -20,6 +21,7 @@ type LocalizedCopy<Copy> = {
 }
 
 export type LocalizationCatalog = Readonly<{
+  interfaceCopy: InterfaceCopy
   metadata: Readonly<{
     languageTag: string
     languageName: string

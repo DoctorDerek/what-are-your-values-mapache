@@ -1,3 +1,7 @@
+import {
+  ENGLISH_INTERFACE_COPY,
+  INTERFACE_FORMATTER_SAMPLES,
+} from "./EnglishInterfaceCopy"
 import { ENGLISH_LOCALIZATION_CATALOG } from "./EnglishLocalizationCatalog"
 import type { LocalizationCatalog } from "./LocalizationCatalog"
 import { LOCALIZATION_EMERGENCY_COPY as emergency } from "./LocalizationEmergencyCopy"
@@ -12,6 +16,7 @@ import {
   type LocalizationIssue,
 } from "./LocalizationRecovery"
 import { resolveLocalizedValues } from "./LocalizedValues"
+import { resolveLocalizedResource } from "./ResolveLocalizedResource"
 
 export function resolveLocalizationCatalog(
   locale: string,
@@ -82,7 +87,17 @@ export function resolveLocalizationCatalog(
     readLocalizationField(englishInput, "values"),
   )
   issues.push(...values.issues)
+  const interfaceCopy = resolveLocalizedResource({
+    locale,
+    key: "interfaceCopy",
+    reference: ENGLISH_INTERFACE_COPY,
+    selected: readLocalizationField(input, "interfaceCopy"),
+    english: readLocalizationField(englishInput, "interfaceCopy"),
+    formatterSamples: INTERFACE_FORMATTER_SAMPLES,
+  })
+  issues.push(...interfaceCopy.issues)
   const catalog: LocalizationCatalog = Object.freeze({
+    interfaceCopy: interfaceCopy.value,
     metadata: Object.freeze({
       languageTag: text(
         "metadata",
