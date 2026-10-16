@@ -1,14 +1,25 @@
+import {
+  DEFAULT_LOCALE,
+  SHIPPED_LOCALES,
+  type SupportedLocale,
+} from "@game/data/src/LocaleRegistry"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import GameIsland from "@/components/GameIsland"
 import WebEditorialCanonicalValues from "@/components/WebEditorialCanonicalValues"
 import WebEditorialInformation from "@/components/WebEditorialInformation"
 
-export default function Page() {
-  const localization = getLocaleCatalog()
+export default function WebPublicPage({
+  locale = DEFAULT_LOCALE,
+}: {
+  readonly locale?: SupportedLocale
+}) {
+  const localization = getLocaleCatalog(locale)
   const copy = localization.interfaceCopy.screen
   return (
     <>
-      <GameIsland />
+      <GameIsland
+        routeLocale={locale === DEFAULT_LOCALE ? undefined : locale}
+      />
       <article
         aria-label={copy.publicInformation(localization.introduction.title)}
         className="noise-bg bg-mapache-vivid-dark text-mapache-vivid-dark px-[max(1rem,env(safe-area-inset-left,0px))] pt-[max(2.5rem,env(safe-area-inset-top,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pb-[max(2.5rem,env(safe-area-inset-bottom,0px))] peer-has-[[data-game-surface=active]]:hidden xl:px-[max(2rem,env(safe-area-inset-left,0px))] xl:pr-[max(2rem,env(safe-area-inset-right,0px))] xl:pb-[max(4rem,env(safe-area-inset-bottom,0px))]"
@@ -20,8 +31,28 @@ export default function Page() {
           >
             {copy.startOrContinueGame}
           </a>
-          <WebEditorialInformation />
-          <WebEditorialCanonicalValues />
+          <nav
+            aria-label={localization.language.heading}
+            className="flex flex-wrap gap-4"
+          >
+            {SHIPPED_LOCALES.map((language) => {
+              const catalog = getLocaleCatalog(language)
+              return (
+                <a
+                  key={language}
+                  href={catalog.metadata.webPath}
+                  lang={catalog.metadata.languageTag}
+                  hrefLang={catalog.metadata.languageTag}
+                  aria-current={language === locale ? "page" : undefined}
+                  className="border-4 border-black bg-white px-4 py-3 font-bold focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
+                >
+                  {catalog.metadata.languageName}
+                </a>
+              )
+            })}
+          </nav>
+          <WebEditorialInformation locale={locale} />
+          <WebEditorialCanonicalValues locale={locale} />
           <section
             id="support"
             aria-labelledby="support-title"

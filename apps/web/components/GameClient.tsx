@@ -1,6 +1,7 @@
 "use client"
 
 import { type InformationPanelId } from "@game/data/src/InformationPanels"
+import type { SupportedLocale } from "@game/data/src/LocaleRegistry"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
   type ProductMenuDestination,
@@ -1136,7 +1137,11 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
   return null
 }
 
-function GameClientShell() {
+function GameClientShell({
+  routeLocale,
+}: {
+  readonly routeLocale?: SupportedLocale
+}) {
   const durableStore = useMemo(() => createIndexedDbDurableStore(), [])
   const writerLease = useWebExclusiveWriterLease()
   const [sessionRevision, setSessionRevision] = useState(0)
@@ -1153,6 +1158,7 @@ function GameClientShell() {
     <GameSession
       key={sessionRevision}
       durableStore={durableStore}
+      routeLocale={routeLocale}
       onReopen={() => setSessionRevision((revision) => revision + 1)}
     >
       {(gameActor) => (
@@ -1164,13 +1170,17 @@ function GameClientShell() {
   )
 }
 
-export default function GameClient() {
+export default function GameClient({
+  routeLocale,
+}: {
+  readonly routeLocale?: SupportedLocale
+}) {
   return (
     <RenderRecoveryBoundary
       fallback={(retry) => <RuntimeRecovery onRetry={retry} />}
     >
       <WebControlsProvider>
-        <GameClientShell />
+        <GameClientShell routeLocale={routeLocale} />
       </WebControlsProvider>
     </RenderRecoveryBoundary>
   )

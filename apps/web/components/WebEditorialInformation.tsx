@@ -3,6 +3,10 @@ import {
   type InformationPanelBlock,
   type InformationPanelDefinition,
 } from "@game/data/src/InformationPanels"
+import {
+  DEFAULT_LOCALE,
+  type SupportedLocale,
+} from "@game/data/src/LocaleRegistry"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 
 function WebEditorialInformationBlock({
@@ -54,12 +58,14 @@ function WebEditorialInformationBlock({
 
 function WebEditorialInformationSection({
   informationPanel,
+  introductionHeading,
 }: {
   readonly informationPanel: InformationPanelDefinition
+  readonly introductionHeading: string
 }) {
   const sectionTitle =
     informationPanel.id === "introduction"
-      ? getLocaleCatalog().interfaceCopy.screen.introduction
+      ? introductionHeading
       : informationPanel.title
   const sectionTitleId = `${informationPanel.id}-title`
 
@@ -87,8 +93,12 @@ function WebEditorialInformationSection({
   )
 }
 
-export default function WebEditorialInformation() {
-  const localizedCopy = getLocaleCatalog()
+export default function WebEditorialInformation({
+  locale = DEFAULT_LOCALE,
+}: {
+  readonly locale?: SupportedLocale
+}) {
+  const localizedCopy = getLocaleCatalog(locale)
   const INFORMATION_PANELS = localizedCopy.interfaceCopy.information
 
   return (
@@ -97,6 +107,7 @@ export default function WebEditorialInformation() {
         <WebEditorialInformationSection
           key={informationPanelId}
           informationPanel={INFORMATION_PANELS[informationPanelId]}
+          introductionHeading={localizedCopy.interfaceCopy.screen.introduction}
         />
       ))}
     </div>
