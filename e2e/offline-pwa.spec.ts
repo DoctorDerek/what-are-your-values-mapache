@@ -176,7 +176,7 @@ test("the web runtime follows its deployment offline policy", async ({
     .getByRole("button", { name: "Browse All Values", exact: true })
     .click()
   await page
-    .getByLabel("Search All Values", { exact: true })
+    .getByRole("searchbox", { name: "Search All Values", exact: true })
     .fill("Offline ingenuity")
   await expect(page.getByText("1 Value Shown", { exact: true })).toBeVisible()
   await page.evaluate(() => caches.delete("wayvm-animal-strips-v1"))

@@ -48,7 +48,7 @@ for (const width of [390, 1440]) {
       .getByRole("button", { name: "Browse All Values", exact: true })
       .click()
     await page
-      .getByLabel("Search All Values", { exact: true })
+      .getByRole("searchbox", { name: "Search All Values", exact: true })
       .fill("Resourceful experimentation")
     await expect(
       page.getByText("0 Values Shown", { exact: true }),
@@ -92,7 +92,7 @@ for (const width of [390, 1440]) {
       .getByRole("button", { name: "Browse All Values", exact: true })
       .click()
     await page
-      .getByLabel("Search All Values", { exact: true })
+      .getByRole("searchbox", { name: "Search All Values", exact: true })
       .fill("Resourceful experimentation")
     await expect(page.getByText("1 Value Shown", { exact: true })).toBeVisible()
     await expect(
