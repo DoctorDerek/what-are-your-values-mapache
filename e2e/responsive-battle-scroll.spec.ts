@@ -73,9 +73,6 @@ for (const width of [320, 390, 1280]) {
           "data-choreography-identity",
           identity!,
         )
-        await page
-          .getByRole("button", { name: "Dismiss achievement: First Battle" })
-          .click()
         await page.getByRole("button", { name: "Stop", exact: true }).click()
         await expect(
           page.getByRole("heading", { name: "Results", exact: true }),

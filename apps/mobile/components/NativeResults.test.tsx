@@ -16,6 +16,7 @@ import {
 } from "@testing-library/react-native"
 import { StyleSheet } from "react-native"
 import NativeResults from "@/components/NativeResults"
+import { Text } from "@/components/ui/text"
 
 function createResults() {
   const entry = createInitialBattleProfile("native-results-test-seed")
@@ -192,6 +193,7 @@ describe("Native Battle-exit Results", () => {
     const onKeepBattling = jest.fn()
     await render(
       <NativeResults
+        notifications={<Text>Achievement notice</Text>}
         results={createResults()}
         runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
         shouldReduceMotion
@@ -203,6 +205,7 @@ describe("Native Battle-exit Results", () => {
     )
 
     expect(screen.getByText("Results")).toBeOnTheScreen()
+    expect(screen.getByText("Achievement notice")).toBeOnTheScreen()
     expect(screen.getByText(/Profile XP 4/)).toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "See my values" }))
     await user.press(screen.getByRole("button", { name: "Keep battling" }))
