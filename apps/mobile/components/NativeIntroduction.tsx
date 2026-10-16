@@ -84,8 +84,8 @@ export default function NativeIntroduction({
         />
       }
       afterActions={
-        <View className="relative h-38 shrink-0 items-center justify-center border-t-4 border-black bg-black">
-          <View className="absolute inset-0 mx-auto w-full max-w-100">
+        <View className="relative min-h-37 shrink-0 items-center justify-center border-t-6 border-black bg-black px-4 py-4">
+          <View className="absolute inset-0 mx-auto w-full max-w-80">
             <Image
               source={require("@game/data/assets/mapachito/ice-cream.png")}
               alt=""
@@ -94,11 +94,11 @@ export default function NativeIntroduction({
               className="h-full w-full"
             />
           </View>
-          <View className="relative z-20 items-center gap-1 py-2">
-            <Text className="text-center text-2xl leading-7 font-black text-white xl:text-[26px]">
+          <View className="relative z-20 items-center">
+            <Text className="text-center text-xl leading-7 font-black text-white">
               {firstArrival.gameCredit}
             </Text>
-            <Text className="text-center text-lg leading-7 font-medium text-white">
+            <Text className="text-center text-xl leading-7 font-black text-white">
               {firstArrival.creatorCredit}
             </Text>
             <Pressable
@@ -114,9 +114,9 @@ export default function NativeIntroduction({
                   ),
                 )
               }}
-              className="justify-center active:opacity-70"
+              className="group/creator justify-center active:opacity-70"
             >
-              <Text className="text-center text-lg leading-7 font-medium text-white">
+              <Text className="group-hover/creator:text-mapache-vivid-primary-orange text-center text-xl leading-7 font-black text-white">
                 {firstArrival.creatorWebsiteLabel}
               </Text>
             </Pressable>

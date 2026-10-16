@@ -43,20 +43,22 @@ function NativeInformationPanelFrame({
       accessibilityViewIsModal={modal || undefined}
       role={modal ? "dialog" : undefined}
     >
-      <View className={cx("flex-1", isIntroduction ? "p-4 xl:p-8" : "p-5")}>
+      <View className={cx("flex-1", !isIntroduction && "p-5")}>
         <View
           className={cx(
-            "relative m-auto w-full flex-1 border-4 border-black bg-white shadow-[8px_8px_0px_0px_#000000]",
+            "relative w-full flex-1 bg-white",
             isIntroduction
-              ? "max-h-184 max-w-4xl overflow-visible xl:max-w-5xl"
-              : "max-h-full max-w-3xl overflow-hidden",
+              ? "overflow-visible"
+              : "m-auto max-h-full max-w-3xl overflow-hidden border-4 border-black shadow-[8px_8px_0px_0px_#000000]",
           )}
         >
           {decoration}
           <View
             className={cx(
-              "relative z-20 border-b-4 border-black",
-              isIntroduction ? "px-2.5 py-4 xl:px-8 xl:py-6" : "p-5",
+              "relative z-20 border-black",
+              isIntroduction
+                ? "min-h-24 justify-center border-b-6 px-4 py-5 xl:min-h-32 xl:px-8 xl:py-6"
+                : "border-b-4 p-5",
             )}
           >
             {titleDecoration}
@@ -65,7 +67,7 @@ function NativeInformationPanelFrame({
               className={cx(
                 "relative z-20 text-center font-black",
                 isIntroduction
-                  ? "text-mapache-vivid-primary-cyan text-[28px] leading-tight xl:text-[42px]"
+                  ? "text-mapache-vivid-primary-cyan text-[28px] leading-tight xl:text-5xl"
                   : "text-mapache-vivid-primary-raspberry text-4xl tracking-tight uppercase",
                 accessibleCloseLabel && "pr-14",
               )}
@@ -91,9 +93,12 @@ function NativeInformationPanelFrame({
           </View>
 
           <ScrollView
-            className="relative z-20 min-h-0 flex-1"
+            className={cx(
+              "relative z-20 min-h-0 flex-1",
+              isIntroduction && "mx-auto w-full max-w-4xl",
+            )}
             contentContainerClassName={
-              isIntroduction ? "gap-4 px-5 py-4 xl:px-8 xl:py-6" : "gap-4 p-5"
+              isIntroduction ? "gap-4 px-5 py-5 xl:px-10 xl:py-7" : "gap-4 p-5"
             }
           >
             {children}
@@ -101,35 +106,35 @@ function NativeInformationPanelFrame({
 
           <View
             className={cx(
-              "relative z-20 border-t-4 border-black",
-              isIntroduction
-                ? "gap-3 px-4 pt-3 pb-5 xl:flex-row xl:items-center xl:gap-6 xl:px-8"
-                : "p-5",
+              "relative z-20 border-black",
+              isIntroduction ? "border-t-6" : "border-t-4 p-5",
             )}
           >
-            {beforePrimaryAction && (
-              <View className={cx(isIntroduction && "xl:flex-1")}>
-                {beforePrimaryAction}
-              </View>
-            )}
-            <Button
-              size="large"
-              onPress={onPrimaryAction}
-              disabled={isPrimaryActionPending}
-              className={cx(isIntroduction && "xl:flex-2")}
-              accessibilityState={{
-                busy: isPrimaryActionPending,
-                disabled: isPrimaryActionPending,
-              }}
+            <View
+              className={cx(
+                isIntroduction &&
+                  "mx-auto w-full max-w-xl gap-3 px-6 pt-4 pb-5",
+              )}
             >
-              <Text
-                {...(isIntroduction && {
-                  className: "text-4xl leading-none font-black uppercase",
-                })}
+              {beforePrimaryAction}
+              <Button
+                size="large"
+                onPress={onPrimaryAction}
+                disabled={isPrimaryActionPending}
+                accessibilityState={{
+                  busy: isPrimaryActionPending,
+                  disabled: isPrimaryActionPending,
+                }}
               >
-                {primaryActionLabel}
-              </Text>
-            </Button>
+                <Text
+                  {...(isIntroduction && {
+                    className: "text-3xl leading-none font-black uppercase",
+                  })}
+                >
+                  {primaryActionLabel}
+                </Text>
+              </Button>
+            </View>
           </View>
           {afterActions}
         </View>
