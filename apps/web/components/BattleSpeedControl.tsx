@@ -31,7 +31,7 @@ export default function BattleSpeedControl({
         )
           event.stopPropagation()
       }}
-      className="mx-auto flex max-w-full flex-wrap overflow-hidden rounded-lg border-2 border-[#7899a4]"
+      className="flex max-w-full min-w-0 flex-[2_1_max-content] flex-wrap overflow-hidden rounded-lg border-2 border-[#7899a4]"
     >
       {interfaceCopy.battleSpeed.options.map((option) => (
         <button
@@ -42,7 +42,7 @@ export default function BattleSpeedControl({
           disabled={disabled}
           onClick={() => onChange(option.value)}
           className={cx(
-            "focus-visible:outline-mapache-vivid-primary-raspberry inline-grid min-h-12 min-w-13 flex-auto cursor-pointer place-items-center px-3 py-2 text-base font-bold focus-visible:z-10 focus-visible:outline-4 focus-visible:-outline-offset-4 active:shadow-[inset_0_2px_5px_#0006] disabled:cursor-not-allowed disabled:opacity-50",
+            "focus-visible:outline-mapache-vivid-primary-raspberry inline-grid min-h-12 min-w-11 flex-[1_0_auto] cursor-pointer place-items-center px-1 py-2 text-[0.9375rem] font-bold whitespace-nowrap focus-visible:z-10 focus-visible:outline-4 focus-visible:-outline-offset-4 active:shadow-[inset_0_2px_5px_#0006] disabled:cursor-not-allowed disabled:opacity-50 xl:px-3 xl:text-base",
             speed === option.value
               ? "bg-[#006d7c] text-white underline decoration-3 underline-offset-4 hover:bg-[#005867]"
               : "bg-[#dcedf1] text-[#153844] hover:bg-[#b9e6ec]",
