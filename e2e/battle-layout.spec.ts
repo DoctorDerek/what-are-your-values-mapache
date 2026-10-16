@@ -9,6 +9,7 @@ for (const viewport of [
   { width: 390, height: 540 },
   { width: 390, height: 640 },
   { width: 1440, height: 900 },
+  { width: 1280, height: 720 },
 ]) {
   test(`Spanish battle keeps animals and right-thumb controls visible at ${viewport.width}x${viewport.height}`, async ({
     page,
@@ -72,8 +73,19 @@ for (const viewport of [
       .first()
       .getByText(/^Nivel \d+$/)
       .boundingBox()
-    expect(level!.y - geometry.region.top).toBeGreaterThanOrEqual(7)
-    expect(level!.y - geometry.region.top).toBeLessThanOrEqual(25)
+    const topSpace = level!.y - geometry.region.top
+    if (viewport.width >= 1280) {
+      expect(topSpace).toBeGreaterThanOrEqual(24)
+      if (viewport.height >= 900) expect(topSpace).toBeGreaterThan(60)
+      const bottomSpace =
+        geometry.region.bottom -
+        Math.max(...geometry.animals.map(({ bottom }) => bottom))
+      expect(bottomSpace - topSpace).toBeGreaterThanOrEqual(31)
+      expect(bottomSpace - topSpace).toBeLessThanOrEqual(49)
+    } else {
+      expect(topSpace).toBeGreaterThanOrEqual(7)
+      expect(topSpace).toBeLessThanOrEqual(25)
+    }
     const [menu, redo, undo, ...speedAndStop] = geometry.actions
     const stop = speedAndStop.at(-1)!
     const speeds = speedAndStop.slice(0, -1)
@@ -102,8 +114,12 @@ for (const viewport of [
       ...geometry.definitions.map(({ bottom }) => bottom),
     )
     for (const animal of geometry.animals) {
-      expect(animal.top - definitionBottom).toBeGreaterThanOrEqual(7)
-      expect(animal.top - definitionBottom).toBeLessThanOrEqual(17)
+      expect(animal.top - definitionBottom).toBeGreaterThanOrEqual(
+        viewport.width >= 1280 ? 15 : 7,
+      )
+      expect(animal.top - definitionBottom).toBeLessThanOrEqual(
+        viewport.width >= 1280 ? 33 : 17,
+      )
       expect(animal.bottom).toBeLessThanOrEqual(geometry.region.bottom - 31)
     }
     await page.screenshot({ path: testInfo.outputPath("spanish-battle.png") })
