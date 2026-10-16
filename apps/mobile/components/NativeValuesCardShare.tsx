@@ -1,3 +1,4 @@
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValuesCardDeliveryMessage,
   readValuesCardPalette,
@@ -28,6 +29,7 @@ export default function NativeValuesCardShare({
 }) {
   const colors = useCSSVariable([...VALUES_CARD_COLOR_VARIABLES])
   const [showDetails, setShowDetails] = useState(false)
+  const localizedCopy = useLocaleCatalog()
   const { copy } = model
   const [state, send, actor] = useMachine(valuesCardShareMachine, {
     input: {
@@ -100,7 +102,10 @@ export default function NativeValuesCardShare({
                 }}
                 contentFit="contain"
                 className="h-full w-full"
-                accessibilityLabel={`${model.title}: ${model.values.map((value) => value.name).join(", ")}`}
+                accessibilityLabel={localizedCopy.interfaceCopy.screen.cardPreview(
+                  model.title,
+                  model.values.map((value) => value.name),
+                )}
                 accessible
               />
             ) : (

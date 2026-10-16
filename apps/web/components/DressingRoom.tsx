@@ -2,11 +2,10 @@
 
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
 import {
-  DRESSING_ROOM_COPY,
+  getHeroes99Choices,
   getHeroes99PaletteChoices,
   getHeroes99PaletteId,
   HEROES99_CATEGORIES,
-  HEROES99_CHOICES,
   isHeroes99ChoiceSelected,
   type Heroes99Category,
 } from "@game/data/src/Heroes99DressingRoom"
@@ -14,12 +13,13 @@ import {
   HEROES99_THUMBNAIL,
   type Heroes99RuntimeAssets,
 } from "@game/data/src/Heroes99RuntimeAssets"
-import { VALUES_CARD_COPY } from "@game/data/src/ValuesCardCopy"
+import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { avatarMachine } from "@game/machines/src/AvatarMachine"
 import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import type { ActorRefFrom } from "xstate"
 import Heroes99Hero from "@/components/Heroes99Hero"
 import MapacheScreen from "@/components/MapacheScreen"
@@ -38,11 +38,29 @@ export default function DressingRoom({
   shouldReduceMotion: boolean
   onShare: (appearance: Heroes99Appearance) => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const DRESSING_ROOM_COPY = localizedCopy.interfaceCopy.dressingRoom
+  const VALUES_CARD_COPY = localizedCopy.card
+  const choiceCopy = localizedCopy.interfaceCopy.heroChoices
+  const { integer } = useMemo(
+    () => createLocaleFormatters(localizedCopy.metadata.languageTag),
+    [localizedCopy.metadata.languageTag],
+  )
+  const choices = useMemo(
+    () => getHeroes99Choices(choiceCopy, integer),
+    [choiceCopy, integer],
+  )
+
   const state = useRecoverableActorSnapshot(actor)
   const [category, setCategory] = useState<Heroes99Category>("Skin")
   const { draft } = state.context
   const isSaving = state.matches("Saving")
-  const paletteChoices = getHeroes99PaletteChoices(category, draft)
+  const paletteChoices = getHeroes99PaletteChoices(
+    category,
+    draft,
+    choiceCopy,
+    integer,
+  )
   const paletteId = getHeroes99PaletteId(category, draft)
   return (
     <MapacheScreen
@@ -88,7 +106,7 @@ export default function DressingRoom({
             {HEROES99_CATEGORIES.map((item) => (
               <button
                 type="button"
-                key={item}
+                key={choiceCopy.categories[item]}
                 disabled={isSaving}
                 aria-pressed={category === item}
                 onClick={() => setCategory(item)}
@@ -99,16 +117,18 @@ export default function DressingRoom({
                     : "hover:bg-mapache-vivid-light bg-white text-black",
                 )}
               >
-                {item}
+                {choiceCopy.categories[item]}
               </button>
             ))}
           </div>
           <div
             role="group"
-            aria-label={DRESSING_ROOM_COPY.choices(category)}
+            aria-label={DRESSING_ROOM_COPY.choices(
+              choiceCopy.categories[category],
+            )}
             className="grid max-h-88 grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-3 overflow-y-auto p-1"
           >
-            {HEROES99_CHOICES[category].map((choice) => {
+            {choices[category].map((choice) => {
               const index = assets.thumbnailIndexByChoiceId[choice.id]
               return (
                 <button
@@ -145,7 +165,9 @@ export default function DressingRoom({
           {paletteChoices.length > 0 && (
             <div
               role="group"
-              aria-label={DRESSING_ROOM_COPY.palette(category)}
+              aria-label={DRESSING_ROOM_COPY.palette(
+                choiceCopy.categories[category],
+              )}
               className="flex flex-wrap gap-2"
             >
               {paletteChoices.map((choice, index) => (
