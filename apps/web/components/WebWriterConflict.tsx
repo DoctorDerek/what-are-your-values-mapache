@@ -1,9 +1,9 @@
 "use client"
 
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { useEffect, useRef, useState } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
-import { webWriterConflictCopy } from "@/lib/WebWriterConflictCopy"
 
 export default function WebWriterConflict({
   isExportPending,
@@ -18,6 +18,9 @@ export default function WebWriterConflict({
   readonly onExportThisTab: () => void
   readonly onLoadLatest: () => void
 }) {
+  const localizedCopy = useLocaleCatalog()
+  const webWriterConflictCopy = localizedCopy.interfaceCopy.writerConflict
+
   const [areOptionsVisible, setAreOptionsVisible] = useState(true)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const issueRef = useRef<HTMLParagraphElement>(null)
@@ -97,7 +100,7 @@ export default function WebWriterConflict({
         {areOptionsVisible ? (
           <div
             role="group"
-            aria-label="Cross-tab recovery options"
+            aria-label={localizedCopy.interfaceCopy.screen.crossTabRecovery}
             className="grid grid-cols-1 gap-4 xl:grid-cols-3"
           >
             <Button

@@ -1,4 +1,4 @@
-import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
+import { playerDataRecoveryCopy } from "@game/data/src/PlayerDataRecoveryCopy"
 import type { PlayerDataResetReview } from "@game/machines/src/PlayerDataReset"
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
 import { describe, expect, it, jest } from "@jest/globals"

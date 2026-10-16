@@ -2,12 +2,15 @@
 
 import { introductionCopy } from "@game/data/src/IntroductionCopy"
 import { STARTUP_INDICATOR_DELAY_MS } from "@game/data/src/PresentationLoadingCopy"
-import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { cx } from "classix"
 import { useEffect, useState } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
 
 export default function PlayerDataLoading() {
+  const localizedCopy = useLocaleCatalog()
+  const playerDataRecoveryCopy = localizedCopy.interfaceCopy.recovery
+
   const [showIndicator, setShowIndicator] = useState(false)
   useEffect(() => {
     const delay = setTimeout(
@@ -46,13 +49,13 @@ export default function PlayerDataLoading() {
         </h1>
         <p className="mb-4 text-lg font-bold">{introductionCopy.tagline}</p>
         <p className="text-mapache-vivid-white text-lg font-bold">
-          The interactive game requires JavaScript.
+          {localizedCopy.interfaceCopy.screen.javascriptRequired}
         </p>
         <a
           href="#introduction"
           className="bg-mapache-vivid-primary-cyan text-mapache-vivid-white mt-4 inline-block border-4 border-black p-4 text-lg font-black shadow-[6px_6px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
         >
-          Read the Introduction
+          {localizedCopy.interfaceCopy.screen.readIntroduction}
         </a>
       </noscript>
     </MapacheScreen>

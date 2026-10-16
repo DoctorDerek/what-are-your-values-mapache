@@ -1,11 +1,14 @@
 import { STARTUP_INDICATOR_DELAY_MS } from "@game/data/src/PresentationLoadingCopy"
-import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { cx } from "classix"
 import { useEffect, useState } from "react"
 import { View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 
 export default function NativePlayerDataLoading() {
+  const localizedCopy = useLocaleCatalog()
+  const playerDataRecoveryCopy = localizedCopy.interfaceCopy.recovery
+
   const [showIndicator, setShowIndicator] = useState(false)
   useEffect(() => {
     const delay = setTimeout(

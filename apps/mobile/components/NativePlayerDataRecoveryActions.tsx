@@ -1,4 +1,4 @@
-import { playerDataRecoveryCopy } from "@game/machines/src/PlayerDataRecoveryCopy"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { View } from "react-native"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
@@ -32,6 +32,9 @@ type NativePlayerDataRecoveryActionsProps =
 export default function NativePlayerDataRecoveryActions(
   props: NativePlayerDataRecoveryActionsProps,
 ) {
+  const localizedCopy = useLocaleCatalog()
+  const playerDataRecoveryCopy = localizedCopy.interfaceCopy.recovery
+
   const { actions } = playerDataRecoveryCopy
 
   if (props.mode === "unreadable-data")
