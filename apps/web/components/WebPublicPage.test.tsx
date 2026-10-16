@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
-import Page from "./page"
+import Page from "@/components/WebPublicPage"
 
 vi.mock("@/components/GameIsland", () => ({
   default: function GameIsland() {
@@ -34,5 +34,32 @@ describe("web page", () => {
     expect(
       editorialQueries.getByRole("link", { name: "Report a Problem" }),
     ).toHaveAttribute("href", "mailto:derekraustin+wayvm@gmail.com")
+  })
+
+  it("publishes all 103 Spanish meanings and language links without private player data", () => {
+    render(<Page locale="es-MX" />)
+    const article = screen.getByRole("article")
+    const content = within(article)
+    expect(content.getAllByRole("term")).toHaveLength(103)
+    expect(content.getByText("Ingenio", { exact: true })).toBeVisible()
+    expect(
+      content.getByText(
+        "resolver problemas de formas originales, prácticas y con los recursos disponibles",
+        { exact: true },
+      ),
+    ).toBeVisible()
+    expect(
+      content.queryByText("Ingenuity", { exact: true }),
+    ).not.toBeInTheDocument()
+    expect(
+      content.getByRole("link", { name: "Español (México)" }),
+    ).toHaveAttribute("aria-current", "page")
+    expect(content.getByRole("link", { name: "English (US)" })).toHaveAttribute(
+      "href",
+      "/",
+    )
+    expect(
+      content.getByRole("link", { name: "Español (México)" }),
+    ).toHaveAttribute("href", "/que-valoras-en-la-vida")
   })
 })
