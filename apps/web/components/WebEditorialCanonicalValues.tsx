@@ -1,4 +1,5 @@
 import { CANONICAL_VALUES } from "@game/data/src/CanonicalValues"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 
 export default function WebEditorialCanonicalValues() {
   return (
@@ -11,7 +12,9 @@ export default function WebEditorialCanonicalValues() {
         id="included-values-title"
         className="border-b-4 border-black pb-4 text-3xl leading-tight font-black uppercase xl:text-5xl"
       >
-        {CANONICAL_VALUES.length} Included Values
+        {getLocaleCatalog().interfaceCopy.screen.includedValueCount(
+          String(CANONICAL_VALUES.length),
+        )}
       </h2>
       <dl className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
         {CANONICAL_VALUES.map((canonicalValue) => (

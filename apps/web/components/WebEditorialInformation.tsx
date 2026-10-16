@@ -1,9 +1,9 @@
 import {
   INFORMATION_PANEL_IDS,
-  INFORMATION_PANELS,
   type InformationPanelBlock,
   type InformationPanelDefinition,
 } from "@game/data/src/InformationPanels"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 
 function WebEditorialInformationBlock({
   block,
@@ -59,7 +59,7 @@ function WebEditorialInformationSection({
 }) {
   const sectionTitle =
     informationPanel.id === "introduction"
-      ? "Introduction"
+      ? getLocaleCatalog().interfaceCopy.screen.introduction
       : informationPanel.title
   const sectionTitleId = `${informationPanel.id}-title`
 
@@ -88,6 +88,9 @@ function WebEditorialInformationSection({
 }
 
 export default function WebEditorialInformation() {
+  const localizedCopy = getLocaleCatalog()
+  const INFORMATION_PANELS = localizedCopy.interfaceCopy.information
+
   return (
     <div className="grid grid-cols-1 gap-10">
       {INFORMATION_PANEL_IDS.map((informationPanelId) => (
