@@ -130,7 +130,7 @@ export default function Splash({
         {introductionCopy.body.map((paragraph) => (
           <p
             key={paragraph}
-            className="text-lg leading-relaxed font-medium text-gray-800 xl:text-xl"
+            className="text-lg leading-relaxed font-medium text-gray-800"
           >
             {paragraph}
           </p>

@@ -141,7 +141,7 @@ export default function InformationPanel(props: InformationPanelFrameProps) {
         props.presentation === "introduction" ? "safe-area-only" : "compact"
       }
       viewport="fixed"
-      className={cx("flex justify-center text-center", "items-stretch")}
+      className="flex items-stretch justify-center text-center"
     >
       <InformationPanelFrame {...props} />
     </MapacheScreen>
