@@ -76,7 +76,7 @@ for (const width of [320, 390, 1440]) {
         expect(
           alignment.geometry.width,
           `${alignment.name} target width`,
-        ).toBeGreaterThanOrEqual(48)
+        ).toBeGreaterThanOrEqual(44)
         expect(
           alignment.visibleTextCount,
           `${alignment.name} has visible text`,

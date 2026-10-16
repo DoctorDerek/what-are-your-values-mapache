@@ -351,12 +351,12 @@ for (const viewport of [
           }
         }),
       )
-    expect(actionBounds.slice(0, 4).map(({ name }) => name)).toEqual([
+    expect(actionBounds.slice(0, 3).map(({ name }) => name)).toEqual([
       "Menu",
-      "Undo",
       "Redo",
-      "Stop",
+      "Undo",
     ])
+    expect(actionBounds.at(-1)?.name).toBe("Stop")
     for (const [index, { button, label }] of actionBounds.entries()) {
       expect(button.left).toBeGreaterThanOrEqual(0)
       expect(button.right).toBeLessThanOrEqual(viewport.width)

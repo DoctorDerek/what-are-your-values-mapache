@@ -3,7 +3,7 @@ import { render, screen, userEvent } from "@testing-library/react-native"
 import NativeBattleActionBar from "@/components/NativeBattleActionBar"
 
 describe("NativeBattleActionBar", () => {
-  it("keeps every compact action label on one fitted line", async () => {
+  it("orders history before speed and Stop without shrinking accessible labels", async () => {
     await render(
       <NativeBattleActionBar
         animationSpeed="1x"
@@ -23,19 +23,23 @@ describe("NativeBattleActionBar", () => {
     expect(
       screen
         .getAllByRole("button")
-        .slice(0, 4)
         .map((action) => action.props.accessibilityLabel),
-    ).toEqual(["Menu", "Undo", "Redo", "Stop"])
+    ).toEqual([
+      "Menu",
+      "Redo",
+      "Undo",
+      "Battle animation speed 1×",
+      "Battle animation speed 2×",
+      "Battle animation speed 3×",
+      "Skip battle animations",
+      "Stop",
+    ])
     for (const actionName of ["Menu", "Undo", "Redo", "Stop"]) {
-      const action = screen.getByRole("button", { name: actionName })
       const label = screen.getByText(actionName)
 
-      expect(action.props.className).toContain("min-w-0")
-      expect(action.props.className).toContain("px-2")
-      expect(action.props.className).toContain("xl:px-4")
-      expect(label).toHaveProp("adjustsFontSizeToFit", true)
-      expect(label).toHaveProp("minimumFontScale", 0.75)
-      expect(label).toHaveProp("numberOfLines", 1)
+      expect(label.props.adjustsFontSizeToFit).toBeUndefined()
+      expect(label.props.minimumFontScale).toBeUndefined()
+      expect(label.props.numberOfLines).toBeUndefined()
     }
   })
 
