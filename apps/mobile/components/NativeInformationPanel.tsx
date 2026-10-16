@@ -67,7 +67,7 @@ function NativeInformationPanelFrame({
               className={cx(
                 "relative z-20 text-center font-black",
                 isIntroduction
-                  ? "font-arrival-title text-mapache-vivid-primary-cyan text-[36.4px] leading-[35px] tracking-normal xl:text-[62.4px] xl:leading-[60px]"
+                  ? "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-arrival-title text-mapache-vivid-primary-cyan text-[36.4px] leading-[35px] tracking-normal xl:text-[62.4px] xl:leading-[60px]"
                   : "text-mapache-vivid-primary-raspberry text-4xl tracking-tight uppercase",
                 accessibleCloseLabel && "pr-14",
               )}
