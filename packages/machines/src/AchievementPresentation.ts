@@ -91,7 +91,7 @@ export function getAchievementEnglishCopy(
       title: "Reveal Your Top Five",
       unlockReason: "Five values earned XP.",
       requirement:
-        "Reach the first moment when at least five different values have earned XP and the Hub can display a player-produced Top Five.",
+        "Earn XP with at least five different values to reveal your Top Five.",
     })
   }
 

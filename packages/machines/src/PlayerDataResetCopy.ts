@@ -15,9 +15,9 @@ export const playerDataResetCopy = Object.freeze({
       "Remove every player-authored Custom Value while keeping canonical value progress, achievements, and settings.",
     confirmationTitle: "Delete All Custom Values?",
     confirmationBody: Object.freeze([
-      "This permanently removes every player-authored Custom Value and that value’s XP, level, win/loss counters, and scheduler participation.",
+      "This permanently removes every Custom Value, its XP, level, and win/loss counters, and removes it from future battles.",
       "It keeps the 103 canonical values and their progress, achievements and lifetime achievement progress, language, accessibility settings, controls, avatar customization, and other preferences.",
-      "The active deck returns to the 103 canonical values. The deck revision advances, the current pair cycle and Undo and Redo history clear, and a fresh canonical schedule begins.",
+      "Your battles return to the 103 included values. Battle matching restarts, and Undo and Redo history clears.",
       "This cannot be undone after you confirm. Export your data first if you may want it later.",
     ]),
     successAnnouncement:
@@ -30,7 +30,7 @@ export const playerDataResetCopy = Object.freeze({
     confirmationTitle: "Reset Levels & Experience?",
     confirmationBody: Object.freeze([
       "This returns every active value to Level 1 with 0 XP, clears value win/loss counters, restarts the current pair cycle, and clears Undo and Redo history.",
-      "It advances the internal progress generation so restored scheduler state cannot cross the reset boundary. Your current value ranking restarts from an all-tied baseline.",
+      "Your value ranking starts over with all values tied.",
       "It keeps your Custom Value definitions, achievements and lifetime achievement progress, language, accessibility settings, controls, avatar customization, and other preferences.",
       "This cannot be undone after you confirm. Export your data first if you may want it later.",
     ]),
@@ -54,7 +54,7 @@ export const playerDataResetCopy = Object.freeze({
   "delete-all-data": Object.freeze({
     actionLabel: "Delete All Data",
     summary:
-      "Remove every WAYVM player-data record from this browser profile and return to Introduction.",
+      "Remove all WAYVM player data from this device or browser profile and return to Introduction.",
     confirmationTitle: "Delete All Data?",
     confirmationBody: Object.freeze([
       "This permanently removes all WAYVM player data from this device or browser profile, including levels, experience, Custom Values, achievements, current scheduling state, Undo and Redo history, language, settings, local backups, and control mappings.",
