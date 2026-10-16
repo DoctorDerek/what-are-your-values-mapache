@@ -1,6 +1,5 @@
 "use client"
 
-import { introductionCopy } from "@game/data/src/IntroductionCopy"
 import { STARTUP_INDICATOR_DELAY_MS } from "@game/data/src/PresentationLoadingCopy"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { cx } from "classix"
@@ -9,6 +8,7 @@ import MapacheScreen from "@/components/MapacheScreen"
 
 export default function PlayerDataLoading() {
   const localizedCopy = useLocaleCatalog()
+  const introductionCopy = localizedCopy.introduction
   const playerDataRecoveryCopy = localizedCopy.interfaceCopy.recovery
 
   const [showIndicator, setShowIndicator] = useState(false)

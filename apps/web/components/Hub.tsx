@@ -2,7 +2,6 @@
 
 import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
-import { introductionCopy } from "@game/data/src/IntroductionCopy"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
@@ -58,6 +57,7 @@ export default function Hub({
   onShare: () => void
 }) {
   const localizedCopy = useLocaleCatalog()
+  const introductionCopy = localizedCopy.introduction
   const DRESSING_ROOM_COPY = localizedCopy.interfaceCopy.dressingRoom
   const PERSONAL_HUB_COPY = localizedCopy.hub
   const presentationLoadingCopy = localizedCopy.interfaceCopy.loading
