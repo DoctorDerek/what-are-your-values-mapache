@@ -152,6 +152,19 @@ for (const viewport of [
         await expect(
           page.getByRole("button", { name: "Battle", exact: true }),
         ).toBeVisible()
+        await expect(card).toBeVisible()
+        await card.hover()
+        await page.clock.fastForward(10_000)
+        await expect(card).toBeVisible()
+        await page.screenshot({
+          path: testInfo.outputPath("hub-visible-achievement.png"),
+        })
+        await page
+          .getByRole("button", { name: "Browse All Values", exact: true })
+          .click()
+        await expect(
+          page.getByRole("heading", { name: "All Values", exact: true }),
+        ).toBeVisible()
       }
     })
   }
