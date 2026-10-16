@@ -34,6 +34,10 @@ export function createWebMetadata(
     metadataBase: new URL(CANONICAL_WEB_ROOT_URL),
     title: catalog.seo.title,
     description: catalog.seo.description,
+    manifest:
+      locale === DEFAULT_LOCALE
+        ? "/manifest.webmanifest"
+        : `/manifests/${locale}`,
     alternates: {
       canonical: canonicalUrl,
       languages: SHIPPED_LANGUAGE_ALTERNATES,
