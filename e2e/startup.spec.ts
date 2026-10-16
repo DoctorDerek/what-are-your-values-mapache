@@ -17,6 +17,29 @@ for (const viewport of [
     const start = page.getByRole("button", { name: "Start", exact: true })
     const language = page.getByRole("combobox", { name: "Language" })
     const body = page.getByTestId("information-panel-body")
+    const title = page.getByRole("heading", {
+      name: "What Are Your Values, Mapache?",
+      exact: true,
+    })
+    const expectedTitleLines = viewport.width >= 1280 ? 1 : 2
+    const titleGeometry = await title.evaluate((element) => {
+      const bounds = element.getBoundingClientRect()
+      const style = getComputedStyle(element)
+      return {
+        left: bounds.left,
+        right: bounds.right,
+        height: bounds.height,
+        lineHeight: Number.parseFloat(style.lineHeight),
+        letterSpacing: style.letterSpacing,
+      }
+    })
+    expect(titleGeometry.left).toBeGreaterThanOrEqual(0)
+    expect(titleGeometry.right).toBeLessThanOrEqual(viewport.width)
+    expect(titleGeometry.height).toBeCloseTo(
+      titleGeometry.lineHeight * expectedTitleLines,
+      1,
+    )
+    expect(titleGeometry.letterSpacing).toMatch(/^(normal|0px)$/)
     await expect(start).toBeInViewport({ ratio: 1 })
     await expect(language).toBeInViewport({ ratio: 1 })
     const frame = page.getByRole("region", {
@@ -52,6 +75,16 @@ for (const viewport of [
     })
     await page.screenshot({ path: testInfo.outputPath("first-arrival.png") })
     await language.selectOption("es-MX")
+    const spanishTitle = page.getByRole("heading", {
+      name: "¿Cuáles son tus valores, Mapache?",
+      exact: true,
+    })
+    const spanishTitleBounds = await spanishTitle.boundingBox()
+    expect(spanishTitleBounds!.x).toBeGreaterThanOrEqual(0)
+    expect(
+      spanishTitleBounds!.x + spanishTitleBounds!.width,
+    ).toBeLessThanOrEqual(viewport.width)
+    expect(spanishTitleBounds!.height).toBeCloseTo(titleGeometry.height, 1)
     await expect(
       page.getByRole("button", { name: "Empezar", exact: true }),
     ).toBeInViewport({ ratio: 1 })
