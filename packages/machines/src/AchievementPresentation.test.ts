@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest"
 import { ACHIEVEMENT_CATALOG, readAchievementId } from "./AchievementCatalog"
 import {
   formatAchievementUnlockedDate,
-  getAchievementEnglishCopy,
+  getAchievementCopy,
   getPendingAchievementPresentations,
   projectAchievementCatalog,
 } from "./AchievementPresentation"
@@ -57,7 +57,7 @@ describe("Achievement presentation", () => {
     expect(
       ACHIEVEMENT_CATALOG.map((achievement) => ({
         id: achievement.id,
-        ...getAchievementEnglishCopy(achievement),
+        ...getAchievementCopy(achievement),
       })),
     ).toEqual([
       {
@@ -81,7 +81,7 @@ describe("Achievement presentation", () => {
         title: "Reveal Your Top Five",
         unlockReason: "Five values earned XP.",
         requirement:
-          "Reach the first moment when at least five different values have earned XP and the Hub can display a player-produced Top Five.",
+          "Earn XP with at least five different values to reveal your Top Five.",
       },
       ...[5, 10, 25, 37, 50, 77, 100].map((threshold) => ({
         id: `valueLevel.${threshold}`,
@@ -93,7 +93,7 @@ describe("Achievement presentation", () => {
   })
 
   it("returns immutable copy records and UTC-normalized unlock dates", () => {
-    const copy = getAchievementEnglishCopy(ACHIEVEMENT_CATALOG[0]!)
+    const copy = getAchievementCopy(ACHIEVEMENT_CATALOG[0]!)
 
     expect(Object.isFrozen(copy)).toBe(true)
     expect(formatAchievementUnlockedDate("2026-07-29T23:30:00-05:00")).toBe(

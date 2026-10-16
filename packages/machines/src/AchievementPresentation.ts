@@ -1,3 +1,6 @@
+import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
+import type { LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
 import { getLevelFromXP } from "@game/utils/src/LevelMath"
 import {
   ACHIEVEMENT_CATALOG,
@@ -10,13 +13,7 @@ import {
 } from "./AchievementState"
 import type { BattleProfile } from "./BattleProfile"
 
-const englishNumberFormatter = new Intl.NumberFormat("en-US")
-const englishUnlockedDateFormatter = new Intl.DateTimeFormat("en-US", {
-  dateStyle: "medium",
-  timeZone: "UTC",
-})
-
-export type AchievementEnglishCopy = Readonly<{
+export type AchievementCopy = Readonly<{
   title: string
   unlockReason: string
   requirement: string
@@ -62,50 +59,55 @@ export function getPendingAchievementPresentations({
   })
 }
 
-export function getAchievementEnglishCopy(
+export function getAchievementCopy(
   achievement: AchievementDefinition,
-): AchievementEnglishCopy {
+  localization: LocalizationCatalog = getLocaleCatalog(),
+  integer = createLocaleFormatters(localization.metadata.languageTag).integer,
+): AchievementCopy {
   const { condition } = achievement
+  const copy = localization.interfaceCopy.progression
   if (condition.kind === "battleCount") {
-    const formattedThreshold = englishNumberFormatter.format(
-      condition.threshold,
-    )
+    const formattedThreshold = integer(condition.threshold)
 
     return Object.freeze({
       title:
         condition.threshold === 1
-          ? "First Battle"
-          : `${formattedThreshold} Battles`,
+          ? copy.firstBattleTitle
+          : copy.battleTitle(formattedThreshold),
       unlockReason:
         condition.threshold === 1
-          ? "First pair compared."
-          : `${formattedThreshold} pairs compared.`,
+          ? copy.firstBattleReason
+          : copy.battleReason(formattedThreshold),
       requirement:
         condition.threshold === 1
-          ? "Compare your first pair of values."
-          : `Compare ${formattedThreshold} pairs of values.`,
+          ? copy.firstBattleRequirement
+          : copy.battleRequirement(formattedThreshold),
     })
   }
   if (condition.kind === "topFive") {
     return Object.freeze({
-      title: "Reveal Your Top Five",
-      unlockReason: "Five values earned XP.",
-      requirement:
-        "Earn XP with at least five different values to reveal your Top Five.",
+      title: copy.topFiveTitle,
+      unlockReason: copy.topFiveReason,
+      requirement: copy.topFiveRequirement,
     })
   }
 
-  const formattedThreshold = englishNumberFormatter.format(condition.threshold)
+  const formattedThreshold = integer(condition.threshold)
 
   return Object.freeze({
-    title: `Reach Level ${formattedThreshold}`,
-    unlockReason: `A value reached Level ${formattedThreshold}.`,
-    requirement: `Raise any value to Level ${formattedThreshold}.`,
+    title: copy.levelTitle(formattedThreshold),
+    unlockReason: copy.levelReason(formattedThreshold),
+    requirement: copy.levelRequirement(formattedThreshold),
   })
 }
 
-export function formatAchievementUnlockedDate(timestamp: string) {
-  return englishUnlockedDateFormatter.format(new Date(timestamp))
+export function formatAchievementUnlockedDate(
+  timestamp: string,
+  localization: LocalizationCatalog = getLocaleCatalog(),
+) {
+  return createLocaleFormatters(localization.metadata.languageTag).date(
+    timestamp,
+  )
 }
 
 function createNumericProgress({
@@ -124,11 +126,16 @@ function getValueLevelProgress({
   threshold,
   achievementState,
   battleProfile,
+  localization,
+  integer,
 }: {
   readonly threshold: number
   readonly achievementState: AchievementState
   readonly battleProfile: BattleProfile
+  readonly localization: LocalizationCatalog
+  readonly integer: (value: number | bigint) => string
 }): AchievementProgressPresentation {
+  const copy = localization.interfaceCopy.progression
   const eligibleLevels = battleProfile.activeDeck.valueIds.flatMap(
     (valueId) => {
       const baselineLevel =
@@ -148,18 +155,18 @@ function getValueLevelProgress({
   if (eligibleLevels.length === 0) {
     return Object.freeze({
       kind: "eligibility",
-      label: `No active value is currently eligible to cross Level ${englishNumberFormatter.format(threshold)}.`,
+      label: copy.noEligibleValue(integer(threshold)),
     })
   }
 
   const current = Math.max(...eligibleLevels)
-  const formattedCurrent = englishNumberFormatter.format(current)
-  const formattedTarget = englishNumberFormatter.format(threshold)
+  const formattedCurrent = integer(current)
+  const formattedTarget = integer(threshold)
 
   return createNumericProgress({
     current,
     target: threshold,
-    label: `Highest eligible value: Level ${formattedCurrent} of Level ${formattedTarget}`,
+    label: copy.eligibleValue(formattedCurrent, formattedTarget),
   })
 }
 
@@ -167,12 +174,17 @@ function getLockedAchievementProgress({
   achievement,
   achievementState,
   battleProfile,
+  localization,
+  integer,
 }: {
   readonly achievement: AchievementDefinition
   readonly achievementState: AchievementState
   readonly battleProfile: BattleProfile
+  readonly localization: LocalizationCatalog
+  readonly integer: (value: number | bigint) => string
 }): AchievementProgressPresentation {
   const { condition } = achievement
+  const copy = localization.interfaceCopy.progression
   if (condition.kind === "battleCount") {
     const current = Math.min(
       achievementState.progress.lifetimeBattleCount,
@@ -182,7 +194,10 @@ function getLockedAchievementProgress({
     return createNumericProgress({
       current,
       target: condition.threshold,
-      label: `${englishNumberFormatter.format(current)} of ${englishNumberFormatter.format(condition.threshold)} comparisons`,
+      label: copy.comparisonProgress(
+        integer(current),
+        integer(condition.threshold),
+      ),
     })
   }
   if (condition.kind === "topFive") {
@@ -195,15 +210,14 @@ function getLockedAchievementProgress({
     ) {
       return Object.freeze({
         kind: "eligibility",
-        label:
-          "Reset Levels & Experience before revealing your Top Five again.",
+        label: copy.resetTopFive,
       })
     }
 
     return createNumericProgress({
       current: valuesWithExperience,
       target: 5,
-      label: `${valuesWithExperience} of 5 values have earned XP`,
+      label: copy.topFiveProgress(integer(valuesWithExperience)),
     })
   }
 
@@ -211,23 +225,30 @@ function getLockedAchievementProgress({
     threshold: condition.threshold,
     achievementState,
     battleProfile,
+    localization,
+    integer,
   })
 }
 
 export function projectAchievementCatalog({
   achievementState,
   battleProfile,
+  localization = getLocaleCatalog(),
 }: {
   readonly achievementState: AchievementState
   readonly battleProfile: BattleProfile
+  readonly localization?: LocalizationCatalog
 }) {
   const unlockById = new Map(
     achievementState.unlocks.map((unlock) => [unlock.id, unlock]),
   )
+  const { integer, date } = createLocaleFormatters(
+    localization.metadata.languageTag,
+  )
 
   return Object.freeze(
     ACHIEVEMENT_CATALOG.map((achievement) => {
-      const copy = getAchievementEnglishCopy(achievement)
+      const copy = getAchievementCopy(achievement, localization, integer)
       const unlock = unlockById.get(achievement.id)
 
       return Object.freeze({
@@ -240,11 +261,11 @@ export function projectAchievementCatalog({
               achievement,
               achievementState,
               battleProfile,
+              localization,
+              integer,
             }),
         unlockedAt: unlock?.unlockedAt ?? null,
-        unlockedDate: unlock
-          ? formatAchievementUnlockedDate(unlock.unlockedAt)
-          : null,
+        unlockedDate: unlock ? date(unlock.unlockedAt) : null,
       }) satisfies AchievementPresentation
     }),
   )
