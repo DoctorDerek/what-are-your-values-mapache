@@ -16,6 +16,27 @@ describe("native language selection", () => {
     expect(screen.queryByRole("radio")).toBeNull()
   })
 
+  it("selects Mexican Spanish and presents the selected language without English control labels", async () => {
+    const onLocaleChange = jest.fn()
+    const { rerender } = await render(
+      <NativeLanguageSelector locale="en" onLocaleChange={onLocaleChange} />,
+    )
+    await fireEvent.press(screen.getByRole("button", { name: "Language" }))
+    await fireEvent.press(
+      screen.getByRole("radio", { name: "Español (México)" }),
+    )
+    expect(onLocaleChange).toHaveBeenCalledWith("es-MX")
+    await rerender(
+      <NativeLanguageSelector locale="es-MX" onLocaleChange={onLocaleChange} />,
+    )
+    await fireEvent.press(screen.getByRole("button", { name: "Idioma" }))
+    expect(
+      screen.getByRole("radio", { name: "Español (México)" }),
+    ).toBeChecked()
+    await fireEvent.press(screen.getByRole("button", { name: "Volver" }))
+    expect(screen.queryByRole("radio")).toBeNull()
+  })
+
   it("dismisses without a write and cannot open during a pending save", async () => {
     const onLocaleChange = jest.fn()
     const { container, rerender } = await render(

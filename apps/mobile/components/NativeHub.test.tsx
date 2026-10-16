@@ -19,6 +19,7 @@ import {
 import { rankValues } from "@game/data/src/ValueRanking"
 import { VALUE_TO_ANIMAL_MAP } from "@game/data/src/ValueToAnimalMap"
 import { ZOO_ANIMALS } from "@game/data/src/ZooAnimals"
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import { describe, expect, it, jest } from "@jest/globals"
 import {
   act,
@@ -172,6 +173,26 @@ function createHubCallbacks() {
 }
 
 describe("NativeHub", () => {
+  it("keeps the native Home title, values, and actions in Mexican Spanish", async () => {
+    const callbacks = createHubCallbacks()
+    await render(
+      <LocaleProvider locale="es-MX">
+        <NativeHub
+          {...callbacks}
+          {...animalPresentationProps}
+          dataNotice={null}
+          rankedValues={createUnplayedRankedValues()}
+        />
+      </LocaleProvider>,
+    )
+    expect(
+      screen.getByRole("header", { name: "¿Cuáles son tus valores, Mapache?" }),
+    ).toBeOnTheScreen()
+    expect(screen.getByText("Aceptación")).toBeOnTheScreen()
+    await fireEvent.press(screen.getByRole("button", { name: "Combatir" }))
+    expect(callbacks.onStartBattle).toHaveBeenCalledTimes(1)
+    expect(screen.queryByText("Acceptance")).toBeNull()
+  })
   it("admits attention after a completed press while retaining decoded calm art", async () => {
     const rankedValues = createRankedValuesWithEvidence()
     const catalog = {
