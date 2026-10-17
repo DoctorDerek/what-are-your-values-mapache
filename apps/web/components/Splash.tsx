@@ -86,27 +86,25 @@ export default function Splash({
         />
       }
       afterActions={
-        <div className="relative grid h-38 shrink-0 place-items-center border-t-4 border-black bg-black">
-          <div className="absolute inset-0 mx-auto max-w-100">
+        <div className="relative grid min-h-37 shrink-0 place-items-center border-t-6 border-black bg-black px-4 py-4">
+          <div className="absolute inset-0 mx-auto max-w-80">
             <Image
               src={FIRST_ARRIVAL_PRESENTATION.posterUrl}
               alt=""
               fill
               unoptimized
               className="object-cover"
-              sizes="(min-width: 400px) 400px, 100vw"
+              sizes="(min-width: 320px) 320px, 100vw"
             />
           </div>
-          <div className="relative z-20 grid gap-1 text-lg leading-7 font-medium text-white">
-            <p className="text-2xl leading-7 font-black xl:text-[26px]">
-              {firstArrival.gameCredit}
-            </p>
+          <div className="relative z-20 grid justify-items-center text-xl leading-7 font-black text-white">
+            <p>{firstArrival.gameCredit}</p>
             <p>{firstArrival.creatorCredit}</p>
             <a
               href={FIRST_ARRIVAL_PRESENTATION.creatorWebsiteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="relative justify-self-center after:absolute after:-inset-x-2 after:-inset-y-2 hover:opacity-80 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white active:opacity-70"
+              className="hover:text-mapache-vivid-primary-orange active:text-mapache-vivid-primary-orange relative no-underline transition-colors after:absolute after:-inset-x-2 after:-inset-y-2 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:transition-none"
             >
               {firstArrival.creatorWebsiteLabel}
             </a>
@@ -117,7 +115,7 @@ export default function Splash({
       onPrimaryAction={onComplete}
       isPrimaryActionPending={isPending}
     >
-      <div className="mx-auto flex max-w-3xl flex-col gap-6 text-black">
+      <div className="flex flex-col gap-4 text-black">
         {notice ? (
           <p
             role="status"
@@ -132,7 +130,7 @@ export default function Splash({
         {introductionCopy.body.map((paragraph) => (
           <p
             key={paragraph}
-            className="text-lg leading-relaxed font-medium text-gray-800 xl:text-xl"
+            className="text-lg leading-relaxed font-medium text-gray-800"
           >
             {paragraph}
           </p>

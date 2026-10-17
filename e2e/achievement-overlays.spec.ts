@@ -86,6 +86,90 @@ function expectUnchangedBattleGeometry(
     })
 }
 
+for (const viewport of [
+  { width: 320, height: 540 },
+  { width: 1440, height: 900 },
+]) {
+  for (const exit of ["See my values", "Keep battling"]) {
+    test(`Results ${exit} stays reachable with a hover-paused achievement at ${viewport.width}px`, async ({
+      page,
+    }, testInfo) => {
+      await page.setViewportSize(viewport)
+      await page.clock.install()
+      await startBattle(page)
+      await compareNextPair(page)
+      await page.getByRole("button", { name: "Stop", exact: true }).click()
+      await expect(
+        page.getByRole("heading", { name: "Results", exact: true }),
+      ).toBeVisible()
+      const card = page.getByRole("complementary", {
+        name: "Achievement unlocked",
+      })
+      await expect(card).toBeVisible()
+      await card.hover()
+      const countdown = card.locator("[data-achievement-countdown]")
+      const readProgress = () =>
+        countdown.evaluate(
+          (element) => new DOMMatrix(getComputedStyle(element).transform).a,
+        )
+      const before = await readProgress()
+      await page.clock.fastForward(10_000)
+      await expect(card).toBeVisible()
+      expect(await readProgress()).toBeCloseTo(before, 2)
+      const toast = await card.boundingBox()
+      const menu = await page
+        .getByRole("button", { name: "Menu", exact: true })
+        .boundingBox()
+      const profile = await page
+        .getByRole("region", { name: "Profile progress" })
+        .boundingBox()
+      expect(toast!.y).toBeGreaterThan(menu!.y + menu!.height)
+      expect(toast!.y + toast!.height).toBeLessThan(profile!.y)
+      for (const label of ["See my values", "Keep battling"]) {
+        const action = page.getByRole("button", { name: label, exact: true })
+        await expect(action).toBeInViewport({ ratio: 1 })
+        expect(
+          await action.evaluate((element) => {
+            const bounds = element.getBoundingClientRect()
+            return element.contains(
+              document.elementFromPoint(
+                bounds.x + bounds.width / 2,
+                bounds.y + bounds.height / 2,
+              ),
+            )
+          }),
+        ).toBe(true)
+      }
+      await page.screenshot({
+        path: testInfo.outputPath("results-visible-achievement.png"),
+      })
+      await page.getByRole("button", { name: exit, exact: true }).click()
+      if (exit === "Keep battling") {
+        await expect(
+          page.getByRole("button", { name: /^Choose / }).first(),
+        ).toBeEnabled()
+      } else {
+        await expect(
+          page.getByRole("button", { name: "Battle", exact: true }),
+        ).toBeVisible()
+        await expect(card).toBeVisible()
+        await card.hover()
+        await page.clock.fastForward(10_000)
+        await expect(card).toBeVisible()
+        await page.screenshot({
+          path: testInfo.outputPath("hub-visible-achievement.png"),
+        })
+        await page
+          .getByRole("button", { name: "Browse All Values", exact: true })
+          .click()
+        await expect(
+          page.getByRole("heading", { name: "All Values", exact: true }),
+        ).toBeVisible()
+      }
+    })
+  }
+}
+
 for (const textSize of [100, 200, 400]) {
   test(`stack arrival, independent dismissal and queued admission never change game geometry at ${textSize}% text`, async ({
     page,

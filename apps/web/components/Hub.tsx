@@ -6,7 +6,14 @@ import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwa
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import type { StaticImageData } from "next/image"
-import { useCallback, useEffect, useRef, useState, type Ref } from "react"
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type Ref,
+} from "react"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
 import MapacheScreen from "@/components/MapacheScreen"
 import PersonalValuesCard from "@/components/PersonalValuesCard"
@@ -23,6 +30,7 @@ export default function Hub({
   browseAllValuesButtonRef,
   rosterRef,
   dataNotice,
+  notifications,
   shouldReduceMotion,
   onBrowseAllValues,
   onAddCustomValue,
@@ -48,6 +56,7 @@ export default function Hub({
   browseAllValuesButtonRef?: Ref<HTMLButtonElement>
   rosterRef?: Ref<HTMLDivElement>
   dataNotice: string | null
+  notifications?: ReactNode
   shouldReduceMotion: boolean
   onBrowseAllValues: (focusTargetId: string) => void
   onAddCustomValue: (focusTargetId: string) => void
@@ -131,14 +140,19 @@ export default function Hub({
           onNavigationBlockedChange={handleDraftNavigationBlockedChange}
         />
       )}
-      <PersonalValuesCard
-        rosterRef={rosterRef}
-        appearance={appearance}
-        rankedValues={rankedValues}
-        catalog={runtimeClipCatalog}
-        shouldReduceMotion={shouldReduceMotion}
-        inert={isNavigationBlocked}
-      />
+      <div className="relative isolate flex min-h-min w-full max-w-7xl flex-1 flex-col overflow-hidden">
+        <PersonalValuesCard
+          rosterRef={rosterRef}
+          appearance={appearance}
+          rankedValues={rankedValues}
+          catalog={runtimeClipCatalog}
+          shouldReduceMotion={shouldReduceMotion}
+          inert={isNavigationBlocked}
+        />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-full overflow-y-auto overscroll-contain p-2">
+          {notifications}
+        </div>
+      </div>
       <nav
         aria-label={PERSONAL_HUB_COPY.actions}
         className="grid w-full max-w-7xl shrink-0 gap-4 pb-3 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] [&_button]:min-w-0"

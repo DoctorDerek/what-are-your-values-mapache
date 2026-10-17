@@ -424,6 +424,14 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
         "The application code may be available under its stated open-source license. Commercial art, fonts, music, and other third-party assets remain under their own licenses and are not granted by the code license.",
       ]),
     }),
+    Object.freeze({
+      kind: "resource",
+      title: "Anton by Vernon Adams",
+      description:
+        "The web title uses Anton as a condensed fallback, under the SIL Open Font License 1.1. Copyright 2020 The Anton Project Authors.",
+      actionLabel: "View Anton",
+      url: "https://github.com/googlefonts/AntonFont",
+    }),
   ]),
 } as const satisfies InformationPanelDefinition)
 

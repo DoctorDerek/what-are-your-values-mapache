@@ -42,6 +42,15 @@ export default async function RootLayout({
 
   return (
     <html lang={getLocaleCatalog(locale).metadata.languageTag}>
+      <head>
+        <link
+          rel="preload"
+          href="/fonts/Anton-Latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className="min-h-screen antialiased">
         <SerwistProvider
           swUrl="/sw.js"

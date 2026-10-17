@@ -41,10 +41,10 @@ function InformationPanelFrame({
   const titleId = useId()
   const isIntroduction = presentation === "introduction"
   const titleClassName = cx(
-    "relative z-20 text-mapache-vivid-primary-cyan leading-tight font-black",
+    "relative z-20 text-mapache-vivid-primary-cyan",
     isIntroduction
-      ? "text-[clamp(21px,6.85vw,36px)] xl:text-[42px]"
-      : "text-4xl [overflow-wrap:anywhere] uppercase sm:text-5xl lg:text-7xl",
+      ? "font-arrival-title text-[calc(clamp(21px,6.85vw,36px)*1.3)] leading-[calc(1.25/1.3)] font-normal tracking-normal xl:text-[calc(clamp(2.625rem,4vw,4rem)*1.3)]"
+      : "text-4xl leading-tight font-black [overflow-wrap:anywhere] uppercase sm:text-5xl lg:text-7xl",
     accessibleCloseLabel && "px-12",
   )
 
@@ -53,19 +53,19 @@ function InformationPanelFrame({
       aria-label={dialogTitle ? title : undefined}
       aria-labelledby={dialogTitle ? undefined : titleId}
       className={cx(
-        "relative isolate grid min-h-0 w-full max-w-4xl border-4 border-black bg-white",
+        "relative isolate grid min-h-0 w-full bg-white",
         isIntroduction
-          ? "h-full max-h-184 grid-rows-[auto_minmax(0,1fr)_auto_auto] shadow-[8px_8px_0_#000] xl:max-w-5xl"
-          : "grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden shadow-[12px_12px_0px_0px_#000000]",
+          ? "h-full grid-rows-[auto_minmax(0,1fr)_auto_auto]"
+          : "max-w-4xl grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden border-4 border-black shadow-[12px_12px_0px_0px_#000000]",
       )}
     >
       {decoration}
       <header
         className={cx(
-          "relative z-20 border-b-4 border-black",
+          "relative z-20 border-black",
           isIntroduction
-            ? "px-2.5 py-4 xl:px-8 xl:py-6"
-            : "px-5 py-5 sm:px-10 sm:py-7",
+            ? "flex min-h-24 items-center justify-center border-b-6 px-4 py-5 xl:min-h-32 xl:px-8 xl:py-6"
+            : "border-b-4 px-5 py-5 sm:px-10 sm:py-7",
         )}
       >
         {titleDecoration}
@@ -98,7 +98,9 @@ function InformationPanelFrame({
         tabIndex={0}
         className={cx(
           "relative z-20 min-h-0 overflow-y-auto overscroll-contain px-5",
-          isIntroduction ? "py-4 xl:px-8 xl:py-6" : "py-6 sm:px-10 sm:py-8",
+          isIntroduction
+            ? "mx-auto w-full max-w-4xl [scrollbar-gutter:stable] py-5 text-left xl:px-10 xl:py-7"
+            : "py-6 sm:px-10 sm:py-8",
         )}
       >
         {children}
@@ -106,10 +108,10 @@ function InformationPanelFrame({
 
       <footer
         className={cx(
-          "relative z-20 border-t-4 border-black",
+          "relative z-20 border-black",
           isIntroduction
-            ? "grid gap-3 px-4 pt-3 pb-5 xl:grid-cols-[minmax(16rem,1fr)_2fr] xl:items-center xl:gap-6 xl:px-8"
-            : "bg-white px-5 py-5 sm:px-10 sm:py-6",
+            ? "grid grid-cols-[minmax(0,36rem)] justify-center gap-3 border-t-6 px-6 pt-4 pb-5"
+            : "border-t-4 bg-white px-5 py-5 sm:px-10 sm:py-6",
         )}
       >
         {beforePrimaryAction}
@@ -121,9 +123,7 @@ function InformationPanelFrame({
           aria-busy={isPrimaryActionPending}
           className="w-full"
           typographyClassName={
-            isIntroduction
-              ? "text-4xl leading-none xl:text-[42px]"
-              : "text-4xl sm:text-5xl"
+            isIntroduction ? "text-3xl leading-none" : "text-4xl sm:text-5xl"
           }
         >
           {primaryActionLabel}
@@ -137,14 +137,11 @@ function InformationPanelFrame({
 export default function InformationPanel(props: InformationPanelFrameProps) {
   return (
     <MapacheScreen
-      spacing="compact"
+      spacing={
+        props.presentation === "introduction" ? "safe-area-only" : "compact"
+      }
       viewport="fixed"
-      className={cx(
-        "flex justify-center text-center",
-        props.presentation === "introduction"
-          ? "items-center"
-          : "items-stretch",
-      )}
+      className="flex items-stretch justify-center text-center"
     >
       <InformationPanelFrame {...props} />
     </MapacheScreen>

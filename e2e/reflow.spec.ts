@@ -81,7 +81,10 @@ for (const width of [390, 1440]) {
     expect(dimensions.content).toBeLessThanOrEqual(dimensions.width)
     await expect(editor).toBeVisible()
     await expect(page.getByText(/clears Undo and Redo/).first()).toBeVisible()
-    await page.getByRole("button", { name: "Save", exact: true }).click()
+    await Promise.all([
+      page.waitForEvent("framenavigated"),
+      page.getByRole("button", { name: "Save", exact: true }).click(),
+    ])
     await expect(
       page.getByText("Your Custom Values are saved and ready to battle.", {
         exact: true,
@@ -543,7 +546,9 @@ for (const width of [390, 1440]) {
     const first = await combatants.first().boundingBox()
     const second = await combatants.last().boundingBox()
     expect(first!.y).toBeGreaterThanOrEqual(Math.max(...definitionBottoms))
-    expect(first!.y - Math.max(...definitionBottoms)).toBeLessThan(20)
+    const animalClearance = first!.y - Math.max(...definitionBottoms)
+    expect(animalClearance).toBeGreaterThanOrEqual(width >= 1280 ? 16 : 8)
+    expect(animalClearance).toBeLessThanOrEqual(width >= 1280 ? 32 : 16)
     expect(
       Math.abs(first!.y + first!.height - second!.y - second!.height),
     ).toBeLessThan(1)

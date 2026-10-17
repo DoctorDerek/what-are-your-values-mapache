@@ -102,7 +102,10 @@ test("battle results show committed progress without delaying either exit", asyn
   ).click()
   await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled()
   await page
-    .getByRole("button", { name: "Dismiss achievement: First Battle" })
+    .getByRole("button", {
+      name: "Dismiss achievement: First Battle",
+      exact: true,
+    })
     .click()
   await page.evaluate(() => {
     let firstPosition: number | undefined
@@ -284,9 +287,6 @@ for (const viewport of [
         : choices.first()
     ).click()
     await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled()
-    await page
-      .getByRole("button", { name: "Dismiss achievement: First Battle" })
-      .click()
     await page.evaluate(() => {
       let overlapSamples = 0
       let lastSampleAt = 0
@@ -459,7 +459,10 @@ for (const viewport of [
     await choices.first().click()
     await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled()
     await page
-      .getByRole("button", { name: "Dismiss achievement: First Battle" })
+      .getByRole("button", {
+        name: "Dismiss achievement: First Battle",
+        exact: true,
+      })
       .click()
     await choices.first().click()
     await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled()

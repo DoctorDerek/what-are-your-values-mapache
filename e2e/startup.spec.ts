@@ -3,6 +3,111 @@ import { test } from "./fixtures"
 
 test.use({ serviceWorkers: "block" })
 
+for (const viewport of [
+  { width: 320, height: 568 },
+  { width: 390, height: 844 },
+  { width: 1440, height: 900 },
+]) {
+  test(`first arrival uses full-width bands and reachable language and Start controls at ${viewport.width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize(viewport)
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await page.goto("/")
+    const start = page.getByRole("button", { name: "Start", exact: true })
+    const language = page.getByRole("combobox", { name: "Language" })
+    const body = page.getByTestId("information-panel-body")
+    const title = page.getByRole("heading", {
+      name: "What Are Your Values, Mapache?",
+      exact: true,
+    })
+    const expectedTitleLines = viewport.width >= 1280 ? 1 : 2
+    const titleGeometry = await title.evaluate((element) => {
+      const bounds = element.getBoundingClientRect()
+      const style = getComputedStyle(element)
+      return {
+        left: bounds.left,
+        right: bounds.right,
+        height: bounds.height,
+        lineHeight: Number.parseFloat(style.lineHeight),
+        letterSpacing: style.letterSpacing,
+      }
+    })
+    expect(titleGeometry.left).toBeGreaterThanOrEqual(0)
+    expect(titleGeometry.right).toBeLessThanOrEqual(viewport.width)
+    expect(titleGeometry.height).toBeCloseTo(
+      titleGeometry.lineHeight * expectedTitleLines,
+      0,
+    )
+    expect(titleGeometry.letterSpacing).toMatch(/^(normal|0px)$/)
+    await expect(start).toBeInViewport({ ratio: 1 })
+    await expect(language).toBeInViewport({ ratio: 1 })
+    const frame = page.getByRole("region", {
+      name: "What Are Your Values, Mapache?",
+      exact: true,
+    })
+    const bounds = await frame.boundingBox()
+    expect(bounds!.x).toBe(0)
+    expect(bounds!.width).toBe(viewport.width)
+    expect(bounds!.height).toBeCloseTo(viewport.height, 1)
+    const startBounds = await start.boundingBox()
+    const languageBounds = await language.boundingBox()
+    const link = page.getByRole("link", {
+      name: "DoctorDerek.com",
+      exact: true,
+    })
+    const linkBounds = await link.boundingBox()
+    expect(startBounds!.y).toBeGreaterThan(
+      languageBounds!.y + languageBounds!.height,
+    )
+    expect(linkBounds!.y).toBeGreaterThan(startBounds!.y + startBounds!.height)
+    expect(startBounds!.x + startBounds!.width / 2).toBeCloseTo(
+      viewport.width / 2,
+      1,
+    )
+    expect(startBounds!.width).toBeLessThanOrEqual(576)
+    await body.evaluate((element) => {
+      element.scrollTop = element.scrollHeight
+    })
+    expect(await start.boundingBox()).toEqual(startBounds)
+    await body.evaluate((element) => {
+      element.scrollTop = 0
+    })
+    await page.screenshot({ path: testInfo.outputPath("first-arrival.png") })
+    await language.selectOption("es-MX")
+    const spanishTitle = page.getByRole("heading", {
+      name: "¿Cuáles son tus valores, Mapache?",
+      exact: true,
+    })
+    const spanishTitleBounds = await spanishTitle.boundingBox()
+    expect(spanishTitleBounds!.x).toBeGreaterThanOrEqual(0)
+    expect(
+      spanishTitleBounds!.x + spanishTitleBounds!.width,
+    ).toBeLessThanOrEqual(viewport.width)
+    expect(spanishTitleBounds!.height).toBeCloseTo(titleGeometry.height, 1)
+    await page.evaluate(() => document.fonts.load('400 32px "WAYVM Condensed"'))
+    await spanishTitle.evaluate((element) => {
+      element.style.fontFamily = '"WAYVM Condensed"'
+    })
+    const fallbackTitleBounds = await spanishTitle.boundingBox()
+    expect(fallbackTitleBounds!.height).toBeCloseTo(titleGeometry.height, 1)
+    expect(fallbackTitleBounds!.x).toBeGreaterThanOrEqual(0)
+    expect(
+      fallbackTitleBounds!.x + fallbackTitleBounds!.width,
+    ).toBeLessThanOrEqual(viewport.width)
+    await expect(
+      page.getByRole("button", { name: "Empezar", exact: true }),
+    ).toBeInViewport({ ratio: 1 })
+    await page.screenshot({
+      path: testInfo.outputPath("first-arrival-spanish.png"),
+    })
+    await page.getByRole("button", { name: "Empezar", exact: true }).click()
+    await expect(
+      page.getByRole("button", { name: "Combatir", exact: true }),
+    ).toBeVisible()
+  })
+}
+
 test("startup preserves its viewport while client code waits and opens the saved destination", async ({
   page,
 }) => {
@@ -47,7 +152,10 @@ test("startup preserves its viewport while client code waits and opens the saved
       "Español (México)",
     ])
     await language.selectOption("en")
-    await game.getByRole("button", { name: "Start", exact: true }).click()
+    await Promise.all([
+      page.waitForEvent("framenavigated"),
+      game.getByRole("button", { name: "Start", exact: true }).click(),
+    ])
     await expect(
       game.getByRole("heading", {
         name: /^My (?:Top Five Life )?Values$/,

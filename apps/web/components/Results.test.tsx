@@ -126,6 +126,7 @@ describe("Battle-exit Results presentation", () => {
     const onKeepBattling = vi.fn()
     render(
       <Results
+        notifications={<aside>Achievement notice</aside>}
         results={createResults()}
         runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
         shouldReduceMotion
@@ -137,6 +138,10 @@ describe("Battle-exit Results presentation", () => {
     )
 
     expect(screen.getByRole("heading", { name: "Results" })).toBeVisible()
+    expect(screen.getByText("Achievement notice")).toBeVisible()
+    expect(
+      screen.getByRole("navigation", { name: "Results actions" }),
+    ).not.toContainElement(screen.getByText("Achievement notice"))
     expect(
       within(
         screen.getByRole("list", { name: "Your value results" }),

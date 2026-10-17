@@ -748,14 +748,6 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
   )
   const achievementPresentationReturnTarget =
     state.context.achievementPresentationReturnTarget
-  const achievementBanner = (
-    <AchievementBanner
-      achievements={pendingAchievementPresentations}
-      isAcknowledgementPending={isRecordingAchievementPresentation}
-      shouldReduceMotion={shouldReduceMotion}
-      onPresented={handleAchievementPresented}
-    />
-  )
   const activeInformationPanel = activeInformationPanelId
     ? INFORMATION_PANELS[activeInformationPanelId]
     : null
@@ -800,6 +792,15 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     state.matches("Results") ||
     (isRecordingAchievementPresentation &&
       achievementPresentationReturnTarget === "results")
+  const achievementBanner = (
+    <AchievementBanner
+      achievements={pendingAchievementPresentations}
+      isAcknowledgementPending={isRecordingAchievementPresentation}
+      placement={isResultsSurface || isHubSurface ? "inline" : "screen"}
+      shouldReduceMotion={shouldReduceMotion}
+      onPresented={handleAchievementPresented}
+    />
+  )
   const results =
     isResultsSurface &&
     state.context.battleEntryProfile &&
@@ -848,6 +849,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     return (
       <>
         <Hub
+          notifications={achievementBanner}
           appearance={playerData.appearance}
           onShare={() => {
             shareTriggerRef.current =
@@ -925,7 +927,6 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         />
         {reopenedInformationPanel}
         {controls}
-        {achievementBanner}
       </>
     )
   }
@@ -956,6 +957,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     return (
       <>
         <Results
+          notifications={achievementBanner}
           openedAt={state.context.resultsOpenedAt}
           results={results}
           runtimeClipCatalog={SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG}
@@ -975,7 +977,6 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         />
         {reopenedInformationPanel}
         {controls}
-        {achievementBanner}
       </>
     )
   }
