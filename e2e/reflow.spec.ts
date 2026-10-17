@@ -81,7 +81,10 @@ for (const width of [390, 1440]) {
     expect(dimensions.content).toBeLessThanOrEqual(dimensions.width)
     await expect(editor).toBeVisible()
     await expect(page.getByText(/clears Undo and Redo/).first()).toBeVisible()
-    await page.getByRole("button", { name: "Save", exact: true }).click()
+    await Promise.all([
+      page.waitForEvent("framenavigated"),
+      page.getByRole("button", { name: "Save", exact: true }).click(),
+    ])
     await expect(
       page.getByText("Your Custom Values are saved and ready to battle.", {
         exact: true,
