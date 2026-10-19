@@ -63,6 +63,9 @@ for (const viewport of [
       const textOutline = card.locator('[data-card-focus-outline="value"]')
       const animalOutline = card.locator('[data-card-focus-outline="animal"]')
       await expect(outlines.filter({ visible: true })).toHaveCount(2)
+      expect(await animalOutline.boundingBox()).toEqual(
+        await card.locator("[data-battle-arena-side]").boundingBox(),
+      )
       const text = await captureOutlineEdge(textOutline, "start")
       const animal = await captureOutlineEdge(animalOutline, "end")
       expect(text.width).toBeCloseTo(animal.width, 0)
