@@ -3,15 +3,22 @@ import { test } from "./fixtures"
 
 test.use({ serviceWorkers: "block", reducedMotion: "reduce", hasTouch: true })
 
-for (const viewport of [
+const battleViewports: {
+  width: number
+  height: number
+  fontFamily?: string
+}[] = [
   { width: 320, height: 568 },
   { width: 320, height: 540 },
   { width: 390, height: 540 },
   { width: 390, height: 640 },
   { width: 1440, height: 900 },
   { width: 1280, height: 720 },
-]) {
-  test(`Spanish battle keeps animals and right-thumb controls visible at ${viewport.width}x${viewport.height}`, async ({
+  { width: 320, height: 540, fontFamily: "Verdana, sans-serif" },
+]
+
+for (const viewport of battleViewports) {
+  test(`Spanish battle keeps animals and right-thumb controls visible at ${viewport.width}x${viewport.height}${viewport.fontFamily ? " with wider fallback fonts" : ""}`, async ({
     page,
   }, testInfo) => {
     await page.setViewportSize(viewport)
@@ -21,6 +28,10 @@ for (const viewport of [
       })
     })
     await page.goto("/que-valoras-en-la-vida")
+    if (viewport.fontFamily)
+      await page.addStyleTag({
+        content: `body { font-family: ${viewport.fontFamily}; }`,
+      })
     await page.getByRole("button", { name: "Empezar", exact: true }).tap()
     await page.getByRole("button", { name: "Combatir", exact: true }).tap()
     const battle = page.getByRole("main", { name: "Batalla de valores" })

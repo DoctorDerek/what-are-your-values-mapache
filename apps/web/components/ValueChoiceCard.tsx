@@ -96,17 +96,6 @@ export const ValueChoiceCard = forwardRef<
           "relative row-span-2 row-start-1 grid min-h-0 min-w-0 grid-rows-subgrid",
         )}
       >
-        <span
-          aria-hidden="true"
-          data-card-focus-outline="value"
-          className={cx(
-            "pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block",
-            isFirst && "-right-[8px]",
-            combatant
-              ? "border-t-(length:--choice-focus-width)"
-              : "border-y-(length:--choice-focus-width)",
-          )}
-        />
         <button
           ref={ref}
           id={choiceId}
@@ -120,8 +109,19 @@ export const ValueChoiceCard = forwardRef<
           aria-describedby={accessibleDefinitionId}
           disabled={!isEnabled}
           onClick={() => onActivate(value.id)}
-          className="row-start-2 flex w-full min-w-0 cursor-pointer flex-col justify-start px-[min(0.75rem,8%)] text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8"
+          className="row-start-2 flex w-full min-w-0 cursor-pointer flex-col justify-start px-[min(0.75rem,5%)] text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8"
         >
+          <span
+            aria-hidden="true"
+            data-card-focus-outline="value"
+            className={cx(
+              "pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block",
+              isFirst && "-right-[8px]",
+              combatant
+                ? "border-t-(length:--choice-focus-width)"
+                : "border-y-(length:--choice-focus-width)",
+            )}
+          />
           <div className="w-full min-w-0">
             <div className="@container/choice-title flow-root w-full min-w-0">
               {controlHint ? (
@@ -166,7 +166,7 @@ export const ValueChoiceCard = forwardRef<
             </div>
             <p
               id={accessibleDefinitionId}
-              className="mx-auto mt-2 max-w-2xl border-2 border-white/20 bg-black/40 px-[min(0.75rem,8%)] py-2 text-[clamp(1rem,2.8vw,1.5rem)] leading-snug font-bold [overflow-wrap:anywhere] break-words hyphens-auto whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] xl:mt-6 xl:p-6 xl:text-[clamp(1.25rem,2vw,1.875rem)] xl:leading-relaxed"
+              className="mx-auto mt-2 max-w-2xl border-2 border-white/20 bg-black/40 px-[min(0.75rem,3%)] py-2 text-[clamp(1rem,2.8vw,1.5rem)] leading-snug font-bold [overflow-wrap:anywhere] break-words hyphens-auto whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] xl:mt-6 xl:p-6 xl:text-[clamp(1.25rem,2vw,1.875rem)] xl:leading-relaxed"
             >
               “{getValueDisplayDefinition(value, localizedCopy.values)}”
             </p>
@@ -187,12 +187,12 @@ export const ValueChoiceCard = forwardRef<
               : "bg-mapache-vivid-primary-raspberry col-start-2",
           )}
         >
-          <span
-            aria-hidden="true"
-            data-card-focus-outline="animal"
-            className="pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-b-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block"
-          />
           <span className="@container row-start-2 flex w-full flex-col items-center">
+            <span
+              aria-hidden="true"
+              data-card-focus-outline="animal"
+              className="pointer-events-none absolute inset-0 z-40 hidden border-x-(length:--choice-focus-width) border-b-(length:--choice-focus-width) border-white group-has-[button:enabled:focus]/choice:block"
+            />
             {combatant(
               isEnabled && (isHovered || isFocused),
               reward ? (
