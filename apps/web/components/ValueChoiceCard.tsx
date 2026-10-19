@@ -109,7 +109,7 @@ export const ValueChoiceCard = forwardRef<
           aria-describedby={accessibleDefinitionId}
           disabled={!isEnabled}
           onClick={() => onActivate(value.id)}
-          className="row-start-2 flex w-full min-w-0 cursor-pointer flex-col justify-start px-[min(0.75rem,8%)] text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8"
+          className="row-start-2 flex w-full min-w-0 cursor-pointer flex-col justify-start px-[min(0.75rem,5%)] text-center outline-none after:absolute after:inset-0 disabled:cursor-default xl:px-8"
         >
           <span
             aria-hidden="true"
@@ -166,7 +166,7 @@ export const ValueChoiceCard = forwardRef<
             </div>
             <p
               id={accessibleDefinitionId}
-              className="mx-auto mt-2 max-w-2xl border-2 border-white/20 bg-black/40 px-[min(0.75rem,8%)] py-2 text-[clamp(1rem,2.8vw,1.5rem)] leading-snug font-bold [overflow-wrap:anywhere] break-words hyphens-auto whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] xl:mt-6 xl:p-6 xl:text-[clamp(1.25rem,2vw,1.875rem)] xl:leading-relaxed"
+              className="mx-auto mt-2 max-w-2xl border-2 border-white/20 bg-black/40 px-[min(0.75rem,3%)] py-2 text-[clamp(1rem,2.8vw,1.5rem)] leading-snug font-bold [overflow-wrap:anywhere] break-words hyphens-auto whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] xl:mt-6 xl:p-6 xl:text-[clamp(1.25rem,2vw,1.875rem)] xl:leading-relaxed"
             >
               “{getValueDisplayDefinition(value, localizedCopy.values)}”
             </p>
