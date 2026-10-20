@@ -41,7 +41,7 @@ export default function AchievementToast({
       aria-label={localizedCopy.interfaceCopy.screen.achievementUnlocked}
       initial={{ opacity: shouldReduceMotion ? 1 : 0 }}
       animate={{ opacity: 1 }}
-      className="bg-mapache-vivid-white text-mapache-vivid-black pointer-events-auto relative min-w-0 border-2 border-black shadow-[4px_4px_0px_0px_#000000]"
+      className="bg-mapache-vivid-white text-mapache-vivid-black pointer-events-auto relative min-w-0 shrink-0 border-2 border-black shadow-[4px_4px_0px_0px_#000000]"
       onPointerEnter={(event) => {
         if (event.pointerType !== "touch") onInteraction("hover", true)
       }}
