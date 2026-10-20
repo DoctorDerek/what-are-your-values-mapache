@@ -4,6 +4,7 @@ import {
   getValueDisplayDefinition,
   getValueDisplayName,
 } from "@game/data/src/Value"
+import { getWrappableValueDisplayName } from "@game/data/src/ValueNameTypography"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { cx } from "classix"
@@ -63,9 +64,16 @@ export default function NativeValueDetailsCard({
         ) : null}
         <Text
           accessibilityRole="header"
-          className="min-w-0 flex-1 text-2xl font-black text-black uppercase"
+          accessibilityLabel={displayName}
+          android_hyphenationFrequency="normal"
+          lineBreakStrategyIOS="standard"
+          className="min-w-0 shrink grow basis-64 text-2xl font-black text-black uppercase"
         >
-          {displayName}
+          {getWrappableValueDisplayName(
+            definition,
+            localization.values,
+            localization.metadata.languageTag,
+          )}
         </Text>
         {definition.kind === "custom" ? (
           <Text className="bg-mapache-vivid-primary-cyan border-2 border-black px-2 py-1 text-sm font-black text-black uppercase">
