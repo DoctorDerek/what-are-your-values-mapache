@@ -53,28 +53,27 @@ export default function NativeValuesCardShare({
     >
       <MapacheScreen>
         <ScrollView
-          contentContainerClassName="gap-4 p-3 xl:p-6"
+          contentContainerClassName="min-h-full w-full max-w-[45rem] self-center gap-2 p-3 xl:gap-4 xl:p-6"
           accessibilityViewIsModal
         >
-          <View className="flex-row items-center gap-3">
-            <Button onPress={onClose} variant="secondary" size="compact">
-              <Text>{copy.back}</Text>
-            </Button>
+          <View>
             <Text
               accessibilityRole="header"
-              className="text-mapache-vivid-primary-cyan min-w-0 flex-1 text-xl font-black xl:text-3xl"
+              className="text-mapache-vivid-primary-cyan text-center text-xl leading-6 font-black xl:text-3xl"
             >
               {copy.title}
             </Text>
           </View>
           <View
             accessibilityLabel={copy.format}
-            className="flex-row flex-wrap gap-3"
+            className="flex-row flex-wrap gap-2 xl:w-80 xl:self-center"
           >
             {(["gif", "png"] as const).map((option) => (
               <Button
                 key={option}
                 size="compact"
+                className="relative min-w-0 grow basis-28"
+                accessibilityLabel={`${copy[option].name} · ${copy[option].description}`}
                 variant={format === option ? "secondary" : "outline"}
                 accessibilityState={{
                   selected: format === option,
@@ -85,10 +84,20 @@ export default function NativeValuesCardShare({
                   send({ type: "CARD_SHARE.FORMAT", format: option })
                 }
               >
-                <Text>
-                  {format === option ? "✓ " : ""}
-                  {copy[option]}
-                </Text>
+                {format === option && (
+                  <Text
+                    accessible={false}
+                    className="absolute top-1 left-1 text-base font-black text-black"
+                  >
+                    ✓
+                  </Text>
+                )}
+                <View className="items-center px-2">
+                  <Text>{copy[option].name}</Text>
+                  <Text className="text-center text-sm font-bold text-black">
+                    {copy[option].description}
+                  </Text>
+                </View>
               </Button>
             ))}
           </View>
@@ -129,12 +138,14 @@ export default function NativeValuesCardShare({
             onPress={() =>
               send({ type: "CARD_SHARE.HERO", includeHero: !includeHero })
             }
-            className="min-h-12 flex-row items-center gap-3"
+            className="min-h-12 flex-row items-center gap-2"
           >
             <Text className="text-2xl text-white">
               {includeHero ? "☑" : "☐"}
             </Text>
-            <Text className="font-bold text-white">{copy.includeHero}</Text>
+            <Text className="min-w-0 flex-1 font-bold text-white">
+              {copy.includeHero}
+            </Text>
           </Pressable>
           {error && (
             <View className="gap-2 border-4 border-black bg-white p-3">
@@ -155,23 +166,40 @@ export default function NativeValuesCardShare({
               )}
             </View>
           )}
-          {state.matches("Failed") ? (
-            <Button onPress={() => send({ type: "CARD_SHARE.RETRY" })}>
-              <Text>{copy.retry}</Text>
-            </Button>
-          ) : (
-            <View className="flex-row gap-4">
+          <View className="mt-auto gap-2 pb-2">
+            <View className="flex-row flex-wrap gap-2">
               <Button
-                className="min-w-0 flex-1"
-                disabled={!artifact || isDelivering}
-                onPress={() =>
-                  send({ type: "CARD_SHARE.DELIVER", delivery: "save" })
-                }
+                size="compact"
+                className="min-w-0 grow basis-28"
+                variant="outline"
+                onPress={onClose}
               >
-                <Text>{copy.save(format)}</Text>
+                <Text>{copy.back}</Text>
               </Button>
+              {state.matches("Failed") ? (
+                <Button
+                  size="compact"
+                  className="min-w-0 grow basis-28"
+                  onPress={() => send({ type: "CARD_SHARE.RETRY" })}
+                >
+                  <Text>{copy.retry}</Text>
+                </Button>
+              ) : (
+                <Button
+                  size="compact"
+                  className="min-w-0 grow basis-28"
+                  disabled={!artifact || isDelivering}
+                  onPress={() =>
+                    send({ type: "CARD_SHARE.DELIVER", delivery: "save" })
+                  }
+                >
+                  <Text>{copy.save(format)}</Text>
+                </Button>
+              )}
+            </View>
+            {!state.matches("Failed") && (
               <Button
-                className="min-w-0 flex-1"
+                size="compact"
                 variant="secondary"
                 disabled={!artifact?.canShare || isDelivering}
                 onPress={() =>
@@ -180,19 +208,21 @@ export default function NativeValuesCardShare({
               >
                 <Text>{copy.share(format)}</Text>
               </Button>
-            </View>
-          )}
+            )}
+          </View>
           {artifact && !artifact.canShare && (
             <Text className="text-sm text-white">{copy.unsupportedShare}</Text>
           )}
-          <Text
-            accessibilityLiveRegion="polite"
-            className="min-h-7 font-medium text-white"
-          >
-            {isDelivering
-              ? copy.delivering
-              : getValuesCardDeliveryMessage(outcome, copy)}
-          </Text>
+          {(isDelivering || outcome) && (
+            <Text
+              accessibilityLiveRegion="polite"
+              className="text-center text-sm font-medium text-white"
+            >
+              {isDelivering
+                ? copy.delivering
+                : getValuesCardDeliveryMessage(outcome, copy)}
+            </Text>
+          )}
         </ScrollView>
       </MapacheScreen>
     </Modal>

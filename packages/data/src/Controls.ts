@@ -1,9 +1,7 @@
 export const CONTROLS_COPY = Object.freeze({
   title: "Controls",
-  introduction:
-    "Use these controls to choose values, reverse recent choices, open Menu, or stop battling. Opening Controls does not change your progress.",
-  semanticActionsHeading: "Actions",
-  bindingsHeading: "Available Controls",
+  stopDescription:
+    "Stop battling. If your progress changed, review your results before returning home.",
   closeAction: "Close",
 })
 
@@ -21,36 +19,16 @@ export const CONTROL_ACTION_LABELS = Object.freeze({
 
 export type ControlActionId = keyof typeof CONTROL_ACTION_LABELS
 
-export const CONTROL_SEMANTIC_ACTIONS = Object.freeze([
-  Object.freeze({
-    id: "select-first-value",
-    description: "Choose the first value card.",
-  }),
-  Object.freeze({
-    id: "select-second-value",
-    description: "Choose the second value card.",
-  }),
-  Object.freeze({
-    id: "undo",
-    description: "Reverse your most recent choice.",
-  }),
-  Object.freeze({
-    id: "redo",
-    description: "Restore the choice you most recently undid.",
-  }),
-  Object.freeze({
-    id: "menu",
-    description: "Open Menu without changing the current pair.",
-  }),
-  Object.freeze({
-    id: "stop",
-    description:
-      "Stop battling. If your progress changed, review your results before returning home.",
-  }),
-] as const satisfies readonly {
-  readonly id: ControlActionId
-  readonly description: string
-}[])
+export function orderControlBindings<
+  Binding extends Readonly<{ actionId: ControlActionId }>,
+>(bindings: readonly Binding[]): readonly Binding[] {
+  const actionOrder = Object.keys(CONTROL_ACTION_LABELS)
+  return [...bindings].sort(
+    (first, second) =>
+      actionOrder.indexOf(first.actionId) -
+      actionOrder.indexOf(second.actionId),
+  )
+}
 
 export const WEB_CONTROL_GROUPS = Object.freeze([
   Object.freeze({

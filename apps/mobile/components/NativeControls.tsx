@@ -1,3 +1,4 @@
+import { orderControlBindings } from "@game/data/src/Controls"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { View } from "react-native"
 import { ReopenedNativeInformationPanel } from "@/components/NativeInformationPanel"
@@ -12,8 +13,6 @@ export default function NativeControls({
 }) {
   const localizedCopy = useLocaleCatalog()
   const CONTROL_ACTION_LABELS = localizedCopy.interfaceCopy.controlActions
-  const CONTROL_SEMANTIC_ACTIONS =
-    localizedCopy.interfaceCopy.controlDescriptions
   const CONTROLS_COPY = localizedCopy.interfaceCopy.controls
   const NATIVE_CONTROL_GROUPS = localizedCopy.interfaceCopy.nativeControls
 
@@ -23,67 +22,43 @@ export default function NativeControls({
       accessibleCloseLabel={CONTROLS_COPY.closeAction}
       primaryActionLabel={CONTROLS_COPY.closeAction}
       title={CONTROLS_COPY.title}
+      presentation="reference"
       onOpenChange={onOpenChange}
       onPrimaryAction={() => onOpenChange(false)}
     >
-      <View className="gap-8">
-        <Text className="text-xl leading-8 font-bold text-black">
-          {CONTROLS_COPY.introduction}
-        </Text>
-
-        <View className="gap-4">
-          <Text
-            variant="h2"
-            className="pb-2 text-3xl font-black tracking-tight text-black"
-          >
-            {CONTROLS_COPY.semanticActionsHeading}
-          </Text>
-          {CONTROL_SEMANTIC_ACTIONS.map((action) => (
-            <View
-              key={action.id}
-              className="border-l-8 border-black bg-gray-100 px-4 py-3"
+      <View className="gap-6">
+        {NATIVE_CONTROL_GROUPS.map((group) => (
+          <View key={group.id}>
+            <Text
+              variant="h2"
+              className="text-xl leading-7 font-black text-black"
             >
-              <Text className="text-xl leading-7 font-black text-black">
-                {CONTROL_ACTION_LABELS[action.id]}
-              </Text>
-              <Text className="mt-1 text-lg leading-7 font-medium text-black">
-                {action.description}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        <View className="gap-5">
-          <Text
-            variant="h2"
-            className="pb-2 text-3xl font-black tracking-tight text-black"
-          >
-            {CONTROLS_COPY.bindingsHeading}
-          </Text>
-          {NATIVE_CONTROL_GROUPS.map((group) => (
-            <View key={group.id} className="gap-3">
-              <Text
-                variant="h3"
-                className="text-2xl font-black tracking-tight text-black"
-              >
-                {group.title}
-              </Text>
-              {group.bindings.map((binding) => (
+              {group.title}
+            </Text>
+            <View className="flex-row flex-wrap">
+              {orderControlBindings(group.bindings).map((binding) => (
                 <View
-                  key={`${group.id}:${binding.actionId}`}
-                  className="gap-1 border-4 border-black p-4"
+                  key={binding.actionId}
+                  className="w-full flex-row items-start gap-3 border-b-2 border-gray-200 py-3 xl:w-1/2 xl:pr-4"
                 >
-                  <Text className="text-lg leading-7 font-black text-black">
-                    {CONTROL_ACTION_LABELS[binding.actionId]}
-                  </Text>
-                  <Text className="text-lg leading-7 font-medium text-black">
+                  <Text className="min-w-0 flex-[0.8] text-sm leading-5 font-bold text-gray-800">
                     {binding.input}
                   </Text>
+                  <View className="min-w-0 flex-[1.2]">
+                    <Text className="text-base leading-6 font-black text-black">
+                      {CONTROL_ACTION_LABELS[binding.actionId]}
+                    </Text>
+                    {binding.actionId === "stop" && (
+                      <Text className="mt-1 text-sm leading-5 font-medium text-gray-700">
+                        {CONTROLS_COPY.stopDescription}
+                      </Text>
+                    )}
+                  </View>
                 </View>
               ))}
             </View>
-          ))}
-        </View>
+          </View>
+        ))}
       </View>
     </ReopenedNativeInformationPanel>
   )

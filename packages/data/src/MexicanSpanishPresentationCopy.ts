@@ -62,8 +62,8 @@ export const MEXICAN_SPANISH_PRESENTATION_COPY: Pick<
   },
   card: {
     title: "Compartir mi tarjeta de valores",
-    gif: "GIF · Animado",
-    png: "PNG · Estático",
+    gif: { name: "GIF", description: "Animado" },
+    png: { name: "PNG", description: "Estático" },
     format: "Formato de imagen",
     includeHero: "Incluir a mi héroe",
     back: "Volver",

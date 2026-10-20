@@ -1,3 +1,4 @@
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import { describe, expect, it, jest } from "@jest/globals"
 import {
   fireEvent,
@@ -8,19 +9,26 @@ import {
 import NativeControls from "@/components/NativeControls"
 
 describe("NativeControls", () => {
-  it("presents semantic actions followed by touch-only native bindings", async () => {
+  it("pairs touch inputs with their actions without desktop-only instructions", async () => {
     await render(<NativeControls open onOpenChange={() => undefined} />)
 
     expect(screen.getByLabelText("Controls")).toBeOnTheScreen()
-    expect(screen.getByRole("heading", { name: "Actions" })).toBeOnTheScreen()
+    expect(screen.queryByRole("heading", { name: "Actions" })).toBeNull()
     expect(
-      screen.getByRole("heading", { name: "Available Controls" }),
-    ).toBeOnTheScreen()
+      screen.queryByRole("heading", { name: "Available Controls" }),
+    ).toBeNull()
     expect(screen.getByRole("heading", { name: "Touch" })).toBeOnTheScreen()
     expect(screen.getByText("Tap the first value card")).toBeOnTheScreen()
     expect(screen.getByText("Tap the second value card")).toBeOnTheScreen()
     expect(screen.getByText("Tap Undo")).toBeOnTheScreen()
     expect(screen.getByText("Tap Redo")).toBeOnTheScreen()
+    expect(screen.getAllByText("Select First Value")).toHaveLength(1)
+    expect(screen.getAllByText("Undo")).toHaveLength(1)
+    expect(
+      screen.getByText(
+        "Stop battling. If your progress changed, review your results before returning home.",
+      ),
+    ).toBeOnTheScreen()
     expect(screen.queryByText("Keyboard")).toBeNull()
     expect(screen.queryByText(/controller|remap/i)).toBeNull()
   })
@@ -45,5 +53,20 @@ describe("NativeControls", () => {
     expect(onOpenChange).toHaveBeenNthCalledWith(1, false)
     expect(onOpenChange).toHaveBeenNthCalledWith(2, false)
     expect(onOpenChange).toHaveBeenNthCalledWith(3, false)
+  })
+
+  it("uses the same touch-only reference in Mexican Spanish", async () => {
+    await render(
+      <LocaleProvider locale="es-MX">
+        <NativeControls open onOpenChange={() => undefined} />
+      </LocaleProvider>,
+    )
+    expect(screen.getByLabelText("Controles")).toBeOnTheScreen()
+    expect(screen.getByText("Elegir el primer valor")).toBeOnTheScreen()
+    expect(
+      screen.getByText("Toca la primera tarjeta de valor"),
+    ).toBeOnTheScreen()
+    expect(screen.getAllByRole("button", { name: "Cerrar" })).toHaveLength(2)
+    expect(screen.queryByText("Teclado")).toBeNull()
   })
 })

@@ -9,7 +9,6 @@ import {
 } from "./ControllerControls"
 import {
   CONTROL_ACTION_LABELS,
-  CONTROL_SEMANTIC_ACTIONS,
   CONTROLS_COPY,
   NATIVE_CONTROL_GROUPS,
   WEB_CONTROL_GROUPS,
@@ -63,7 +62,6 @@ const englishInterfaceSource = Object.freeze({
   },
   controls: CONTROLS_COPY,
   controlActions: CONTROL_ACTION_LABELS,
-  controlDescriptions: CONTROL_SEMANTIC_ACTIONS,
   webControls: WEB_CONTROL_GROUPS,
   nativeControls: NATIVE_CONTROL_GROUPS,
   controller: CONTROLLER_COPY,

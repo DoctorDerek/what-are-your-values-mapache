@@ -135,6 +135,7 @@ it("recovers preparation and delivery failures and exposes local technical detai
     />,
   )
   await screen.findByRole("alert")
+  expect(screen.getByRole("button", { name: "Back" })).toBeEnabled()
   await fireEvent.press(
     screen.getByRole("button", { name: "Technical details" }),
   )
@@ -162,4 +163,25 @@ it("keeps Save available when direct sharing is unavailable", async () => {
   expect(screen.getByText(/attach it wherever/)).toBeOnTheScreen()
   expect(screen.getByRole("button", { name: "Save GIF" })).toBeEnabled()
   expect(screen.getByRole("button", { name: "Share GIF" })).toBeDisabled()
+})
+
+it("renders Spanish format names and preserves Back when preparation fails", async () => {
+  const spanish = getLocaleCatalog("es-MX")
+  const close = jest.fn()
+  prepare.mockRejectedValueOnce(new Error("Missing image"))
+  await render(
+    <NativeValuesCardShare
+      model={{ ...model, copy: spanish.card }}
+      shouldReduceMotion
+      onClose={close}
+    />,
+  )
+  await screen.findByRole("alert")
+  expect(
+    screen.getByRole("button", { name: "GIF · Animado", selected: true }),
+  ).toBeOnTheScreen()
+  expect(screen.getByRole("button", { name: "PNG · Estático" })).toBeEnabled()
+  await fireEvent.press(screen.getByRole("button", { name: "Volver" }))
+  expect(close).toHaveBeenCalledTimes(1)
+  expect(file.save).not.toHaveBeenCalled()
 })

@@ -5,7 +5,6 @@ export const MEXICAN_SPANISH_CONTROLS_COPY: Pick<
   | "battleSpeed"
   | "controls"
   | "controlActions"
-  | "controlDescriptions"
   | "webControls"
   | "nativeControls"
   | "controller"
@@ -39,10 +38,8 @@ export const MEXICAN_SPANISH_CONTROLS_COPY: Pick<
   },
   controls: {
     title: "Controles",
-    introduction:
-      "Usa estos controles para elegir valores, deshacer elecciones recientes, abrir el menú o detener las batallas. Abrir Controles no cambia tu progreso.",
-    semanticActionsHeading: "Acciones",
-    bindingsHeading: "Controles disponibles",
+    stopDescription:
+      "Detén las batallas. Si cambió tu progreso, revisa tus resultados antes de volver al inicio.",
     closeAction: "Cerrar",
   },
   controlActions: {
@@ -56,24 +53,6 @@ export const MEXICAN_SPANISH_CONTROLS_COPY: Pick<
     "confirm-focused-value": "Confirmar el valor enfocado",
     back: "Volver",
   },
-  controlDescriptions: [
-    {
-      id: "select-first-value",
-      description: "Elige la primera tarjeta de valor.",
-    },
-    {
-      id: "select-second-value",
-      description: "Elige la segunda tarjeta de valor.",
-    },
-    { id: "undo", description: "Deshaz tu elección más reciente." },
-    { id: "redo", description: "Restaura la elección que acabas de deshacer." },
-    { id: "menu", description: "Abre el menú sin cambiar el par actual." },
-    {
-      id: "stop",
-      description:
-        "Detén las batallas. Si cambió tu progreso, revisa tus resultados antes de volver al inicio.",
-    },
-  ],
   webControls: [
     {
       id: "touch-pointer",

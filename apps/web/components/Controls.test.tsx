@@ -1,7 +1,25 @@
 import { fireEvent, render, screen, within } from "@testing-library/react"
 import { useState } from "react"
-import { describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import Controls from "@/components/Controls"
+import { useWebControls } from "@/components/WebControlsProvider"
+
+vi.mock("@/components/WebControlsProvider", async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import("@/components/WebControlsProvider")
+  >()),
+  useWebControls: vi.fn(),
+}))
+
+const readControls = vi.mocked(useWebControls)
+beforeEach(() => {
+  readControls.mockReturnValue({
+    controller: null,
+    inputModality: "keyboard",
+    hasUnsupportedController: false,
+    registerControllerHandler: null,
+  })
+})
 
 function ControlsHarness() {
   const [open, setOpen] = useState(true)
@@ -9,47 +27,32 @@ function ControlsHarness() {
   return <Controls open={open} onOpenChange={setOpen} />
 }
 
+function getReferenceHeadings() {
+  return within(screen.getByTestId("information-panel-body")).getAllByRole(
+    "heading",
+  )
+}
+
 describe("Controls Component Integration", () => {
-  it("presents semantic actions before truthful web binding groups", () => {
+  it("puts keyboard inputs beside actions immediately without a duplicate explanation section", () => {
     render(<ControlsHarness />)
 
     const dialog = screen.getByRole("dialog", { name: "Controls" })
-    expect(screen.getByTestId("information-panel-body")).toHaveClass(
-      "overflow-y-auto",
-    )
-
-    const actionsHeading = within(dialog).getByRole("heading", {
-      level: 2,
-      name: "Actions",
-    })
-    const bindingsHeading = within(dialog).getByRole("heading", {
-      level: 2,
-      name: "Available Controls",
-    })
     expect(
-      actionsHeading.compareDocumentPosition(bindingsHeading) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
-
-    const actionsSection = actionsHeading.closest("section")
-    if (!actionsSection) throw new Error("Actions section is unavailable")
-    expect(within(actionsSection).getByText("Select First Value")).toBeVisible()
-    expect(
-      within(actionsSection).getByText("Select Second Value"),
-    ).toBeVisible()
-    expect(
-      within(actionsSection).getByText(
-        "Open Menu without changing the current pair.",
-      ),
-    ).toBeVisible()
-
+      within(dialog).queryByRole("heading", { name: "Actions" }),
+    ).toBeNull()
+    expect(getReferenceHeadings()[0]).toHaveTextContent("Keyboard")
     const keyboardHeading = within(dialog).getByRole("heading", {
-      level: 3,
+      level: 2,
       name: "Keyboard",
     })
     const keyboardSection = keyboardHeading.closest("section")
     if (!keyboardSection) throw new Error("Keyboard section is unavailable")
     expect(within(keyboardSection).getByText("1 or A")).toBeVisible()
+    const firstInput = within(keyboardSection).getByText("1 or A").closest("dt")
+    expect(firstInput?.nextElementSibling).toHaveTextContent(
+      "Select First Value",
+    )
     expect(within(keyboardSection).getByText("2 or D")).toBeVisible()
     expect(
       within(keyboardSection).getByText("Y, Ctrl+Y, or Cmd+Shift+Z"),
@@ -57,15 +60,52 @@ describe("Controls Component Integration", () => {
 
     expect(
       within(dialog).getByRole("heading", {
-        level: 3,
+        level: 2,
         name: "Touch & Pointer",
       }),
     ).toBeVisible()
     expect(
-      within(dialog).getByRole("heading", { name: "Controller" }),
+      within(dialog).queryByRole("heading", { name: "Controller" }),
+    ).toBeNull()
+    expect(
+      within(keyboardSection).getByText(
+        /If your progress changed, review your results/,
+      ),
     ).toBeVisible()
-    expect(within(dialog).getByText("Left shoulder or trigger")).toBeVisible()
     expect(within(dialog).queryByText(/remap/i)).toBeNull()
+  })
+
+  it("keeps the opening input group stable while reading and resolves it again on reopening", () => {
+    readControls.mockReturnValue({
+      ...readControls(),
+      inputModality: "touch-pointer",
+    })
+    const onOpenChange = vi.fn()
+    const view = render(<Controls open onOpenChange={onOpenChange} />)
+    expect(getReferenceHeadings()[0]).toHaveTextContent("Touch & Pointer")
+    readControls.mockReturnValue({
+      ...readControls(),
+      inputModality: "keyboard",
+    })
+    view.rerender(<Controls open onOpenChange={onOpenChange} />)
+    expect(getReferenceHeadings()[0]).toHaveTextContent("Touch & Pointer")
+    view.rerender(<Controls open={false} onOpenChange={onOpenChange} />)
+    view.rerender(<Controls open onOpenChange={onOpenChange} />)
+    expect(getReferenceHeadings()[0]).toHaveTextContent("Keyboard")
+  })
+
+  it("leads with active Steam Deck mappings and retains contextual controller instructions", () => {
+    readControls.mockReturnValue({
+      ...readControls(),
+      controller: { index: 0, family: "steam-deck" },
+    })
+    render(<ControlsHarness />)
+    expect(getReferenceHeadings()[0]).toHaveTextContent("Controller")
+    expect(screen.getByText("L1 / L2")).toBeVisible()
+    expect(
+      screen.getByText("East face button in battle; Cancel elsewhere"),
+    ).toBeVisible()
+    expect(screen.getByText(/Steam \+ X/)).toBeVisible()
   })
 
   it("dismisses through either visible Close action or Escape", () => {

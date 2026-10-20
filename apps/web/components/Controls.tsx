@@ -1,8 +1,12 @@
 "use client"
 
 import { getControllerButtonLabel } from "@game/data/src/ControllerControls"
+import {
+  orderControlBindings,
+  type ControlActionId,
+} from "@game/data/src/Controls"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
-import type { ComponentProps } from "react"
+import { useState, type ComponentProps, type ReactNode } from "react"
 import ControllerPrompt from "@/components/ControllerPrompt"
 import { ReopenedInformationPanel } from "@/components/InformationPanel"
 import { useWebControls } from "@/components/WebControlsProvider"
@@ -18,128 +22,134 @@ export default function Controls({
     typeof ReopenedInformationPanel
   >["onCloseAutoFocus"]
 }>) {
-  const localizedCopy = useLocaleCatalog()
-  const CONTROLLER_BINDINGS = localizedCopy.interfaceCopy.controllerBindings
-  const CONTROLLER_COPY = localizedCopy.interfaceCopy.controller
-  const CONTROL_ACTION_LABELS = localizedCopy.interfaceCopy.controlActions
-  const CONTROL_SEMANTIC_ACTIONS =
-    localizedCopy.interfaceCopy.controlDescriptions
-  const CONTROLS_COPY = localizedCopy.interfaceCopy.controls
-  const WEB_CONTROL_GROUPS = localizedCopy.interfaceCopy.webControls
-
-  const { controller, hasUnsupportedController } = useWebControls()
+  const { controls } = useLocaleCatalog().interfaceCopy
   return (
     <ReopenedInformationPanel
       open={open}
-      accessibleCloseLabel={CONTROLS_COPY.closeAction}
-      primaryActionLabel={CONTROLS_COPY.closeAction}
-      title={CONTROLS_COPY.title}
+      accessibleCloseLabel={controls.closeAction}
+      primaryActionLabel={controls.closeAction}
+      title={controls.title}
+      presentation="reference"
       onCloseAutoFocus={onCloseAutoFocus}
       onOpenChange={onOpenChange}
       onPrimaryAction={() => onOpenChange(false)}
     >
-      <div className="grid gap-8 text-left text-black">
-        <p className="text-xl leading-relaxed font-bold">
-          {CONTROLS_COPY.introduction}
-        </p>
+      <ControlsReference />
+    </ReopenedInformationPanel>
+  )
+}
 
-        <section className="grid gap-4">
-          <h2 className="text-3xl leading-tight font-black">
-            {CONTROLS_COPY.semanticActionsHeading}
+function ControlReferenceRow({
+  actionId,
+  input,
+  description,
+}: Readonly<{
+  actionId: ControlActionId
+  input: ReactNode
+  description?: string
+}>) {
+  const { controls, controlActions } = useLocaleCatalog().interfaceCopy
+  const explanation =
+    actionId === "stop" ? controls.stopDescription : description
+  return (
+    <div className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] items-start gap-3 border-b-2 border-gray-200 py-3 last:border-b-0 @max-[16rem]:grid-cols-1">
+      <dt className="text-sm leading-snug font-bold [overflow-wrap:anywhere] text-gray-800">
+        {input}
+      </dt>
+      <dd className="text-base leading-snug font-black [overflow-wrap:anywhere]">
+        {controlActions[actionId]}
+        {explanation && (
+          <p className="mt-1 text-sm leading-snug font-medium text-gray-700">
+            {explanation}
+          </p>
+        )}
+      </dd>
+    </div>
+  )
+}
+
+function ControlsReference() {
+  const copy = useLocaleCatalog().interfaceCopy
+  const { controller, inputModality, hasUnsupportedController } =
+    useWebControls()
+  const [openingInput] = useState(() => ({
+    modality: inputModality,
+    controllerFamily: controller?.family,
+    hasUnsupportedController,
+  }))
+  const family = openingInput.controllerFamily
+  const groups = [...copy.webControls].sort(
+    (first, second) =>
+      Number(second.id === openingInput.modality) -
+      Number(first.id === openingInput.modality),
+  )
+
+  return (
+    <div className="grid gap-6 text-left text-black">
+      {family && (
+        <section>
+          <h2 className="text-xl leading-tight font-black">
+            {copy.controller.title}
           </h2>
-          <dl className="grid gap-4">
-            {CONTROL_SEMANTIC_ACTIONS.map((action) => (
-              <div
-                key={action.id}
-                className="border-l-8 border-black bg-gray-100 px-4 py-3"
-              >
-                <dt className="text-xl leading-tight font-black">
-                  {CONTROL_ACTION_LABELS[action.id]}
-                </dt>
-                <dd className="mt-1 text-lg leading-relaxed font-medium text-gray-800">
-                  {action.description}
-                </dd>
-              </div>
+          <dl className="grid gap-x-6 xl:grid-cols-2">
+            {orderControlBindings(copy.controllerBindings).map((binding) => (
+              <ControlReferenceRow
+                key={binding.command}
+                actionId={binding.actionId}
+                description={binding.input}
+                input={
+                  <span className="flex flex-wrap items-center gap-2">
+                    <ControllerPrompt
+                      family={family}
+                      command={binding.command}
+                    />
+                    {getControllerButtonLabel(
+                      family,
+                      binding.command,
+                      copy.controllerButtonLabels,
+                      copy.controller.navigate,
+                    )}
+                  </span>
+                }
+              />
+            ))}
+            <ControlReferenceRow
+              actionId="move-focus"
+              input={copy.controller.navigate}
+            />
+          </dl>
+          <p className="mt-3 text-sm leading-relaxed text-gray-700">
+            {copy.controller.introduction}
+          </p>
+        </section>
+      )}
+      {groups.map((group) => (
+        <section key={group.id}>
+          <h2 className="text-xl leading-tight font-black">{group.title}</h2>
+          <dl className="grid gap-x-6 xl:grid-cols-2">
+            {orderControlBindings(group.bindings).map((binding) => (
+              <ControlReferenceRow
+                key={binding.actionId}
+                actionId={binding.actionId}
+                input={
+                  group.id === "keyboard" && binding.actionId !== "stop" ? (
+                    <kbd className="inline-block rounded border border-gray-400 bg-gray-100 px-2 py-1 font-sans">
+                      {binding.input}
+                    </kbd>
+                  ) : (
+                    binding.input
+                  )
+                }
+              />
             ))}
           </dl>
         </section>
-
-        <section className="grid gap-5">
-          <h2 className="text-3xl leading-tight font-black">
-            {CONTROLS_COPY.bindingsHeading}
-          </h2>
-          {WEB_CONTROL_GROUPS.map((group) => (
-            <section key={group.id} className="grid gap-3">
-              <h3 className="text-2xl leading-tight font-black">
-                {group.title}
-              </h3>
-              <dl className="grid gap-3">
-                {group.bindings.map((binding) => (
-                  <div
-                    key={`${group.id}:${binding.actionId}`}
-                    className="grid gap-1 border-4 border-black p-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] xl:items-baseline xl:gap-6"
-                  >
-                    <dt className="text-lg leading-tight font-black [overflow-wrap:anywhere]">
-                      {CONTROL_ACTION_LABELS[binding.actionId]}
-                    </dt>
-                    <dd className="text-lg leading-relaxed font-medium [overflow-wrap:anywhere] text-gray-800">
-                      {binding.input}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </section>
-          ))}
-          <section className="grid gap-3">
-            <h3 className="text-2xl leading-tight font-black">
-              {CONTROLLER_COPY.title}
-            </h3>
-            <p className="text-lg leading-relaxed">
-              {CONTROLLER_COPY.introduction}
-            </p>
-            {!controller && (
-              <p className="text-lg">
-                {hasUnsupportedController
-                  ? CONTROLLER_COPY.unsupported
-                  : CONTROLLER_COPY.activate}
-              </p>
-            )}
-            <dl className="grid gap-3">
-              {CONTROLLER_BINDINGS.map((binding) => (
-                <div
-                  key={binding.command}
-                  className="grid gap-2 border-4 border-black p-4 xl:grid-cols-2"
-                >
-                  <dt className="text-lg font-black">
-                    {CONTROL_ACTION_LABELS[binding.actionId]}
-                  </dt>
-                  <dd className="flex items-center gap-2 text-lg">
-                    <ControllerPrompt
-                      family={controller?.family ?? "generic"}
-                      command={binding.command}
-                    />
-                    <span>
-                      {binding.input}
-                      {controller && (
-                        <>
-                          {" "}
-                          ·{" "}
-                          {getControllerButtonLabel(
-                            controller.family,
-                            binding.command,
-                            localizedCopy.interfaceCopy.controllerButtonLabels,
-                            CONTROLLER_COPY.navigate,
-                          )}
-                        </>
-                      )}
-                    </span>
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        </section>
-      </div>
-    </ReopenedInformationPanel>
+      ))}
+      {openingInput.hasUnsupportedController && (
+        <p className="text-sm leading-relaxed text-gray-700">
+          {copy.controller.unsupported}
+        </p>
+      )}
+    </div>
   )
 }
