@@ -58,6 +58,12 @@ describe("values-card preview", () => {
       screen.getByRole("button", { name: /GIF · Animated/ }),
     ).toHaveAttribute("aria-pressed", "true")
     expect(file.save).not.toHaveBeenCalled()
+    const back = screen.getByRole("button", { name: "Back" })
+    const save = screen.getByRole("button", { name: "Save GIF" })
+    const share = screen.getByRole("button", { name: "Share GIF" })
+    expect(back.parentElement).toBe(save.parentElement)
+    expect(back.nextElementSibling).toBe(save)
+    expect(save.nextElementSibling).toBe(share)
     fireEvent.click(screen.getByRole("checkbox", { name: "Include my hero" }))
     await waitFor(() =>
       expect(prepare).toHaveBeenLastCalledWith(
@@ -112,6 +118,7 @@ describe("values-card preview", () => {
     )
     await screen.findByRole("alert")
     expect(screen.getByText("Image offline")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Back" })).toBeEnabled()
     fireEvent.click(screen.getByRole("button", { name: "Retry" }))
     await screen.findByRole("img")
     vi.mocked(file.share).mockRejectedValueOnce(new Error("Permission denied"))
@@ -121,5 +128,24 @@ describe("values-card preview", () => {
     expect(close).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole("button", { name: "Share GIF" }))
     await screen.findByText("Canceled. Your card is still ready.")
+  })
+
+  it("retains Spanish format labels and leaves a failed preparation through Back", async () => {
+    const spanish = getLocaleCatalog("es-MX")
+    prepare.mockRejectedValueOnce(new Error("Image offline"))
+    const close = vi.fn()
+    render(
+      <ValuesCardShare
+        model={{ ...model, copy: spanish.card }}
+        shouldReduceMotion
+        onClose={close}
+      />,
+    )
+    await screen.findByRole("alert")
+    expect(screen.getByRole("button", { name: "GIF · Animado" })).toHaveAttribute("aria-pressed", "true")
+    expect(screen.getByRole("button", { name: "PNG · Estático" })).toBeEnabled()
+    fireEvent.click(screen.getByRole("button", { name: "Volver" }))
+    expect(close).toHaveBeenCalledOnce()
+    expect(file.save).not.toHaveBeenCalled()
   })
 })
