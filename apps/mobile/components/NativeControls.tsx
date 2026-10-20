@@ -35,10 +35,11 @@ export default function NativeControls({
             >
               {group.title}
             </Text>
-            {orderControlBindings(group.bindings).map((binding) => (
+            <View className="flex-row flex-wrap">
+              {orderControlBindings(group.bindings).map((binding) => (
               <View
                 key={binding.actionId}
-                className="flex-row items-start gap-3 border-b-2 border-gray-200 py-3"
+                className="w-full flex-row items-start gap-3 border-b-2 border-gray-200 py-3 xl:w-1/2 xl:pr-4"
               >
                 <Text className="min-w-0 flex-[0.8] text-sm leading-5 font-bold text-gray-800">
                   {binding.input}
@@ -54,7 +55,8 @@ export default function NativeControls({
                   )}
                 </View>
               </View>
-            ))}
+              ))}
+            </View>
           </View>
         ))}
       </View>

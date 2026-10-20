@@ -91,7 +91,7 @@ function ControlsReference() {
           <h2 className="text-xl leading-tight font-black">
             {copy.controller.title}
           </h2>
-          <dl>
+          <dl className="grid gap-x-6 xl:grid-cols-2">
             {orderControlBindings(copy.controllerBindings).map((binding) => (
               <ControlReferenceRow
                 key={binding.command}
@@ -126,7 +126,7 @@ function ControlsReference() {
       {groups.map((group) => (
         <section key={group.id}>
           <h2 className="text-xl leading-tight font-black">{group.title}</h2>
-          <dl>
+          <dl className="grid gap-x-6 xl:grid-cols-2">
             {orderControlBindings(group.bindings).map((binding) => (
               <ControlReferenceRow
                 key={binding.actionId}
