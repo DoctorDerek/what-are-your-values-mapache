@@ -160,9 +160,10 @@ describe("native Dressing Room", () => {
     actor.stop()
   })
 
-  it("can cancel directly or save from the confirmation", async () => {
+  it("leaves an unchanged draft through Back or saves from the confirmation", async () => {
     const first = await mountEditor()
-    await fireEvent.press(screen.getByRole("button", { name: "Cancel" }))
+    expect(screen.queryByRole("button", { name: "Cancel" })).toBeNull()
+    await fireEvent.press(screen.getByRole("button", { name: "Back" }))
     expect(first.actor.getSnapshot().status).toBe("done")
     await first.unmount()
     first.actor.stop()

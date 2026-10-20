@@ -66,6 +66,16 @@ async function mountEditor() {
 }
 
 describe("Dressing Room", () => {
+  it("leaves an unchanged appearance through Back without saving", async () => {
+    const { actor, commit } = await mountEditor()
+    commit.mockClear()
+    expect(screen.queryByRole("button", { name: "Cancel" })).toBeNull()
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
+    expect(actor.getSnapshot().status).toBe("done")
+    expect(commit).not.toHaveBeenCalled()
+    actor.stop()
+  })
+
   it("shares the current appearance draft without saving or closing the editor", async () => {
     const { actor, store, onShare } = await mountEditor()
     const before = await store.readAll()
