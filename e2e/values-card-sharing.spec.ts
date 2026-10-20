@@ -44,6 +44,7 @@ for (const copy of [
       await page.goto(copy.route)
       await page.getByRole("button", { name: copy.start, exact: true }).click()
       await page.getByRole("button", { name: copy.title, exact: true }).click()
+      await page.mouse.move(0, 0)
       const dialog = page.getByRole("dialog", { name: copy.title })
       const save = dialog.getByRole("button", { name: copy.save, exact: true })
       await expect(save).toBeEnabled({ timeout: 30_000 })
