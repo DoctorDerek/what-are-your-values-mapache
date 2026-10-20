@@ -4,9 +4,9 @@ import { test } from "./fixtures"
 
 test.use({ serviceWorkers: "block" })
 
-test("Spanish survives gameplay, reload, language changes, and card export without translating private values", async ({
+test("Spanish survives gameplay, reload, and language changes without translating private values", async ({
   page,
-}, testInfo) => {
+}) => {
   await page.goto("/que-valoras-en-la-vida")
   await expect(page.locator("html")).toHaveAttribute("lang", "es-MX")
   await expect(page.getByRole("combobox", { name: "Idioma" })).toHaveValue(
@@ -83,6 +83,17 @@ test("Spanish survives gameplay, reload, language changes, and card export witho
     "es-MX",
   )
   await page.getByRole("button", { name: "Volver", exact: true }).click()
+  await expect(
+    page.getByRole("button", {
+      name: "Compartir mi tarjeta de valores",
+      exact: true,
+    }),
+  ).toBeVisible()
+})
+
+test("Spanish exports genuine GIF and PNG cards", async ({ page }, testInfo) => {
+  await page.goto("/que-valoras-en-la-vida")
+  await page.getByRole("button", { name: "Empezar", exact: true }).click()
   await page
     .getByRole("button", {
       name: "Compartir mi tarjeta de valores",
