@@ -91,7 +91,9 @@ test("Spanish survives gameplay, reload, and language changes without translatin
   ).toBeVisible()
 })
 
-test("Spanish exports genuine GIF and PNG cards", async ({ page }, testInfo) => {
+test("Spanish exports genuine GIF and PNG cards", async ({
+  page,
+}, testInfo) => {
   await page.goto("/que-valoras-en-la-vida")
   await page.getByRole("button", { name: "Empezar", exact: true }).click()
   await page

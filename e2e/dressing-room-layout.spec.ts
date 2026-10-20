@@ -44,11 +44,16 @@ for (const copy of locales) {
     await page.emulateMedia({ reducedMotion: "reduce" })
     await page.goto(copy.route)
     await page.getByRole("button", { name: copy.start, exact: true }).click()
-    await page.getByRole("button", { name: copy.customize, exact: true }).click()
+    await page
+      .getByRole("button", { name: copy.customize, exact: true })
+      .click()
     await page.addStyleTag({ content: "html { font-size: 200%; }" })
     await page.getByRole("button", { name: copy.clothing, exact: true }).click()
     await page.getByRole("button", { name: copy.outfit, exact: true }).click()
-    const palette = page.getByRole("button", { name: copy.palette, exact: true })
+    const palette = page.getByRole("button", {
+      name: copy.palette,
+      exact: true,
+    })
     await palette.click()
     for (const name of [copy.back, copy.save, copy.share]) {
       const action = page.getByRole("button", { name, exact: true })
@@ -60,13 +65,19 @@ for (const copy of locales) {
           const range = document.createRange()
           range.selectNodeContents(element)
           const text = range.getBoundingClientRect()
-          return text.left >= target.left && text.right <= target.right &&
-            text.top >= target.top && text.bottom <= target.bottom
+          return (
+            text.left >= target.left &&
+            text.right <= target.right &&
+            text.top >= target.top &&
+            text.bottom <= target.bottom
+          )
         }),
         `${name} remains inside its own button at200% text`,
       ).toBe(true)
     }
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320)
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(320)
     await page.screenshot({ path: testInfo.outputPath("enlarged-actions.png") })
     await page.getByRole("button", { name: copy.back, exact: true }).click()
     await page.getByRole("button", { name: copy.keep, exact: true }).click()

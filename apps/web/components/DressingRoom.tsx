@@ -225,7 +225,7 @@ export default function DressingRoom({
           </Button>
         </div>
       )}
-      <footer className="flex w-full max-w-7xl shrink-0 flex-wrap gap-2 pb-2 hyphens-auto [overflow-wrap:anywhere] xl:grid xl:grid-cols-3 xl:gap-4 xl:pb-0">
+      <footer className="flex w-full max-w-7xl shrink-0 flex-wrap gap-2 pb-2 [overflow-wrap:anywhere] hyphens-auto xl:grid xl:grid-cols-3 xl:gap-4 xl:pb-0">
         <Button
           size="sm"
           wrap
