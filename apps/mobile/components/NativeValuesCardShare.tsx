@@ -87,7 +87,7 @@ export default function NativeValuesCardShare({
                 {format === option && (
                   <Text
                     accessible={false}
-                    className="absolute left-1 top-1 text-base font-black text-black"
+                    className="absolute top-1 left-1 text-base font-black text-black"
                   >
                     ✓
                   </Text>
@@ -143,7 +143,9 @@ export default function NativeValuesCardShare({
             <Text className="text-2xl text-white">
               {includeHero ? "☑" : "☐"}
             </Text>
-            <Text className="min-w-0 flex-1 font-bold text-white">{copy.includeHero}</Text>
+            <Text className="min-w-0 flex-1 font-bold text-white">
+              {copy.includeHero}
+            </Text>
           </Pressable>
           {error && (
             <View className="gap-2 border-4 border-black bg-white p-3">

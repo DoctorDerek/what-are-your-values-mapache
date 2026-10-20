@@ -44,7 +44,12 @@ function NativeInformationPanelFrame({
       accessibilityViewIsModal={modal || undefined}
       role={modal ? "dialog" : undefined}
     >
-      <View className={cx("flex-1", !isIntroduction && (isReference ? "p-3" : "p-5"))}>
+      <View
+        className={cx(
+          "flex-1",
+          !isIntroduction && (isReference ? "p-3" : "p-5"),
+        )}
+      >
         <View
           className={cx(
             "relative w-full flex-1 bg-white",
@@ -59,7 +64,9 @@ function NativeInformationPanelFrame({
               "relative z-20 border-black",
               isIntroduction
                 ? "min-h-24 justify-center border-b-6 px-4 py-5 xl:min-h-32 xl:px-8 xl:py-6"
-                : isReference ? "border-b-4 px-4 py-5" : "border-b-4 p-5",
+                : isReference
+                  ? "border-b-4 px-4 py-5"
+                  : "border-b-4 p-5",
             )}
           >
             {titleDecoration}
@@ -142,7 +149,8 @@ function NativeInformationPanelFrame({
                     className: "text-3xl leading-none font-black uppercase",
                   })}
                   {...(isReference && {
-                    className: "text-center text-xl font-black text-black uppercase",
+                    className:
+                      "text-center text-xl font-black text-black uppercase",
                   })}
                 >
                   {primaryActionLabel}

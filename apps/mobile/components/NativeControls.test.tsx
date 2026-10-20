@@ -1,5 +1,5 @@
-import { describe, expect, it, jest } from "@jest/globals"
 import LocaleProvider from "@game/utils/src/LocaleContext"
+import { describe, expect, it, jest } from "@jest/globals"
 import {
   fireEvent,
   render,
@@ -14,7 +14,9 @@ describe("NativeControls", () => {
 
     expect(screen.getByLabelText("Controls")).toBeOnTheScreen()
     expect(screen.queryByRole("heading", { name: "Actions" })).toBeNull()
-    expect(screen.queryByRole("heading", { name: "Available Controls" })).toBeNull()
+    expect(
+      screen.queryByRole("heading", { name: "Available Controls" }),
+    ).toBeNull()
     expect(screen.getByRole("heading", { name: "Touch" })).toBeOnTheScreen()
     expect(screen.getByText("Tap the first value card")).toBeOnTheScreen()
     expect(screen.getByText("Tap the second value card")).toBeOnTheScreen()
@@ -61,7 +63,9 @@ describe("NativeControls", () => {
     )
     expect(screen.getByLabelText("Controles")).toBeOnTheScreen()
     expect(screen.getByText("Elegir el primer valor")).toBeOnTheScreen()
-    expect(screen.getByText("Toca la primera tarjeta de valor")).toBeOnTheScreen()
+    expect(
+      screen.getByText("Toca la primera tarjeta de valor"),
+    ).toBeOnTheScreen()
     expect(screen.getAllByRole("button", { name: "Cerrar" })).toHaveLength(2)
     expect(screen.queryByText("Teclado")).toBeNull()
   })

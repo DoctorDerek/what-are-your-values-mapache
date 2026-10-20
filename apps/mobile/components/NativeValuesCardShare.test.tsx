@@ -177,7 +177,9 @@ it("renders Spanish format names and preserves Back when preparation fails", asy
     />,
   )
   await screen.findByRole("alert")
-  expect(screen.getByRole("button", { name: "GIF · Animado", selected: true })).toBeOnTheScreen()
+  expect(
+    screen.getByRole("button", { name: "GIF · Animado", selected: true }),
+  ).toBeOnTheScreen()
   expect(screen.getByRole("button", { name: "PNG · Estático" })).toBeEnabled()
   await fireEvent.press(screen.getByRole("button", { name: "Volver" }))
   expect(close).toHaveBeenCalledTimes(1)

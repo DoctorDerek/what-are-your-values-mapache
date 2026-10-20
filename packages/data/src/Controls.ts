@@ -25,7 +25,8 @@ export function orderControlBindings<
   const actionOrder = Object.keys(CONTROL_ACTION_LABELS)
   return [...bindings].sort(
     (first, second) =>
-      actionOrder.indexOf(first.actionId) - actionOrder.indexOf(second.actionId),
+      actionOrder.indexOf(first.actionId) -
+      actionOrder.indexOf(second.actionId),
   )
 }
 

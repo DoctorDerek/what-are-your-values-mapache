@@ -38,7 +38,9 @@ for (const copy of locales) {
       await page.goto(copy.route)
       await page.getByRole("button", { name: copy.start, exact: true }).click()
       await page.getByRole("button", { name: copy.menu, exact: true }).click()
-      await page.getByRole("button", { name: copy.controls, exact: true }).click()
+      await page
+        .getByRole("button", { name: copy.controls, exact: true })
+        .click()
       if (viewport.textScale === 2)
         await page.addStyleTag({ content: "html { font-size: 200%; }" })
 
@@ -54,16 +56,26 @@ for (const copy of locales) {
       const inputBounds = await input.boundingBox()
       const actionBounds = await action.boundingBox()
       if (viewport.textScale === 1) {
-        expect(inputBounds!.x + inputBounds!.width).toBeLessThanOrEqual(actionBounds!.x)
+        expect(inputBounds!.x + inputBounds!.width).toBeLessThanOrEqual(
+          actionBounds!.x,
+        )
         expect(Math.abs(inputBounds!.y - actionBounds!.y)).toBeLessThan(12)
       } else {
         expect(inputBounds!.y).toBeLessThan(actionBounds!.y)
       }
-      const close = dialog.getByRole("button", { name: copy.close, exact: true }).last()
+      const close = dialog
+        .getByRole("button", { name: copy.close, exact: true })
+        .last()
       await expect(close).toBeInViewport({ ratio: 1 })
       await close.click({ trial: true })
-      expect(await dialog.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
-      await page.screenshot({ path: testInfo.outputPath("paired-controls.png") })
+      expect(
+        await dialog.evaluate(
+          (element) => element.scrollWidth <= element.clientWidth,
+        ),
+      ).toBe(true)
+      await page.screenshot({
+        path: testInfo.outputPath("paired-controls.png"),
+      })
       await close.click()
       await expect(dialog).not.toBeVisible()
     })

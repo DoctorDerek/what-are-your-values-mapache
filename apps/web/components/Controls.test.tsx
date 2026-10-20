@@ -28,7 +28,9 @@ function ControlsHarness() {
 }
 
 function getReferenceHeadings() {
-  return within(screen.getByTestId("information-panel-body")).getAllByRole("heading")
+  return within(screen.getByTestId("information-panel-body")).getAllByRole(
+    "heading",
+  )
 }
 
 describe("Controls Component Integration", () => {
@@ -36,7 +38,9 @@ describe("Controls Component Integration", () => {
     render(<ControlsHarness />)
 
     const dialog = screen.getByRole("dialog", { name: "Controls" })
-    expect(within(dialog).queryByRole("heading", { name: "Actions" })).toBeNull()
+    expect(
+      within(dialog).queryByRole("heading", { name: "Actions" }),
+    ).toBeNull()
     expect(getReferenceHeadings()[0]).toHaveTextContent("Keyboard")
     const keyboardHeading = within(dialog).getByRole("heading", {
       level: 2,
@@ -46,7 +50,9 @@ describe("Controls Component Integration", () => {
     if (!keyboardSection) throw new Error("Keyboard section is unavailable")
     expect(within(keyboardSection).getByText("1 or A")).toBeVisible()
     const firstInput = within(keyboardSection).getByText("1 or A").closest("dt")
-    expect(firstInput?.nextElementSibling).toHaveTextContent("Select First Value")
+    expect(firstInput?.nextElementSibling).toHaveTextContent(
+      "Select First Value",
+    )
     expect(within(keyboardSection).getByText("2 or D")).toBeVisible()
     expect(
       within(keyboardSection).getByText("Y, Ctrl+Y, or Cmd+Shift+Z"),
@@ -58,9 +64,13 @@ describe("Controls Component Integration", () => {
         name: "Touch & Pointer",
       }),
     ).toBeVisible()
-    expect(within(dialog).queryByRole("heading", { name: "Controller" })).toBeNull()
     expect(
-      within(keyboardSection).getByText(/If your progress changed, review your results/),
+      within(dialog).queryByRole("heading", { name: "Controller" }),
+    ).toBeNull()
+    expect(
+      within(keyboardSection).getByText(
+        /If your progress changed, review your results/,
+      ),
     ).toBeVisible()
     expect(within(dialog).queryByText(/remap/i)).toBeNull()
   })
@@ -92,7 +102,9 @@ describe("Controls Component Integration", () => {
     render(<ControlsHarness />)
     expect(getReferenceHeadings()[0]).toHaveTextContent("Controller")
     expect(screen.getByText("L1 / L2")).toBeVisible()
-    expect(screen.getByText("East face button in battle; Cancel elsewhere")).toBeVisible()
+    expect(
+      screen.getByText("East face button in battle; Cancel elsewhere"),
+    ).toBeVisible()
     expect(screen.getByText(/Steam \+ X/)).toBeVisible()
   })
 

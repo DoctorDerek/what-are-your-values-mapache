@@ -56,7 +56,7 @@ function InformationPanelFrame({
       aria-label={dialogTitle ? title : undefined}
       aria-labelledby={dialogTitle ? undefined : titleId}
       className={cx(
-        "relative isolate grid min-h-0 min-w-0 w-full bg-white",
+        "relative isolate grid min-h-0 w-full min-w-0 bg-white",
         isReference && "@container",
         isIntroduction
           ? "h-full grid-rows-[auto_minmax(0,1fr)_auto_auto]"
@@ -76,7 +76,9 @@ function InformationPanelFrame({
       >
         {titleDecoration}
         {dialogTitle ? (
-          <DialogTitle className={cx(titleClassName, !isReference && "xl:text-5xl")}>
+          <DialogTitle
+            className={cx(titleClassName, !isReference && "xl:text-5xl")}
+          >
             {titleContent}
           </DialogTitle>
         ) : (
@@ -135,7 +137,7 @@ function InformationPanelFrame({
           onClick={onPrimaryAction}
           disabled={isPrimaryActionPending}
           aria-busy={isPrimaryActionPending}
-          className="min-w-0 w-full"
+          className="w-full min-w-0"
           typographyClassName={
             isIntroduction
               ? "text-3xl leading-none"

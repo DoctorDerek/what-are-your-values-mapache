@@ -142,7 +142,9 @@ describe("values-card preview", () => {
       />,
     )
     await screen.findByRole("alert")
-    expect(screen.getByRole("button", { name: "GIF · Animado" })).toHaveAttribute("aria-pressed", "true")
+    expect(
+      screen.getByRole("button", { name: "GIF · Animado" }),
+    ).toHaveAttribute("aria-pressed", "true")
     expect(screen.getByRole("button", { name: "PNG · Estático" })).toBeEnabled()
     fireEvent.click(screen.getByRole("button", { name: "Volver" }))
     expect(close).toHaveBeenCalledOnce()

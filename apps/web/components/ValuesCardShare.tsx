@@ -52,7 +52,7 @@ export default function ValuesCardShare({
         aria-describedby={undefined}
         onCloseAutoFocus={onCloseAutoFocus}
       >
-        <div className="bg-mapache-vivid-dark flex max-h-full min-h-0 w-full max-w-[45rem] flex-col self-center justify-self-center gap-2 overflow-y-auto overscroll-contain border-4 border-black p-2 text-center xl:gap-4 xl:p-6">
+        <div className="bg-mapache-vivid-dark flex max-h-full min-h-0 w-full max-w-[45rem] flex-col gap-2 self-center justify-self-center overflow-y-auto overscroll-contain border-4 border-black p-2 text-center xl:gap-4 xl:p-6">
           <header>
             <DialogTitle className="text-mapache-vivid-primary-cyan text-xl leading-tight font-black xl:text-3xl">
               {copy.title}
@@ -79,7 +79,7 @@ export default function ValuesCardShare({
                 }
               >
                 {format === option && (
-                  <span aria-hidden="true" className="absolute left-2 top-2">
+                  <span aria-hidden="true" className="absolute top-2 left-2">
                     ✓
                   </span>
                 )}
@@ -195,7 +195,10 @@ export default function ValuesCardShare({
           {artifact && !artifact.canShare && (
             <p className="text-sm text-white">{copy.unsupportedShare}</p>
           )}
-          <p role="status" className="text-sm font-medium text-white empty:hidden">
+          <p
+            role="status"
+            className="text-sm font-medium text-white empty:hidden"
+          >
             {isDelivering
               ? copy.delivering
               : getValuesCardDeliveryMessage(outcome, copy)}

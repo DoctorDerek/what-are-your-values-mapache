@@ -124,12 +124,21 @@ describe("shared interface localization", () => {
       },
     }
     const result = resolveLocalizationCatalog("es-MX", damaged)
-    expect(result.catalog.card.gif).toEqual(ENGLISH_LOCALIZATION_CATALOG.card.gif)
-    expect(result.catalog.card.png).toEqual(ENGLISH_LOCALIZATION_CATALOG.card.png)
-    expect(result.issues).toEqual(expect.arrayContaining([
-      expect.objectContaining({ key: "card.gif.description", fallback: "english" }),
-      expect.objectContaining({ key: "card.png", fallback: "english" }),
-    ]))
+    expect(result.catalog.card.gif).toEqual(
+      ENGLISH_LOCALIZATION_CATALOG.card.gif,
+    )
+    expect(result.catalog.card.png).toEqual(
+      ENGLISH_LOCALIZATION_CATALOG.card.png,
+    )
+    expect(result.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "card.gif.description",
+          fallback: "english",
+        }),
+        expect.objectContaining({ key: "card.png", fallback: "english" }),
+      ]),
+    )
     expect(
       resolveLocalizationCatalog("es-MX", damaged, damaged).catalog.card.png,
     ).toEqual(ENGLISH_LOCALIZATION_CATALOG.card.png)

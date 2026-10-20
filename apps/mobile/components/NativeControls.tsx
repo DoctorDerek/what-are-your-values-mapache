@@ -37,24 +37,24 @@ export default function NativeControls({
             </Text>
             <View className="flex-row flex-wrap">
               {orderControlBindings(group.bindings).map((binding) => (
-              <View
-                key={binding.actionId}
-                className="w-full flex-row items-start gap-3 border-b-2 border-gray-200 py-3 xl:w-1/2 xl:pr-4"
-              >
-                <Text className="min-w-0 flex-[0.8] text-sm leading-5 font-bold text-gray-800">
-                  {binding.input}
-                </Text>
-                <View className="min-w-0 flex-[1.2]">
-                  <Text className="text-base leading-6 font-black text-black">
-                    {CONTROL_ACTION_LABELS[binding.actionId]}
+                <View
+                  key={binding.actionId}
+                  className="w-full flex-row items-start gap-3 border-b-2 border-gray-200 py-3 xl:w-1/2 xl:pr-4"
+                >
+                  <Text className="min-w-0 flex-[0.8] text-sm leading-5 font-bold text-gray-800">
+                    {binding.input}
                   </Text>
-                  {binding.actionId === "stop" && (
-                    <Text className="mt-1 text-sm leading-5 font-medium text-gray-700">
-                      {CONTROLS_COPY.stopDescription}
+                  <View className="min-w-0 flex-[1.2]">
+                    <Text className="text-base leading-6 font-black text-black">
+                      {CONTROL_ACTION_LABELS[binding.actionId]}
                     </Text>
-                  )}
+                    {binding.actionId === "stop" && (
+                      <Text className="mt-1 text-sm leading-5 font-medium text-gray-700">
+                        {CONTROLS_COPY.stopDescription}
+                      </Text>
+                    )}
+                  </View>
                 </View>
-              </View>
               ))}
             </View>
           </View>
