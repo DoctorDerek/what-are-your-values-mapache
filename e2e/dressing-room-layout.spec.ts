@@ -37,6 +37,42 @@ const locales = [
 ] as const
 
 for (const copy of locales) {
+  test(`${copy.language} enlarged Dressing Room actions keep their complete text inside reachable targets`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 540 })
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await page.goto(copy.route)
+    await page.getByRole("button", { name: copy.start, exact: true }).click()
+    await page.getByRole("button", { name: copy.customize, exact: true }).click()
+    await page.addStyleTag({ content: "html { font-size: 200%; }" })
+    await page.getByRole("button", { name: copy.clothing, exact: true }).click()
+    await page.getByRole("button", { name: copy.outfit, exact: true }).click()
+    const palette = page.getByRole("button", { name: copy.palette, exact: true })
+    await palette.click()
+    for (const name of [copy.back, copy.save, copy.share]) {
+      const action = page.getByRole("button", { name, exact: true })
+      await action.scrollIntoViewIfNeeded()
+      await action.click({ trial: true })
+      expect(
+        await action.evaluate((element) => {
+          const target = element.getBoundingClientRect()
+          const range = document.createRange()
+          range.selectNodeContents(element)
+          const text = range.getBoundingClientRect()
+          return text.left >= target.left && text.right <= target.right &&
+            text.top >= target.top && text.bottom <= target.bottom
+        }),
+        `${name} remains inside its own button at200% text`,
+      ).toBe(true)
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320)
+    await page.screenshot({ path: testInfo.outputPath("enlarged-actions.png") })
+    await page.getByRole("button", { name: copy.back, exact: true }).click()
+    await page.getByRole("button", { name: copy.keep, exact: true }).click()
+    await expect(palette).toHaveAttribute("aria-pressed", "true")
+  })
+
   for (const viewport of [
     { width: 320, height: 540 },
     { width: 1440, height: 900 },
