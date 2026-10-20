@@ -112,7 +112,9 @@ for (const viewport of [
     await expect(
       page.getByRole("button", { name: "Stop", exact: true }),
     ).toBeInViewport({ ratio: 1 })
-    await page.screenshot({ path: testInfo.outputPath("battle-achievement.png") })
+    await page.screenshot({
+      path: testInfo.outputPath("battle-achievement.png"),
+    })
     await card.getByRole("button", { name: /^Dismiss achievement/ }).click()
     await expect(card).toHaveCount(0)
     await expectUnchangedBattleGeometry(page, geometry)
