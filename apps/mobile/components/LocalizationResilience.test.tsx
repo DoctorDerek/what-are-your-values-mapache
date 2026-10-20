@@ -52,16 +52,12 @@ describe("native localization resilience", () => {
         onDeleteCustomValue={jest.fn()}
       />,
     )
-    expect(
-      screen.getByRole("header", { name: "Acceptance" }),
-    ).toBeOnTheScreen()
+    expect(screen.getByRole("header", { name: "Acceptance" })).toBeOnTheScreen()
     await fireEvent.changeText(
       screen.getByLabelText("Search All Values"),
       "to be accepted as I am",
     )
-    expect(
-      screen.getByRole("header", { name: "Acceptance" }),
-    ).toBeOnTheScreen()
+    expect(screen.getByRole("header", { name: "Acceptance" })).toBeOnTheScreen()
     expect(screen.getByText("1 Value Shown")).toBeOnTheScreen()
     await fireEvent.press(screen.getByRole("button", { name: "Menu" }))
     await fireEvent.press(screen.getByRole("button", { name: "Close" }))
