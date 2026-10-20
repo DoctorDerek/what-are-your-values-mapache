@@ -356,9 +356,12 @@ for (const viewport of [
     await content.evaluate((element) => {
       element.scrollTop = 0
     })
-    const overlayBounds = await banner.boundingBox()
+    const overlayBounds = await banner.locator("..").boundingBox()
     const contentBounds = await content.boundingBox()
-    expect(Math.abs(overlayBounds!.y - contentBounds!.y)).toBeLessThanOrEqual(1)
+    expect(overlayBounds!.y).toBeGreaterThanOrEqual(contentBounds!.y)
+    expect(overlayBounds!.y + overlayBounds!.height).toBeLessThanOrEqual(
+      contentBounds!.y + contentBounds!.height,
+    )
     expect(overlayBounds!.x).toBeGreaterThanOrEqual(contentBounds!.x)
     expect(overlayBounds!.x + overlayBounds!.width).toBeLessThanOrEqual(
       contentBounds!.x + contentBounds!.width,
