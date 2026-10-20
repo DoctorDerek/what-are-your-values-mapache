@@ -114,6 +114,27 @@ describe("shared interface localization", () => {
     expect(selected.interfaceCopy.screen.cancel).toBe(" ")
   })
 
+  it("recovers structured image-format labels while reporting damaged fields", () => {
+    const damaged = {
+      ...ENGLISH_LOCALIZATION_CATALOG,
+      card: {
+        ...ENGLISH_LOCALIZATION_CATALOG.card,
+        gif: { name: "GIF", description: "" },
+        png: null,
+      },
+    }
+    const result = resolveLocalizationCatalog("es-MX", damaged)
+    expect(result.catalog.card.gif).toEqual(ENGLISH_LOCALIZATION_CATALOG.card.gif)
+    expect(result.catalog.card.png).toEqual(ENGLISH_LOCALIZATION_CATALOG.card.png)
+    expect(result.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: "card.gif.description", fallback: "english" }),
+      expect.objectContaining({ key: "card.png", fallback: "english" }),
+    ]))
+    expect(
+      resolveLocalizationCatalog("es-MX", damaged, damaged).catalog.card.png,
+    ).toEqual(ENGLISH_LOCALIZATION_CATALOG.card.png)
+  })
+
   it("recovers complete messages when both selected and English formatters fail without retaining private text", () => {
     const privateText = "A private player value"
     const damaged = {
@@ -129,7 +150,7 @@ describe("shared interface localization", () => {
           valueResult: () => false,
         },
         heroChoices: null,
-        controlDescriptions: [],
+        webControls: [],
       },
     }
     const result = resolveLocalizationCatalog("es-MX", damaged, damaged)
@@ -145,8 +166,8 @@ describe("shared interface localization", () => {
       ),
     ).toBe(`Rank 3, ${privateText}, Level 12, 400 total XP.`)
     expect(result.catalog.interfaceCopy.heroChoices.skin("2")).toBe("Skin 2")
-    expect(result.catalog.interfaceCopy.controlDescriptions).toEqual(
-      ENGLISH_INTERFACE_COPY.controlDescriptions,
+    expect(result.catalog.interfaceCopy.webControls).toEqual(
+      ENGLISH_INTERFACE_COPY.webControls,
     )
     expect(result.issues.length).toBeGreaterThan(0)
     expect(JSON.stringify(result.issues)).not.toContain(privateText)

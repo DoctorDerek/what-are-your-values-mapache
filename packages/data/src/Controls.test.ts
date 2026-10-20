@@ -1,56 +1,31 @@
 import { describe, expect, it } from "vitest"
 import {
   CONTROL_ACTION_LABELS,
-  CONTROL_SEMANTIC_ACTIONS,
   CONTROLS_COPY,
   NATIVE_CONTROL_GROUPS,
+  orderControlBindings,
   WEB_CONTROL_GROUPS,
 } from "./Controls"
 
 describe("Controls", () => {
-  it("owns the six semantic actions before platform-specific bindings", () => {
-    expect(CONTROLS_COPY).toEqual({
-      title: "Controls",
-      introduction:
-        "Use these controls to choose values, reverse recent choices, open Menu, or stop battling. Opening Controls does not change your progress.",
-      semanticActionsHeading: "Actions",
-      bindingsHeading: "Available Controls",
-      closeAction: "Close",
-    })
-    expect(CONTROL_SEMANTIC_ACTIONS).toEqual([
-      {
-        id: "select-first-value",
-        description: "Choose the first value card.",
-      },
-      {
-        id: "select-second-value",
-        description: "Choose the second value card.",
-      },
-      { id: "undo", description: "Reverse your most recent choice." },
-      {
-        id: "redo",
-        description: "Restore the choice you most recently undid.",
-      },
-      {
-        id: "menu",
-        description: "Open Menu without changing the current pair.",
-      },
-      {
-        id: "stop",
-        description:
-          "Stop battling. If your progress changed, review your results before returning home.",
-      },
+  it("orders existing bindings by action without mutating the shared input contract", () => {
+    const keyboard = WEB_CONTROL_GROUPS[1].bindings
+    const original = [...keyboard]
+    const ordered = orderControlBindings(keyboard)
+    expect(ordered.map(({ actionId }) => actionId)).toEqual([
+      "select-first-value",
+      "select-second-value",
+      "undo",
+      "redo",
+      "menu",
+      "stop",
+      "move-focus",
+      "confirm-focused-value",
     ])
-    expect(
-      CONTROL_SEMANTIC_ACTIONS.map(({ id }) => CONTROL_ACTION_LABELS[id]),
-    ).toEqual([
-      "Select First Value",
-      "Select Second Value",
-      "Undo",
-      "Redo",
-      "Menu",
-      "Stop",
-    ])
+    expect(keyboard).toEqual(original)
+    expect(ordered).toHaveLength(keyboard.length)
+    for (const binding of ordered) expect(keyboard).toContain(binding)
+    expect(CONTROLS_COPY.stopDescription).toContain("review your results")
   })
 
   it("describes only implemented web and native input paths", () => {
@@ -117,7 +92,6 @@ describe("Controls", () => {
 
     expect(
       JSON.stringify({
-        semanticActions: CONTROL_SEMANTIC_ACTIONS,
         web: WEB_CONTROL_GROUPS,
         native: NATIVE_CONTROL_GROUPS,
       }),
@@ -129,10 +103,6 @@ describe("Controls", () => {
   it("freezes every shared Controls collection and entry", () => {
     expect(Object.isFrozen(CONTROLS_COPY)).toBe(true)
     expect(Object.isFrozen(CONTROL_ACTION_LABELS)).toBe(true)
-    expect(Object.isFrozen(CONTROL_SEMANTIC_ACTIONS)).toBe(true)
-    expect(
-      CONTROL_SEMANTIC_ACTIONS.every((action) => Object.isFrozen(action)),
-    ).toBe(true)
 
     for (const groups of [WEB_CONTROL_GROUPS, NATIVE_CONTROL_GROUPS]) {
       expect(Object.isFrozen(groups)).toBe(true)
