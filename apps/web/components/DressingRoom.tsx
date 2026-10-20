@@ -225,9 +225,11 @@ export default function DressingRoom({
           </Button>
         </div>
       )}
-      <footer className="grid w-full max-w-7xl shrink-0 grid-cols-2 gap-2 pb-2 xl:grid-cols-3 xl:gap-4 xl:pb-0">
+      <footer className="flex w-full max-w-7xl shrink-0 flex-wrap gap-2 pb-2 hyphens-auto [overflow-wrap:anywhere] xl:grid xl:grid-cols-3 xl:gap-4 xl:pb-0">
         <Button
           size="sm"
+          wrap
+          className="min-w-0 grow basis-32"
           variant="outline"
           typographyClassName="text-base xl:text-lg"
           disabled={isSaving}
@@ -238,6 +240,7 @@ export default function DressingRoom({
         <Button
           size="sm"
           wrap
+          className="min-w-0 grow basis-32"
           typographyClassName="text-base xl:text-lg"
           disabled={isSaving}
           aria-busy={isSaving}
@@ -248,7 +251,7 @@ export default function DressingRoom({
         <Button
           size="sm"
           id="dressing-room-share-button"
-          className="col-span-2 xl:col-span-1"
+          className="min-w-0 basis-full"
           variant="secondary"
           typographyClassName="text-base xl:text-lg"
           wrap
