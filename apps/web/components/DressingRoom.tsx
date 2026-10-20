@@ -65,43 +65,38 @@ export default function DressingRoom({
   return (
     <MapacheScreen
       spacing="standard-xl"
-      className="flex flex-col items-center gap-6"
+      viewport="fixed"
+      className="grid grid-rows-[auto_auto_auto_minmax(7.5rem,1fr)] justify-items-center gap-2 overflow-y-auto xl:flex xl:flex-col xl:items-center xl:gap-6"
     >
-      <header className="flex w-full max-w-7xl items-center gap-4">
-        <Button
-          variant="secondary"
-          disabled={isSaving}
-          onClick={() => actor.send({ type: "AVATAR.BACK_REQUESTED" })}
-        >
-          {DRESSING_ROOM_COPY.back}
-        </Button>
+      <header className="w-full max-w-7xl shrink-0">
         <h1 className="text-mapache-vivid-primary-cyan text-2xl font-black xl:text-4xl">
           {DRESSING_ROOM_COPY.title}
         </h1>
       </header>
-      <div className="grid w-full max-w-7xl min-w-0 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+      <div className="contents xl:grid xl:w-full xl:max-w-7xl xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] xl:gap-6">
         <section
           aria-label={DRESSING_ROOM_COPY.preview}
-          className="flex flex-col items-center gap-4 border-4 border-black bg-white p-4 shadow-[6px_6px_0px_0px_#000000]"
+          className="flex w-full min-w-0 items-center gap-3 border-4 border-black bg-white p-2 shadow-[6px_6px_0px_0px_#000000] xl:flex-col xl:gap-4 xl:p-4"
         >
           <Heroes99Hero
             appearance={draft}
             shouldReduceMotion={shouldReduceMotion}
-            className="h-48 w-full xl:h-96"
+            className="h-[clamp(5rem,16dvh,12rem)] min-w-0 flex-1 xl:h-96 xl:w-full xl:flex-none"
           />
           <Button
             variant="secondary"
+            typographyClassName="text-base xl:text-lg"
             disabled={isSaving}
             onClick={() => actor.send({ type: "AVATAR.RANDOMIZE" })}
           >
             {DRESSING_ROOM_COPY.randomize}
           </Button>
         </section>
-        <div className="flex min-w-0 flex-col gap-4">
+        <div className="contents xl:flex xl:min-w-0 xl:flex-col xl:gap-4">
           <div
             role="group"
             aria-label={DRESSING_ROOM_COPY.category}
-            className="flex flex-wrap gap-2"
+            className="flex w-full min-w-0 shrink-0 gap-2 overflow-x-auto pb-1 xl:flex-wrap xl:overflow-visible xl:pb-0"
           >
             {HEROES99_CATEGORIES.map((item) => (
               <button
@@ -111,7 +106,7 @@ export default function DressingRoom({
                 aria-pressed={category === item}
                 onClick={() => setCategory(item)}
                 className={cx(
-                  "min-h-11 cursor-pointer border-4 border-black px-3 py-2 font-black focus-visible:outline-4 focus-visible:outline-white",
+                  "min-h-11 shrink-0 cursor-pointer border-4 border-black px-3 py-2 font-black focus-visible:outline-4 focus-visible:outline-white",
                   category === item
                     ? "bg-mapache-vivid-primary-cyan text-black"
                     : "hover:bg-mapache-vivid-light bg-white text-black",
@@ -121,88 +116,96 @@ export default function DressingRoom({
               </button>
             ))}
           </div>
-          <div
-            role="group"
-            aria-label={DRESSING_ROOM_COPY.choices(
-              choiceCopy.categories[category],
-            )}
-            className="grid max-h-88 grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-3 overflow-y-auto p-1"
-          >
-            {choices[category].map((choice) => {
-              const index = assets.thumbnailIndexByChoiceId[choice.id]
-              return (
-                <button
-                  type="button"
-                  key={choice.id}
-                  disabled={isSaving}
-                  aria-label={choice.label}
-                  aria-pressed={isHeroes99ChoiceSelected(draft, choice)}
-                  onClick={() =>
-                    actor.send({ type: "AVATAR.CHANGE", change: choice.change })
-                  }
-                  className={cx(
-                    "flex min-h-28 cursor-pointer flex-col items-center justify-center border-4 border-black p-1 text-black focus-visible:outline-4 focus-visible:outline-white",
-                    isHeroes99ChoiceSelected(draft, choice)
-                      ? "bg-mapache-vivid-primary-cyan"
-                      : "hover:bg-mapache-vivid-light bg-white",
-                  )}
-                >
-                  {assets.thumbnailAtlas && index !== undefined && (
-                    <span
-                      aria-hidden="true"
-                      className="block h-20 w-16 shrink-0 [image-rendering:pixelated]"
-                      style={{
-                        backgroundImage: `url(${assets.thumbnailAtlas.src})`,
-                        backgroundPosition: `-${(index % HEROES99_THUMBNAIL.columns) * HEROES99_THUMBNAIL.width}px -${Math.floor(index / HEROES99_THUMBNAIL.columns) * HEROES99_THUMBNAIL.height}px`,
-                      }}
-                    />
-                  )}
-                  <span className="text-sm font-bold">{choice.label}</span>
-                </button>
-              )
-            })}
-          </div>
-          {paletteChoices.length > 0 && (
+          <div className="min-h-0 w-full min-w-0 overflow-y-auto overscroll-contain p-1 xl:overflow-visible xl:p-0">
             <div
               role="group"
-              aria-label={DRESSING_ROOM_COPY.palette(
+              aria-label={DRESSING_ROOM_COPY.choices(
                 choiceCopy.categories[category],
               )}
-              className="flex flex-wrap gap-2"
+              className="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-2 xl:max-h-88 xl:grid-cols-[repeat(auto-fill,minmax(80px,1fr))] xl:gap-3 xl:overflow-y-auto xl:p-1"
             >
-              {paletteChoices.map((choice, index) => (
-                <button
-                  type="button"
-                  key={choice.id}
-                  disabled={isSaving}
-                  aria-label={choice.label}
-                  aria-pressed={isHeroes99ChoiceSelected(draft, choice)}
-                  onClick={() =>
-                    actor.send({ type: "AVATAR.CHANGE", change: choice.change })
-                  }
-                  className="grid size-12 cursor-pointer place-items-center border-4 border-black focus-visible:outline-4 focus-visible:outline-white"
-                  style={{
-                    backgroundColor: assets.palettes[paletteId]?.[index],
-                  }}
-                >
-                  {isHeroes99ChoiceSelected(draft, choice) && (
-                    <span
-                      aria-hidden="true"
-                      className="grid size-6 place-items-center rounded-full bg-black text-sm font-black text-white"
-                    >
-                      ✓
-                    </span>
-                  )}
-                </button>
-              ))}
+              {choices[category].map((choice) => {
+                const index = assets.thumbnailIndexByChoiceId[choice.id]
+                return (
+                  <button
+                    type="button"
+                    key={choice.id}
+                    disabled={isSaving}
+                    aria-label={choice.label}
+                    aria-pressed={isHeroes99ChoiceSelected(draft, choice)}
+                    onClick={() =>
+                      actor.send({
+                        type: "AVATAR.CHANGE",
+                        change: choice.change,
+                      })
+                    }
+                    className={cx(
+                      "flex min-h-28 cursor-pointer flex-col items-center justify-center border-4 border-black p-1 text-black focus-visible:outline-4 focus-visible:outline-white",
+                      isHeroes99ChoiceSelected(draft, choice)
+                        ? "bg-mapache-vivid-primary-cyan"
+                        : "hover:bg-mapache-vivid-light bg-white",
+                    )}
+                  >
+                    {assets.thumbnailAtlas && index !== undefined && (
+                      <span
+                        aria-hidden="true"
+                        className="block h-20 w-16 shrink-0 [image-rendering:pixelated]"
+                        style={{
+                          backgroundImage: `url(${assets.thumbnailAtlas.src})`,
+                          backgroundPosition: `-${(index % HEROES99_THUMBNAIL.columns) * HEROES99_THUMBNAIL.width}px -${Math.floor(index / HEROES99_THUMBNAIL.columns) * HEROES99_THUMBNAIL.height}px`,
+                        }}
+                      />
+                    )}
+                    <span className="text-sm font-bold">{choice.label}</span>
+                  </button>
+                )
+              })}
             </div>
-          )}
+            {paletteChoices.length > 0 && (
+              <div
+                role="group"
+                aria-label={DRESSING_ROOM_COPY.palette(
+                  choiceCopy.categories[category],
+                )}
+                className="mt-3 flex flex-wrap gap-2 xl:mt-4"
+              >
+                {paletteChoices.map((choice, index) => (
+                  <button
+                    type="button"
+                    key={choice.id}
+                    disabled={isSaving}
+                    aria-label={choice.label}
+                    aria-pressed={isHeroes99ChoiceSelected(draft, choice)}
+                    onClick={() =>
+                      actor.send({
+                        type: "AVATAR.CHANGE",
+                        change: choice.change,
+                      })
+                    }
+                    className="grid size-12 cursor-pointer place-items-center border-4 border-black focus-visible:outline-4 focus-visible:outline-white"
+                    style={{
+                      backgroundColor: assets.palettes[paletteId]?.[index],
+                    }}
+                  >
+                    {isHeroes99ChoiceSelected(draft, choice) && (
+                      <span
+                        aria-hidden="true"
+                        className="grid size-6 place-items-center rounded-full bg-black text-sm font-black text-white"
+                      >
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
       {state.context.hasEditFailure && (
         <p
           role="alert"
-          className="w-full max-w-7xl border-4 border-black bg-white p-4 text-black"
+          className="max-h-[30dvh] w-full max-w-7xl shrink-0 overflow-y-auto border-4 border-black bg-white p-4 text-black"
         >
           {DRESSING_ROOM_COPY.editError}
         </p>
@@ -210,7 +213,7 @@ export default function DressingRoom({
       {state.matches("SaveFailed") && (
         <div
           role="alert"
-          className="w-full max-w-7xl border-4 border-black bg-white p-4 text-black"
+          className="max-h-[30dvh] w-full max-w-7xl shrink-0 overflow-y-auto border-4 border-black bg-white p-4 text-black"
         >
           <p className="font-black">✕ {DRESSING_ROOM_COPY.error}</p>
           <p>{DRESSING_ROOM_COPY.errorDetail}</p>
@@ -222,16 +225,20 @@ export default function DressingRoom({
           </Button>
         </div>
       )}
-      <footer className="grid w-full max-w-7xl grid-cols-2 gap-4 xl:grid-cols-3">
+      <footer className="grid w-full max-w-7xl shrink-0 grid-cols-2 gap-2 pb-2 xl:grid-cols-3 xl:gap-4 xl:pb-0">
         <Button
+          size="sm"
           variant="outline"
+          typographyClassName="text-base xl:text-lg"
           disabled={isSaving}
-          onClick={() => actor.send({ type: "AVATAR.CANCEL" })}
+          onClick={() => actor.send({ type: "AVATAR.BACK_REQUESTED" })}
         >
-          {DRESSING_ROOM_COPY.cancel}
+          {DRESSING_ROOM_COPY.back}
         </Button>
         <Button
+          size="sm"
           wrap
+          typographyClassName="text-base xl:text-lg"
           disabled={isSaving}
           aria-busy={isSaving}
           onClick={() => actor.send({ type: "AVATAR.SAVE" })}
@@ -239,9 +246,11 @@ export default function DressingRoom({
           {isSaving ? DRESSING_ROOM_COPY.saving : DRESSING_ROOM_COPY.save}
         </Button>
         <Button
+          size="sm"
           id="dressing-room-share-button"
           className="col-span-2 xl:col-span-1"
           variant="secondary"
+          typographyClassName="text-base xl:text-lg"
           wrap
           disabled={isSaving}
           onClick={() => onShare(draft)}
