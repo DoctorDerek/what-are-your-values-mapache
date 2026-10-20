@@ -52,7 +52,11 @@ export default function ValuesCardShare({
         aria-describedby={undefined}
         onCloseAutoFocus={onCloseAutoFocus}
       >
-        <div className="bg-mapache-vivid-dark flex max-h-full min-h-0 w-full max-w-[45rem] flex-col gap-2 self-center justify-self-center overflow-y-auto overscroll-contain border-4 border-black p-2 text-center xl:gap-4 xl:p-6">
+        <div
+          data-controller-scroll
+          tabIndex={0}
+          className="bg-mapache-vivid-dark flex max-h-full min-h-0 w-full max-w-[45rem] flex-col gap-2 self-center justify-self-center overflow-y-auto overscroll-contain border-4 border-black p-2 text-center xl:gap-4 xl:p-6"
+        >
           <header>
             <DialogTitle className="text-mapache-vivid-primary-cyan text-xl leading-tight font-black xl:text-3xl">
               {copy.title}
@@ -197,7 +201,7 @@ export default function ValuesCardShare({
           )}
           <p
             role="status"
-            className="text-sm font-medium text-white empty:hidden"
+            className="text-sm font-medium text-white empty:sr-only"
           >
             {isDelivering
               ? copy.delivering
