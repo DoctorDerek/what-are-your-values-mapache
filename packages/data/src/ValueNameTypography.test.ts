@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest"
-import { getBattleValueDisplayName } from "./BattleValueTypography"
 import { CANONICAL_VALUES } from "./CanonicalValues"
 import { createCustomValueId, type CustomValueDefinition } from "./Value"
+import { getWrappableValueDisplayName } from "./ValueNameTypography"
 
-describe("Battle value typography", () => {
+describe("Value name typography", () => {
   it("uses selected value text without applying English word breaks to another language", () => {
     const value = CANONICAL_VALUES[0]
     const translations = new Map([
@@ -12,17 +12,17 @@ describe("Battle value typography", () => {
         { name: "Acceptance localizada", definition: "Selected meaning" },
       ],
     ])
-    expect(getBattleValueDisplayName(value, translations, "es-MX")).toBe(
+    expect(getWrappableValueDisplayName(value, translations, "es-MX")).toBe(
       "Acceptance localizada",
     )
-    expect(getBattleValueDisplayName(value, translations, "en-US")).toBe(
+    expect(getWrappableValueDisplayName(value, translations, "en-US")).toBe(
       "Accep\u00adtance localizada",
     )
   })
   it("preserves every canonical name and identity while adding optional display breaks", () => {
     for (const value of CANONICAL_VALUES) {
       const original = { ...value }
-      expect(getBattleValueDisplayName(value).replaceAll("\u00ad", "")).toBe(
+      expect(getWrappableValueDisplayName(value).replaceAll("\u00ad", "")).toBe(
         value.englishName,
       )
       expect(value).toEqual(original)
@@ -39,7 +39,7 @@ describe("Battle value typography", () => {
       const value = CANONICAL_VALUES.find(
         ({ englishName }) => englishName === name,
       )!
-      expect(getBattleValueDisplayName(value)).toBe(displayName)
+      expect(getWrappableValueDisplayName(value)).toBe(displayName)
     }
   })
 
@@ -53,6 +53,6 @@ describe("Battle value typography", () => {
       createdAt: "2026-10-11T00:00:00.000Z",
       updatedAt: "2026-10-11T00:00:00.000Z",
     }
-    expect(getBattleValueDisplayName(value)).toBe(value.name)
+    expect(getWrappableValueDisplayName(value)).toBe(value.name)
   })
 })

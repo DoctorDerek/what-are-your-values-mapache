@@ -1455,7 +1455,7 @@ describe("GameClient Integration", () => {
     expect(
       await screen.findByRole("heading", { name: "All Values", level: 1 }),
     ).toBeVisible()
-    expect(screen.getByText("Acceptance")).toBeVisible()
+    expect(screen.getByRole("heading", { name: "Acceptance" })).toBeVisible()
 
     fireEvent.click(screen.getByRole("button", { name: "Close" }))
     expect(
