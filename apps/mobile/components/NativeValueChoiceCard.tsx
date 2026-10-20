@@ -1,4 +1,3 @@
-import { getBattleValueDisplayName } from "@game/data/src/BattleValueTypography"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValueDisplayDefinition,
@@ -6,6 +5,7 @@ import {
   type ActiveValueDefinition,
   type ValueId,
 } from "@game/data/src/Value"
+import { getWrappableValueDisplayName } from "@game/data/src/ValueNameTypography"
 import { getValueChoiceAccessibilityLabel } from "@game/machines/src/BattleAccessibilityPresentation"
 import type { BattleRewardPresentation } from "@game/machines/src/BattleRewardPresentation"
 import { cx } from "classix"
@@ -98,7 +98,7 @@ function NativeValueChoiceCard(
               lineBreakStrategyIOS="push-out"
               textBreakStrategy="balanced"
             >
-              {getBattleValueDisplayName(
+              {getWrappableValueDisplayName(
                 value,
                 localizedCopy.values,
                 localizedCopy.metadata.languageTag,

@@ -90,6 +90,36 @@ for (const viewport of [
   { width: 320, height: 540 },
   { width: 1440, height: 900 },
 ]) {
+  test(`Battle shows earned achievements above its actions without shifting layout at ${viewport.width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize(viewport)
+    await startBattle(page)
+    await page.evaluate(() => window.dispatchEvent(new Event("blur")))
+    await compareNextPair(page)
+    const geometry = await readBattleGeometry(page)
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")))
+    const card = page.getByRole("complementary", {
+      name: "Achievement unlocked",
+    })
+    await expect(card).toBeInViewport({ ratio: 1 })
+    await card.hover()
+    await expectUnchangedBattleGeometry(page, geometry)
+    const bounds = await card.boundingBox()
+    const controls = page.getByRole("navigation", { name: "Battle actions" })
+    const actionBounds = await controls.boundingBox()
+    expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(actionBounds!.y)
+    await expect(
+      page.getByRole("button", { name: "Stop", exact: true }),
+    ).toBeInViewport({ ratio: 1 })
+    await page.screenshot({
+      path: testInfo.outputPath("battle-achievement.png"),
+    })
+    await card.getByRole("button", { name: /^Dismiss achievement/ }).click()
+    await expect(card).toHaveCount(0)
+    await expectUnchangedBattleGeometry(page, geometry)
+  })
+
   for (const exit of ["See my values", "Keep battling"]) {
     test(`Results ${exit} stays reachable with a hover-paused achievement at ${viewport.width}px`, async ({
       page,

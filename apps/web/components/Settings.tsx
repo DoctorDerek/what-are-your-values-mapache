@@ -46,7 +46,7 @@ function SettingsRadioGroup<TValue extends string>({
       disabled={disabled}
       className="text-mapache-vivid-dark border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] xl:p-8"
     >
-      <legend className="w-full border-b-4 border-black pb-4 text-3xl font-black uppercase xl:text-4xl">
+      <legend className="w-full border-b-4 border-black bg-white px-2 pb-4 text-3xl font-black uppercase xl:text-4xl">
         {heading}
       </legend>
       <div className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-3">

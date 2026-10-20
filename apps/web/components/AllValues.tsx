@@ -15,6 +15,7 @@ import {
   type CustomValueId,
   type ValueId,
 } from "@game/data/src/Value"
+import { getWrappableValueDisplayName } from "@game/data/src/ValueNameTypography"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import type { StaticImageData } from "next/image"
 import type { FormEvent } from "react"
@@ -231,8 +232,20 @@ export default function AllValues({
           shouldReduceMotion={shouldReduceMotion}
           heading={
             <>
-              <h3 className="min-w-0 flex-1 text-3xl font-black [overflow-wrap:anywhere] break-words uppercase sm:text-4xl">
-                {displayName}
+              <h3
+                aria-label={displayName}
+                lang={
+                  definition.kind === "canonical"
+                    ? localization.metadata.languageTag
+                    : undefined
+                }
+                className="min-w-[min(100%,16rem)] flex-1 text-3xl font-black break-words hyphens-auto uppercase [hyphenate-limit-chars:6_3_3] sm:text-4xl"
+              >
+                {getWrappableValueDisplayName(
+                  definition,
+                  localization.values,
+                  localization.metadata.languageTag,
+                )}
               </h3>
               {customValueId ? (
                 <span className="bg-mapache-vivid-primary-cyan border-4 border-black px-3 py-2 text-lg font-black text-black uppercase">

@@ -4,6 +4,7 @@ import { achievementNotificationMachine } from "@game/machines/src/AchievementNo
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
 import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { useActorRef } from "@xstate/react"
+import { cx } from "classix"
 import { useCallback, useEffect } from "react"
 import AchievementToast from "@/components/AchievementToast"
 
@@ -60,11 +61,13 @@ export default function AchievementBanner({
 
   return (
     <div
-      className={
+      className={cx(
         placement !== "screen"
           ? "pointer-events-none relative mx-auto flex w-80 max-w-[calc(100%-8px)] min-w-0 flex-col gap-2 [overflow-anchor:none]"
-          : "pointer-events-none fixed right-[max(0.75rem,env(safe-area-inset-right))] bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-[max(0.75rem,env(safe-area-inset-left))] z-[60] mx-auto flex max-w-80 flex-col gap-2 [overflow-anchor:none]"
-      }
+          : "pointer-events-none fixed right-[max(0.75rem,env(safe-area-inset-right))] bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-[max(0.75rem,env(safe-area-inset-left))] z-[60] mx-auto flex max-w-80 flex-col gap-2 [overflow-anchor:none]",
+        placement === "battle" &&
+          "max-h-full overflow-y-auto overscroll-contain p-1",
+      )}
     >
       {state.context.visible.map((achievement) => (
         <AchievementToast

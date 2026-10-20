@@ -62,33 +62,23 @@ export default function NativeDressingRoom({
   const paletteId = getHeroes99PaletteId(category, draft)
   return (
     <MapacheScreen>
-      <View className="flex-row items-center gap-3 p-3">
-        <Button
-          size="compact"
-          variant="secondary"
-          disabled={isSaving}
-          onPress={() => actor.send({ type: "AVATAR.BACK_REQUESTED" })}
-        >
-          <Text>{DRESSING_ROOM_COPY.back}</Text>
-        </Button>
+      <View className="shrink-0 px-3 pt-3">
         <Text
           accessibilityRole="header"
-          className="text-mapache-vivid-primary-cyan min-w-0 flex-1 text-2xl font-black"
+          className="text-mapache-vivid-primary-cyan text-2xl font-black"
         >
           {DRESSING_ROOM_COPY.title}
         </Text>
       </View>
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="gap-5 p-3 xl:flex-row xl:justify-center"
-      >
-        <View className="items-center gap-4 border-4 border-black bg-white p-4 xl:flex-1">
+      <View className="min-h-0 flex-1 gap-2 p-3 xl:flex-row xl:justify-center xl:gap-5">
+        <View className="shrink-0 flex-row items-center justify-around gap-3 border-4 border-black bg-white p-2 xl:flex-1 xl:flex-col xl:justify-center xl:gap-4 xl:p-4">
           <NativeHeroes99Hero
             appearance={draft}
             shouldReduceMotion={shouldReduceMotion}
-            sizeClassName="h-48 xl:h-96"
+            sizeClassName="h-24 xl:h-96"
           />
           <Button
+            size="compact"
             variant="secondary"
             disabled={isSaving}
             onPress={() => actor.send({ type: "AVATAR.RANDOMIZE" })}
@@ -96,10 +86,12 @@ export default function NativeDressingRoom({
             <Text>{DRESSING_ROOM_COPY.randomize}</Text>
           </Button>
         </View>
-        <View className="gap-4 xl:flex-1">
-          <View
+        <View className="min-h-0 flex-1 gap-2 xl:gap-4">
+          <ScrollView
+            horizontal
             accessibilityLabel={DRESSING_ROOM_COPY.category}
-            className="flex-row flex-wrap gap-2"
+            className="shrink-0 grow-0"
+            contentContainerClassName="gap-2 pb-1"
           >
             {HEROES99_CATEGORIES.map((item) => (
               <Pressable
@@ -112,7 +104,7 @@ export default function NativeDressingRoom({
                 disabled={isSaving}
                 onPress={() => setCategory(item)}
                 className={cx(
-                  "min-h-11 items-center justify-center border-4 border-black px-3 py-2",
+                  "min-h-11 shrink-0 items-center justify-center border-4 border-black px-3 py-2",
                   category === item
                     ? "bg-mapache-vivid-primary-cyan"
                     : "bg-white",
@@ -123,108 +115,119 @@ export default function NativeDressingRoom({
                 </Text>
               </Pressable>
             ))}
-          </View>
-          <View
-            accessibilityLabel={DRESSING_ROOM_COPY.choices(
-              choiceCopy.categories[category],
-            )}
-            className="flex-row flex-wrap gap-3"
+          </ScrollView>
+          <ScrollView
+            className="min-h-0 flex-1"
+            contentContainerClassName="gap-3 pb-2 xl:gap-4"
           >
-            {choices[category].map((choice) => {
-              const index = assets.thumbnailIndexByChoiceId[choice.id]
-              return (
-                <Pressable
-                  key={choice.id}
-                  accessibilityRole="button"
-                  accessibilityLabel={choice.label}
-                  accessibilityState={{
-                    selected: isHeroes99ChoiceSelected(draft, choice),
-                    disabled: isSaving,
-                  }}
-                  disabled={isSaving}
-                  onPress={() =>
-                    actor.send({ type: "AVATAR.CHANGE", change: choice.change })
-                  }
-                  className={cx(
-                    "min-h-28 w-20 items-center justify-center border-4 border-black p-1",
-                    isHeroes99ChoiceSelected(draft, choice)
-                      ? "bg-mapache-vivid-primary-cyan"
-                      : "bg-white",
-                  )}
-                >
-                  {assets.thumbnailAtlas && index !== undefined && (
-                    <View
-                      pointerEvents="none"
-                      className="relative h-20 w-16 overflow-hidden"
-                    >
-                      <Image
-                        alt=""
-                        aria-hidden
-                        source={assets.thumbnailAtlas}
-                        className="absolute"
-                        resizeMode="stretch"
-                        style={{
-                          width:
-                            HEROES99_THUMBNAIL.width *
-                            HEROES99_THUMBNAIL.columns,
-                          height:
-                            Math.ceil(
-                              Object.keys(assets.thumbnailIndexByChoiceId)
-                                .length / HEROES99_THUMBNAIL.columns,
-                            ) * HEROES99_THUMBNAIL.height,
-                          left:
-                            -(index % HEROES99_THUMBNAIL.columns) *
-                            HEROES99_THUMBNAIL.width,
-                          top:
-                            -Math.floor(index / HEROES99_THUMBNAIL.columns) *
-                            HEROES99_THUMBNAIL.height,
-                        }}
-                      />
-                    </View>
-                  )}
-                  <Text className="text-sm font-bold text-black">
-                    {choice.label}
-                  </Text>
-                </Pressable>
-              )
-            })}
-          </View>
-          {palettes.length > 0 && (
             <View
-              accessibilityLabel={DRESSING_ROOM_COPY.palette(
+              accessibilityLabel={DRESSING_ROOM_COPY.choices(
                 choiceCopy.categories[category],
               )}
-              className="flex-row flex-wrap gap-2"
+              className="flex-row flex-wrap gap-3"
             >
-              {palettes.map((choice, index) => (
-                <Pressable
-                  key={choice.id}
-                  accessibilityRole="button"
-                  accessibilityLabel={choice.label}
-                  accessibilityState={{
-                    selected: isHeroes99ChoiceSelected(draft, choice),
-                    disabled: isSaving,
-                  }}
-                  disabled={isSaving}
-                  onPress={() =>
-                    actor.send({ type: "AVATAR.CHANGE", change: choice.change })
-                  }
-                  className="size-12 items-center justify-center border-4 border-black"
-                  style={{
-                    backgroundColor: assets.palettes[paletteId]?.[index],
-                  }}
-                >
-                  {isHeroes99ChoiceSelected(draft, choice) && (
-                    <Text className="rounded-full bg-black px-1.5 font-black text-white">
-                      ✓
+              {choices[category].map((choice) => {
+                const index = assets.thumbnailIndexByChoiceId[choice.id]
+                return (
+                  <Pressable
+                    key={choice.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={choice.label}
+                    accessibilityState={{
+                      selected: isHeroes99ChoiceSelected(draft, choice),
+                      disabled: isSaving,
+                    }}
+                    disabled={isSaving}
+                    onPress={() =>
+                      actor.send({
+                        type: "AVATAR.CHANGE",
+                        change: choice.change,
+                      })
+                    }
+                    className={cx(
+                      "min-h-28 w-24 items-center justify-center border-4 border-black p-1",
+                      isHeroes99ChoiceSelected(draft, choice)
+                        ? "bg-mapache-vivid-primary-cyan"
+                        : "bg-white",
+                    )}
+                  >
+                    {assets.thumbnailAtlas && index !== undefined && (
+                      <View
+                        pointerEvents="none"
+                        className="relative h-20 w-16 overflow-hidden"
+                      >
+                        <Image
+                          alt=""
+                          aria-hidden
+                          source={assets.thumbnailAtlas}
+                          className="absolute"
+                          resizeMode="stretch"
+                          style={{
+                            width:
+                              HEROES99_THUMBNAIL.width *
+                              HEROES99_THUMBNAIL.columns,
+                            height:
+                              Math.ceil(
+                                Object.keys(assets.thumbnailIndexByChoiceId)
+                                  .length / HEROES99_THUMBNAIL.columns,
+                              ) * HEROES99_THUMBNAIL.height,
+                            left:
+                              -(index % HEROES99_THUMBNAIL.columns) *
+                              HEROES99_THUMBNAIL.width,
+                            top:
+                              -Math.floor(index / HEROES99_THUMBNAIL.columns) *
+                              HEROES99_THUMBNAIL.height,
+                          }}
+                        />
+                      </View>
+                    )}
+                    <Text className="text-sm font-bold text-black">
+                      {choice.label}
                     </Text>
-                  )}
-                </Pressable>
-              ))}
+                  </Pressable>
+                )
+              })}
             </View>
-          )}
+            {palettes.length > 0 && (
+              <View
+                accessibilityLabel={DRESSING_ROOM_COPY.palette(
+                  choiceCopy.categories[category],
+                )}
+                className="flex-row flex-wrap gap-2"
+              >
+                {palettes.map((choice, index) => (
+                  <Pressable
+                    key={choice.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={choice.label}
+                    accessibilityState={{
+                      selected: isHeroes99ChoiceSelected(draft, choice),
+                      disabled: isSaving,
+                    }}
+                    disabled={isSaving}
+                    onPress={() =>
+                      actor.send({
+                        type: "AVATAR.CHANGE",
+                        change: choice.change,
+                      })
+                    }
+                    className="size-12 items-center justify-center border-4 border-black"
+                    style={{
+                      backgroundColor: assets.palettes[paletteId]?.[index],
+                    }}
+                  >
+                    {isHeroes99ChoiceSelected(draft, choice) && (
+                      <Text className="rounded-full bg-black px-1.5 font-black text-white">
+                        ✓
+                      </Text>
+                    )}
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </ScrollView>
         </View>
-      </ScrollView>
+      </View>
       {state.context.hasEditFailure && (
         <Text
           accessibilityRole="alert"
@@ -247,17 +250,19 @@ export default function NativeDressingRoom({
           </Button>
         </View>
       )}
-      <View className="gap-4 px-3 pt-4 pb-6">
-        <View className="flex-row gap-4">
+      <View className="shrink-0 gap-2 px-3 pt-1 pb-4">
+        <View className="flex-row gap-2">
           <Button
+            size="compact"
             className="min-w-0 flex-1"
             variant="outline"
             disabled={isSaving}
-            onPress={() => actor.send({ type: "AVATAR.CANCEL" })}
+            onPress={() => actor.send({ type: "AVATAR.BACK_REQUESTED" })}
           >
-            <Text>{DRESSING_ROOM_COPY.cancel}</Text>
+            <Text>{DRESSING_ROOM_COPY.back}</Text>
           </Button>
           <Button
+            size="compact"
             className="min-w-0 flex-1"
             disabled={isSaving}
             accessibilityState={{ busy: isSaving }}
@@ -269,6 +274,7 @@ export default function NativeDressingRoom({
           </Button>
         </View>
         <Button
+          size="compact"
           variant="secondary"
           disabled={isSaving}
           onPress={() => onShare(draft)}

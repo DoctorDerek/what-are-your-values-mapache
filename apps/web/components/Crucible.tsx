@@ -490,7 +490,7 @@ export default function Crucible({
             </>
           )}
         </SeethingSwarmBattleStage>
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-60 flex h-max justify-center [overflow-anchor:none]">
+        <div className="pointer-events-none absolute inset-0 z-60 flex items-end justify-center p-2 [overflow-anchor:none]">
           <AchievementBanner
             achievements={achievements}
             isAcknowledgementPending={isAchievementAcknowledgementPending}

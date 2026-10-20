@@ -75,7 +75,10 @@ test("a player previews every appearance category and retains only saved choices
     page.getByRole("button", { name: "Skin 6", exact: true }),
   ).toHaveAttribute("aria-pressed", "true")
   await page.getByRole("button", { name: "Randomize", exact: true }).click()
-  await page.getByRole("button", { name: "Cancel", exact: true }).click()
+  await page.getByRole("button", { name: "Back", exact: true }).click()
+  await page
+    .getByRole("button", { name: "Discard changes", exact: true })
+    .click()
   await page
     .getByRole("button", { name: "Customize my card", exact: true })
     .click()

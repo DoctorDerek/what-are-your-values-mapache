@@ -72,7 +72,10 @@ test("a player previews and saves genuine GIF and PNG cards, then returns to an 
   await expect(
     page.getByRole("button", { name: "Skin 6", exact: true }),
   ).toHaveAttribute("aria-pressed", "true")
-  await page.getByRole("button", { name: "Cancel", exact: true }).click()
+  await page.getByRole("button", { name: "Back", exact: true }).click()
+  await page
+    .getByRole("button", { name: "Discard changes", exact: true })
+    .click()
   await page
     .getByRole("button", { name: "Customize my card", exact: true })
     .click()

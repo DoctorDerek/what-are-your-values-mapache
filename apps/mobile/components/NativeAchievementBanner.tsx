@@ -4,7 +4,7 @@ import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnap
 import { useActorRef } from "@xstate/react"
 import { cx } from "classix"
 import { useCallback, useEffect } from "react"
-import { AppState, View } from "react-native"
+import { AppState, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import NativeAchievementToast from "@/components/NativeAchievementToast"
 
@@ -62,6 +62,27 @@ export default function NativeAchievementBanner({
     state.context.interactions.length > 0
   if (state.context.visible.length === 0) return null
 
+  const cards = state.context.visible.map((achievement) => (
+    <NativeAchievementToast
+      key={achievement.id}
+      achievement={achievement}
+      isPaused={isPaused}
+      isDismissalPending={
+        isAcknowledgementPending ||
+        state.context.requestedIds.includes(achievement.id)
+      }
+      shouldReduceMotion={shouldReduceMotion}
+      onPresented={handlePresented}
+      onInteraction={(kind, isActive) =>
+        send({
+          type: "NOTIFICATION.INTERACTION",
+          interaction: { achievementId: achievement.id, kind },
+          isActive,
+        })
+      }
+    />
+  ))
+
   return (
     <View
       pointerEvents="box-none"
@@ -69,7 +90,7 @@ export default function NativeAchievementBanner({
       className={cx(
         "z-50 items-center gap-2",
         placement === "inline" ? "relative w-full" : "absolute right-3 left-3",
-        placement === "battle" && "top-0",
+        placement === "battle" && "top-0 bottom-2 justify-end",
       )}
       style={
         placement === "screen"
@@ -77,26 +98,17 @@ export default function NativeAchievementBanner({
           : undefined
       }
     >
-      {state.context.visible.map((achievement) => (
-        <NativeAchievementToast
-          key={achievement.id}
-          achievement={achievement}
-          isPaused={isPaused}
-          isDismissalPending={
-            isAcknowledgementPending ||
-            state.context.requestedIds.includes(achievement.id)
-          }
-          shouldReduceMotion={shouldReduceMotion}
-          onPresented={handlePresented}
-          onInteraction={(kind, isActive) =>
-            send({
-              type: "NOTIFICATION.INTERACTION",
-              interaction: { achievementId: achievement.id, kind },
-              isActive,
-            })
-          }
-        />
-      ))}
+      {placement === "battle" ? (
+        <ScrollView
+          pointerEvents="box-none"
+          className="max-h-full w-full grow-0"
+          contentContainerClassName="items-center gap-2 p-1"
+        >
+          {cards}
+        </ScrollView>
+      ) : (
+        cards
+      )}
     </View>
   )
 }
