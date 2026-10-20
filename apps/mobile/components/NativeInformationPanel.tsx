@@ -13,7 +13,7 @@ type NativeInformationPanelFrameProps = Readonly<{
   isPrimaryActionPending?: boolean
   accessibleCloseLabel?: string
   modal?: boolean
-  presentation?: "standard" | "introduction"
+  presentation?: "standard" | "introduction" | "reference"
   titleContent?: ReactNode
   titleDecoration?: ReactNode
   decoration?: ReactNode
@@ -37,13 +37,14 @@ function NativeInformationPanelFrame({
   afterActions,
 }: NativeInformationPanelFrameProps) {
   const isIntroduction = presentation === "introduction"
+  const isReference = presentation === "reference"
   return (
     <MapacheScreen
       accessibilityLabel={modal ? title : undefined}
       accessibilityViewIsModal={modal || undefined}
       role={modal ? "dialog" : undefined}
     >
-      <View className={cx("flex-1", !isIntroduction && "p-5")}>
+      <View className={cx("flex-1", !isIntroduction && (isReference ? "p-3" : "p-5"))}>
         <View
           className={cx(
             "relative w-full flex-1 bg-white",
@@ -58,7 +59,7 @@ function NativeInformationPanelFrame({
               "relative z-20 border-black",
               isIntroduction
                 ? "min-h-24 justify-center border-b-6 px-4 py-5 xl:min-h-32 xl:px-8 xl:py-6"
-                : "border-b-4 p-5",
+                : isReference ? "border-b-4 px-4 py-5" : "border-b-4 p-5",
             )}
           >
             {titleDecoration}
@@ -68,7 +69,9 @@ function NativeInformationPanelFrame({
                 "relative z-20 text-center font-black",
                 isIntroduction
                   ? "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-arrival-title text-mapache-vivid-primary-cyan text-[36.4px] leading-[35px] tracking-normal xl:text-[62.4px] xl:leading-[60px]"
-                  : "text-mapache-vivid-primary-raspberry text-4xl tracking-tight uppercase",
+                  : isReference
+                    ? "text-mapache-vivid-primary-cyan text-2xl uppercase"
+                    : "text-mapache-vivid-primary-raspberry text-4xl tracking-tight uppercase",
                 accessibleCloseLabel && "pr-14",
               )}
               {...(isIntroduction && {
@@ -98,7 +101,11 @@ function NativeInformationPanelFrame({
               isIntroduction && "mx-auto w-full max-w-4xl",
             )}
             contentContainerClassName={
-              isIntroduction ? "gap-4 px-5 py-5 xl:px-10 xl:py-7" : "gap-4 p-5"
+              isIntroduction
+                ? "gap-4 px-5 py-5 xl:px-10 xl:py-7"
+                : isReference
+                  ? "gap-4 px-4 py-4"
+                  : "gap-4 p-5"
             }
           >
             {children}
@@ -107,7 +114,11 @@ function NativeInformationPanelFrame({
           <View
             className={cx(
               "relative z-20 border-black",
-              isIntroduction ? "border-t-6" : "border-t-4 p-5",
+              isIntroduction
+                ? "border-t-6"
+                : isReference
+                  ? "border-t-4 px-4 pt-3 pb-5"
+                  : "border-t-4 p-5",
             )}
           >
             <View
@@ -118,7 +129,7 @@ function NativeInformationPanelFrame({
             >
               {beforePrimaryAction}
               <Button
-                size="large"
+                size={isReference ? "compact" : "large"}
                 onPress={onPrimaryAction}
                 disabled={isPrimaryActionPending}
                 accessibilityState={{
@@ -129,6 +140,9 @@ function NativeInformationPanelFrame({
                 <Text
                   {...(isIntroduction && {
                     className: "text-3xl leading-none font-black uppercase",
+                  })}
+                  {...(isReference && {
+                    className: "text-center text-xl font-black text-black uppercase",
                   })}
                 >
                   {primaryActionLabel}
