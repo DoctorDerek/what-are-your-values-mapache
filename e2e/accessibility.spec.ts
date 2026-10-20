@@ -209,6 +209,7 @@ test("overflowing value cards remain keyboard-readable beside achievement feedba
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 600 })
+  await page.emulateMedia({ reducedMotion: "reduce" })
   await startAtHub(page)
   await page.getByRole("button", { name: "Battle", exact: true }).click()
   const battle = page.getByRole("main", { name: "Value battle" })
