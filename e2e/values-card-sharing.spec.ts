@@ -3,6 +3,63 @@ import { expect } from "@playwright/test"
 import sharp from "sharp"
 import { test } from "./fixtures"
 
+for (const copy of [
+  { route: "/", start: "Start", title: "Share my values card", back: "Back", save: "Save GIF", share: "Share GIF" },
+  { route: "/que-valoras-en-la-vida", start: "Empezar", title: "Compartir mi tarjeta de valores", back: "Volver", save: "Guardar GIF", share: "Compartir GIF" },
+]) {
+  for (const viewport of [
+    { width: 320, height: 540, textScale: 1 },
+    { width: 1440, height: 900, textScale: 1 },
+    { width: 320, height: 540, textScale: 2 },
+  ]) {
+    test(`${copy.title} keeps its preview and lower actions usable at ${viewport.width}px and ${viewport.textScale}x text`, async ({ page }, testInfo) => {
+      await page.setViewportSize(viewport)
+      await page.emulateMedia({ reducedMotion: "reduce" })
+      await page.addInitScript(() => {
+        Object.defineProperty(navigator, "canShare", { configurable: true, value: () => true })
+        Object.defineProperty(navigator, "share", { configurable: true, value: async () => undefined })
+      })
+      await page.goto(copy.route)
+      await page.getByRole("button", { name: copy.start, exact: true }).click()
+      await page.getByRole("button", { name: copy.title, exact: true }).click()
+      const dialog = page.getByRole("dialog", { name: copy.title })
+      const save = dialog.getByRole("button", { name: copy.save, exact: true })
+      await expect(save).toBeEnabled({ timeout: 30_000 })
+      if (viewport.textScale === 2)
+        await page.addStyleTag({ content: "html { font-size: 200%; }" })
+      const back = dialog.getByRole("button", { name: copy.back, exact: true })
+      if (viewport.textScale === 1) {
+        await expect(dialog.getByRole("img")).toBeInViewport({ ratio: 1 })
+        await expect(back).toBeInViewport({ ratio: 1 })
+        const backBounds = await back.boundingBox()
+        const saveBounds = await save.boundingBox()
+        expect(backBounds!.x).toBeLessThan(saveBounds!.x)
+        expect(backBounds!.y).toBeCloseTo(saveBounds!.y, 0)
+      }
+      const actions = [
+        ...await dialog.getByRole("group").getByRole("button").all(),
+        ...[copy.back, copy.save, copy.share].map(name => dialog.getByRole("button", { name, exact: true })),
+      ]
+      for (const action of actions) {
+        if (viewport.textScale === 2) await action.scrollIntoViewIfNeeded()
+        await expect(action).toBeInViewport({ ratio: 1 })
+        await action.click({ trial: true })
+        expect(await action.evaluate((element) => {
+          const bounds = element.getBoundingClientRect()
+          const range = document.createRange()
+          range.selectNodeContents(element)
+          const text = range.getBoundingClientRect()
+          return text.left >= bounds.left && text.right <= bounds.right && text.top >= bounds.top && text.bottom <= bounds.bottom && bounds.height >= 44
+        })).toBe(true)
+      }
+      expect(await dialog.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+      await page.screenshot({ path: testInfo.outputPath("compact-share.png") })
+      await back.click()
+      await expect(dialog).not.toBeVisible()
+    })
+  }
+}
+
 test("a player previews and saves genuine GIF and PNG cards, then returns to an unchanged appearance draft", async ({
   page,
 }, testInfo) => {
