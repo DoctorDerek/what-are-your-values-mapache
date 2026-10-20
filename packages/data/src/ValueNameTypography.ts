@@ -5,7 +5,7 @@ import {
   type LocalizedValueCopy,
 } from "./Value"
 
-const BATTLE_VALUE_WORD_BREAKS: ReadonlyMap<string, string> = new Map([
+const VALUE_NAME_WORD_BREAKS: ReadonlyMap<string, string> = new Map([
   ["Acceptance", "Accep\u00adtance"],
   ["Achievement", "Achieve\u00adment"],
   ["Adventure", "Adven\u00adture"],
@@ -39,7 +39,7 @@ const BATTLE_VALUE_WORD_BREAKS: ReadonlyMap<string, string> = new Map([
   ["Spirituality", "Spir\u00aditual\u00adity"],
 ])
 
-export function getBattleValueDisplayName(
+export function getWrappableValueDisplayName(
   value: ActiveValueDefinition,
   translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>,
   languageTag = "en-US",
@@ -48,7 +48,7 @@ export function getBattleValueDisplayName(
   return value.kind === "canonical" && languageTag.split("-")[0] === "en"
     ? name.replace(
         /[A-Za-z]+/g,
-        (word) => BATTLE_VALUE_WORD_BREAKS.get(word) ?? word,
+        (word) => VALUE_NAME_WORD_BREAKS.get(word) ?? word,
       )
     : name
 }
