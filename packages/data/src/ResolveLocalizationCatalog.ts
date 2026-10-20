@@ -17,6 +17,7 @@ import {
 } from "./LocalizationRecovery"
 import { resolveLocalizedValues } from "./LocalizedValues"
 import { resolveLocalizedResource } from "./ResolveLocalizedResource"
+import { VALUES_CARD_COPY } from "./ValuesCardCopy"
 
 export function resolveLocalizationCatalog(
   locale: string,
@@ -96,6 +97,18 @@ export function resolveLocalizationCatalog(
     formatterSamples: INTERFACE_FORMATTER_SAMPLES,
   })
   issues.push(...interfaceCopy.issues)
+  const formatLabel = (key: "gif" | "png") => {
+    const resolution = resolveLocalizedResource({
+      locale,
+      key: `card.${key}`,
+      reference: VALUES_CARD_COPY[key],
+      selected: field(input, "card", key),
+      english: field(englishInput, "card", key),
+      formatterSamples: {},
+    })
+    issues.push(...resolution.issues)
+    return resolution.value
+  }
   const catalog: LocalizationCatalog = Object.freeze({
     interfaceCopy: interfaceCopy.value,
     metadata: Object.freeze({
@@ -153,8 +166,8 @@ export function resolveLocalizationCatalog(
     }),
     card: Object.freeze({
       title: text("card", "title", emergency.shareCard),
-      gif: text("card", "gif", "GIF"),
-      png: text("card", "png", "PNG"),
+      gif: formatLabel("gif"),
+      png: formatLabel("png"),
       format: text("card", "format", emergency.imageFormat),
       includeHero: text("card", "includeHero", emergency.includeHero),
       back: text("card", "back", emergency.back),

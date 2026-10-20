@@ -2,8 +2,8 @@ import type { ValuesCardFormat } from "./ValuesCard"
 
 export const VALUES_CARD_COPY = Object.freeze({
   title: "Share my values card",
-  gif: "GIF · Animated",
-  png: "PNG · Still",
+  gif: { name: "GIF", description: "Animated" },
+  png: { name: "PNG", description: "Still" },
   format: "Image format",
   includeHero: "Include my hero",
   back: "Back",
