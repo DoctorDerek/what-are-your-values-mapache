@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   preview:
-    uses: DoctorDerek/DoctorDerekCICD/.github/workflows/playwright.yml@93e29ba0fcf1d35d8ff0040002816c36d763d966
+    uses: DoctorDerek/DoctorDerekCICD/.github/workflows/playwright.yml@0a9f72145cd83a3ad0827b84d95787fcb57e531f
     with:
       trusted-oidc: true
-      playwright-command: PLAYWRIGHT_VERCEL_TRUSTED_OIDC=true pnpm exec playwright test --trace off

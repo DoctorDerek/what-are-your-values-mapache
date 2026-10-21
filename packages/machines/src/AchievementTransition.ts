@@ -108,7 +108,6 @@ function getNewlySatisfiedAchievements({
       priorState,
       priorProfile,
       resultingProfile,
-      event,
       lifetimeBattleCount,
       isNewBattle,
       priorWinnerLevel,
@@ -123,7 +122,6 @@ function isAchievementSatisfied({
   priorState,
   priorProfile,
   resultingProfile,
-  event,
   lifetimeBattleCount,
   isNewBattle,
   priorWinnerLevel,
@@ -134,7 +132,6 @@ function isAchievementSatisfied({
   readonly priorState: AchievementState
   readonly priorProfile: BattleProfile
   readonly resultingProfile: BattleProfile
-  readonly event: BattleChoiceAchievementEvent
   readonly lifetimeBattleCount: number
   readonly isNewBattle: boolean
   readonly priorWinnerLevel: number

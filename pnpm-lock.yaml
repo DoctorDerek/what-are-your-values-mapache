@@ -48,6 +48,9 @@ importers:
       '@zip.js/zip.js':
         specifier: ^2
         version: 2.9.0
+      doctorderek-cicd:
+        specifier: git+https://github.com/DoctorDerek/DoctorDerekCICD.git#0a9f72145cd83a3ad0827b84d95787fcb57e531f
+        version: https://codeload.github.com/DoctorDerek/DoctorDerekCICD/tar.gz/0a9f72145cd83a3ad0827b84d95787fcb57e531f(@playwright/test@1.61.1)
       eslint:
         specifier: ^9
         version: 9.39.4(jiti@2.7.0)(supports-color@8.1.1)
@@ -4148,6 +4151,13 @@ packages:
 
   dnssd-advertise@1.1.6:
     resolution: {integrity: sha512-Ndrrf6BMPalkQPd/zubL+4YghH2J9NspapQ09uDXwYbvOPkP0oaqf5CkcwJ0b50kS2O3ul6yVu+jz+RY62Cejg==}
+
+  doctorderek-cicd@https://codeload.github.com/DoctorDerek/DoctorDerekCICD/tar.gz/0a9f72145cd83a3ad0827b84d95787fcb57e531f:
+    resolution: {gitHosted: true, integrity: sha512-vGpwNX3su2naL5OXLVKdou8HAyOlzsMnAS0cEQ+Ehgr+rUTbudBs1xdB5Z90JKZJZSRNs+a6TjTAOT+iKq//ug==, tarball: https://codeload.github.com/DoctorDerek/DoctorDerekCICD/tar.gz/0a9f72145cd83a3ad0827b84d95787fcb57e531f}
+    version: 0.0.0
+    engines: {node: 24.x}
+    peerDependencies:
+      '@playwright/test': ^1
 
   doctrine@2.1.0:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
@@ -11336,6 +11346,11 @@ snapshots:
   diff-sequences@29.6.3: {}
 
   dnssd-advertise@1.1.6: {}
+
+  doctorderek-cicd@https://codeload.github.com/DoctorDerek/DoctorDerekCICD/tar.gz/0a9f72145cd83a3ad0827b84d95787fcb57e531f(@playwright/test@1.61.1):
+    dependencies:
+      '@playwright/test': 1.61.1
+      jiti: 2.7.0
 
   doctrine@2.1.0:
     dependencies:

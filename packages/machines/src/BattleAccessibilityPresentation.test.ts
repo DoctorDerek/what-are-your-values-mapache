@@ -1,4 +1,5 @@
 import type { ActiveDeck } from "@game/data/src/ActiveDeck"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
   createCanonicalValueId,
   createCustomValueId,
@@ -19,6 +20,7 @@ import {
   createBattleCycleCandidate,
   createInitialBattleCycle,
 } from "./BattleCycle"
+import { getBattleRewardPresentation } from "./BattleRewardPresentation"
 import { projectBattlePair } from "./BattleScheduler"
 
 function getActiveValue(activeDeck: ActiveDeck, valueId: ValueId) {
@@ -167,6 +169,20 @@ describe("Battle accessibility presentation", () => {
     })
     const nextComparison = `${getActiveValueName(resultingBattleCycle.activeDeck, resultingPair[0])} or ${getActiveValueName(resultingBattleCycle.activeDeck, resultingPair[1])}`
 
+    for (const [locale, label] of [
+      ["en", "+4 XP · Level 3"],
+      ["es-MX", "+4 XP · Nivel 3"],
+    ] as const) {
+      expect(
+        getBattleRewardPresentation({
+          pendingAction,
+          activeDeck: resultingBattleCycle.activeDeck,
+          progressById: resultingBattleCycle.progressById,
+          localization: getLocaleCatalog(locale),
+        }),
+      ).toEqual({ valueId: winnerId, label })
+    }
+
     expect(
       getBattleAccessibilityAnnouncement({
         pendingAction,
@@ -234,6 +250,16 @@ describe("Battle accessibility presentation", () => {
       action: { kind: "undo" },
       progressById: initialBattleCycle.progressById,
     })
+
+    for (const pendingAction of [null, selection, undo]) {
+      expect(
+        getBattleRewardPresentation({
+          pendingAction,
+          activeDeck: initialBattleCycle.activeDeck,
+          progressById: initialBattleCycle.progressById,
+        }),
+      ).toBeNull()
+    }
 
     expect(
       getBattleAccessibilityAnnouncement({

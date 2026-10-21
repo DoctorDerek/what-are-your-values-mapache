@@ -128,7 +128,6 @@ export const INTERFACE_FORMATTER_SAMPLES: Readonly<
   "interfaceCopy.progression.selection": [["Fun", "4", "Fun or Health"]],
   "interfaceCopy.progression.undo": [["Fun", "4", "Fun or Health"]],
   "interfaceCopy.progression.redo": [["Fun", "4", "Fun or Health"]],
-  "interfaceCopy.progression.levelProgress": [["1", "20", "2"]],
   "interfaceCopy.screen.removeValue": [["Craftsmanship"]],
   "interfaceCopy.rank.rank": [[1], [103]],
   "interfaceCopy.rank.medal": [

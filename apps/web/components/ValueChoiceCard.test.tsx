@@ -142,7 +142,7 @@ describe("animal card attention", () => {
         <ValueChoiceCard
           position={position}
           value={value}
-          level={4}
+          level={3}
           winnerId={value.id}
           isEnabled={false}
           isAnimating
@@ -151,9 +151,7 @@ describe("animal card attention", () => {
           onFocus={vi.fn()}
           reward={{
             valueId: value.id,
-            label: "+1 XP · Level 4",
-            progressLabel: "1/4 XP toward Level 5",
-            progressPercentage: 25,
+            label: "+4 XP · Level 3",
           }}
           combatant={(isAttended, reward) => (
             <span>
@@ -163,12 +161,13 @@ describe("animal card attention", () => {
           )}
         />,
       )
-      const choice = screen.getByRole("button", { name: /^Choose .*Level 4/ })
-      const reward = screen.getByText("+1 XP · Level 4")
+      const choice = screen.getByRole("button", { name: /^Choose .*Level 3/ })
+      const reward = screen.getByText("+4 XP · Level 3")
       expect(choice).toBeDisabled()
       expect(screen.getAllByRole("button")).toHaveLength(1)
       expect(reward).toBeVisible()
-      expect(reward).toHaveAttribute("title", "1/4 XP toward Level 5")
+      expect(reward).toHaveTextContent(/^\+4 XP · Level 3$/)
+      expect(reward).not.toHaveAttribute("title")
       fireEvent.pointerEnter(reward, { pointerType: "mouse" })
       fireEvent.focus(choice)
       fireEvent.pointerCancel(reward)

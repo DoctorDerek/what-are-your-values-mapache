@@ -148,7 +148,6 @@ export default function NativeResults({
   openedAt = null,
   runtimeClipCatalog,
   shouldReduceMotion,
-  isMenuOpen,
   notifications,
   onOpenMenu,
   onSeeValues,
@@ -158,7 +157,6 @@ export default function NativeResults({
   openedAt?: string | null
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
   shouldReduceMotion: boolean
-  isMenuOpen: boolean
   notifications?: ReactNode
   onOpenMenu: () => void
   onSeeValues: () => void

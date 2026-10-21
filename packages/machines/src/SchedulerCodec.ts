@@ -5,10 +5,7 @@ import {
   type ValueId,
 } from "@game/data/src/Value"
 import type { BattleSchedulerRestorePoint } from "./BattleScheduler"
-import {
-  createDeckReconfigurationRestorePoint,
-  type DeckReconfigurationRestorePoint,
-} from "./DeckReconfigurationScheduler"
+import { createDeckReconfigurationRestorePoint } from "./DeckReconfigurationScheduler"
 import { createSchedulerRestorePoint } from "./PairScheduler"
 import {
   readActiveValueId,

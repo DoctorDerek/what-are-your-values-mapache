@@ -59,13 +59,13 @@ test("the web runtime follows its deployment offline policy", async ({
   browserName,
   context,
   page,
-  isProtectedVercelPreview,
 }, testInfo) => {
   if (browserName === "chromium")
     await page.route("**/*", (route) => route.continue())
   await page.emulateMedia({ reducedMotion: "reduce" })
   const registrationIsExpected =
-    Boolean(playwrightTestBaseUrl) && !isProtectedVercelPreview
+    Boolean(playwrightTestBaseUrl) &&
+    process.env.PLAYWRIGHT_VERCEL_TRUSTED_OIDC !== "true"
   const legacyAnimalPath =
     registrationIsExpected && browserName !== "webkit"
       ? await seedPreviouslyCachedAnimalArt(page)

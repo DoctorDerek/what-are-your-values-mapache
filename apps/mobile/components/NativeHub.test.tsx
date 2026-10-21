@@ -27,7 +27,6 @@ import {
   render,
   screen,
   userEvent,
-  within,
 } from "@testing-library/react-native"
 import NativeHub from "@/components/NativeHub"
 import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
