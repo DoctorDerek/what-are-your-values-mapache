@@ -1,5 +1,4 @@
 import type { ActiveDeck } from "@game/data/src/ActiveDeck"
-import type { ValueId } from "@game/data/src/Value"
 import {
   BATTLE_DELTA_VERSION,
   createBattleDelta,
