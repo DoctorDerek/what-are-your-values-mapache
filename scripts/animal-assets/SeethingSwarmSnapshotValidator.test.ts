@@ -312,21 +312,24 @@ describe("SeethingSwarm snapshot validator", () => {
   it.each([
     ["width", 3, 2],
     ["height", 4, 3],
-  ])("rejects an invalid character PNG %s", async (dimension, width, height) => {
-    const fixture = await createSyntheticSnapshot()
-    await writeRelativeFile(
-      fixture.sourceRoot,
-      animationPaths.character,
-      createPngHeader(width, height),
-    )
-
-    await expect(
-      validateSeethingSwarmSnapshotAgainstExpectation(
+  ])(
+    "rejects an invalid character PNG %s",
+    async (dimension, width, height) => {
+      const fixture = await createSyntheticSnapshot()
+      await writeRelativeFile(
         fixture.sourceRoot,
-        fixture.expectation,
-      ),
-    ).rejects.toThrow(`Invalid SeethingSwarm PNG ${dimension}`)
-  })
+        animationPaths.character,
+        createPngHeader(width, height),
+      )
+
+      await expect(
+        validateSeethingSwarmSnapshotAgainstExpectation(
+          fixture.sourceRoot,
+          fixture.expectation,
+        ),
+      ).rejects.toThrow(`Invalid SeethingSwarm PNG ${dimension}`)
+    },
+  )
 
   it("keeps excluded human and weapon records outside animal scope", async () => {
     const fixture = await createSyntheticSnapshot()

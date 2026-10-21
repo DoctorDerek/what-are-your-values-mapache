@@ -1,8 +1,8 @@
-import { defineConfig } from "eslint/config"
 import gitignore from "eslint-config-flat-gitignore"
 import nextConfig from "eslint-config-next"
 import nextTypeScript from "eslint-config-next/typescript"
 import eslintConfigPrettier from "eslint-config-prettier/flat"
+import { defineConfig } from "eslint/config"
 import "eslint-plugin-only-warn"
 
 const eslintConfig = defineConfig([

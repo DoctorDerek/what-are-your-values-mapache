@@ -69,18 +69,21 @@ describe("repository ESLint coverage", () => {
     "import { unused } from './fixture'; export const retained = 2",
     "export function value(unused: number) { return 2 }",
     "export function value(_used: number) { return _used }",
-  ])("reports dead bindings or misleading ignored names: %s", async (source) => {
-    const results = await eslint.lintText(source, {
-      filePath: "packages/machines/src/lint-probe.ts",
-    })
+  ])(
+    "reports dead bindings or misleading ignored names: %s",
+    async (source) => {
+      const results = await eslint.lintText(source, {
+        filePath: "packages/machines/src/lint-probe.ts",
+      })
 
-    expect(results[0]?.messages).toEqual([
-      expect.objectContaining({
-        ruleId: "@typescript-eslint/no-unused-vars",
-        severity: 1,
-      }),
-    ])
-  })
+      expect(results[0]?.messages).toEqual([
+        expect.objectContaining({
+          ruleId: "@typescript-eslint/no-unused-vars",
+          severity: 1,
+        }),
+      ])
+    },
+  )
 
   it.each([
     "@game/data/assets/controller-prompts/ControllerPrompts.png",
@@ -105,7 +108,9 @@ describe("repository ESLint coverage", () => {
     })
 
     expect(results[0]?.messages).toEqual([
-      expect.objectContaining({ ruleId: "@typescript-eslint/no-require-imports" }),
+      expect.objectContaining({
+        ruleId: "@typescript-eslint/no-require-imports",
+      }),
     ])
   })
 
@@ -116,12 +121,15 @@ describe("repository ESLint coverage", () => {
     )
 
     expect(results[0]?.messages).toEqual([
-      expect.objectContaining({ ruleId: "@typescript-eslint/no-require-imports" }),
+      expect.objectContaining({
+        ruleId: "@typescript-eslint/no-require-imports",
+      }),
     ])
   })
 
   it("preserves the ambient GIF declaration only in its owning module", async () => {
-    const source = '/// <reference path="./gifenc.d.ts" />\nexport const value = 1'
+    const source =
+      '/// <reference path="./gifenc.d.ts" />\nexport const value = 1'
     const allowed = await eslint.lintText(source, {
       filePath: "packages/utils/src/EncodeGif.ts",
     })
@@ -131,7 +139,9 @@ describe("repository ESLint coverage", () => {
 
     expect(allowed[0]?.messages).toEqual([])
     expect(rejected[0]?.messages).toEqual([
-      expect.objectContaining({ ruleId: "@typescript-eslint/triple-slash-reference" }),
+      expect.objectContaining({
+        ruleId: "@typescript-eslint/triple-slash-reference",
+      }),
     ])
   })
 
