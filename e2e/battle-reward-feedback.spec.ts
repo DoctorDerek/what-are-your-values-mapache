@@ -38,12 +38,19 @@ for (const language of languages) {
     }, testInfo) => {
       await page.setViewportSize(viewport)
       await page.goto(language.path)
-      await page.getByRole("button", { name: language.start, exact: true }).click()
-      await page.getByRole("button", { name: language.battle, exact: true }).click()
+      await page
+        .getByRole("button", { name: language.start, exact: true })
+        .click()
+      await page
+        .getByRole("button", { name: language.battle, exact: true })
+        .click()
       const battle = page.getByRole("main", { name: language.screen })
       const actions = battle.getByRole("navigation")
       const initialActions = await actions.boundingBox()
-      await battle.getByRole("button", { name: language.choose }).first().click()
+      await battle
+        .getByRole("button", { name: language.choose })
+        .first()
+        .click()
       const reward = battle.getByText(language.reward, { exact: true })
       await expect(reward).toBeVisible()
       await expect(reward).toBeInViewport({ ratio: 1 })
@@ -59,9 +66,9 @@ for (const language of languages) {
             Number.parseFloat(style.borderTopWidth) +
             Number.parseFloat(style.borderBottomWidth),
           lineCount: textRange.getClientRects().length,
-          winningSide: badge.closest("[data-battle-arena-side]")?.getAttribute(
-            "data-battle-arena-side",
-          ),
+          winningSide: badge
+            .closest("[data-battle-arena-side]")
+            ?.getAttribute("data-battle-arena-side"),
         }
       })
       expect(composition.winningSide).toBe("first")
@@ -69,7 +76,9 @@ for (const language of languages) {
       expect(composition.height).toBeCloseTo(composition.contentHeight, 1)
       expect(await actions.boundingBox()).toEqual(initialActions)
       await page.screenshot({ path: testInfo.outputPath("battle-reward.png") })
-      await actions.getByRole("button", { name: language.stop, exact: true }).click()
+      await actions
+        .getByRole("button", { name: language.stop, exact: true })
+        .click()
       await expect(
         page.getByRole("heading", { name: language.results, exact: true }),
       ).toBeVisible()
