@@ -56,7 +56,7 @@ function NativeSettingsRadioGroup<TValue extends string>({
       >
         {getWrappableSettingsText(heading, localizedCopy.metadata.languageTag)}
       </Text>
-      <View className="gap-4 xl:flex-row">
+      <View className="gap-4 xl:flex-row xl:flex-wrap">
         {options.map((option) => {
           const isSelected = option.value === selectedValue
 
@@ -70,7 +70,7 @@ function NativeSettingsRadioGroup<TValue extends string>({
               disabled={disabled}
               onPress={() => onValueChange(option.value)}
               className={cx(
-                "min-w-0 flex-row items-start gap-3 border-4 border-black p-3 shadow-[5px_5px_0px_0px_#000000] xl:flex-1 xl:gap-4 xl:p-4",
+                "xl:basis-readable-setting min-w-0 flex-row items-start gap-3 border-4 border-black p-3 shadow-[5px_5px_0px_0px_#000000] xl:shrink xl:grow xl:gap-4 xl:p-4",
                 isSelected ? "bg-mapache-vivid-primary-cyan" : "bg-white",
                 disabled && "opacity-50",
               )}
