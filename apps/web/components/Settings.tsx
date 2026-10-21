@@ -9,7 +9,10 @@ import {
   createPlayerSettings,
   type PlayerSettings,
 } from "@game/machines/src/PlayerSettings"
-import { SETTINGS_PLAYER_DATA_RESET_KINDS } from "@game/machines/src/PlayerSettingsPresentation"
+import {
+  getWrappableSettingsText,
+  SETTINGS_PLAYER_DATA_RESET_KINDS,
+} from "@game/machines/src/PlayerSettingsPresentation"
 import { cx } from "classix"
 import { useEffect, useRef } from "react"
 import LanguageSelector from "@/components/LanguageSelector"
@@ -44,12 +47,15 @@ function SettingsRadioGroup<TValue extends string>({
   return (
     <fieldset
       disabled={disabled}
-      className="text-mapache-vivid-dark border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] xl:p-8"
+      className="text-mapache-vivid-dark w-full min-w-0 border-4 border-black bg-white p-[12px] shadow-[8px_8px_0px_0px_#000000] xl:p-8"
     >
-      <legend className="w-full border-b-4 border-black bg-white px-2 pb-4 text-3xl font-black uppercase xl:text-4xl">
-        {heading}
+      <legend
+        aria-label={heading}
+        className="w-full max-w-full border-b-4 border-black bg-white pb-[12px] text-xl leading-tight font-black text-balance hyphens-manual xl:px-2 xl:pb-4 xl:text-4xl xl:uppercase"
+      >
+        {getWrappableSettingsText(heading, localizedCopy.metadata.languageTag)}
       </legend>
-      <div className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-3">
+      <div className="mt-[16px] grid grid-cols-1 gap-[16px] xl:mt-5 xl:grid-cols-3 xl:gap-4">
         {options.map((option) => {
           const isSelected = option.value === selectedValue
           const descriptionId = `${groupName}-${option.value}-description`
@@ -58,7 +64,7 @@ function SettingsRadioGroup<TValue extends string>({
             <label
               key={option.value}
               className={cx(
-                "flex min-w-0 cursor-pointer items-start gap-4 border-4 border-black p-4 shadow-[5px_5px_0px_0px_#000000]",
+                "flex min-w-0 cursor-pointer flex-wrap items-start gap-[12px] border-4 border-black p-[12px] shadow-[5px_5px_0px_0px_#000000] xl:gap-4 xl:p-4",
                 isSelected
                   ? "bg-mapache-vivid-primary-cyan text-black"
                   : "bg-white",
@@ -70,24 +76,31 @@ function SettingsRadioGroup<TValue extends string>({
                 name={groupName}
                 value={option.value}
                 checked={isSelected}
+                aria-label={option.label}
                 aria-describedby={descriptionId}
                 onChange={() => onValueChange(option.value)}
-                className="mt-1 size-6 shrink-0 accent-black"
+                className="mt-[3px] size-[24px] shrink-0 accent-black xl:mt-1 xl:size-6"
               />
               <span className="min-w-0 flex-1">
                 <span className="flex min-w-0 flex-wrap items-center gap-2">
-                  <span className="text-xl font-black [overflow-wrap:anywhere] uppercase">
-                    {option.label}
+                  <span className="text-xl font-black [overflow-wrap:anywhere] hyphens-auto xl:uppercase">
+                    {getWrappableSettingsText(
+                      option.label,
+                      localizedCopy.metadata.languageTag,
+                    )}
                   </span>
                   {isSelected ? (
-                    <span className="shrink-0 border-2 border-black bg-black px-2 py-1 text-sm font-black text-white uppercase">
+                    <span
+                      aria-hidden="true"
+                      className="hidden shrink-0 border-2 border-black bg-black px-2 py-1 text-sm font-black text-white uppercase xl:inline"
+                    >
                       {localizedCopy.interfaceCopy.screen.selected}
                     </span>
                   ) : null}
                 </span>
                 <span
                   id={descriptionId}
-                  className="mt-2 block text-base leading-relaxed font-bold [overflow-wrap:anywhere]"
+                  className="mt-2 block text-base leading-relaxed font-bold [overflow-wrap:anywhere] hyphens-auto"
                 >
                   {option.description}
                 </span>
@@ -174,21 +187,25 @@ export default function Settings({
 
   return (
     <MapacheScreen
-      spacing="standard-xl"
+      spacing="readable-xl"
       viewport="fixed"
       className="flex flex-col"
     >
-      <header className="mx-auto flex w-full max-w-5xl shrink-0 flex-col items-stretch gap-4 xl:flex-row xl:items-center xl:justify-between">
+      <header className="mx-auto flex w-full max-w-5xl shrink-0 flex-col items-stretch gap-[16px] xl:flex-row xl:items-center xl:justify-between xl:gap-4">
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="text-mapache-vivid-primary-cyan text-4xl font-black [overflow-wrap:anywhere] uppercase drop-shadow-[5px_5px_0px_#000000] outline-none xl:text-6xl"
+          aria-label={PLAYER_SETTINGS_COPY.title}
+          className="text-mapache-vivid-primary-cyan text-[2rem] leading-[1.15] font-black text-balance hyphens-manual drop-shadow-[5px_5px_0px_#000000] outline-none xl:text-6xl xl:uppercase"
         >
-          {PLAYER_SETTINGS_COPY.title}
+          {getWrappableSettingsText(
+            PLAYER_SETTINGS_COPY.title,
+            localizedCopy.metadata.languageTag,
+          )}
         </h1>
         <nav
           aria-label={localizedCopy.interfaceCopy.screen.settingsActions}
-          className="flex flex-wrap gap-3"
+          className="flex flex-wrap gap-[12px] xl:gap-3"
         >
           <Button
             type="button"
@@ -196,7 +213,8 @@ export default function Settings({
             disabled={isNavigationBlocked}
             onClick={onOpenMenu}
             wrap
-            className="flex-1"
+            typographyClassName="text-base xl:text-lg"
+            className="min-w-0 flex-1 max-xl:px-[8px] max-xl:py-[12px]"
           >
             {PRODUCT_MENU_COPY.openAction}
           </Button>
@@ -206,7 +224,8 @@ export default function Settings({
             disabled={isNavigationBlocked}
             onClick={onClose}
             wrap
-            className="flex-1"
+            typographyClassName="text-base xl:text-lg"
+            className="min-w-0 flex-1 max-xl:px-[8px] max-xl:py-[12px]"
           >
             {PLAYER_SETTINGS_COPY.closeAction}
           </Button>
@@ -215,7 +234,7 @@ export default function Settings({
 
       <div
         aria-busy={isBusy}
-        className="mx-auto mt-6 min-h-0 w-full max-w-5xl flex-1 overflow-y-auto overscroll-contain p-1 pr-3 pb-12"
+        className="mx-auto mt-[24px] min-h-0 w-full max-w-5xl flex-1 overflow-y-auto overscroll-contain p-[4px] pr-[12px] pb-[48px] xl:mt-6 xl:p-1 xl:pr-3 xl:pb-12"
       >
         <div className="flex flex-col gap-6">
           {activity ? (
@@ -258,17 +277,18 @@ export default function Settings({
             <>
               <section
                 aria-labelledby="settings-language-heading"
-                className="text-mapache-vivid-dark border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] xl:p-8"
+                className="text-mapache-vivid-dark w-full min-w-0 border-4 border-black bg-white p-[12px] shadow-[8px_8px_0px_0px_#000000] xl:p-8"
               >
                 <h2
                   id="settings-language-heading"
-                  className="border-b-4 border-black pb-4 text-3xl font-black uppercase xl:text-4xl"
+                  className="border-b-4 border-black pb-[12px] text-xl leading-tight font-black xl:pb-4 xl:text-4xl xl:uppercase"
                 >
                   {PLAYER_SETTINGS_COPY.languageHeading}
                 </h2>
                 <div className="mt-5">
                   <LanguageSelector
                     locale={settings.locale}
+                    labelPlacement="section"
                     disabled={isBusy}
                     onLocaleChange={(locale) =>
                       onUpdateSettings(
