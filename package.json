@@ -46,6 +46,7 @@
     "@vitejs/plugin-react": "^6",
     "@vitest/coverage-v8": "^4",
     "@zip.js/zip.js": "^2",
+    "doctorderek-cicd": "git+https://github.com/DoctorDerek/DoctorDerekCICD.git#0a9f72145cd83a3ad0827b84d95787fcb57e531f",
     "eslint": "^9",
     "eslint-config-flat-gitignore": "^2",
     "eslint-config-next": "^16",
