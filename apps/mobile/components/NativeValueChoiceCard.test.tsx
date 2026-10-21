@@ -122,7 +122,7 @@ describe("NativeValueChoiceCard", () => {
         <NativeValueChoiceCard
           position={position}
           value={selfAcceptance}
-          level={4}
+          level={3}
           controlHint={null}
           winnerId={selfAcceptance.id}
           isEnabled={false}
@@ -130,9 +130,7 @@ describe("NativeValueChoiceCard", () => {
           onActivate={onActivate}
           reward={{
             valueId: selfAcceptance.id,
-            label: "+1 XP · Level 4",
-            progressLabel: "1/4 XP toward Level 5",
-            progressPercentage: 25,
+            label: "+4 XP · Level 3",
           }}
           combatant={(isAttended, reward) => (
             <>
@@ -142,8 +140,8 @@ describe("NativeValueChoiceCard", () => {
           )}
         />,
       )
-      const choice = screen.getByRole("button", { name: /^Choose .*Level 4/ })
-      const reward = screen.getByText("+1 XP · Level 4", {
+      const choice = screen.getByRole("button", { name: /^Choose .*Level 3/ })
+      const reward = screen.getByText("+4 XP · Level 3", {
         includeHiddenElements: true,
       })
       expect(choice).toBeDisabled()
@@ -153,7 +151,7 @@ describe("NativeValueChoiceCard", () => {
       })
       expect(screen.getAllByRole("button")).toHaveLength(1)
       expect(reward).toBeOnTheScreen()
-      expect(screen.queryByText("+1 XP · Level 4")).toBeNull()
+      expect(screen.queryByText("+4 XP · Level 3")).toBeNull()
       await fireEvent(choice, "focus")
       await fireEvent.press(reward)
       await fireEvent.press(choice)
