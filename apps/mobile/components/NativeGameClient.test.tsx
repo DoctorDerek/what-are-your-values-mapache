@@ -285,7 +285,14 @@ describe("NativeGameClient Menu navigation", () => {
 
     await openMenuDestination(user, "Settings")
     expect(await screen.findByText("Settings")).toBeOnTheScreen()
-    const controlHintsGroup = screen.getByLabelText("Control Hints")
+    const getControlHintsGroup = () => {
+      const group = screen.getAllByLabelText("Control Hints").find(
+        ({ props }) => props.accessibilityRole === "radiogroup",
+      )
+      if (!group) throw new Error("The native Control Hints group is unavailable")
+      return group
+    }
+    const controlHintsGroup = getControlHintsGroup()
     expect(
       within(controlHintsGroup).getByRole("radio", { name: "Auto" }),
     ).toBeChecked()
@@ -294,7 +301,7 @@ describe("NativeGameClient Menu navigation", () => {
     )
     await waitFor(() => {
       expect(
-        within(screen.getByLabelText("Control Hints")).getByRole("radio", {
+        within(getControlHintsGroup()).getByRole("radio", {
           name: "Off",
         }),
       ).toBeChecked()
@@ -322,7 +329,7 @@ describe("NativeGameClient Menu navigation", () => {
 
     await openMenuDestination(user, "Settings")
     expect(
-      within(await screen.findByLabelText("Control Hints")).getByRole("radio", {
+      within(getControlHintsGroup()).getByRole("radio", {
         name: "Off",
       }),
     ).toBeChecked()

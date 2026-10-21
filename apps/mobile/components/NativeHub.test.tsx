@@ -188,8 +188,21 @@ describe("NativeHub", () => {
       screen.getByRole("header", { name: "¿Cuáles son tus valores, Mapache?" }),
     ).toBeOnTheScreen()
     expect(screen.getByText("Aceptación")).toBeOnTheScreen()
-    await fireEvent.press(screen.getByRole("button", { name: "Combatir" }))
-    expect(callbacks.onStartBattle).toHaveBeenCalledTimes(1)
+    const expectedActions = [
+      ["Menú", callbacks.onOpenMenu],
+      ["Agregar valor", callbacks.onAddCustomValue],
+      ["Combatir", callbacks.onStartBattle],
+      ["Personalizar mi tarjeta", callbacks.onCustomize],
+      ["Compartir mi tarjeta de valores", callbacks.onShare],
+      ["Ver todos los valores", callbacks.onBrowseAllValues],
+    ] as const
+    const buttons = screen.getAllByRole("button")
+    expect(buttons).toHaveLength(expectedActions.length)
+    for (const [index, [label, callback]] of expectedActions.entries()) {
+      expect(buttons[index]).toHaveTextContent(label)
+      await fireEvent.press(screen.getByRole("button", { name: label }))
+      expect(callback).toHaveBeenCalledTimes(1)
+    }
     expect(screen.queryByText("Acceptance")).toBeNull()
   })
   it("admits attention after a completed press while retaining decoded calm art", async () => {

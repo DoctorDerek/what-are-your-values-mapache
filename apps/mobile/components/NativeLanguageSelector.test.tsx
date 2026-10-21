@@ -3,6 +3,23 @@ import { fireEvent, render, screen } from "@testing-library/react-native"
 import NativeLanguageSelector from "@/components/NativeLanguageSelector"
 
 describe("native language selection", () => {
+  it("keeps the picker labeled when its visible label belongs to the surrounding section", async () => {
+    const onLocaleChange = jest.fn()
+    await render(
+      <NativeLanguageSelector
+        locale="es-MX"
+        labelPlacement="section"
+        onLocaleChange={onLocaleChange}
+      />,
+    )
+    const language = screen.getByRole("button", { name: "Idioma" })
+    expect(language).toHaveAccessibilityValue({ text: "Español (México)" })
+    await fireEvent.press(language)
+    expect(screen.getByRole("radio", { name: "Español (México)" })).toBeChecked()
+    await fireEvent.press(screen.getByRole("button", { name: "Volver" }))
+    expect(onLocaleChange).not.toHaveBeenCalled()
+  })
+
   it("selects a supported language and closes the selection", async () => {
     const onLocaleChange = jest.fn()
     await render(
