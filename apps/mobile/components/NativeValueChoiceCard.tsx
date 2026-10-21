@@ -170,12 +170,6 @@ function NativeValueChoiceCard(
                   <Text className="text-center text-xs leading-4 font-black text-black xl:text-base">
                     {reward.label}
                   </Text>
-                  <View className="h-1 overflow-hidden bg-black/15">
-                    <View
-                      className="bg-mapache-vivid-primary-raspberry h-full"
-                      style={{ width: `${reward.progressPercentage}%` }}
-                    />
-                  </View>
                 </View>
               ) : null,
             )}
