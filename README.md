@@ -93,6 +93,18 @@ Recovery is not catalog acceptance. `LocalizationCatalogQuality.test.ts` checks 
 
 ## Verification
 
+`eslint.config.ts` applies Next’s TypeScript rules to authored `.ts`, `.tsx`, `.mts`, and `.cts` files across both apps, shared packages, scripts, and tests. Next/React rules remain active, Prettier owns formatting, and the existing `only-warn` policy keeps ordinary findings advisory. JavaScript tool configurations retain their existing rules.
+
+The shared quality workflow separately verifies that every tracked TypeScript file is either explicitly ignored or has enabled TypeScript rules. Missing configuration and zero-rule coverage fail that guard, even when `pnpm lint` exits successfully. This checks configuration coverage, not type-aware linting or runtime correctness; the existing typechecks and behavior tests still own those checks.
+
+Keep justified exceptions in ESLint config, not inline suppressions:
+
+- Explicitly unused `_` callback parameters and fields omitted before an object-rest spread are allowed. Unused locals/imports and ignored parameters that are actually used still produce diagnostics.
+- Native static `@game/data/assets/` PNG and Rive imports may use Metro’s literal `require()` form. Other module requires remain checked.
+- `EncodeGif.ts` may reference its local ambient `gifenc.d.ts` declaration so consuming app programs include those types without a runtime import.
+
+`eslint.config.test.ts` exercises the real configuration with accepted and rejected source examples, including native exception boundaries and all four TypeScript extensions. The shared repository owns the coverage guard; WAYVM does not maintain a duplicate scanner.
+
 ```powershell
 pnpm lint
 pnpm format
