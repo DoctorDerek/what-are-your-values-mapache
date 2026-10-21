@@ -170,7 +170,7 @@ describe("Battle accessibility presentation", () => {
     const nextComparison = `${getActiveValueName(resultingBattleCycle.activeDeck, resultingPair[0])} or ${getActiveValueName(resultingBattleCycle.activeDeck, resultingPair[1])}`
 
     for (const [locale, label] of [
-      ["en-US", "+4 XP · Level 3"],
+      ["en", "+4 XP · Level 3"],
       ["es-MX", "+4 XP · Nivel 3"],
     ] as const) {
       expect(
