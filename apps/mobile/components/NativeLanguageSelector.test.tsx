@@ -15,7 +15,9 @@ describe("native language selection", () => {
     const language = screen.getByRole("button", { name: "Idioma" })
     expect(language).toHaveAccessibilityValue({ text: "Español (México)" })
     await fireEvent.press(language)
-    expect(screen.getByRole("radio", { name: "Español (México)" })).toBeChecked()
+    expect(
+      screen.getByRole("radio", { name: "Español (México)" }),
+    ).toBeChecked()
     await fireEvent.press(screen.getByRole("button", { name: "Volver" }))
     expect(onLocaleChange).not.toHaveBeenCalled()
   })

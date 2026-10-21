@@ -120,8 +120,13 @@ for (const copy of languages) {
         path: test.info().outputPath("home-controls.png"),
       })
       await page.getByRole("button", { name: copy.menu, exact: true }).click()
-      await page.getByRole("button", { name: copy.settings, exact: true }).click()
-      const heading = page.getByRole("heading", { name: copy.settings, level: 1 })
+      await page
+        .getByRole("button", { name: copy.settings, exact: true })
+        .click()
+      const heading = page.getByRole("heading", {
+        name: copy.settings,
+        level: 1,
+      })
       await expect(heading).toBeFocused()
       await expectReadableText(heading)
       if (width < 1280) {
@@ -130,21 +135,32 @@ for (const copy of languages) {
           lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight),
           height: element.getBoundingClientRect().height,
         }))
-        expect(title.fontSize).toBeGreaterThanOrEqual(32 * scale / 100)
-        expect(title.height).toBeLessThanOrEqual(title.lineHeight * (scale === 100 ? 1 : 2) + 1)
+        expect(title.fontSize).toBeGreaterThanOrEqual((32 * scale) / 100)
+        expect(title.height).toBeLessThanOrEqual(
+          title.lineHeight * (scale === 100 ? 1 : 2) + 1,
+        )
       }
       const language = page.getByRole("combobox", { name: copy.language })
       await expect(language).toHaveValue(copy.locale)
       await language.focus()
       await expect(language).toBeFocused()
       if (width < 1280) {
-        const visibleValue = language.locator("..").getByText(copy.languageName, { exact: true }).last()
+        const visibleValue = language
+          .locator("..")
+          .getByText(copy.languageName, { exact: true })
+          .last()
         await expect(visibleValue).toBeVisible()
         await expectReadableText(visibleValue)
-        for (const badge of await page.getByText(copy.locale === "en" ? "Selected" : "Seleccionado", { exact: true }).all())
+        for (const badge of await page
+          .getByText(copy.locale === "en" ? "Selected" : "Seleccionado", {
+            exact: true,
+          })
+          .all())
           await expect(badge).toBeHidden()
       }
-      await page.screenshot({ path: test.info().outputPath("settings-heading.png") })
+      await page.screenshot({
+        path: test.info().outputPath("settings-heading.png"),
+      })
       for (const group of await page.getByRole("group").all()) {
         const dimensions = await group.evaluate((element) => ({
           width: element.clientWidth,
@@ -154,11 +170,17 @@ for (const copy of languages) {
         expect(dimensions.content).toBeLessThanOrEqual(dimensions.width + 1)
         expect(dimensions.right).toBeLessThanOrEqual(width)
         if (width >= 1280 && scale === 100) {
-          const optionPositions = await group.getByRole("radio").evaluateAll((elements) =>
-            elements.map((element) => element.parentElement!.getBoundingClientRect().top),
-          )
+          const optionPositions = await group
+            .getByRole("radio")
+            .evaluateAll((elements) =>
+              elements.map(
+                (element) => element.parentElement!.getBoundingClientRect().top,
+              ),
+            )
           expect(optionPositions).toHaveLength(3)
-          expect(Math.max(...optionPositions) - Math.min(...optionPositions)).toBeLessThanOrEqual(1)
+          expect(
+            Math.max(...optionPositions) - Math.min(...optionPositions),
+          ).toBeLessThanOrEqual(1)
         }
         for (const radio of await group.getByRole("radio").all()) {
           await radio.scrollIntoViewIfNeeded()
@@ -167,21 +189,33 @@ for (const copy of languages) {
         }
       }
       const motion = page.getByRole("group", { name: copy.motion, exact: true })
-      await expect(motion.getByRole("radio", { name: copy.followSystem, exact: true })).toBeChecked()
+      await expect(
+        motion.getByRole("radio", { name: copy.followSystem, exact: true }),
+      ).toBeChecked()
       const off = motion.getByRole("radio", { name: copy.off, exact: true })
       await off.click()
       await expect(off).toBeChecked()
       await expect(off).toBeEnabled()
-      await page.screenshot({ path: test.info().outputPath("settings-options.png") })
+      await page.screenshot({
+        path: test.info().outputPath("settings-options.png"),
+      })
       await language.selectOption(copy.locale === "en" ? "es-MX" : "en")
-      const changedLanguage = page.getByRole("combobox", { name: copy.locale === "en" ? "Idioma" : "Language" })
-      await expect(changedLanguage).toHaveValue(copy.locale === "en" ? "es-MX" : "en")
+      const changedLanguage = page.getByRole("combobox", {
+        name: copy.locale === "en" ? "Idioma" : "Language",
+      })
+      await expect(changedLanguage).toHaveValue(
+        copy.locale === "en" ? "es-MX" : "en",
+      )
       await expect(changedLanguage).toBeEnabled()
       await changedLanguage.selectOption(copy.locale)
       await expect(language).toBeEnabled()
       await page.getByRole("button", { name: copy.back, exact: true }).click()
-      await expect(actions.getByRole("button", { name: copy.actions[1], exact: true })).toBeVisible()
-      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
+      await expect(
+        actions.getByRole("button", { name: copy.actions[1], exact: true }),
+      ).toBeVisible()
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth),
+      ).toBeLessThanOrEqual(width)
     })
   }
 }

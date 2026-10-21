@@ -8,11 +8,7 @@ import {
 } from "@game/machines/src/PlayerSettings"
 import LocaleProvider from "@game/utils/src/LocaleContext"
 import { describe, expect, it, jest } from "@jest/globals"
-import {
-  render,
-  screen,
-  userEvent,
-} from "@testing-library/react-native"
+import { render, screen, userEvent } from "@testing-library/react-native"
 import { useState } from "react"
 import NativeSettings from "@/components/NativeSettings"
 
@@ -51,9 +47,15 @@ describe("NativeSettings", () => {
       settings: { ...createInitialPlayerSettings(), locale: "es-MX" },
     })
     const user = userEvent.setup()
-    expect(screen.getByRole("heading", { name: "Configuración" })).toBeOnTheScreen()
-    expect(screen.getByRole("header", { name: "Reducir movimiento" })).toBeOnTheScreen()
-    expect(screen.getByRole("radio", { name: "Seguir al sistema" })).toBeChecked()
+    expect(
+      screen.getByRole("heading", { name: "Configuración" }),
+    ).toBeOnTheScreen()
+    expect(
+      screen.getByRole("header", { name: "Reducir movimiento" }),
+    ).toBeOnTheScreen()
+    expect(
+      screen.getByRole("radio", { name: "Seguir al sistema" }),
+    ).toBeChecked()
     await user.press(screen.getByRole("radio", { name: "Desactivado" }))
     expect(props.onUpdateSettings).toHaveBeenLastCalledWith({
       ...props.settings,
@@ -83,13 +85,15 @@ describe("NativeSettings", () => {
     })
 
     expect(screen.getByText("English (US) ▾")).toBeOnTheScreen()
-    expect(screen.getByRole("header", { name: "Reduced Motion" })).toBeOnTheScreen()
-    expect(screen.getByRole("header", { name: "Control Hints" })).toBeOnTheScreen()
+    expect(
+      screen.getByRole("header", { name: "Reduced Motion" }),
+    ).toBeOnTheScreen()
+    expect(
+      screen.getByRole("header", { name: "Control Hints" }),
+    ).toBeOnTheScreen()
     expect(followSystem).toBeChecked()
     expect(reduceMotion).not.toBeChecked()
-    expect(
-      screen.getByRole("radio", { name: "Auto" }),
-    ).toBeChecked()
+    expect(screen.getByRole("radio", { name: "Auto" })).toBeChecked()
 
     await user.press(reduceMotion)
     await user.press(alwaysShowHints)
