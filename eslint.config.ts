@@ -1,16 +1,50 @@
-import type { ESLint, Linter } from "eslint"
+import { defineConfig } from "eslint/config"
 import gitignore from "eslint-config-flat-gitignore"
 import nextConfig from "eslint-config-next"
+import nextTypeScript from "eslint-config-next/typescript"
 import eslintConfigPrettier from "eslint-config-prettier/flat"
-import onlyWarn from "eslint-plugin-only-warn"
+import "eslint-plugin-only-warn"
 
-const eslintConfig: Linter.Config[] = [
+const eslintConfig = defineConfig([
   gitignore(),
   ...nextConfig,
   {
-    plugins: {
-      "only-warn": onlyWarn as unknown as ESLint.Plugin,
+    name: "wayvm/typescript",
+    files: ["**/*.{ts,tsx,mts,cts}"],
+    extends: [nextTypeScript],
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+          reportUsedIgnorePattern: true,
+        },
+      ],
     },
+  },
+  {
+    name: "wayvm/native-static-assets",
+    files: ["apps/mobile/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-require-imports": [
+        "error",
+        { allow: ["^@game/data/assets/.+\\.(png|riv)$"] },
+      ],
+    },
+  },
+  {
+    name: "wayvm/gifenc-ambient-declaration",
+    files: ["packages/utils/src/EncodeGif.ts"],
+    rules: {
+      "@typescript-eslint/triple-slash-reference": [
+        "error",
+        { path: "always" },
+      ],
+    },
+  },
+  {
+    name: "wayvm/next-app-root",
     settings: {
       next: {
         rootDir: "apps/web/",
@@ -18,6 +52,6 @@ const eslintConfig: Linter.Config[] = [
     },
   },
   eslintConfigPrettier,
-]
+])
 
 export default eslintConfig
