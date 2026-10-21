@@ -7,5 +7,5 @@
 }
 
 @utility basis-readable-setting {
-  flex-basis: fontScale(320);
+  flex-basis: fontScale(288);
 }

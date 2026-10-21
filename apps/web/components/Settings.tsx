@@ -55,7 +55,7 @@ function SettingsRadioGroup<TValue extends string>({
       >
         {getWrappableSettingsText(heading, localizedCopy.metadata.languageTag)}
       </legend>
-      <div className="mt-[16px] grid grid-cols-1 gap-[16px] xl:mt-5 xl:grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))] xl:gap-4">
+      <div className="mt-[16px] grid grid-cols-1 gap-[16px] xl:mt-5 xl:grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))] xl:gap-4">
         {options.map((option) => {
           const isSelected = option.value === selectedValue
           const descriptionId = `${groupName}-${option.value}-description`
