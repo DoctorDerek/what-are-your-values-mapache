@@ -65,7 +65,9 @@ describe("InformationPanel Component Integration", () => {
   it("dismisses reopened guidance through both visible close actions", () => {
     const { rerender } = render(<ReopenedInformationPanelHarness />)
 
-    const dialog = screen.getByRole("dialog", { name: "Why Values Matter" })
+    expect(
+      screen.getByRole("dialog", { name: "Why Values Matter" }),
+    ).toBeInTheDocument()
     expect(screen.getByTestId("information-panel-body")).toHaveClass(
       "overflow-y-auto",
     )

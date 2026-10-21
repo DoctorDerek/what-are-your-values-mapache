@@ -147,13 +147,13 @@ describe("Battle Profile Hydration", () => {
 
   it("recovers the newest contiguous checkpoint when a journal is missing", async () => {
     const store = createInMemoryDurableStore()
-    let state = await initializeBattleProfileStore({
+    const state = await initializeBattleProfileStore({
       store,
       playerData: createTestPlayerData("missing-journal-seed"),
       createdAt: "2026-07-21T00:00:00.000Z",
       appVersion: "0.1.0",
     })
-    state = await commitBattleProfileStoreEvent({
+    await commitBattleProfileStoreEvent({
       store,
       state,
       event: createChoiceEvent(state.head.playerData.profile),

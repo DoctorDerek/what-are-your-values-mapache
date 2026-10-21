@@ -234,6 +234,7 @@ describe("NativeCrucible", () => {
       includeHiddenElements: true,
     })
 
+    expect(choices).toHaveLength(2)
     expect(tapHints).toHaveLength(2)
     for (const tapHint of tapHints) {
       expect(tapHint).toHaveProp("aria-hidden", true)

@@ -220,7 +220,7 @@ describe("SeethingSwarm asset receipt", () => {
   it.each([
     ["web", "", "native module"],
     ["native", "web module", ""],
-  ])("rejects a missing %s generated module", async (_, web, native) => {
+  ])("rejects a missing %s generated module", async (platform, web, native) => {
     const fixture = await createStagedFixture()
 
     await expect(
@@ -230,6 +230,6 @@ describe("SeethingSwarm asset receipt", () => {
         web,
         native,
       ),
-    ).rejects.toThrow(`Missing SeethingSwarm ${_} generated module`)
+    ).rejects.toThrow(`Missing SeethingSwarm ${platform} generated module`)
   })
 })
