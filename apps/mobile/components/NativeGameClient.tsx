@@ -698,7 +698,6 @@ function NativeGameClientContent({
           results={results}
           runtimeClipCatalog={SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG}
           shouldReduceMotion={shouldReduceMotion}
-          isMenuOpen={isProductOverlayOpen}
           onOpenMenu={() => setIsProductMenuOpen(true)}
           onSeeValues={() => send({ type: "RESULTS.CLOSE_REQUESTED" })}
           onKeepBattling={() =>

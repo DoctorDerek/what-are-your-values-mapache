@@ -42,7 +42,6 @@ describe("Native Battle-exit Results", () => {
         runtimeClipCatalog:
           createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
         shouldReduceMotion: true,
-        isMenuOpen: false,
         onOpenMenu: jest.fn(),
         onSeeValues: jest.fn(),
         onKeepBattling: jest.fn(),
@@ -70,7 +69,6 @@ describe("Native Battle-exit Results", () => {
           results={results}
           runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
           shouldReduceMotion={false}
-          isMenuOpen={false}
           onOpenMenu={jest.fn()}
           onSeeValues={jest.fn()}
           onKeepBattling={jest.fn()}
@@ -116,7 +114,6 @@ describe("Native Battle-exit Results", () => {
           results={createResults()}
           runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
           shouldReduceMotion={false}
-          isMenuOpen={false}
           onOpenMenu={jest.fn()}
           onSeeValues={onSeeValues}
           onKeepBattling={jest.fn()}
@@ -162,7 +159,6 @@ describe("Native Battle-exit Results", () => {
             results={createResults()}
             runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
             shouldReduceMotion={false}
-            isMenuOpen={false}
             onOpenMenu={jest.fn()}
             onSeeValues={jest.fn()}
             onKeepBattling={jest.fn()}
@@ -197,7 +193,6 @@ describe("Native Battle-exit Results", () => {
         results={createResults()}
         runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
         shouldReduceMotion
-        isMenuOpen={false}
         onOpenMenu={jest.fn()}
         onSeeValues={onSeeValues}
         onKeepBattling={onKeepBattling}
