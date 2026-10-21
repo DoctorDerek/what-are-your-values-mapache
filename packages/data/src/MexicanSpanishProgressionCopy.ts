@@ -34,8 +34,6 @@ export const MEXICAN_SPANISH_PROGRESSION_COPY: InterfaceCopy["progression"] = {
   redo: (name, xp, pair) =>
     `Se rehízo tu elección. Se restauraron ${xp} XP a ${name}. Siguiente: ${pair}.`,
   reward: (xp, level) => `+${xp} XP · Nivel ${level}`,
-  levelProgress: (xp, required, level) =>
-    `${xp}/${required} XP para alcanzar el nivel ${level}`,
 }
 
 export const MEXICAN_SPANISH_RESULTS_COPY: InterfaceCopy["results"] = {

@@ -31,6 +31,4 @@ export const PROGRESSION_COPY = Object.freeze({
   redo: (name: string, xp: string, pair: string) =>
     `Redo complete. ${xp} XP restored to ${name}. Next: ${pair}.`,
   reward: (xp: string, level: string) => `+${xp} XP · Level ${level}`,
-  levelProgress: (xp: string, required: string, level: string) =>
-    `${xp}/${required} XP toward Level ${level}`,
 })
