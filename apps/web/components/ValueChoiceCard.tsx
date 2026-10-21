@@ -11,13 +11,7 @@ import { getWrappableValueDisplayName } from "@game/data/src/ValueNameTypography
 import { getValueChoiceAccessibilityLabel } from "@game/machines/src/BattleAccessibilityPresentation"
 import type { BattleRewardPresentation } from "@game/machines/src/BattleRewardPresentation"
 import { cx } from "classix"
-import {
-  forwardRef,
-  useId,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from "react"
+import { forwardRef, useId, useState, type ReactNode } from "react"
 
 export type ValueChoicePosition = "first" | "second"
 
@@ -68,9 +62,6 @@ export const ValueChoiceCard = forwardRef<
     : "text-white drop-shadow-[1px_1px_0px_#000000]"
   const accessibleDefinitionId = useId()
   const choiceId = useId()
-  const rewardStyle: CSSProperties & { "--reward-progress": string } = {
-    "--reward-progress": `${reward?.progressPercentage ?? 0}%`,
-  }
 
   return (
     <div
@@ -196,17 +187,8 @@ export const ValueChoiceCard = forwardRef<
             {combatant(
               isEnabled && (isHovered || isFocused),
               reward ? (
-                <span
-                  className="block border-2 border-black bg-white px-1 text-center text-xs leading-4 font-black whitespace-nowrap text-black xl:text-base"
-                  title={reward.progressLabel}
-                >
+                <span className="block border-2 border-black bg-white px-1 text-center text-xs leading-4 font-black whitespace-nowrap text-black xl:text-base">
                   {reward.label}
-                  <span className="block h-1 overflow-hidden bg-black/15">
-                    <span
-                      className="bg-mapache-vivid-primary-raspberry block h-full w-(--reward-progress)"
-                      style={rewardStyle}
-                    />
-                  </span>
                 </span>
               ) : null,
             )}
