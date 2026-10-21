@@ -96,13 +96,13 @@ export default function Hub({
 
   return (
     <MapacheScreen
-      spacing="standard-xl"
+      spacing="readable-xl"
       viewport="scrollable"
-      className="flex h-[100dvh] min-w-0 flex-col items-center gap-4"
+      className="flex h-[100dvh] min-w-0 flex-col items-center gap-[16px] xl:gap-4"
     >
-      <header className="flex w-full max-w-7xl shrink-0 items-center justify-between gap-3 text-white">
-        <div className="@container min-w-0 flex-1">
-          <h1 className="text-[min(5.25cqw,1.5rem)] leading-tight font-bold tracking-tight whitespace-nowrap">
+      <header className="flex w-full max-w-7xl shrink-0 flex-wrap items-center justify-between gap-[12px] text-white xl:flex-nowrap xl:gap-3">
+        <div className="@container min-w-0 flex-[1_1_10rem] xl:flex-1">
+          <h1 className="text-[clamp(0.625rem,5.25cqw,1.5rem)] leading-tight font-bold tracking-tight text-balance xl:text-[min(5.25cqw,1.5rem)] xl:whitespace-nowrap">
             {introductionCopy.title}
           </h1>
         </div>
@@ -113,6 +113,7 @@ export default function Hub({
           textCase="normal-case"
           onClick={onOpenMenu}
           disabled={isNavigationBlocked}
+          className="ml-auto max-xl:px-[12px] max-xl:py-[8px]"
         >
           {PRODUCT_MENU_COPY.openAction}
         </Button>
@@ -140,7 +141,7 @@ export default function Hub({
           onNavigationBlockedChange={handleDraftNavigationBlockedChange}
         />
       )}
-      <div className="relative isolate flex min-h-min w-full max-w-7xl flex-1 flex-col overflow-hidden">
+      <div className="relative isolate flex min-h-min w-full max-w-7xl min-w-0 flex-1 flex-col overflow-hidden">
         <PersonalValuesCard
           rosterRef={rosterRef}
           appearance={appearance}
@@ -155,9 +156,9 @@ export default function Hub({
       </div>
       <nav
         aria-label={PERSONAL_HUB_COPY.actions}
-        className="grid w-full max-w-7xl shrink-0 gap-4 pb-3 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] [&_button]:min-w-0"
+        className="grid w-full max-w-7xl shrink-0 grid-cols-1 gap-[16px] pb-[12px] xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:gap-4 xl:pb-3 [&_button]:max-w-full [&_button]:min-w-0"
       >
-        <div className="flex flex-wrap gap-4 xl:col-span-2">
+        <div className="flex min-w-0 flex-wrap gap-[16px] xl:col-span-2 xl:gap-4">
           <Button
             disabled={customValueInvitation?.isSaving}
             id="hub-add-custom-value-button"
@@ -165,7 +166,7 @@ export default function Hub({
             size="sm"
             textCase="normal-case"
             typographyClassName="text-base xl:text-lg"
-            className="flex-[1_1_6rem]"
+            className="flex-[1_1_6rem] max-xl:px-[12px] max-xl:py-[8px]"
             wrap
             onClick={(event) => onAddCustomValue(event.currentTarget.id)}
           >
@@ -185,7 +186,7 @@ export default function Hub({
             textCase="normal-case"
             typographyClassName="text-2xl xl:text-3xl"
             wrap
-            className="relative flex-[1.35_1_8rem]"
+            className="relative flex-[1.35_1_8rem] max-xl:px-[20px] max-xl:py-[12px]"
           >
             <span className={isBattlePending ? "invisible" : undefined}>
               {PERSONAL_HUB_COPY.battle}
@@ -197,14 +198,14 @@ export default function Hub({
             )}
           </Button>
         </div>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex min-w-0 flex-wrap gap-[16px] xl:gap-4">
           <Button
             id="hub-customize-button"
             textCase="normal-case"
             variant="secondary"
             size="sm"
             typographyClassName="text-base xl:text-lg"
-            className="flex-[1_1_7rem]"
+            className="flex-[1_1_7rem] max-xl:px-[12px] max-xl:py-[8px]"
             wrap
             disabled={isNavigationBlocked}
             onClick={onCustomize}
@@ -217,7 +218,7 @@ export default function Hub({
             variant="secondary"
             size="sm"
             typographyClassName="text-base xl:text-lg"
-            className="flex-[1_1_7rem]"
+            className="flex-[1_1_7rem] max-xl:px-[12px] max-xl:py-[8px]"
             wrap
             disabled={isNavigationBlocked}
             onClick={onShare}
@@ -233,6 +234,7 @@ export default function Hub({
           variant="outline"
           size="sm"
           typographyClassName="text-base xl:text-lg"
+          className="max-xl:px-[12px] max-xl:py-[8px]"
           wrap
           onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
         >
