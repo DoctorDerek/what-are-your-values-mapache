@@ -10,7 +10,7 @@ export const CUSTOM_VALUE_INVITATION_COPY = Object.freeze({
   definition: "Definition",
   addDraft: "Review & save",
   updateDraft: "Review & save",
-  back: "Close editor",
+  back: "Back",
   drafts: "Values to add",
   another: "Add another",
   continueDraft: "Continue editing",

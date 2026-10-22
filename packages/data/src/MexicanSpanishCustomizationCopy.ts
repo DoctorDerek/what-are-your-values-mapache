@@ -12,7 +12,7 @@ export const MEXICAN_SPANISH_CUSTOMIZATION_COPY: Pick<
     definition: "Definición",
     addDraft: "Revisar y guardar",
     updateDraft: "Revisar y guardar",
-    back: "Cerrar editor",
+    back: "Volver",
     drafts: "Valores por agregar",
     another: "Agregar otro",
     continueDraft: "Seguir editando",
