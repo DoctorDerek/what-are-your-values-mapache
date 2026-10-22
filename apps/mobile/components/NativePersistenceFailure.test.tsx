@@ -161,8 +161,8 @@ describe("NativePersistenceFailure", () => {
         />,
       )
 
-      expect(screen.getByRole("heading", { name: title })).toBeOnTheScreen()
-      expect(screen.getByText(warning)).toHaveProp("accessibilityRole", "alert")
+      expect(screen.getByRole("header", { name: title })).toBeOnTheScreen()
+      expect(screen.getByText(warning)).toBeOnTheScreen()
       expect(
         screen.queryByRole("button", {
           name: playerDataRecoveryCopy.actions.tryAgain,

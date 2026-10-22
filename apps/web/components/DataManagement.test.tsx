@@ -174,10 +174,10 @@ describe("Data Management", () => {
     const props = renderDataManagement({ preview })
 
     expect(screen.getByRole("heading", { name: "Review Import" })).toBeVisible()
-    expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
+    expect(screen.queryByRole("button", { name: "Menu" })).not.toBeInTheDocument()
     expect(
-      screen.getByRole("button", { name: "Back to Your Values" }),
-    ).toBeDisabled()
+      screen.queryByRole("button", { name: "Back to Your Values" }),
+    ).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole("button", { name: "Import & Replace" }))
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
     expect(props.onConfirmImport).toHaveBeenCalledOnce()
