@@ -151,7 +151,7 @@ test("a new player starts immediately and reviews the complete ranking", async (
     ).toHaveCount(0)
   }
 
-  await page.getByRole("button", { name: "Close" }).click()
+  await page.getByRole("button", { name: "Back", exact: true }).click()
   await expect(
     page.getByRole("heading", {
       level: 2,

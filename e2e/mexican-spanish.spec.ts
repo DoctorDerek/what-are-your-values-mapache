@@ -75,7 +75,7 @@ test("Spanish survives gameplay, reload, and language changes without translatin
   await expect(
     page.getByText("“Mi definición privada, intacta.”", { exact: true }),
   ).toBeVisible()
-  await page.getByRole("button", { name: "Close", exact: true }).click()
+  await page.getByRole("button", { name: "Back", exact: true }).click()
   await page.getByRole("button", { name: "Menu", exact: true }).click()
   await page.getByRole("button", { name: "Settings", exact: true }).click()
   await page.getByRole("combobox", { name: "Language" }).selectOption("es-MX")
