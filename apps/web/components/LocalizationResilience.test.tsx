@@ -45,7 +45,6 @@ function RecoveredSessionView({ actor }: { readonly actor: RootActor }) {
       shouldReduceMotion
       isMenuOpen={false}
       onClose={vi.fn()}
-      onOpenMenu={vi.fn()}
       onAddCustomValue={vi.fn()}
       onUpdateCustomValue={vi.fn()}
       onDeleteCustomValue={vi.fn()}
@@ -131,6 +130,6 @@ describe("web localization resilience", () => {
       screen.getByRole("heading", { name: "Private “Craftsmanship”" }),
     ).toBeVisible()
     expect(screen.getByText(/Mi significado privado/)).toBeVisible()
-    expect(screen.getByRole("button", { name: "Close" })).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Back" })).toBeEnabled()
   })
 })
