@@ -39,7 +39,6 @@ export default function AllValues({
   isMenuOpen,
   persistenceIssue = null,
   onClose,
-  onOpenMenu,
   onAddCustomValue,
   onUpdateCustomValue,
   onDeleteCustomValue,
@@ -66,7 +65,6 @@ export default function AllValues({
 }) {
   const localizedCopy = useLocaleCatalog(localizationOverride)
   const localization = localizedCopy
-  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
 
   const [searchQuery, setSearchQuery] = useState("")
   const customValueActionRef = useRef<HTMLButtonElement | null>(null)
@@ -456,55 +454,33 @@ export default function AllValues({
     <MapacheScreen
       spacing="safe-area-only"
       viewport="scrollable"
-      className="text-white"
+      className="grid h-[100dvh] grid-rows-[auto_minmax(12rem,1fr)_auto] overflow-y-auto text-white"
     >
-      <header className="bg-mapache-vivid-dark sticky top-[env(safe-area-inset-top,0px)] z-20 border-b-8 border-black px-4 py-4 shadow-[0_8px_0px_0px_#000000] sm:px-8">
+      <header className="bg-mapache-vivid-dark border-b-4 border-black px-4 py-3 xl:px-8">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-mapache-vivid-primary-cyan text-4xl font-black [overflow-wrap:anywhere] break-words uppercase drop-shadow-[4px_4px_0px_#000000] sm:text-6xl">
+            <h1 className="text-mapache-vivid-primary-cyan text-2xl font-black break-words uppercase xl:text-4xl">
               {localizedCopy.interfaceCopy.screen.allValues}
             </h1>
-            <p className="mt-2 text-xl font-black uppercase sm:text-2xl">
+            <p className="text-sm font-bold xl:text-base">
               {localizedCopy.interfaceCopy.screen.activeValues(
                 String(rankedValues.length),
               )}
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              disabled={isNavigationBlocked}
-              onClick={onOpenMenu}
-            >
-              {PRODUCT_MENU_COPY.openAction}
-            </Button>
-            <button
-              type="button"
-              disabled={isNavigationBlocked}
-              onClick={onClose}
-              className="bg-mapache-vivid-secondary-red cursor-pointer border-4 border-black px-5 py-3 text-2xl font-black uppercase shadow-[6px_6px_0px_0px_#000000] hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_#000000] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-x-[6px] active:translate-y-[6px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {localizedCopy.interfaceCopy.screen.close}
-            </button>
-          </div>
         </div>
-      </header>
-
-      <section
-        aria-labelledby="all-values-search-heading"
-        className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8"
-      >
-        <h2 id="all-values-search-heading" className="sr-only">
-          {localizedCopy.interfaceCopy.screen.searchAllValues}
-        </h2>
+        <div className="mx-auto mt-3 w-full max-w-6xl">
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3">
         <label
           htmlFor="all-values-search"
-          className="mb-3 block text-2xl font-black uppercase"
+          className="font-black"
         >
           {localizedCopy.interfaceCopy.screen.searchAllValues}
         </label>
+        <p role="status" aria-live="polite" className="text-sm font-bold">
+          {localizedCopy.interfaceCopy.screen.valuesShown(visibleValues.length, String(visibleValues.length))}
+        </p>
+        </div>
         <Input
           id="all-values-search"
           type="search"
@@ -513,16 +489,14 @@ export default function AllValues({
           placeholder={localizedCopy.interfaceCopy.screen.searchPlaceholder}
           variant="search"
         />
-        <p
-          role="status"
-          aria-live="polite"
-          className="mt-5 text-lg font-black uppercase"
-        >
-          {localizedCopy.interfaceCopy.screen.valuesShown(
-            visibleValues.length,
-            String(visibleValues.length),
-          )}
-        </p>
+        </div>
+      </header>
+      <section
+        aria-label={localizedCopy.interfaceCopy.screen.values}
+        tabIndex={0}
+        data-controller-scroll
+        className="mx-auto min-h-0 w-full max-w-6xl overflow-y-auto overscroll-contain px-4 py-4 xl:px-8"
+      >
         {persistenceIssue ? (
           <div
             role="alert"
@@ -538,32 +512,14 @@ export default function AllValues({
           </div>
         ) : null}
 
-        <Button
-          className="mt-5"
-          disabled={isNavigationBlocked}
-          onClick={() =>
-            onAddCustomValue(
-              visibleValues.length === 0 ? searchQuery.trim() : "",
-            )
-          }
-        >
-          {localizedCopy.interfaceCopy.screen.addCustomValue}
-        </Button>
-
-        <section
-          role="region"
-          aria-label={localizedCopy.interfaceCopy.screen.values}
-          tabIndex={0}
-          data-controller-scroll="document"
-        >
           {hasComparisons && visibleValues.some(({ rank }) => rank <= 5) ? (
             <section
               aria-labelledby="all-values-top-five-heading"
-              className="mt-8"
+              className="mb-4"
             >
               <h2
                 id="all-values-top-five-heading"
-                className="border-b-4 border-black py-4 text-3xl font-black uppercase"
+                className="border-b-4 border-black py-2 text-lg font-black uppercase"
               >
                 {localizedCopy.interfaceCopy.screen.topFive}
               </h2>
@@ -579,7 +535,7 @@ export default function AllValues({
             >
               <h2
                 id="all-values-other-heading"
-                className="bg-mapache-vivid-primary-cyan border-y-8 border-black px-4 py-3 text-center text-2xl font-black text-black uppercase"
+                className="border-b-4 border-black py-2 text-lg font-black uppercase"
               >
                 {localizedCopy.interfaceCopy.screen.remainingValues}
               </h2>
@@ -589,7 +545,7 @@ export default function AllValues({
             </section>
           ) : null}
           {!hasComparisons ? (
-            <section aria-labelledby="included-values-heading" className="mt-8">
+            <section aria-labelledby="included-values-heading">
               <h2 id="included-values-heading" className="sr-only">
                 {localizedCopy.interfaceCopy.screen.includedValues}
               </h2>
@@ -603,8 +559,15 @@ export default function AllValues({
               {localizedCopy.interfaceCopy.screen.noSearchResults}
             </p>
           ) : null}
-        </section>
       </section>
+      <footer className="mx-auto flex w-full max-w-6xl flex-wrap gap-3 border-t-4 border-black px-4 pt-3 pb-5 xl:px-8">
+        <Button size="sm" wrap variant="outline" className="min-w-0 flex-[1_1_7rem]" disabled={isNavigationBlocked} onClick={onClose}>
+          {localizedCopy.interfaceCopy.dressingRoom.back}
+        </Button>
+        <Button size="sm" wrap className="min-w-0 flex-[1_1_7rem]" disabled={isNavigationBlocked} onClick={() => onAddCustomValue(visibleValues.length === 0 ? searchQuery.trim() : "")}>
+          {localizedCopy.hub.add}
+        </Button>
+      </footer>
     </MapacheScreen>
   )
 }
