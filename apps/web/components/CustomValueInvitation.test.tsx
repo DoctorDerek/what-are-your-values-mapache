@@ -2,18 +2,20 @@ import {
   CUSTOM_VALUE_INVITATION_COPY as copy,
   CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
 } from "@game/data/src/CustomValueInvitationCopy"
-import { fireEvent, render, screen } from "@testing-library/react"
+import { fireEvent, render, screen, within } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
 
 function setup(editorRequestId = 1) {
   const props = {
     editorRequestId,
+    deckRevision: 0,
     existingCustomValues: [],
     isSaving: false,
     saveIssue: null,
     onApply: vi.fn(),
     onExport: vi.fn(async () => {}),
+    onExit: vi.fn(),
     onNavigationBlockedChange: vi.fn(),
   }
   return { ...render(<CustomValueInvitation {...props} />), props }
@@ -39,7 +41,6 @@ function queueDrafts() {
     fill(draft.name, draft.definition)
     click("Add another")
   }
-  click("Close editor")
 }
 describe("Hub custom-value invitation", () => {
   it("keeps the untouched Home free of a second authoring entry point", () => {
@@ -50,7 +51,7 @@ describe("Hub custom-value invitation", () => {
     expect(screen.getByLabelText("Value name")).toHaveFocus()
     expect(screen.getByRole("complementary")).toBeVisible()
     expect(screen.getByText(copy.example)).toBeVisible()
-    click("Close editor")
+    click("Back")
     expect(screen.queryByText(copy.example)).not.toBeInTheDocument()
     expect(props.onApply).not.toHaveBeenCalled()
   })
@@ -107,15 +108,14 @@ describe("Hub custom-value invitation", () => {
       },
     ])
   })
-  it("retains unfinished text when closed and reopened through a new request", () => {
+  it("guards unfinished text and retains it through another entry request", () => {
     const { props, rerender } = setup(1)
     fill("My direction", "My own meaning.")
-    click("Close editor")
+    click("Back")
     expect(props.onNavigationBlockedChange).toHaveBeenLastCalledWith(true)
-    click("Continue editing")
+    click("Keep editing")
     expect(screen.getByLabelText("Value name")).toHaveValue("My direction")
     expect(screen.getByLabelText("Definition")).toHaveValue("My own meaning.")
-    click("Close editor")
     rerender(
       <CustomValueInvitation
         {...props}
@@ -130,12 +130,14 @@ describe("Hub custom-value invitation", () => {
     render(
       <CustomValueInvitation
         existingCustomValues={[]}
+        deckRevision={0}
         isSaving={false}
         saveIssue={null}
         editorRequestId={1}
         initialName="Craftsmanship"
         onApply={vi.fn()}
         onExport={vi.fn()}
+        onExit={vi.fn()}
         onNavigationBlockedChange={vi.fn()}
       />,
     )
@@ -169,7 +171,6 @@ describe("Hub custom-value invitation", () => {
     queueDrafts()
     click("Edit Third direction")
     fill("", "")
-    click("Close editor")
     expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
     click("Discard unfinished edit")
     expect(screen.getByRole("button", { name: "Save" })).toBeEnabled()
@@ -223,7 +224,7 @@ describe("Hub custom-value invitation", () => {
     rerender(<CustomValueInvitation {...props} isSaving />)
     expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
     expect(
-      screen.getByRole("button", { name: "Discard pending values" }),
+      screen.getByRole("button", { name: "Discard changes" }),
     ).toBeDisabled()
     rerender(<CustomValueInvitation {...props} saveIssue="Storage is full" />)
     expect(screen.getByRole("alert")).toHaveTextContent("Storage is full")
@@ -257,8 +258,38 @@ describe("Hub custom-value invitation", () => {
     fill("👨‍👩‍👧‍👦", "Family on my terms.")
     expect(screen.getByText("1 / 60 characters")).toBeVisible()
     click("Add another")
-    click("Discard pending values")
+    click("Back")
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Discard changes" }))
     expect(props.onNavigationBlockedChange).toHaveBeenLastCalledWith(false)
     expect(props.onApply).not.toHaveBeenCalled()
+  })
+  it("keeps the draft after a failed save and exits only after durable acceptance", () => {
+    const { props, rerender } = setup()
+    fill("Craftsmanship", "To make things well.")
+    click("Back")
+    click("Save and return")
+    expect(props.onExit).not.toHaveBeenCalled()
+    rerender(<CustomValueInvitation {...props} isSaving />)
+    expect(screen.getByRole("button", { name: "Back" })).toBeDisabled()
+    rerender(<CustomValueInvitation {...props} saveIssue="Storage is full" />)
+    expect(screen.getByLabelText("Value name")).toHaveValue("Craftsmanship")
+    expect(screen.getByRole("alert")).toHaveTextContent("Storage is full")
+    click("Save")
+    rerender(<CustomValueInvitation {...props} deckRevision={1} />)
+    expect(props.onExit).toHaveBeenCalledExactlyOnceWith("home")
+    expect(screen.queryByRole("complementary")).not.toBeInTheDocument()
+  })
+  it("guards Menu and Back requests without replaying old requests on mount", () => {
+    const { props, rerender, unmount } = setup()
+    fill("Craftsmanship", "To make things well.")
+    rerender(<CustomValueInvitation {...props} menuRequestId={1} />)
+    expect(screen.getByRole("dialog")).toBeVisible()
+    rerender(<CustomValueInvitation {...props} menuRequestId={1} backRequestId={1} />)
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    expect(screen.getByLabelText("Value name")).toHaveValue("Craftsmanship")
+    unmount()
+    render(<CustomValueInvitation {...props} menuRequestId={1} backRequestId={1} />)
+    expect(screen.getByRole("complementary")).toBeVisible()
+    expect(props.onExit).not.toHaveBeenCalled()
   })
 })

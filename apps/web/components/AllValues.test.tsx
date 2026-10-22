@@ -56,7 +56,6 @@ function renderAllValues(
       rankedValues={rankedValues}
       isMenuOpen={false}
       onClose={vi.fn()}
-      onOpenMenu={vi.fn()}
       onAddCustomValue={vi.fn()}
       onUpdateCustomValue={vi.fn()}
       onDeleteCustomValue={vi.fn()}
@@ -185,15 +184,6 @@ describe("All Values Component Integration", () => {
       "data-slot",
       "mapache-screen",
     )
-    expect(screen.getByRole("main")).toHaveClass(
-      "min-h-[100dvh]",
-      "[--mapache-screen-spacing:0px]",
-    )
-    expect(
-      screen
-        .getByRole("heading", { name: "All Values", level: 1 })
-        .closest("header"),
-    ).toHaveClass("top-[env(safe-area-inset-top,0px)]")
     expect(
       screen.getByRole("heading", { name: "All Values", level: 1 }),
     ).toBeVisible()
@@ -237,7 +227,7 @@ describe("All Values Component Integration", () => {
   it("hands creation to the Hub instead of rendering a second builder", () => {
     const onAddCustomValue = vi.fn()
     renderAllValues(undefined, { onAddCustomValue })
-    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
+    fireEvent.click(screen.getByRole("button", { name: "Add value" }))
     expect(onAddCustomValue).toHaveBeenCalledExactlyOnceWith("")
     expect(
       screen.queryByRole("form", { name: "Add Custom Value" }),
@@ -253,16 +243,15 @@ describe("All Values Component Integration", () => {
         target: { value: "Craftsmanship" },
       },
     )
-    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
+    fireEvent.click(screen.getByRole("button", { name: "Add value" }))
     expect(onAddCustomValue).toHaveBeenCalledExactlyOnceWith("Craftsmanship")
   })
 
   it("locks navigation and creation while persistence is pending", () => {
     renderAllValues(undefined, { isPersistencePending: true })
-    expect(screen.getByRole("button", { name: "Close" })).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Back" })).toBeDisabled()
     expect(
-      screen.getByRole("button", { name: "Add Custom Value" }),
+      screen.getByRole("button", { name: "Add value" }),
     ).toBeDisabled()
   })
 
@@ -580,7 +569,7 @@ describe("All Values Component Integration", () => {
     expect(screen.getByText("#6")).toBeVisible()
     expect(screen.getByText("🥈")).toBeVisible()
     expect(screen.queryByText("🥇")).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole("button", { name: "Close" }))
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 

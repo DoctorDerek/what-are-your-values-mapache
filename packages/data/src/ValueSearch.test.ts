@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { createActiveDeck } from "./ActiveDeck"
+import { getLocaleCatalog } from "./LocalizationCatalog"
 import {
   createCanonicalValueId,
   createCustomValueId,
@@ -57,6 +58,18 @@ describe("Value Search", () => {
 
   it("returns no partial suggestions for an empty proposed name", () => {
     expect(findRankedValueNameMatches(createRankedValues(), " ")).toEqual([])
+  })
+
+  it("suggests localized and English names without changing their identity or order", () => {
+    const rankedValues = createRankedValues()
+    const translations = getLocaleCatalog("es-MX").values
+    const healthId = createCanonicalValueId("pvcs-2011:health")
+
+    expect(findRankedValueNameMatches(rankedValues, "SALUD", translations).map(({definition}) => definition.id)).toEqual([healthId])
+    expect(findRankedValueNameMatches(rankedValues, "health", translations).map(({definition}) => definition.id)).toEqual([healthId])
+    expect(findRankedValueNameMatches(rankedValues, "ingen", translations).map(({definition}) => definition.id)).toEqual([
+      createCanonicalValueId("wayvm:ingenuity"), ingenuityId,
+    ])
   })
 
   it("detects another same-name identity even when the edited custom value is excluded", () => {
