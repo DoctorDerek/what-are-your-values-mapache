@@ -37,6 +37,8 @@ export default function useCustomValueAuthoring({
   const nextDraftKey = useRef(0)
   const pendingSaveExit = useRef<ExitTarget | null>(null)
   const previousRevision = useRef(deckRevision)
+  const previousBackRequest = useRef(backRequestId)
+  const previousMenuRequest = useRef(menuRequestId)
   const [handledRequestId, setHandledRequestId] = useState(editorRequestId)
   if (handledRequestId !== editorRequestId) {
     setHandledRequestId(editorRequestId)
@@ -70,10 +72,21 @@ export default function useCustomValueAuthoring({
     if (hasChanges) setLeaveTarget(target)
     else discardAndExit(target)
   }
-  const handleBackRequest = useEffectEvent(() => requestExit())
+  const handleBackRequest = useEffectEvent(() => {
+    if (leaveTarget !== null) setLeaveTarget(null)
+    else requestExit()
+  })
   const handleMenuRequest = useEffectEvent(() => requestExit("menu"))
-  useEffect(() => { if (backRequestId !== 0) handleBackRequest() }, [backRequestId])
-  useEffect(() => { if (menuRequestId !== 0) handleMenuRequest() }, [menuRequestId])
+  useEffect(() => {
+    if (previousBackRequest.current === backRequestId) return
+    previousBackRequest.current = backRequestId
+    handleBackRequest()
+  }, [backRequestId])
+  useEffect(() => {
+    if (previousMenuRequest.current === menuRequestId) return
+    previousMenuRequest.current = menuRequestId
+    handleMenuRequest()
+  }, [menuRequestId])
   const acceptSavedRevision = useEffectEvent(() => {
     setDrafts([])
     setEditorDraft(EMPTY_DRAFT)

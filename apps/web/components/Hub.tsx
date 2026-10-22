@@ -49,6 +49,7 @@ export default function Hub({
     onApply: (drafts: readonly CustomValueDraft[]) => void
     onExport: () => Promise<void>
     onNavigationBlockedChange: (blocked: boolean) => void
+    onClosed: () => void
   }
   isBattlePending?: boolean
   appearance: Heroes99Appearance
@@ -85,17 +86,16 @@ export default function Hub({
     (blocked: boolean) => {
       setIsDraftNavigationBlocked(blocked)
       onNavigationBlockedChange?.(blocked)
-      if (!blocked) document.getElementById("hub-add-custom-value-button")?.focus()
     },
     [onNavigationBlockedChange],
   )
-  const previousDeckRevision = useRef(customValueInvitation?.deckRevision)
+  const wasDraftActive = useRef(false)
   useEffect(() => {
-    if (previousDeckRevision.current !== customValueInvitation?.deckRevision) {
-      previousDeckRevision.current = customValueInvitation?.deckRevision
+    if (wasDraftActive.current && !isDraftNavigationBlocked) {
       document.getElementById("hub-add-custom-value-button")?.focus()
     }
-  }, [customValueInvitation?.deckRevision])
+    wasDraftActive.current = isDraftNavigationBlocked
+  }, [isDraftNavigationBlocked])
 
   return (
     <MapacheScreen
@@ -144,7 +144,10 @@ export default function Hub({
           onApply={customValueInvitation.onApply}
           onExport={customValueInvitation.onExport}
           onNavigationBlockedChange={handleDraftNavigationBlockedChange}
-          onExit={target => { if (target === "menu") onOpenMenu() }}
+          onExit={target => {
+            customValueInvitation.onClosed()
+            if (target === "menu") onOpenMenu()
+          }}
         />
       )}
       {!isDraftNavigationBlocked && <><div className="relative isolate flex min-h-min w-full max-w-7xl min-w-0 flex-1 flex-col overflow-hidden">

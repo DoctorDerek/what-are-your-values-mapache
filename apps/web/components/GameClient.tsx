@@ -877,6 +877,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
               ? {
                   editorRequestId: customValueBuilderRequestId,
                   backRequestId: customValueBackRequestId,
+                  onClosed: () => setCustomValueBuilderRequestId(0),
                   initialName: customValueInitialName,
                   deckRevision:
                     state.context.playerData.profile.scheduler.deckRevision,
