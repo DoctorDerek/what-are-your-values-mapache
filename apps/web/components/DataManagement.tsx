@@ -10,9 +10,9 @@ import { useEffect, useRef } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import { WAYVM_IMPORT_FILE_ACCEPT } from "@/lib/PlayerDataFiles"
-import PlayerDataImportPreview from "./PlayerDataImportPreview"
-import PlayerDataResetActions from "./PlayerDataResetActions"
-import PlayerDataResetReview from "./PlayerDataResetReview"
+import PlayerDataImportPreview from "@/components/PlayerDataImportPreview"
+import PlayerDataResetActions from "@/components/PlayerDataResetActions"
+import PlayerDataResetReview from "@/components/PlayerDataResetReview"
 
 export type DataManagementActivity = string
 
@@ -139,12 +139,8 @@ export default function DataManagement({
 
       <div
         aria-busy={isBusy}
-        className="mt-8 flex w-full max-w-5xl flex-col gap-5"
+        className="mt-5 flex w-full max-w-5xl flex-col gap-5 [&_button]:max-w-full [&_button]:whitespace-normal"
       >
-        <p className="text-lg font-bold text-white sm:text-xl">
-          {playerDataPortabilityCopy.introduction}
-        </p>
-
         {activity ? (
           <p
             role="status"
@@ -201,9 +197,6 @@ export default function DataManagement({
                 >
                   {playerDataPortabilityCopy.exportTitle}
                 </h2>
-                <p className="text-mapache-vivid-dark flex-1 py-5 text-lg font-bold sm:text-xl">
-                  {playerDataPortabilityCopy.exportDescription}
-                </p>
                 <Button
                   type="button"
                   size="lg"
@@ -213,6 +206,9 @@ export default function DataManagement({
                 >
                   {playerDataPortabilityCopy.exportAction}
                 </Button>
+                <p className="text-mapache-vivid-dark pt-4 font-bold">
+                  {playerDataPortabilityCopy.exportDescription}
+                </p>
               </section>
 
               <section
@@ -225,9 +221,6 @@ export default function DataManagement({
                 >
                   {playerDataPortabilityCopy.importTitle}
                 </h2>
-                <p className="text-mapache-vivid-dark flex-1 py-5 text-lg font-bold sm:text-xl">
-                  {playerDataPortabilityCopy.importDescription}
-                </p>
                 <input
                   ref={importInputRef}
                   type="file"
@@ -252,8 +245,12 @@ export default function DataManagement({
                 >
                   {playerDataPortabilityCopy.chooseBackupAction}
                 </Button>
+                <p className="text-mapache-vivid-dark pt-4 font-bold">
+                  {playerDataPortabilityCopy.importDescription}
+                </p>
               </section>
             </div>
+            <p className="font-bold text-white">{playerDataPortabilityCopy.introduction}</p>
             <PlayerDataResetActions
               customValueCount={customValueCount}
               isBusy={isBusy}
