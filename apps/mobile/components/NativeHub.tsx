@@ -1,18 +1,21 @@
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
+import type { CustomValueAuthoringOptions } from "@game/data/src/useCustomValueAuthoring"
 import { projectHubValues } from "@game/data/src/HubValueProjection"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { cx } from "classix"
-import type { ReactNode } from "react"
+import { useCallback, useState, type ReactNode } from "react"
 import { ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
+import NativeCustomValueInvitation from "@/components/NativeCustomValueInvitation"
 import NativeHeroes99Hero from "@/components/NativeHeroes99Hero"
 import NativeHubValueRow from "@/components/NativeHubValueRow"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 
 export default function NativeHub({
+  customValueInvitation,
   appearance,
   isBattlePending = false,
   rankedValues,
@@ -27,6 +30,10 @@ export default function NativeHub({
   onCustomize,
   onShare,
 }: {
+  customValueInvitation?: Omit<CustomValueAuthoringOptions, "existingCustomValues" | "onExit"> & {
+    saveIssue: string | null
+    onClosed: () => void
+  }
   appearance: Heroes99Appearance
   isBattlePending?: boolean
   rankedValues: readonly RankedValue[]
@@ -48,11 +55,18 @@ export default function NativeHub({
   const presentationLoadingCopy = localizedCopy.interfaceCopy.loading
   const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
   const VALUES_CARD_COPY = localizedCopy.card
+  const [isDraftActive, setIsDraftActive] = useState(false)
+  const [menuRequestId, setMenuRequestId] = useState(0)
+  const onNavigationBlockedChange = customValueInvitation?.onNavigationBlockedChange
+  const handleDraftNavigationBlockedChange = useCallback((blocked: boolean) => {
+    setIsDraftActive(blocked)
+    onNavigationBlockedChange?.(blocked)
+  }, [onNavigationBlockedChange])
 
   const { hasComparisons, topFive } = projectHubValues(rankedValues)
   return (
     <MapacheScreen>
-      <ScrollView contentContainerClassName="items-center gap-4 p-4 pb-10 xl:gap-5 xl:p-6">
+      <View className="min-h-0 flex-1 items-center gap-4 p-4 xl:gap-5 xl:p-6">
         <View className="w-full max-w-7xl flex-row flex-wrap items-center justify-between gap-3">
           <Text
             accessibilityRole="header"
@@ -65,7 +79,8 @@ export default function NativeHub({
             className="ml-auto"
             size="compact"
             variant="secondary"
-            onPress={onOpenMenu}
+            disabled={customValueInvitation?.isSaving}
+            onPress={() => isDraftActive ? setMenuRequestId(id => id + 1) : onOpenMenu()}
           >
             <Text>{PRODUCT_MENU_COPY.openAction}</Text>
           </Button>
@@ -78,6 +93,17 @@ export default function NativeHub({
             {dataNotice}
           </Text>
         )}
+        {customValueInvitation && (
+          <NativeCustomValueInvitation {...customValueInvitation}
+            menuRequestId={menuRequestId}
+            existingCustomValues={rankedValues.flatMap(({definition}) => definition.kind === "custom" ? [definition] : [])}
+            onNavigationBlockedChange={handleDraftNavigationBlockedChange}
+            onExit={target => {
+              customValueInvitation.onClosed()
+              if (target === "menu") onOpenMenu()
+            }} />
+        )}
+        {!isDraftActive && <ScrollView className="w-full" contentContainerClassName="items-center gap-4 pb-6 xl:gap-5">
         <View className="border-player-card-frame bg-player-card-background relative w-full max-w-7xl flex-row flex-wrap overflow-hidden border-4">
           <View
             accessible
@@ -212,7 +238,8 @@ export default function NativeHub({
             </Button>
           </View>
         </View>
-      </ScrollView>
+        </ScrollView>}
+      </View>
     </MapacheScreen>
   )
 }

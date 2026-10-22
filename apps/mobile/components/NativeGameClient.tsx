@@ -27,6 +27,7 @@ import {
   type PlayerDataResetKind,
   type PlayerDataResetReview,
 } from "@game/machines/src/PlayerDataReset"
+import { prepareWayvmDownload } from "@game/machines/src/PlayerDataPortabilityActors"
 import { resolveShouldReduceMotion } from "@game/machines/src/PlayerSettingsPresentation"
 import { projectRootBackDisposition } from "@game/machines/src/RootNavigation"
 import type { RootActor } from "@game/machines/src/RuntimeRecovery"
@@ -66,6 +67,7 @@ import NativeValuesCardShare from "@/components/NativeValuesCardShare"
 import useNativePlayerDataFiles from "@/components/useNativePlayerDataFiles"
 import { SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG } from "@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog"
 import { createNativeAppLifecycleEvent } from "@/lib/NativeAppLifecycleEvents"
+import { expoPlayerDataFileAdapter } from "@/lib/ExpoPlayerDataFiles"
 
 export default function NativeGameClient() {
   const [sessionRevision, setSessionRevision] = useState(0)
@@ -104,8 +106,9 @@ function NativeGameClientContent({
     useState<InformationPanelId | null>(null)
   const [pendingAllValuesValueId, setPendingAllValuesValueId] =
     useState<ValueId | null>(null)
-  const [shouldOpenCustomValueBuilder, setShouldOpenCustomValueBuilder] =
-    useState(false)
+  const [customValueInitialName, setCustomValueInitialName] = useState("")
+  const [isCustomValueDraftActive, setIsCustomValueDraftActive] = useState(false)
+  const [customValueBackRequestId, setCustomValueBackRequestId] = useState(0)
   const [customValueBuilderRequestId, setCustomValueBuilderRequestId] =
     useState(0)
   const state = useRecoverableActorSnapshot(gameActor)
@@ -194,6 +197,10 @@ function NativeGameClientContent({
           setIsProductMenuOpen(false)
           return true
         }
+        if (isCustomValueDraftActive) {
+          setCustomValueBackRequestId(id => id + 1)
+          return true
+        }
         if (isAllValuesNavigationBlocked || isReadingImportFile) return true
         const disposition = projectRootBackDisposition(state)
         if (disposition.kind === "event") send(disposition.event)
@@ -206,6 +213,7 @@ function NativeGameClientContent({
     isControlsOpen,
     isProductMenuOpen,
     isAllValuesNavigationBlocked,
+    isCustomValueDraftActive,
     isReadingImportFile,
     send,
     state,
@@ -216,7 +224,8 @@ function NativeGameClientContent({
     sharedCard === null &&
     !isProductMenuOpen &&
     activeInformationPanelId === null &&
-    !isControlsOpen
+    !isControlsOpen &&
+    !isCustomValueDraftActive
   if (isBattleRequested && !canAwaitBattle) setIsBattleRequested(false)
   useEffect(() => {
     if (isBattleRequested && canAwaitBattle && isBattlePrepared) {
@@ -246,23 +255,19 @@ function NativeGameClientContent({
   const openAllValues = useCallback(
     ({
       valueId = null,
-      openCustomValueBuilder = false,
     }: {
       readonly valueId?: ValueId | null
-      readonly openCustomValueBuilder?: boolean
     }) => {
       setPendingAllValuesValueId(valueId)
-      setShouldOpenCustomValueBuilder(openCustomValueBuilder)
-      if (openCustomValueBuilder)
-        setCustomValueBuilderRequestId((requestId) => requestId + 1)
       send({ type: "ALL_VALUES.OPEN_REQUESTED" })
     },
     [send],
   )
   const handleAddCustomValue = useCallback(
-    (name: string, definition: string) => {
-      setShouldOpenCustomValueBuilder(false)
-      send({ type: "ALL_VALUES.ADD_REQUESTED", name, definition })
+    (name = "") => {
+      setCustomValueInitialName(name)
+      setCustomValueBuilderRequestId((requestId) => requestId + 1)
+      send({ type: "ALL_VALUES.CLOSE_REQUESTED" })
     },
     [send],
   )
@@ -305,7 +310,7 @@ function NativeGameClientContent({
         send({ type: "DATA_MANAGEMENT.CLOSE_REQUESTED" })
       const destinationActions = {
         "browse-all-values": () => openAllValues({}),
-        "custom-values": () => openAllValues({ openCustomValueBuilder: true }),
+        "custom-values": () => handleAddCustomValue(),
         achievements: () => send({ type: "ACHIEVEMENTS.OPEN_REQUESTED" }),
         "import-export": () => send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" }),
       } satisfies Record<
@@ -315,7 +320,7 @@ function NativeGameClientContent({
 
       destinationActions[destination.id]()
     },
-    [openAllValues, send, state],
+    [handleAddCustomValue, openAllValues, send, state],
   )
   const closeInformationPanel = useCallback(
     () => setActiveInformationPanelId(null),
@@ -515,6 +520,7 @@ function NativeGameClientContent({
     state.context.backgroundCheckpointReturnTarget
   const isHubSurface =
     state.matches("Hub") ||
+    state.matches("AddingCustomValues") ||
     (isRecordingAchievementPresentation &&
       achievementPresentationReturnTarget === "hub") ||
     (isBackgroundCheckpointing && backgroundCheckpointReturnTarget === "hub")
@@ -625,6 +631,29 @@ function NativeGameClientContent({
     return (
       <View className="flex-1">
         <NativeHub
+          customValueInvitation={{
+            editorRequestId: customValueBuilderRequestId,
+            backRequestId: customValueBackRequestId,
+            initialName: customValueInitialName,
+            deckRevision: battleProfile.scheduler.deckRevision,
+            isSaving: state.matches("AddingCustomValues"),
+            saveIssue: state.context.persistenceIssue,
+            onNavigationBlockedChange: setIsCustomValueDraftActive,
+            onClosed: () => setCustomValueBuilderRequestId(0),
+            onApply: drafts => {
+              setCustomValueBuilderRequestId(0)
+              send({type: "HUB.CUSTOM_VALUES_APPLY_REQUESTED", drafts})
+            },
+            onExport: async () => {
+              const prepared = await prepareWayvmDownload({
+                exportedAt: new Date().toISOString(),
+                sourceAppVersion: state.context.appVersion,
+                sourceBuild: state.context.sourceBuild,
+                playerData,
+              })
+              await expoPlayerDataFileAdapter.exportJson(prepared)
+            },
+          }}
           notifications={achievementBanner}
           appearance={playerData.appearance}
           onShare={() =>
@@ -642,9 +671,7 @@ function NativeGameClientContent({
           runtimeClipCatalog={SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG}
           dataNotice={state.context.portabilityNotice}
           shouldReduceMotion={shouldReduceMotion}
-          onAddCustomValue={() =>
-            openAllValues({ openCustomValueBuilder: true })
-          }
+          onAddCustomValue={() => handleAddCustomValue()}
           onBrowseAllValues={() => openAllValues({})}
           onOpenMenu={() => setIsProductMenuOpen(true)}
           isBattlePending={isBattleRequested}
@@ -826,13 +853,12 @@ function NativeGameClientContent({
       <View className="flex-1">
         <NativeAllValues
           localization={getLocaleCatalog(playerData.settings.locale)}
-          key={`${battleProfile.scheduler.deckRevision}:${customValueBuilderRequestId}`}
+          key={battleProfile.scheduler.deckRevision}
           initialValueId={pendingAllValuesValueId}
           isPersistencePending={
             isBackgroundCheckpointing ||
             state.matches({ AllValues: "Persisting" })
           }
-          openCustomValueBuilder={shouldOpenCustomValueBuilder}
           persistenceIssue={state.context.persistenceIssue}
           rankedValues={rankedValues}
           onAddCustomValue={handleAddCustomValue}
