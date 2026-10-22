@@ -42,6 +42,7 @@ export const playerDataPortabilityCopy = Object.freeze({
     "Choose a WAYVM JSON backup. The app will validate it and show you a preview before replacing data on this device.",
   chooseBackupAction: "Choose Backup",
   importPreviewTitle: "Review Import",
+  technicalDetails: "Technical details",
   importPreviewWarning:
     "Importing this backup will replace the current WAYVM data on this device. A local safety backup will be created first.",
   importCancelAction: "Cancel",
