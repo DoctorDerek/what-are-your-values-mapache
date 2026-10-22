@@ -28,9 +28,7 @@ export default function NativeAllValues({
   onAddCustomValue,
   onClose,
   onDeleteCustomValue,
-  onOpenMenu,
   onUpdateCustomValue,
-  openCustomValueBuilder = false,
   persistenceIssue = null,
   rankedValues,
   localization: localizationOverride,
@@ -39,7 +37,7 @@ export default function NativeAllValues({
   readonly localization?: LocalizationCatalog
   readonly initialValueId?: ValueId | null
   readonly isPersistencePending?: boolean
-  readonly onAddCustomValue: (name: string, definition: string) => void
+  readonly onAddCustomValue: (name: string) => void
   readonly onClose: () => void
   readonly onDeleteCustomValue: (valueId: CustomValueId) => void
   readonly onOpenMenu: () => void
@@ -48,20 +46,15 @@ export default function NativeAllValues({
     name: string,
     definition: string,
   ) => void
-  readonly openCustomValueBuilder?: boolean
   readonly persistenceIssue?: string | null
   readonly rankedValues: readonly RankedValue[]
   readonly onNavigationBlockedChange?: (isBlocked: boolean) => void
 }) {
   const localizedCopy = useLocaleCatalog(localizationOverride)
   const localization = localizedCopy
-  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
 
   const listRef = useRef<FlatList<RankedValue>>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [isAddingCustomValue, setIsAddingCustomValue] = useState(
-    openCustomValueBuilder,
-  )
   const [editingValueId, setEditingValueId] = useState<CustomValueId | null>(
     null,
   )
@@ -73,7 +66,6 @@ export default function NativeAllValues({
   )
   const isNavigationBlocked =
     isPersistencePending ||
-    isAddingCustomValue ||
     editingValueId !== null ||
     deletingValueId !== null
   const { existingCustomValues, hasComparisons, visibleValues } = useMemo(
@@ -106,7 +98,6 @@ export default function NativeAllValues({
   }, [highlightedValueId, visibleValues])
 
   const openMatchingValue = (valueId: ValueId) => {
-    setIsAddingCustomValue(false)
     setEditingValueId(null)
     setDeletingValueId(null)
     setSearchQuery("")
@@ -116,41 +107,37 @@ export default function NativeAllValues({
   return (
     <MapacheScreen>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1 px-4 pb-4"
       >
-        <View className="gap-4 border-b-4 border-black py-4">
-          <View className="min-w-0 flex-1">
+        <View className="gap-2 border-b-4 border-black py-3">
+          <View className="min-w-0">
             <Text
               variant="h1"
-              className="text-mapache-vivid-primary-cyan text-left text-4xl font-black tracking-tight uppercase"
+              className="text-mapache-vivid-primary-cyan text-left text-2xl font-black uppercase xl:text-4xl"
             >
               {localizedCopy.interfaceCopy.screen.allValues}
             </Text>
-            <Text className="mt-1 text-lg font-black text-white uppercase">
+            <Text className="text-sm font-bold text-white">
               {localizedCopy.interfaceCopy.screen.activeValues(
                 String(rankedValues.length),
               )}
             </Text>
           </View>
-          <View className="flex-row gap-3">
-            <Button
-              className="flex-1"
-              disabled={isNavigationBlocked}
-              variant="outline"
-              onPress={onOpenMenu}
-            >
-              <Text>{PRODUCT_MENU_COPY.openAction}</Text>
-            </Button>
-            <Button
-              className="flex-1"
-              disabled={isNavigationBlocked}
-              variant="destructive"
-              onPress={onClose}
-            >
-              <Text>{localizedCopy.interfaceCopy.screen.close}</Text>
-            </Button>
+          <View className="flex-row flex-wrap justify-between gap-x-3">
+            <Text className="font-black text-white">{localizedCopy.interfaceCopy.screen.searchAllValues}</Text>
+            <Text accessibilityLiveRegion="polite" className="text-sm font-bold text-white">
+              {localizedCopy.interfaceCopy.screen.valuesShown(visibleValues.length, String(visibleValues.length))}
+            </Text>
           </View>
+          <TextInput
+            accessibilityLabel={localizedCopy.interfaceCopy.screen.searchAllValues}
+            className="min-h-12 border-4 border-black bg-white p-2 text-lg font-bold text-black"
+            onChangeText={setSearchQuery}
+            placeholder={localizedCopy.interfaceCopy.screen.searchPlaceholder}
+            returnKeyType="search"
+            value={searchQuery}
+          />
         </View>
 
         <FlatList
@@ -169,30 +156,6 @@ export default function NativeAllValues({
           }
           ListHeaderComponent={
             <View className="gap-4">
-              <Text className="text-xl font-black text-white uppercase">
-                {localizedCopy.interfaceCopy.screen.searchAllValues}
-              </Text>
-              <TextInput
-                accessibilityLabel={
-                  localizedCopy.interfaceCopy.screen.searchAllValues
-                }
-                className="min-h-14 border-4 border-black bg-white p-3 text-xl font-bold text-black"
-                onChangeText={setSearchQuery}
-                placeholder={
-                  localizedCopy.interfaceCopy.screen.searchPlaceholder
-                }
-                returnKeyType="search"
-                value={searchQuery}
-              />
-              <Text
-                accessibilityLiveRegion="polite"
-                className="text-base font-black text-white uppercase"
-              >
-                {localizedCopy.interfaceCopy.screen.valuesShown(
-                  visibleValues.length,
-                  String(visibleValues.length),
-                )}
-              </Text>
               {persistenceIssue ? (
                 <View
                   accessibilityLabel={
@@ -209,30 +172,6 @@ export default function NativeAllValues({
                   </Text>
                 </View>
               ) : null}
-              {isAddingCustomValue ? (
-                <NativeCustomValueForm
-                  existingCustomValues={existingCustomValues}
-                  isPersistencePending={isPersistencePending}
-                  mode="add"
-                  onCancel={() => setIsAddingCustomValue(false)}
-                  onOpenMatchingValue={openMatchingValue}
-                  onSubmit={onAddCustomValue}
-                  rankedValues={rankedValues}
-                />
-              ) : (
-                <Button
-                  disabled={isPersistencePending}
-                  onPress={() => {
-                    setEditingValueId(null)
-                    setDeletingValueId(null)
-                    setIsAddingCustomValue(true)
-                  }}
-                >
-                  <Text>
-                    {localizedCopy.interfaceCopy.screen.addCustomValue}
-                  </Text>
-                </Button>
-              )}
             </View>
           }
           onScrollToIndexFailed={({ averageItemLength, index }) =>
@@ -261,7 +200,7 @@ export default function NativeAllValues({
                 {startsTopFive ? (
                   <Text
                     accessibilityRole="header"
-                    className="border-b-4 border-white py-3 text-3xl font-black text-white uppercase"
+                    className="border-b-4 border-black py-2 text-lg font-black text-white uppercase"
                   >
                     {localizedCopy.interfaceCopy.screen.topFive}
                   </Text>
@@ -269,7 +208,7 @@ export default function NativeAllValues({
                 {startsAllOtherValues ? (
                   <Text
                     accessibilityRole="header"
-                    className="bg-mapache-vivid-primary-cyan border-y-8 border-black px-4 py-3 text-center text-2xl font-black text-black uppercase"
+                    className="border-b-4 border-black py-2 text-lg font-black text-white uppercase"
                   >
                     {localizedCopy.interfaceCopy.screen.remainingValues}
                   </Text>
@@ -321,6 +260,14 @@ export default function NativeAllValues({
             )
           }}
         />
+        <View className="flex-row flex-wrap gap-3 border-t-4 border-black pt-3 pb-2">
+          <Button size="compact" className="basis-readable-action min-w-0 grow shrink" disabled={isNavigationBlocked} variant="outline" onPress={onClose}>
+            <Text>{localizedCopy.interfaceCopy.dressingRoom.back}</Text>
+          </Button>
+          <Button size="compact" className="basis-readable-action min-w-0 grow shrink" disabled={isNavigationBlocked} onPress={() => onAddCustomValue(visibleValues.length === 0 ? searchQuery.trim() : "")}>
+            <Text>{localizedCopy.hub.add}</Text>
+          </Button>
+        </View>
       </KeyboardAvoidingView>
     </MapacheScreen>
   )
