@@ -67,7 +67,7 @@ export default function NativeDataManagement({
         >
           {playerDataPortabilityCopy.screenTitle}
         </Text>
-        <View className="flex-row gap-3">
+        {!preview && <View className="flex-row flex-wrap gap-3">
           <Button
             className="flex-1"
             disabled={isNavigationBlocked}
@@ -84,19 +84,21 @@ export default function NativeDataManagement({
           >
             <Text>{localizedCopy.interfaceCopy.screen.backToValues}</Text>
           </Button>
-        </View>
+        </View>}
       </View>
 
+      {preview && !resetReview ? (
+        <View className="min-h-0 flex-1 gap-2 p-3">
+          <NativeOperationMessages activity={activity} issue={issue} notice={notice} />
+          <NativePlayerDataImportPreview isBusy={isBusy} preview={preview} onCancel={onCancelImport} onConfirm={onConfirmImport} />
+        </View>
+      ) : (
       <ScrollView
         className="flex-1"
         contentContainerClassName="gap-5 p-5 pb-10"
         keyboardShouldPersistTaps="handled"
       >
         <View accessibilityState={{ busy: isBusy }} className="gap-5">
-          <Text className="text-lg leading-7 font-bold text-white">
-            {playerDataPortabilityCopy.introduction}
-          </Text>
-
           <NativeOperationMessages
             activity={activity}
             issue={issue}
@@ -112,13 +114,6 @@ export default function NativeDataManagement({
               onConfirm={onConfirmReset}
               onExport={onExport}
             />
-          ) : preview ? (
-            <NativePlayerDataImportPreview
-              isBusy={isBusy}
-              preview={preview}
-              onCancel={onCancelImport}
-              onConfirm={onConfirmImport}
-            />
           ) : (
             <>
               <View className="gap-4 border-4 border-black bg-white p-5 shadow-[6px_6px_0px_0px_#000000]">
@@ -128,12 +123,10 @@ export default function NativeDataManagement({
                 >
                   {playerDataPortabilityCopy.exportTitle}
                 </Text>
-                <Text className="text-lg leading-7 font-bold text-black">
-                  {playerDataPortabilityCopy.exportDescription}
-                </Text>
                 <Button disabled={isBusy} onPress={onExport}>
                   <Text>{playerDataPortabilityCopy.exportAction}</Text>
                 </Button>
+                <Text className="font-bold text-black">{playerDataPortabilityCopy.exportDescription}</Text>
               </View>
 
               <View className="gap-4 border-4 border-black bg-white p-5 shadow-[6px_6px_0px_0px_#000000]">
@@ -143,9 +136,6 @@ export default function NativeDataManagement({
                 >
                   {playerDataPortabilityCopy.importTitle}
                 </Text>
-                <Text className="text-lg leading-7 font-bold text-black">
-                  {playerDataPortabilityCopy.importDescription}
-                </Text>
                 <Button
                   disabled={isBusy}
                   variant="secondary"
@@ -153,8 +143,10 @@ export default function NativeDataManagement({
                 >
                   <Text>{playerDataPortabilityCopy.chooseBackupAction}</Text>
                 </Button>
+                <Text className="font-bold text-black">{playerDataPortabilityCopy.importDescription}</Text>
               </View>
 
+              <Text className="font-bold text-white">{playerDataPortabilityCopy.introduction}</Text>
               <NativePlayerDataResetActions
                 customValueCount={customValueCount}
                 isBusy={isBusy}
@@ -164,6 +156,7 @@ export default function NativeDataManagement({
           )}
         </View>
       </ScrollView>
+      )}
     </MapacheScreen>
   )
 }
