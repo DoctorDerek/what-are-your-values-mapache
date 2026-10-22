@@ -4,19 +4,23 @@ import {
 } from "@game/data/src/CustomValueValidation"
 import useCustomValueAuthoring, { type CustomValueAuthoringOptions } from "@game/data/src/useCustomValueAuthoring"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
+import { getValueDisplayName } from "@game/data/src/Value"
+import type { RankedValue } from "@game/data/src/ValueRanking"
+import { findRankedValueNameMatches } from "@game/data/src/ValueSearch"
 import { useEffect, useRef } from "react"
-import { KeyboardAvoidingView, Modal, Platform, ScrollView, TextInput, View } from "react-native"
+import { Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, TextInput, View } from "react-native"
 import NativeCustomValueFieldFeedback from "@/components/NativeCustomValueFieldFeedback"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 
 export default function NativeCustomValueInvitation({
-  saveIssue, ...options
-}: CustomValueAuthoringOptions & {saveIssue: string | null}) {
+  saveIssue, rankedValues = [], ...options
+}: CustomValueAuthoringOptions & {saveIssue: string | null; rankedValues?: readonly RankedValue[]}) {
   const localization = useLocaleCatalog()
   const copy = localization.interfaceCopy.customValues
   const leaveCopy = localization.interfaceCopy.dressingRoom
   const authoring = useCustomValueAuthoring(options)
+  const matchingValues = findRankedValueNameMatches(rankedValues, authoring.editorDraft.name, localization.values)
   const nameInput = useRef<TextInput>(null)
   const definitionInput = useRef<TextInput>(null)
   useEffect(() => {
@@ -24,11 +28,14 @@ export default function NativeCustomValueInvitation({
   }, [options.editorRequestId, authoring.isOpen])
   if (!authoring.isActive) return null
   return (
+    <>
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
+      accessibilityElementsHidden={authoring.leaveTarget !== null}
+      importantForAccessibility={authoring.leaveTarget !== null ? "no-hide-descendants" : "auto"}
       className="min-h-0 w-full max-w-7xl flex-1 self-center border-4 border-black bg-white"
     >
-      <ScrollView className="min-h-24 flex-1" contentContainerClassName="gap-3 p-3 xl:p-5" keyboardShouldPersistTaps="handled">
+      <ScrollView className="min-h-0 flex-1" contentContainerClassName="gap-3 p-3 xl:p-5" keyboardShouldPersistTaps="handled">
         <Text accessibilityRole="header" className="text-xl font-black text-black uppercase">{copy.editorTitle}</Text>
         <Text className="text-sm text-black">{copy.example}</Text>
         <Text className="font-bold text-black">{copy.name}</Text>
@@ -50,6 +57,10 @@ export default function NativeCustomValueInvitation({
           onChangeText={definition => authoring.setEditorDraft({...authoring.editorDraft, definition})} />
         <NativeCustomValueFieldFeedback field="definition" maximumGraphemeCount={CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES}
           showValidationMessage={authoring.editorDraft.definition.length > 0} validation={authoring.editorValidation.definition} />
+        {matchingValues.map(({definition}) => <Button key={definition.id} variant="outline" size="compact" disabled={authoring.isBusy}
+          onPress={() => authoring.requestExit({valueId: definition.id})}>
+          <Text>{localization.interfaceCopy.screen.openValue(getValueDisplayName(definition, localization.values))}</Text>
+        </Button>)}
         {authoring.drafts.length > 0 && (
           <View className="gap-3 border-t-2 border-black pt-3">
             <Text accessibilityRole="header" className="font-bold text-black">{copy.drafts}</Text>
@@ -77,13 +88,15 @@ export default function NativeCustomValueInvitation({
             <Button variant="outline" size="compact" disabled={authoring.isBusy} onPress={authoring.exportData}>
               <Text>{authoring.isExporting ? copy.exporting : copy.export}</Text>
             </Button>
+            {authoring.hasUnfinishedDraft && authoring.drafts.length > 0 && <Button variant="outline" size="compact" disabled={authoring.isBusy}
+              onPress={authoring.discardUnfinished}><Text>{copy.discardUnfinished}</Text></Button>}
             {authoring.hasChanges && <Button variant="outline" size="compact" disabled={authoring.isBusy}
               onPress={() => authoring.requestExit()}><Text>{leaveCopy.discard}</Text></Button>}
           </View>
           {authoring.hasChanges && <Text className="text-sm text-black">{copy.unsaved}</Text>}
         </View>
       </ScrollView>
-      <View className="shrink-0 gap-3 border-t-4 border-black p-3 pb-5">
+      <ScrollView className="max-h-1/2 grow-0 shrink-0 border-t-4 border-black" contentContainerClassName="gap-3 p-3 pb-5" keyboardShouldPersistTaps="handled">
         {options.isSaving && <Text accessibilityLiveRegion="polite" className="text-black">{copy.saving}</Text>}
         {(saveIssue || authoring.exportIssue) && <Text accessibilityRole="alert" className="font-bold text-black">{saveIssue || authoring.exportIssue}</Text>}
         <View className="flex-row flex-wrap gap-3">
@@ -92,9 +105,10 @@ export default function NativeCustomValueInvitation({
           <Button className="basis-readable-action min-w-0 shrink grow" size="compact"
             disabled={authoring.isBusy || !authoring.canApply} onPress={authoring.saveAdditions}><Text>{copy.apply}</Text></Button>
         </View>
-      </View>
-      <Modal visible={authoring.leaveTarget !== null} transparent onRequestClose={authoring.keepEditing}>
-        <View className="flex-1 justify-center bg-black/70 p-4">
+      </ScrollView>
+    </KeyboardAvoidingView>
+      <Modal visible={authoring.leaveTarget !== null} transparent onShow={Keyboard.dismiss} onRequestClose={authoring.keepEditing}>
+        <View accessibilityViewIsModal className="flex-1 justify-center bg-black/70 p-4">
           <ScrollView className="max-h-full grow-0 border-4 border-black bg-white" contentContainerClassName="gap-4 p-5" keyboardShouldPersistTaps="handled">
             <Text accessibilityRole="header" className="text-xl font-black text-black">{leaveCopy.keepTitle}</Text>
             <Button disabled={!authoring.canApply || authoring.isBusy} onPress={authoring.saveAdditions}><Text>{leaveCopy.saveReturn}</Text></Button>
@@ -103,6 +117,6 @@ export default function NativeCustomValueInvitation({
           </ScrollView>
         </View>
       </Modal>
-    </KeyboardAvoidingView>
+    </>
   )
 }

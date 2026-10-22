@@ -1,12 +1,12 @@
 "use client"
 
-import { validateCustomValueBatch, type CustomValueDraft } from "@game/data/src/CustomValueDraft"
-import type { CustomValueDefinition } from "@game/data/src/Value"
+import { validateCustomValueBatch, type CustomValueDraft } from "./CustomValueDraft"
+import type { CustomValueDefinition, ValueId } from "./Value"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { useEffect, useEffectEvent, useRef, useState } from "react"
 
 type DraftEntry = CustomValueDraft & Readonly<{ key: number }>
-type ExitTarget = "home" | "menu"
+type ExitTarget = "home" | "menu" | Readonly<{ valueId: ValueId }>
 const EMPTY_DRAFT: CustomValueDraft = Object.freeze({ name: "", definition: "" })
 
 export type CustomValueAuthoringOptions = {
@@ -133,6 +133,7 @@ export default function useCustomValueAuthoring({
     drafts, editorDraft, editorValidation, isOpen, isActive, isBusy, isExporting, exportIssue, hasChanges, hasUnfinishedDraft, editingKey, canApply, leaveTarget,
     setEditorDraft, requestExit, discardAndExit, saveAdditions, queueDraft, exportData,
     keepEditing: () => setLeaveTarget(null),
+    discardUnfinished: () => { setEditingKey(null); setEditorDraft(EMPTY_DRAFT) },
     editDraft: (draft: DraftEntry) => { setEditingKey(draft.key); setEditorDraft({name: draft.name, definition: draft.definition}) },
     removeDraft: (key: number) => setDrafts(drafts.filter(draft => draft.key !== key)),
   }

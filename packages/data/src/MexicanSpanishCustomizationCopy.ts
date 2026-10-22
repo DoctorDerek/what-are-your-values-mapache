@@ -10,16 +10,10 @@ export const MEXICAN_SPANISH_CUSTOMIZATION_COPY: Pick<
       "Por ejemplo: Trabajo bien hecho — hacer las cosas con cuidado y sentir orgullo por hacerlas bien",
     name: "Nombre del valor",
     definition: "Definición",
-    addDraft: "Revisar y guardar",
-    updateDraft: "Revisar y guardar",
     back: "Volver",
     drafts: "Valores por agregar",
     another: "Agregar otro",
-    continueDraft: "Seguir editando",
     discardUnfinished: "Descartar edición sin terminar",
-    draftCount: "pendientes · aún sin guardar",
-    review: "Revisar y guardar",
-    reviewTitle: "¿Guardar estos valores?",
     consequences:
       "Los valores nuevos empiezan en el nivel 1 con 0 XP. Los valores existentes conservan su progreso. Agregar valores reinicia el emparejamiento de las batallas y borra los historiales de Deshacer y Rehacer. Tu configuración y tus logros no cambian.",
     export: "Exportar datos",
@@ -28,11 +22,8 @@ export const MEXICAN_SPANISH_CUSTOMIZATION_COPY: Pick<
     saving: "Guardando tus valores…",
     saved:
       "Tus valores personalizados se guardaron y ya pueden participar en las batallas.",
-    discard: "Descartar valores pendientes",
     unsaved:
       "Aún no se han guardado. Guarda o descarta tus valores pendientes antes de salir.",
-    invalid:
-      "Corrige los errores señalados en los borradores antes de aplicar los cambios.",
     edit: "Editar",
     remove: "Quitar",
   },

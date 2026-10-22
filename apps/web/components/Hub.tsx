@@ -5,6 +5,7 @@ import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
+import type { ValueId } from "@game/data/src/Value"
 import type { StaticImageData } from "next/image"
 import {
   useCallback,
@@ -50,6 +51,7 @@ export default function Hub({
     onExport: () => Promise<void>
     onNavigationBlockedChange: (blocked: boolean) => void
     onClosed: () => void
+    onOpenMatchingValue: (valueId: ValueId) => void
   }
   isBattlePending?: boolean
   appearance: Heroes99Appearance
@@ -99,7 +101,7 @@ export default function Hub({
 
   return (
     <MapacheScreen
-      spacing="readable-xl"
+      spacing={isDraftNavigationBlocked ? "authoring" : "readable-xl"}
       viewport="scrollable"
       className="flex h-[100dvh] min-w-0 flex-col items-center gap-[16px] xl:gap-4"
     >
@@ -131,6 +133,7 @@ export default function Hub({
       )}
       {customValueInvitation && (
         <CustomValueInvitation
+          rankedValues={rankedValues}
           deckRevision={customValueInvitation.deckRevision}
           editorRequestId={customValueInvitation.editorRequestId}
           backRequestId={customValueInvitation.backRequestId}
@@ -147,6 +150,7 @@ export default function Hub({
           onExit={target => {
             customValueInvitation.onClosed()
             if (target === "menu") onOpenMenu()
+            else if (typeof target === "object") customValueInvitation.onOpenMatchingValue(target.valueId)
           }}
         />
       )}

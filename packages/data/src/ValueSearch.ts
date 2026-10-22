@@ -39,6 +39,7 @@ export function filterRankedValuesByQuery(
 export function findRankedValueNameMatches(
   rankedValues: readonly RankedValue[],
   name: string,
+  translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>,
 ) {
   const normalizedName = normalizeValueNameForComparison(name)
   if (normalizedName.length === 0) {
@@ -47,8 +48,8 @@ export function findRankedValueNameMatches(
 
   return Object.freeze(
     rankedValues.filter(({ definition }) =>
-      normalizeValueNameForComparison(getValueDisplayName(definition)).includes(
-        normalizedName,
+      [getValueDisplayName(definition), getValueDisplayName(definition, translations)].some(
+        displayName => normalizeValueNameForComparison(displayName).includes(normalizedName),
       ),
     ),
   )

@@ -878,6 +878,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
                   editorRequestId: customValueBuilderRequestId,
                   backRequestId: customValueBackRequestId,
                   onClosed: () => setCustomValueBuilderRequestId(0),
+                  onOpenMatchingValue: valueId => openAllValues({valueId, focusTargetId: "hub-add-custom-value-button"}),
                   initialName: customValueInitialName,
                   deckRevision:
                     state.context.playerData.profile.scheduler.deckRevision,
@@ -1081,7 +1082,6 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           onDeleteCustomValue={(valueId) =>
             send({ type: "ALL_VALUES.DELETE_REQUESTED", valueId })
           }
-          onOpenMenu={handleProductMenuOpen}
         />
         <ProductMenu
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}

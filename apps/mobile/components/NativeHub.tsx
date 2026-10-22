@@ -4,6 +4,7 @@ import { projectHubValues } from "@game/data/src/HubValueProjection"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
+import type { ValueId } from "@game/data/src/Value"
 import { cx } from "classix"
 import { useCallback, useState, type ReactNode } from "react"
 import { ScrollView, View } from "react-native"
@@ -33,6 +34,7 @@ export default function NativeHub({
   customValueInvitation?: Omit<CustomValueAuthoringOptions, "existingCustomValues" | "onExit"> & {
     saveIssue: string | null
     onClosed: () => void
+    onOpenMatchingValue: (valueId: ValueId) => void
   }
   appearance: Heroes99Appearance
   isBattlePending?: boolean
@@ -95,12 +97,14 @@ export default function NativeHub({
         )}
         {customValueInvitation && (
           <NativeCustomValueInvitation {...customValueInvitation}
+            rankedValues={rankedValues}
             menuRequestId={menuRequestId}
             existingCustomValues={rankedValues.flatMap(({definition}) => definition.kind === "custom" ? [definition] : [])}
             onNavigationBlockedChange={handleDraftNavigationBlockedChange}
             onExit={target => {
               customValueInvitation.onClosed()
               if (target === "menu") onOpenMenu()
+              else if (typeof target === "object") customValueInvitation.onOpenMatchingValue(target.valueId)
             }} />
         )}
         {!isDraftActive && <ScrollView className="w-full" contentContainerClassName="items-center gap-4 pb-6 xl:gap-5">
