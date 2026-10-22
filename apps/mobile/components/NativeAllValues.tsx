@@ -12,6 +12,7 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   TextInput,
   View,
 } from "react-native"
@@ -40,7 +41,6 @@ export default function NativeAllValues({
   readonly onAddCustomValue: (name: string) => void
   readonly onClose: () => void
   readonly onDeleteCustomValue: (valueId: CustomValueId) => void
-  readonly onOpenMenu: () => void
   readonly onUpdateCustomValue: (
     valueId: CustomValueId,
     name: string,
@@ -110,7 +110,7 @@ export default function NativeAllValues({
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1 px-4 pb-4"
       >
-        <View className="gap-2 border-b-4 border-black py-3">
+        <ScrollView className="max-h-1/2 grow-0 shrink-0 border-b-4 border-black" contentContainerClassName="gap-2 py-3" keyboardShouldPersistTaps="handled">
           <View className="min-w-0">
             <Text
               variant="h1"
@@ -138,10 +138,11 @@ export default function NativeAllValues({
             returnKeyType="search"
             value={searchQuery}
           />
-        </View>
+        </ScrollView>
 
         <FlatList
           ref={listRef}
+          className="min-h-0 flex-1"
           contentContainerClassName="gap-4 py-5"
           data={visibleValues}
           keyboardShouldPersistTaps="handled"
@@ -239,7 +240,6 @@ export default function NativeAllValues({
                     initialDefinition={customDefinition.definition}
                     initialName={customDefinition.name}
                     isPersistencePending={isPersistencePending}
-                    mode="edit"
                     onCancel={() => setEditingValueId(null)}
                     onOpenMatchingValue={openMatchingValue}
                     onSubmit={(name, definition) =>
@@ -260,14 +260,14 @@ export default function NativeAllValues({
             )
           }}
         />
-        <View className="flex-row flex-wrap gap-3 border-t-4 border-black pt-3 pb-2">
+        <ScrollView className="max-h-1/3 grow-0 shrink-0 border-t-4 border-black" contentContainerClassName="flex-row flex-wrap gap-3 pt-3 pb-2" keyboardShouldPersistTaps="handled">
           <Button size="compact" className="basis-readable-action min-w-0 grow shrink" disabled={isNavigationBlocked} variant="outline" onPress={onClose}>
             <Text>{localizedCopy.interfaceCopy.dressingRoom.back}</Text>
           </Button>
           <Button size="compact" className="basis-readable-action min-w-0 grow shrink" disabled={isNavigationBlocked} onPress={() => onAddCustomValue(visibleValues.length === 0 ? searchQuery.trim() : "")}>
             <Text>{localizedCopy.hub.add}</Text>
           </Button>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </MapacheScreen>
   )

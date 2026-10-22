@@ -7,6 +7,7 @@ import type {
 } from "@game/machines/src/PlayerDataReset"
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
 import { useEffect, useRef } from "react"
+import { cx } from "classix"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import { WAYVM_IMPORT_FILE_ACCEPT } from "@/lib/PlayerDataFiles"
@@ -105,19 +106,19 @@ export default function DataManagement({
 
   return (
     <MapacheScreen
-      spacing="standard"
+      spacing={preview ? "readable-xl" : "standard"}
       viewport="scrollable"
-      className="flex flex-col items-center"
+      className={cx("flex flex-col items-center", preview && "h-[100dvh] overflow-y-auto")}
     >
       <div className="flex w-full max-w-5xl flex-wrap items-center justify-between gap-4">
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="text-mapache-vivid-primary-cyan text-4xl font-black uppercase drop-shadow-[5px_5px_0px_#000000] outline-none sm:text-6xl"
+          className="text-mapache-vivid-primary-cyan text-2xl font-black uppercase wrap-anywhere drop-shadow-[3px_3px_0px_#000000] outline-none xl:text-4xl"
         >
           {playerDataPortabilityCopy.screenTitle}
         </h1>
-        <div className="flex flex-wrap gap-3">
+        {!preview && <div className="flex flex-wrap gap-3">
           <Button
             type="button"
             variant="secondary"
@@ -134,12 +135,12 @@ export default function DataManagement({
           >
             {localizedCopy.interfaceCopy.screen.backToValues}
           </Button>
-        </div>
+        </div>}
       </div>
 
       <div
         aria-busy={isBusy}
-        className="mt-5 flex w-full max-w-5xl flex-col gap-5 [&_button]:max-w-full [&_button]:whitespace-normal"
+        className={cx("mt-5 flex w-full max-w-5xl flex-col gap-5 [&_button]:max-w-full [&_button]:whitespace-normal", preview && "min-h-0 flex-1")}
       >
         {activity ? (
           <p

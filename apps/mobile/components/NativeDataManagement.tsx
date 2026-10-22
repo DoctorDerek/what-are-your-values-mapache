@@ -63,7 +63,7 @@ export default function NativeDataManagement({
       <View className="gap-4 border-b-4 border-black p-4">
         <Text
           variant="h1"
-          className="text-mapache-vivid-primary-cyan text-left text-4xl font-black tracking-tight uppercase"
+          className="text-mapache-vivid-primary-cyan text-left text-2xl font-black tracking-tight uppercase xl:text-4xl"
         >
           {playerDataPortabilityCopy.screenTitle}
         </Text>

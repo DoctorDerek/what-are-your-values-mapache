@@ -53,6 +53,25 @@ export default function NativePersistenceFailure(
   const playerDataRecoveryCopy = localizedCopy.interfaceCopy.recovery
 
   const isBusy = props.activity !== null
+  if (props.mode === "unreadable-data" && props.preview && !props.resetReview) {
+    const isKnownGood = props.pendingImportSource === "last-known-good"
+    return (
+      <MapacheScreen>
+        <View className="min-h-0 flex-1 gap-3 p-4">
+          <NativeOperationMessages activity={props.activity} issue={props.issue} notice={props.notice} />
+          <NativePlayerDataImportPreview
+            confirmLabel={isKnownGood ? playerDataRecoveryCopy.unreadableData.restoreReviewAction : playerDataRecoveryCopy.unreadableData.selectedBackupReviewAction}
+            isBusy={isBusy}
+            preview={props.preview}
+            title={isKnownGood ? playerDataRecoveryCopy.unreadableData.restoreReviewTitle : playerDataRecoveryCopy.unreadableData.selectedBackupReviewTitle}
+            warning={isKnownGood ? playerDataRecoveryCopy.unreadableData.restoreConfirmation : playerDataRecoveryCopy.unreadableData.selectedBackupConfirmation}
+            onCancel={props.onCancelImport}
+            onConfirm={props.onConfirmImport}
+          />
+        </View>
+      </MapacheScreen>
+    )
+  }
   const title =
     props.mode === "unreadable-data"
       ? playerDataRecoveryCopy.unreadableData.title
@@ -116,33 +135,6 @@ export default function NativePersistenceFailure(
                   onCancel={props.onCancelReset}
                   onConfirm={props.onConfirmReset}
                   onExport={props.onExportUnreadableData}
-                />
-              ) : props.preview ? (
-                <NativePlayerDataImportPreview
-                  confirmLabel={
-                    props.pendingImportSource === "last-known-good"
-                      ? playerDataRecoveryCopy.unreadableData
-                          .restoreReviewAction
-                      : playerDataRecoveryCopy.unreadableData
-                          .selectedBackupReviewAction
-                  }
-                  isBusy={isBusy}
-                  preview={props.preview}
-                  title={
-                    props.pendingImportSource === "last-known-good"
-                      ? playerDataRecoveryCopy.unreadableData.restoreReviewTitle
-                      : playerDataRecoveryCopy.unreadableData
-                          .selectedBackupReviewTitle
-                  }
-                  warning={
-                    props.pendingImportSource === "last-known-good"
-                      ? playerDataRecoveryCopy.unreadableData
-                          .restoreConfirmation
-                      : playerDataRecoveryCopy.unreadableData
-                          .selectedBackupConfirmation
-                  }
-                  onCancel={props.onCancelImport}
-                  onConfirm={props.onConfirmImport}
                 />
               ) : (
                 <>

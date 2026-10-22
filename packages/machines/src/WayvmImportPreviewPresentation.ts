@@ -1,6 +1,6 @@
 import type { LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
 import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
-import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
+import type { WayvmImportPreview } from "./WayvmImportPreview"
 
 export function presentWayvmImportPreview(
   preview: WayvmImportPreview,

@@ -43,7 +43,7 @@ export default function NativePlayerDataImportPreview({
           </View>
         ))}
       </ScrollView>
-      <View className="gap-3 border-t-4 border-black p-3 pb-5">
+      <ScrollView className="max-h-1/2 grow-0 shrink-0 border-t-4 border-black" contentContainerClassName="gap-3 p-3 pb-5">
         <Text className="bg-mapache-vivid-secondary-gold border-2 border-black p-2 text-sm font-bold text-black">
           {warning ?? copy.importPreviewWarning}
         </Text>
@@ -55,7 +55,7 @@ export default function NativePlayerDataImportPreview({
             <Text>{confirmLabel ?? copy.importReplaceAction}</Text>
           </Button>
         </View>
-      </View>
+      </ScrollView>
     </View>
   )
 }

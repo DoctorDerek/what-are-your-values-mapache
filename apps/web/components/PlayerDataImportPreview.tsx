@@ -25,12 +25,13 @@ export default function PlayerDataImportPreview({
 
   return (
     <section aria-labelledby="import-preview-heading" aria-busy={isBusy}
-      className="text-mapache-vivid-dark grid max-h-[85dvh] grid-rows-[auto_minmax(10rem,1fr)_auto] overflow-y-auto border-4 border-black bg-white shadow-[8px_8px_0px_0px_#000000]">
+      className="text-mapache-vivid-dark flex min-h-[min(32rem,85dvh)] max-h-[85dvh] min-w-0 flex-1 flex-col border-4 border-black bg-white wrap-anywhere shadow-[8px_8px_0px_0px_#000000]">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain" data-controller-scroll>
       <h2 ref={headingRef} id="import-preview-heading" tabIndex={-1}
-        className="border-b-4 border-black p-3 text-2xl font-black uppercase outline-none xl:p-5 xl:text-3xl">
+        className="border-b-4 border-black p-[12px] text-2xl font-black uppercase outline-none xl:p-5 xl:text-3xl">
         {title ?? copy.importPreviewTitle}
       </h2>
-      <div className="min-h-0 overflow-y-auto overscroll-contain p-3 xl:p-5" data-controller-scroll>
+      <div className="p-3 xl:p-5">
         <dl className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-3">
           {facts.summary.map(({key, label, value}) => (
             <div key={key} className="min-w-0 border-b-2 border-black/20 py-2">
@@ -51,15 +52,16 @@ export default function PlayerDataImportPreview({
           </dl>
         </details>
       </div>
-      <footer className="border-t-4 border-black p-3 pb-5 xl:p-5">
+      </div>
+      <footer className="max-h-1/2 shrink-0 overflow-y-auto border-t-4 border-black p-[12px] pb-[20px] xl:p-5">
         <p className="bg-mapache-vivid-secondary-gold border-2 border-black p-2 text-sm font-bold">
           {warning ?? copy.importPreviewWarning}
         </p>
         <div className="mt-3 flex flex-wrap gap-3">
-          <Button size="sm" wrap variant="outline" disabled={isBusy} onClick={onCancel} className="min-w-0 flex-[1_1_8rem]">
+          <Button size="sm" wrap variant="outline" disabled={isBusy} onClick={onCancel} className="min-w-0 flex-[1_1_8rem] wrap-anywhere max-xl:px-[12px] max-xl:py-[8px]">
             {copy.importCancelAction}
           </Button>
-          <Button size="sm" wrap disabled={isBusy} onClick={onConfirm} className="min-w-0 flex-[1_1_8rem]">
+          <Button size="sm" wrap disabled={isBusy} onClick={onConfirm} className="min-w-0 flex-[1_1_8rem] wrap-anywhere max-xl:px-[12px] max-xl:py-[8px]">
             {confirmLabel ?? copy.importReplaceAction}
           </Button>
         </div>

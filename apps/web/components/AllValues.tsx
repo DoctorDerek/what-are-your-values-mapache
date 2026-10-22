@@ -53,7 +53,6 @@ export default function AllValues({
   isMenuOpen: boolean
   persistenceIssue?: string | null
   onClose: () => void
-  onOpenMenu: () => void
   onAddCustomValue: (name: string) => void
   onUpdateCustomValue: (
     valueId: CustomValueId,
@@ -487,7 +486,7 @@ export default function AllValues({
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder={localizedCopy.interfaceCopy.screen.searchPlaceholder}
-          variant="search"
+          variant="default"
         />
         </div>
       </header>
