@@ -1,8 +1,8 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
 import { CUSTOM_VALUE_INVITATION_COPY } from "@game/data/src/CustomValueInvitationCopy"
+import type { CustomValueAuthoringOptions } from "@game/data/src/useCustomValueAuthoring"
 import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues } from "@game/data/src/ValueRanking"
-import type { CustomValueAuthoringOptions } from "@game/data/src/useCustomValueAuthoring"
 import LocaleProvider from "@game/utils/src/LocaleContext"
 import { describe, expect, it, jest } from "@jest/globals"
 import { fireEvent, render, screen } from "@testing-library/react-native"
@@ -15,9 +15,12 @@ function options() {
     existingCustomValues: [],
     isSaving: false,
     onApply: jest.fn<CustomValueAuthoringOptions["onApply"]>(),
-    onExport: jest.fn<CustomValueAuthoringOptions["onExport"]>().mockResolvedValue(undefined),
+    onExport: jest
+      .fn<CustomValueAuthoringOptions["onExport"]>()
+      .mockResolvedValue(undefined),
     onExit: jest.fn<CustomValueAuthoringOptions["onExit"]>(),
-    onNavigationBlockedChange: jest.fn<CustomValueAuthoringOptions["onNavigationBlockedChange"]>(),
+    onNavigationBlockedChange:
+      jest.fn<CustomValueAuthoringOptions["onNavigationBlockedChange"]>(),
   }
 }
 async function press(name: string) {
@@ -33,7 +36,9 @@ describe("native inline custom-value authoring", () => {
     const props = options()
     await render(<NativeCustomValueInvitation {...props} saveIssue={null} />)
     expect(screen.getByLabelText("Value name")).toHaveDisplayValue("")
-    expect(screen.getByText(CUSTOM_VALUE_INVITATION_COPY.example)).toBeOnTheScreen()
+    expect(
+      screen.getByText(CUSTOM_VALUE_INVITATION_COPY.example),
+    ).toBeOnTheScreen()
     expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
     await fireEvent(screen.getByLabelText("Value name"), "submitEditing")
     expect(props.onApply).not.toHaveBeenCalled()
@@ -47,9 +52,13 @@ describe("native inline custom-value authoring", () => {
     await render(<NativeCustomValueInvitation {...props} saveIssue={null} />)
     await fill("Craftsmanship", "")
     await press("Back")
-    expect(screen.getByRole("button", { name: "Save and return" })).toBeDisabled()
+    expect(
+      screen.getByRole("button", { name: "Save and return" }),
+    ).toBeDisabled()
     await press("Keep editing")
-    expect(screen.getByLabelText("Value name")).toHaveDisplayValue("Craftsmanship")
+    expect(screen.getByLabelText("Value name")).toHaveDisplayValue(
+      "Craftsmanship",
+    )
     expect(props.onExit).not.toHaveBeenCalled()
     await press("Discard changes")
     await press("Discard changes")
@@ -68,16 +77,26 @@ describe("native inline custom-value authoring", () => {
       { name: "Craftsmanship", definition: "To make things well." },
       { name: "Stargazing", definition: "To appreciate the night sky." },
     ])
-    await screen.rerender(<NativeCustomValueInvitation {...props} isSaving saveIssue={null} />)
+    await screen.rerender(
+      <NativeCustomValueInvitation {...props} isSaving saveIssue={null} />,
+    )
     expect(screen.getByRole("button", { name: "Back" })).toBeDisabled()
     expect(screen.getByLabelText("Definition")).toBeDisabled()
-    await screen.rerender(<NativeCustomValueInvitation {...props} saveIssue="Storage is full" />)
+    await screen.rerender(
+      <NativeCustomValueInvitation {...props} saveIssue="Storage is full" />,
+    )
     expect(screen.getByRole("alert")).toHaveTextContent("Storage is full")
     expect(screen.getByLabelText("Value name")).toHaveDisplayValue("Stargazing")
     expect(screen.getByText("To make things well.")).toBeOnTheScreen()
     expect(props.onExit).not.toHaveBeenCalled()
     await press("Save")
-    await screen.rerender(<NativeCustomValueInvitation {...props} deckRevision={1} saveIssue={null} />)
+    await screen.rerender(
+      <NativeCustomValueInvitation
+        {...props}
+        deckRevision={1}
+        saveIssue={null}
+      />,
+    )
     expect(screen.queryByLabelText("Value name")).not.toBeOnTheScreen()
     expect(props.onExit).toHaveBeenCalledTimes(1)
   })
@@ -98,20 +117,54 @@ describe("native inline custom-value authoring", () => {
     await press("Add another")
     await press("Remove Stargazing")
     await press("Save")
-    expect(props.onApply).toHaveBeenCalledWith([{ name: "Craftsmanship", definition: "My revised meaning." }])
+    expect(props.onApply).toHaveBeenCalledWith([
+      { name: "Craftsmanship", definition: "My revised meaning." },
+    ])
   })
 
   it("guards Menu and hardware Back and preserves the requested exit after saving", async () => {
     const props = options()
     await render(<NativeCustomValueInvitation {...props} saveIssue={null} />)
     await fill("Craftsmanship", "To make things well.")
-    await screen.rerender(<NativeCustomValueInvitation {...props} menuRequestId={1} saveIssue={null} />)
-    expect(screen.getByRole("button", { name: "Keep editing" })).toBeOnTheScreen()
-    await screen.rerender(<NativeCustomValueInvitation {...props} menuRequestId={1} backRequestId={1} saveIssue={null} />)
-    expect(screen.queryByRole("button", { name: "Keep editing" })).not.toBeOnTheScreen()
-    await screen.rerender(<NativeCustomValueInvitation {...props} menuRequestId={2} backRequestId={1} saveIssue={null} />)
+    await screen.rerender(
+      <NativeCustomValueInvitation
+        {...props}
+        menuRequestId={1}
+        saveIssue={null}
+      />,
+    )
+    expect(
+      screen.getByRole("button", { name: "Keep editing" }),
+    ).toBeOnTheScreen()
+    await screen.rerender(
+      <NativeCustomValueInvitation
+        {...props}
+        menuRequestId={1}
+        backRequestId={1}
+        saveIssue={null}
+      />,
+    )
+    expect(
+      screen.queryByRole("button", { name: "Keep editing" }),
+    ).not.toBeOnTheScreen()
+    await screen.rerender(
+      <NativeCustomValueInvitation
+        {...props}
+        menuRequestId={2}
+        backRequestId={1}
+        saveIssue={null}
+      />,
+    )
     await press("Save and return")
-    await screen.rerender(<NativeCustomValueInvitation {...props} menuRequestId={2} backRequestId={1} deckRevision={1} saveIssue={null} />)
+    await screen.rerender(
+      <NativeCustomValueInvitation
+        {...props}
+        menuRequestId={2}
+        backRequestId={1}
+        deckRevision={1}
+        saveIssue={null}
+      />,
+    )
     expect(props.onExit).toHaveBeenCalledWith("menu")
   })
 
@@ -121,8 +174,12 @@ describe("native inline custom-value authoring", () => {
     await render(<NativeCustomValueInvitation {...props} saveIssue={null} />)
     await fill("Craftsmanship", "To make things well.")
     await press("Export Data")
-    expect(screen.getByRole("alert")).toHaveTextContent("Sharing is unavailable")
-    expect(screen.getByLabelText("Definition")).toHaveDisplayValue("To make things well.")
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Sharing is unavailable",
+    )
+    expect(screen.getByLabelText("Definition")).toHaveDisplayValue(
+      "To make things well.",
+    )
     expect(screen.getByRole("button", { name: "Save" })).toBeEnabled()
   })
 
@@ -130,9 +187,23 @@ describe("native inline custom-value authoring", () => {
     const props = options()
     const deck = createActiveDeck([])
     const rankedValues = rankValues(deck, createInitialValueProgress(deck))
-    const health = rankedValues.find(({definition}) => definition.kind === "canonical" && definition.englishName === "Health")!
-    await render(<LocaleProvider locale="es-MX"><NativeCustomValueInvitation {...props} rankedValues={rankedValues} saveIssue={null} /></LocaleProvider>)
-    await fireEvent.changeText(screen.getByLabelText("Nombre del valor"), "Salud")
+    const health = rankedValues.find(
+      ({ definition }) =>
+        definition.kind === "canonical" && definition.englishName === "Health",
+    )!
+    await render(
+      <LocaleProvider locale="es-MX">
+        <NativeCustomValueInvitation
+          {...props}
+          rankedValues={rankedValues}
+          saveIssue={null}
+        />
+      </LocaleProvider>,
+    )
+    await fireEvent.changeText(
+      screen.getByLabelText("Nombre del valor"),
+      "Salud",
+    )
     await press("Abrir Salud")
     expect(props.onExit).not.toHaveBeenCalled()
     await press("Descartar cambios")

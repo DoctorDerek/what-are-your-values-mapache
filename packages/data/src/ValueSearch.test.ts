@@ -65,11 +65,21 @@ describe("Value Search", () => {
     const translations = getLocaleCatalog("es-MX").values
     const healthId = createCanonicalValueId("pvcs-2011:health")
 
-    expect(findRankedValueNameMatches(rankedValues, "SALUD", translations).map(({definition}) => definition.id)).toEqual([healthId])
-    expect(findRankedValueNameMatches(rankedValues, "health", translations).map(({definition}) => definition.id)).toEqual([healthId])
-    expect(findRankedValueNameMatches(rankedValues, "ingen", translations).map(({definition}) => definition.id)).toEqual([
-      createCanonicalValueId("wayvm:ingenuity"), ingenuityId,
-    ])
+    expect(
+      findRankedValueNameMatches(rankedValues, "SALUD", translations).map(
+        ({ definition }) => definition.id,
+      ),
+    ).toEqual([healthId])
+    expect(
+      findRankedValueNameMatches(rankedValues, "health", translations).map(
+        ({ definition }) => definition.id,
+      ),
+    ).toEqual([healthId])
+    expect(
+      findRankedValueNameMatches(rankedValues, "ingen", translations).map(
+        ({ definition }) => definition.id,
+      ),
+    ).toEqual([createCanonicalValueId("wayvm:ingenuity"), ingenuityId])
   })
 
   it("detects another same-name identity even when the edited custom value is excluded", () => {

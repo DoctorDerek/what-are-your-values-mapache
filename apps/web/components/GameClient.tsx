@@ -288,7 +288,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         return true
       }
       if (isCustomValueDraftActive) {
-        setCustomValueBackRequestId(id => id + 1)
+        setCustomValueBackRequestId((id) => id + 1)
         return true
       }
       if (
@@ -878,7 +878,11 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
                   editorRequestId: customValueBuilderRequestId,
                   backRequestId: customValueBackRequestId,
                   onClosed: () => setCustomValueBuilderRequestId(0),
-                  onOpenMatchingValue: valueId => openAllValues({valueId, focusTargetId: "hub-add-custom-value-button"}),
+                  onOpenMatchingValue: (valueId) =>
+                    openAllValues({
+                      valueId,
+                      focusTargetId: "hub-add-custom-value-button",
+                    }),
                   initialName: customValueInitialName,
                   deckRevision:
                     state.context.playerData.profile.scheduler.deckRevision,

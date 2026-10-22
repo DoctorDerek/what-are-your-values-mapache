@@ -48,8 +48,11 @@ export function findRankedValueNameMatches(
 
   return Object.freeze(
     rankedValues.filter(({ definition }) =>
-      [getValueDisplayName(definition), getValueDisplayName(definition, translations)].some(
-        displayName => normalizeValueNameForComparison(displayName).includes(normalizedName),
+      [
+        getValueDisplayName(definition),
+        getValueDisplayName(definition, translations),
+      ].some((displayName) =>
+        normalizeValueNameForComparison(displayName).includes(normalizedName),
       ),
     ),
   )

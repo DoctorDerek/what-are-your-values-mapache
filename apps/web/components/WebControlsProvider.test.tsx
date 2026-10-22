@@ -340,7 +340,9 @@ describe("scoped controller input", () => {
     })
     button(1, true)
     expect(screen.getByRole("dialog")).toBeVisible()
-    expect(screen.getByRole("button", { name: "Save and return" })).toBeEnabled()
+    expect(
+      screen.getByRole("button", { name: "Save and return" }),
+    ).toBeEnabled()
     expect(apply).not.toHaveBeenCalled()
     button(1, false)
     button(1, true)

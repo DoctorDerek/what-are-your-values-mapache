@@ -174,7 +174,9 @@ describe("Data Management", () => {
     const props = renderDataManagement({ preview })
 
     expect(screen.getByRole("heading", { name: "Review Import" })).toBeVisible()
-    expect(screen.queryByRole("button", { name: "Menu" })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Menu" }),
+    ).not.toBeInTheDocument()
     expect(
       screen.queryByRole("button", { name: "Back to Your Values" }),
     ).not.toBeInTheDocument()

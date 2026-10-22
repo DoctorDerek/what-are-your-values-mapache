@@ -22,12 +22,12 @@ import {
   projectBattlePair,
   type BattleSchedulerRestorePoint,
 } from "@game/machines/src/BattleScheduler"
+import { prepareWayvmDownload } from "@game/machines/src/PlayerDataPortabilityActors"
 import {
   DELETE_ALL_DATA_ACKNOWLEDGMENT,
   type PlayerDataResetKind,
   type PlayerDataResetReview,
 } from "@game/machines/src/PlayerDataReset"
-import { prepareWayvmDownload } from "@game/machines/src/PlayerDataPortabilityActors"
 import { resolveShouldReduceMotion } from "@game/machines/src/PlayerSettingsPresentation"
 import { projectRootBackDisposition } from "@game/machines/src/RootNavigation"
 import type { RootActor } from "@game/machines/src/RuntimeRecovery"
@@ -66,8 +66,8 @@ import NativeSettings from "@/components/NativeSettings"
 import NativeValuesCardShare from "@/components/NativeValuesCardShare"
 import useNativePlayerDataFiles from "@/components/useNativePlayerDataFiles"
 import { SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG } from "@/generated/seethingswarm/SeethingSwarmRuntimeClipCatalog"
-import { createNativeAppLifecycleEvent } from "@/lib/NativeAppLifecycleEvents"
 import { expoPlayerDataFileAdapter } from "@/lib/ExpoPlayerDataFiles"
+import { createNativeAppLifecycleEvent } from "@/lib/NativeAppLifecycleEvents"
 
 export default function NativeGameClient() {
   const [sessionRevision, setSessionRevision] = useState(0)
@@ -107,7 +107,8 @@ function NativeGameClientContent({
   const [pendingAllValuesValueId, setPendingAllValuesValueId] =
     useState<ValueId | null>(null)
   const [customValueInitialName, setCustomValueInitialName] = useState("")
-  const [isCustomValueDraftActive, setIsCustomValueDraftActive] = useState(false)
+  const [isCustomValueDraftActive, setIsCustomValueDraftActive] =
+    useState(false)
   const [customValueBackRequestId, setCustomValueBackRequestId] = useState(0)
   const [customValueBuilderRequestId, setCustomValueBuilderRequestId] =
     useState(0)
@@ -198,7 +199,7 @@ function NativeGameClientContent({
           return true
         }
         if (isCustomValueDraftActive) {
-          setCustomValueBackRequestId(id => id + 1)
+          setCustomValueBackRequestId((id) => id + 1)
           return true
         }
         if (isAllValuesNavigationBlocked || isReadingImportFile) return true
@@ -253,11 +254,7 @@ function NativeGameClientContent({
     [send],
   )
   const openAllValues = useCallback(
-    ({
-      valueId = null,
-    }: {
-      readonly valueId?: ValueId | null
-    }) => {
+    ({ valueId = null }: { readonly valueId?: ValueId | null }) => {
       setPendingAllValuesValueId(valueId)
       send({ type: "ALL_VALUES.OPEN_REQUESTED" })
     },
@@ -640,10 +637,10 @@ function NativeGameClientContent({
             saveIssue: state.context.persistenceIssue,
             onNavigationBlockedChange: setIsCustomValueDraftActive,
             onClosed: () => setCustomValueBuilderRequestId(0),
-            onOpenMatchingValue: valueId => openAllValues({valueId}),
-            onApply: drafts => {
+            onOpenMatchingValue: (valueId) => openAllValues({ valueId }),
+            onApply: (drafts) => {
               setCustomValueBuilderRequestId(0)
-              send({type: "HUB.CUSTOM_VALUES_APPLY_REQUESTED", drafts})
+              send({ type: "HUB.CUSTOM_VALUES_APPLY_REQUESTED", drafts })
             },
             onExport: async () => {
               const prepared = await prepareWayvmDownload({

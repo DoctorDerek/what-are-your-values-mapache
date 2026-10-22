@@ -59,19 +59,25 @@ export default function NativeCustomValueForm({
   )
   const matchingValues = useMemo(
     () =>
-      findRankedValueNameMatches(rankedValues, validation.name.value, localizedCopy.values).filter(
+      findRankedValueNameMatches(
+        rankedValues,
+        validation.name.value,
+        localizedCopy.values,
+      ).filter(
         ({ definition: matchingDefinition }) =>
           matchingDefinition.id !== excludedCustomValueId,
       ),
-    [excludedCustomValueId, rankedValues, validation.name.value, localizedCopy.values],
+    [
+      excludedCustomValueId,
+      rankedValues,
+      validation.name.value,
+      localizedCopy.values,
+    ],
   )
   const hasChanged =
     validation.name.value !== initialName ||
     validation.definition.value !== initialDefinition
-  const canSubmit =
-    validation.isValid &&
-    !isPersistencePending &&
-    hasChanged
+  const canSubmit = validation.isValid && !isPersistencePending && hasChanged
 
   const submitDraft = () => {
     if (!canSubmit) {
@@ -90,7 +96,9 @@ export default function NativeCustomValueForm({
 
   return (
     <View
-      accessibilityLabel={localizedCopy.interfaceCopy.screen.editValue(initialName)}
+      accessibilityLabel={localizedCopy.interfaceCopy.screen.editValue(
+        initialName,
+      )}
       className="gap-4 border-4 border-black bg-white p-4 shadow-[6px_6px_0px_0px_#000000]"
     >
       <Text className="text-lg font-black text-black uppercase">

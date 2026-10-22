@@ -250,9 +250,7 @@ describe("All Values Component Integration", () => {
   it("locks navigation and creation while persistence is pending", () => {
     renderAllValues(undefined, { isPersistencePending: true })
     expect(screen.getByRole("button", { name: "Back" })).toBeDisabled()
-    expect(
-      screen.getByRole("button", { name: "Add value" }),
-    ).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Add value" })).toBeDisabled()
   })
 
   it("edits a Custom Value only after an explicit review step", () => {

@@ -65,9 +65,7 @@ export default function NativeAllValues({
     initialValueId,
   )
   const isNavigationBlocked =
-    isPersistencePending ||
-    editingValueId !== null ||
-    deletingValueId !== null
+    isPersistencePending || editingValueId !== null || deletingValueId !== null
   const { existingCustomValues, hasComparisons, visibleValues } = useMemo(
     () =>
       projectAllValues({
@@ -110,7 +108,11 @@ export default function NativeAllValues({
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1 px-4 pb-4"
       >
-        <ScrollView className="max-h-1/2 grow-0 shrink-0 border-b-4 border-black" contentContainerClassName="gap-2 py-3" keyboardShouldPersistTaps="handled">
+        <ScrollView
+          className="max-h-1/2 shrink-0 grow-0 border-b-4 border-black"
+          contentContainerClassName="gap-2 py-3"
+          keyboardShouldPersistTaps="handled"
+        >
           <View className="min-w-0">
             <Text
               variant="h1"
@@ -125,13 +127,23 @@ export default function NativeAllValues({
             </Text>
           </View>
           <View className="flex-row flex-wrap justify-between gap-x-3">
-            <Text className="font-black text-white">{localizedCopy.interfaceCopy.screen.searchAllValues}</Text>
-            <Text accessibilityLiveRegion="polite" className="text-sm font-bold text-white">
-              {localizedCopy.interfaceCopy.screen.valuesShown(visibleValues.length, String(visibleValues.length))}
+            <Text className="font-black text-white">
+              {localizedCopy.interfaceCopy.screen.searchAllValues}
+            </Text>
+            <Text
+              accessibilityLiveRegion="polite"
+              className="text-sm font-bold text-white"
+            >
+              {localizedCopy.interfaceCopy.screen.valuesShown(
+                visibleValues.length,
+                String(visibleValues.length),
+              )}
             </Text>
           </View>
           <TextInput
-            accessibilityLabel={localizedCopy.interfaceCopy.screen.searchAllValues}
+            accessibilityLabel={
+              localizedCopy.interfaceCopy.screen.searchAllValues
+            }
             className="min-h-12 border-4 border-black bg-white p-2 text-lg font-bold text-black"
             onChangeText={setSearchQuery}
             placeholder={localizedCopy.interfaceCopy.screen.searchPlaceholder}
@@ -260,11 +272,30 @@ export default function NativeAllValues({
             )
           }}
         />
-        <ScrollView className="max-h-1/3 grow-0 shrink-0 border-t-4 border-black" contentContainerClassName="flex-row flex-wrap gap-3 pt-3 pb-2" keyboardShouldPersistTaps="handled">
-          <Button size="compact" className="basis-readable-action min-w-0 grow shrink" disabled={isNavigationBlocked} variant="outline" onPress={onClose}>
+        <ScrollView
+          className="max-h-1/3 shrink-0 grow-0 border-t-4 border-black"
+          contentContainerClassName="flex-row flex-wrap gap-3 pt-3 pb-2"
+          keyboardShouldPersistTaps="handled"
+        >
+          <Button
+            size="compact"
+            className="basis-readable-action min-w-0 shrink grow"
+            disabled={isNavigationBlocked}
+            variant="outline"
+            onPress={onClose}
+          >
             <Text>{localizedCopy.interfaceCopy.dressingRoom.back}</Text>
           </Button>
-          <Button size="compact" className="basis-readable-action min-w-0 grow shrink" disabled={isNavigationBlocked} onPress={() => onAddCustomValue(visibleValues.length === 0 ? searchQuery.trim() : "")}>
+          <Button
+            size="compact"
+            className="basis-readable-action min-w-0 shrink grow"
+            disabled={isNavigationBlocked}
+            onPress={() =>
+              onAddCustomValue(
+                visibleValues.length === 0 ? searchQuery.trim() : "",
+              )
+            }
+          >
             <Text>{localizedCopy.hub.add}</Text>
           </Button>
         </ScrollView>

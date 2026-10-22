@@ -53,9 +53,7 @@ for (const width of [390, 1440]) {
     await expect(
       page.getByText("0 Values Shown", { exact: true }),
     ).toBeVisible()
-    await page
-      .getByRole("button", { name: "Add value", exact: true })
-      .click()
+    await page.getByRole("button", { name: "Add value", exact: true }).click()
     await expect(page.getByLabel("Value name", { exact: true })).toHaveValue(
       "Resourceful experimentation",
     )
@@ -63,10 +61,10 @@ for (const width of [390, 1440]) {
     await page
       .getByLabel("Definition", { exact: true })
       .fill("to explore practical solutions through experiments")
+    await page.getByRole("button", { name: "Back", exact: true }).click()
     await page
-      .getByRole("button", { name: "Back", exact: true })
+      .getByRole("button", { name: "Keep editing", exact: true })
       .click()
-    await page.getByRole("button", { name: "Keep editing", exact: true }).click()
     await expect(page.getByLabel("Definition", { exact: true })).toHaveValue(
       "to explore practical solutions through experiments",
     )
@@ -633,9 +631,7 @@ test("All Values and Custom Values reflow without document overflow", async ({
   ).toBeVisible()
   await expectNoDocumentHorizontalOverflow(page, "All Values")
 
-  await page
-    .getByRole("button", { name: "Add value", exact: true })
-    .click()
+  await page.getByRole("button", { name: "Add value", exact: true }).click()
   await expect(
     page.getByRole("form", { name: "Add Custom Value" }),
   ).toBeVisible()

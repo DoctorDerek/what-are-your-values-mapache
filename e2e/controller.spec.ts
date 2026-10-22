@@ -266,10 +266,10 @@ test("controller authors a value, scrolls the catalog and cancels edit and delet
   )
   const values = page.getByRole("region", { name: "Values", exact: true })
   await focusWithController(page, values)
-  const beforeScroll = await values.evaluate(element => element.scrollTop)
+  const beforeScroll = await values.evaluate((element) => element.scrollTop)
   await tapControllerButton(page, 13)
   await expect
-    .poll(() => values.evaluate(element => element.scrollTop))
+    .poll(() => values.evaluate((element) => element.scrollTop))
     .toBeGreaterThan(beforeScroll)
   await enterKeyboardText(
     page,

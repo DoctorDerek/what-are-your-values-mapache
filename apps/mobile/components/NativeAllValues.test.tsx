@@ -101,7 +101,10 @@ describe("NativeAllValues", () => {
           values,
           interfaceCopy: {
             ...english.interfaceCopy,
-            dressingRoom: { ...english.interfaceCopy.dressingRoom, back: "⟦Back⟧" },
+            dressingRoom: {
+              ...english.interfaceCopy.dressingRoom,
+              back: "⟦Back⟧",
+            },
           },
         }}
       />,
@@ -138,7 +141,12 @@ describe("NativeAllValues", () => {
   it("carries an unmatched search into Home authoring without creating data", async () => {
     const callbacks = createCallbacks()
     const user = userEvent.setup()
-    await render(<NativeAllValues {...callbacks} rankedValues={createRankedValues(createActiveDeck([]))} />)
+    await render(
+      <NativeAllValues
+        {...callbacks}
+        rankedValues={createRankedValues(createActiveDeck([]))}
+      />,
+    )
     await user.type(screen.getByLabelText("Search All Values"), "Mapachecraft")
     await user.press(screen.getByRole("button", { name: "Add value" }))
     expect(callbacks.onAddCustomValue).toHaveBeenCalledTimes(1)
@@ -250,7 +258,12 @@ describe("NativeAllValues", () => {
   it("keeps matching ranked values visible without opening an editor", async () => {
     const callbacks = createCallbacks()
     const user = userEvent.setup()
-    await render(<NativeAllValues {...callbacks} rankedValues={createRankedValues(createActiveDeck([]))} />)
+    await render(
+      <NativeAllValues
+        {...callbacks}
+        rankedValues={createRankedValues(createActiveDeck([]))}
+      />,
+    )
     const search = screen.getByLabelText("Search All Values")
     await user.type(search, "Health")
     expect(screen.getByLabelText("Health details")).toBeOnTheScreen()

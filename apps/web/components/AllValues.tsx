@@ -469,25 +469,25 @@ export default function AllValues({
           </div>
         </div>
         <div className="mx-auto mt-3 w-full max-w-6xl">
-        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3">
-        <label
-          htmlFor="all-values-search"
-          className="font-black"
-        >
-          {localizedCopy.interfaceCopy.screen.searchAllValues}
-        </label>
-        <p role="status" aria-live="polite" className="text-sm font-bold">
-          {localizedCopy.interfaceCopy.screen.valuesShown(visibleValues.length, String(visibleValues.length))}
-        </p>
-        </div>
-        <Input
-          id="all-values-search"
-          type="search"
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder={localizedCopy.interfaceCopy.screen.searchPlaceholder}
-          variant="default"
-        />
+          <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3">
+            <label htmlFor="all-values-search" className="font-black">
+              {localizedCopy.interfaceCopy.screen.searchAllValues}
+            </label>
+            <p role="status" aria-live="polite" className="text-sm font-bold">
+              {localizedCopy.interfaceCopy.screen.valuesShown(
+                visibleValues.length,
+                String(visibleValues.length),
+              )}
+            </p>
+          </div>
+          <Input
+            id="all-values-search"
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder={localizedCopy.interfaceCopy.screen.searchPlaceholder}
+            variant="default"
+          />
         </div>
       </header>
       <section
@@ -511,59 +511,71 @@ export default function AllValues({
           </div>
         ) : null}
 
-          {hasComparisons && visibleValues.some(({ rank }) => rank <= 5) ? (
-            <section
-              aria-labelledby="all-values-top-five-heading"
-              className="mb-4"
+        {hasComparisons && visibleValues.some(({ rank }) => rank <= 5) ? (
+          <section
+            aria-labelledby="all-values-top-five-heading"
+            className="mb-4"
+          >
+            <h2
+              id="all-values-top-five-heading"
+              className="border-b-4 border-black py-2 text-lg font-black uppercase"
             >
-              <h2
-                id="all-values-top-five-heading"
-                className="border-b-4 border-black py-2 text-lg font-black uppercase"
-              >
-                {localizedCopy.interfaceCopy.screen.topFive}
-              </h2>
-              <ol className="mt-5 flex flex-col gap-5">
-                {renderRows(visibleValues.filter(({ rank }) => rank <= 5))}
-              </ol>
-            </section>
-          ) : null}
-          {hasComparisons && visibleValues.some(({ rank }) => rank > 5) ? (
-            <section
-              aria-labelledby="all-values-other-heading"
-              className="mt-8"
+              {localizedCopy.interfaceCopy.screen.topFive}
+            </h2>
+            <ol className="mt-5 flex flex-col gap-5">
+              {renderRows(visibleValues.filter(({ rank }) => rank <= 5))}
+            </ol>
+          </section>
+        ) : null}
+        {hasComparisons && visibleValues.some(({ rank }) => rank > 5) ? (
+          <section aria-labelledby="all-values-other-heading" className="mt-8">
+            <h2
+              id="all-values-other-heading"
+              className="border-b-4 border-black py-2 text-lg font-black uppercase"
             >
-              <h2
-                id="all-values-other-heading"
-                className="border-b-4 border-black py-2 text-lg font-black uppercase"
-              >
-                {localizedCopy.interfaceCopy.screen.remainingValues}
-              </h2>
-              <ol className="mt-5 flex flex-col gap-5">
-                {renderRows(visibleValues.filter(({ rank }) => rank > 5))}
-              </ol>
-            </section>
-          ) : null}
-          {!hasComparisons ? (
-            <section aria-labelledby="included-values-heading">
-              <h2 id="included-values-heading" className="sr-only">
-                {localizedCopy.interfaceCopy.screen.includedValues}
-              </h2>
-              <ol className="flex flex-col gap-5">
-                {renderRows(visibleValues)}
-              </ol>
-            </section>
-          ) : null}
-          {visibleValues.length === 0 ? (
-            <p className="mt-8 border-4 border-black bg-white p-8 text-center text-2xl font-black text-black shadow-[8px_8px_0px_0px_#000000]">
-              {localizedCopy.interfaceCopy.screen.noSearchResults}
-            </p>
-          ) : null}
+              {localizedCopy.interfaceCopy.screen.remainingValues}
+            </h2>
+            <ol className="mt-5 flex flex-col gap-5">
+              {renderRows(visibleValues.filter(({ rank }) => rank > 5))}
+            </ol>
+          </section>
+        ) : null}
+        {!hasComparisons ? (
+          <section aria-labelledby="included-values-heading">
+            <h2 id="included-values-heading" className="sr-only">
+              {localizedCopy.interfaceCopy.screen.includedValues}
+            </h2>
+            <ol className="flex flex-col gap-5">{renderRows(visibleValues)}</ol>
+          </section>
+        ) : null}
+        {visibleValues.length === 0 ? (
+          <p className="mt-8 border-4 border-black bg-white p-8 text-center text-2xl font-black text-black shadow-[8px_8px_0px_0px_#000000]">
+            {localizedCopy.interfaceCopy.screen.noSearchResults}
+          </p>
+        ) : null}
       </section>
       <footer className="mx-auto flex w-full max-w-6xl flex-wrap gap-3 border-t-4 border-black px-4 pt-3 pb-5 xl:px-8">
-        <Button size="sm" wrap variant="outline" className="min-w-0 flex-[1_1_7rem]" disabled={isNavigationBlocked} onClick={onClose}>
+        <Button
+          size="sm"
+          wrap
+          variant="outline"
+          className="min-w-0 flex-[1_1_7rem]"
+          disabled={isNavigationBlocked}
+          onClick={onClose}
+        >
           {localizedCopy.interfaceCopy.dressingRoom.back}
         </Button>
-        <Button size="sm" wrap className="min-w-0 flex-[1_1_7rem]" disabled={isNavigationBlocked} onClick={() => onAddCustomValue(visibleValues.length === 0 ? searchQuery.trim() : "")}>
+        <Button
+          size="sm"
+          wrap
+          className="min-w-0 flex-[1_1_7rem]"
+          disabled={isNavigationBlocked}
+          onClick={() =>
+            onAddCustomValue(
+              visibleValues.length === 0 ? searchQuery.trim() : "",
+            )
+          }
+        >
           {localizedCopy.hub.add}
         </Button>
       </footer>

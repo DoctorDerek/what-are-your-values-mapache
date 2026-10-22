@@ -67,7 +67,10 @@ describe("Root layout", () => {
   )
 
   it("exposes safe-area and keyboard resizing without restricting user zoom", () => {
-    expect(viewport).toEqual({ viewportFit: "cover", interactiveWidget: "resizes-content" })
+    expect(viewport).toEqual({
+      viewportFit: "cover",
+      interactiveWidget: "resizes-content",
+    })
   })
 
   it("exposes the product metadata and accessible document language", async () => {

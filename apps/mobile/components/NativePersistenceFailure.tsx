@@ -58,13 +58,32 @@ export default function NativePersistenceFailure(
     return (
       <MapacheScreen>
         <View className="min-h-0 flex-1 gap-3 p-4">
-          <NativeOperationMessages activity={props.activity} issue={props.issue} notice={props.notice} />
+          <NativeOperationMessages
+            activity={props.activity}
+            issue={props.issue}
+            notice={props.notice}
+          />
           <NativePlayerDataImportPreview
-            confirmLabel={isKnownGood ? playerDataRecoveryCopy.unreadableData.restoreReviewAction : playerDataRecoveryCopy.unreadableData.selectedBackupReviewAction}
+            confirmLabel={
+              isKnownGood
+                ? playerDataRecoveryCopy.unreadableData.restoreReviewAction
+                : playerDataRecoveryCopy.unreadableData
+                    .selectedBackupReviewAction
+            }
             isBusy={isBusy}
             preview={props.preview}
-            title={isKnownGood ? playerDataRecoveryCopy.unreadableData.restoreReviewTitle : playerDataRecoveryCopy.unreadableData.selectedBackupReviewTitle}
-            warning={isKnownGood ? playerDataRecoveryCopy.unreadableData.restoreConfirmation : playerDataRecoveryCopy.unreadableData.selectedBackupConfirmation}
+            title={
+              isKnownGood
+                ? playerDataRecoveryCopy.unreadableData.restoreReviewTitle
+                : playerDataRecoveryCopy.unreadableData
+                    .selectedBackupReviewTitle
+            }
+            warning={
+              isKnownGood
+                ? playerDataRecoveryCopy.unreadableData.restoreConfirmation
+                : playerDataRecoveryCopy.unreadableData
+                    .selectedBackupConfirmation
+            }
             onCancel={props.onCancelImport}
             onConfirm={props.onConfirmImport}
           />

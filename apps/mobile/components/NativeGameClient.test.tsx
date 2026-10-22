@@ -740,12 +740,11 @@ describe("NativeGameClient file operations and destructive actions", () => {
     await user.press(await screen.findByRole("button", { name: "Start" }))
     await user.press(await screen.findByRole("button", { name: "Add value" }))
     await user.type(screen.getByLabelText("Value name"), "Craftsmanship")
-    await user.type(
-      screen.getByLabelText("Definition"),
-      "To hone my craft.",
-    )
+    await user.type(screen.getByLabelText("Definition"), "To hone my craft.")
     await user.press(screen.getByRole("button", { name: "Save" }))
-    await user.press(await screen.findByRole("button", { name: "Browse All Values" }))
+    await user.press(
+      await screen.findByRole("button", { name: "Browse All Values" }),
+    )
 
     await user.type(screen.getByLabelText("Search All Values"), "Craftsmanship")
     const craftsmanship = await screen.findByLabelText("Craftsmanship details")
@@ -1014,10 +1013,7 @@ describe("NativeGameClient file operations and destructive actions", () => {
     await user.press(await screen.findByRole("button", { name: "Start" }))
     await user.press(await screen.findByRole("button", { name: "Add value" }))
     await user.type(screen.getByLabelText("Value name"), "Craftsmanship")
-    await user.type(
-      screen.getByLabelText("Definition"),
-      "To hone my craft.",
-    )
+    await user.type(screen.getByLabelText("Definition"), "To hone my craft.")
     await user.press(screen.getByRole("button", { name: "Save" }))
     await screen.findByRole("button", { name: "Battle" })
     await openMenuDestination(user, "Import & Export")

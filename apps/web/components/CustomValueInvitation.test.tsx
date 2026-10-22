@@ -259,7 +259,11 @@ describe("Hub custom-value invitation", () => {
     expect(screen.getByText("1 / 60 characters")).toBeVisible()
     click("Add another")
     click("Back")
-    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Discard changes" }))
+    fireEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Discard changes",
+      }),
+    )
     expect(props.onNavigationBlockedChange).toHaveBeenLastCalledWith(false)
     expect(props.onApply).not.toHaveBeenCalled()
   })
@@ -284,11 +288,15 @@ describe("Hub custom-value invitation", () => {
     fill("Craftsmanship", "To make things well.")
     rerender(<CustomValueInvitation {...props} menuRequestId={1} />)
     expect(screen.getByRole("dialog")).toBeVisible()
-    rerender(<CustomValueInvitation {...props} menuRequestId={1} backRequestId={1} />)
+    rerender(
+      <CustomValueInvitation {...props} menuRequestId={1} backRequestId={1} />,
+    )
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     expect(screen.getByLabelText("Value name")).toHaveValue("Craftsmanship")
     unmount()
-    render(<CustomValueInvitation {...props} menuRequestId={1} backRequestId={1} />)
+    render(
+      <CustomValueInvitation {...props} menuRequestId={1} backRequestId={1} />,
+    )
     expect(screen.getByRole("complementary")).toBeVisible()
     expect(props.onExit).not.toHaveBeenCalled()
   })

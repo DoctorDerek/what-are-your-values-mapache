@@ -963,7 +963,9 @@ describe("GameClient Integration", () => {
       "To solve problems in my own way.",
     )
     fireEvent.click(screen.getByRole("button", { name: "Menu" }))
-    expect(screen.getByRole("dialog", { name: "Keep your changes?" })).toBeVisible()
+    expect(
+      screen.getByRole("dialog", { name: "Keep your changes?" }),
+    ).toBeVisible()
     fireEvent.click(screen.getByRole("button", { name: "Keep editing" }))
     expect(screen.getByLabelText("Definition")).toHaveValue(
       "To solve problems in my own way.",
@@ -978,7 +980,9 @@ describe("GameClient Integration", () => {
     expect(
       screen.queryByRole("button", { name: "Edit Craftsmanship" }),
     ).not.toBeInTheDocument()
-    await waitFor(() => expect(screen.getByRole("button", { name: "Add value" })).toHaveFocus())
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Add value" })).toHaveFocus(),
+    )
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
     expect(await screen.findByText("104 Active Values")).toBeVisible()
   })
@@ -1272,7 +1276,9 @@ describe("GameClient Integration", () => {
         level: 1,
       }),
     ).toBeVisible()
-    expect(screen.queryByRole("button", { name: "Battle" })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Battle" }),
+    ).not.toBeInTheDocument()
   })
 
   it("opens the complete live achievement catalog and restores focus to its Hub action", async () => {
