@@ -257,6 +257,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
   }, [])
   const [isCustomValueDraftActive, setIsCustomValueDraftActive] =
     useState(false)
+  const [customValueBackRequestId, setCustomValueBackRequestId] = useState(0)
   const [isAllValuesNavigationBlocked, setIsAllValuesNavigationBlocked] =
     useState(false)
   const backDisposition = projectRootBackDisposition(state)
@@ -286,8 +287,11 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         setIsProductMenuOpen(false)
         return true
       }
+      if (isCustomValueDraftActive) {
+        setCustomValueBackRequestId(id => id + 1)
+        return true
+      }
       if (
-        isCustomValueDraftActive ||
         isAllValuesNavigationBlocked ||
         isReadingImportFile ||
         isReadingRecoveryImportFile
@@ -872,6 +876,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
             state.context.playerData
               ? {
                   editorRequestId: customValueBuilderRequestId,
+                  backRequestId: customValueBackRequestId,
                   initialName: customValueInitialName,
                   deckRevision:
                     state.context.playerData.profile.scheduler.deckRevision,

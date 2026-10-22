@@ -41,6 +41,7 @@ export default function Hub({
 }: {
   customValueInvitation?: {
     editorRequestId?: number
+    backRequestId?: number
     initialName?: string
     deckRevision: number
     isSaving: boolean
@@ -75,6 +76,7 @@ export default function Hub({
 
   const [isDraftNavigationBlocked, setIsDraftNavigationBlocked] =
     useState(false)
+  const [menuRequestId, setMenuRequestId] = useState(0)
   const isNavigationBlocked =
     isDraftNavigationBlocked || customValueInvitation?.isSaving === true
   const onNavigationBlockedChange =
@@ -83,6 +85,7 @@ export default function Hub({
     (blocked: boolean) => {
       setIsDraftNavigationBlocked(blocked)
       onNavigationBlockedChange?.(blocked)
+      if (!blocked) document.getElementById("hub-add-custom-value-button")?.focus()
     },
     [onNavigationBlockedChange],
   )
@@ -111,8 +114,8 @@ export default function Hub({
           variant="secondary"
           size="sm"
           textCase="normal-case"
-          onClick={onOpenMenu}
-          disabled={isNavigationBlocked}
+          onClick={() => isDraftNavigationBlocked ? setMenuRequestId(id => id + 1) : onOpenMenu()}
+          disabled={customValueInvitation?.isSaving}
           className="ml-auto max-xl:px-[12px] max-xl:py-[8px]"
         >
           {PRODUCT_MENU_COPY.openAction}
@@ -128,8 +131,10 @@ export default function Hub({
       )}
       {customValueInvitation && (
         <CustomValueInvitation
-          key={customValueInvitation.deckRevision}
+          deckRevision={customValueInvitation.deckRevision}
           editorRequestId={customValueInvitation.editorRequestId}
+          backRequestId={customValueInvitation.backRequestId}
+          menuRequestId={menuRequestId}
           initialName={customValueInvitation.initialName}
           existingCustomValues={rankedValues.flatMap(({ definition }) =>
             definition.kind === "custom" ? [definition] : [],
@@ -139,9 +144,10 @@ export default function Hub({
           onApply={customValueInvitation.onApply}
           onExport={customValueInvitation.onExport}
           onNavigationBlockedChange={handleDraftNavigationBlockedChange}
+          onExit={target => { if (target === "menu") onOpenMenu() }}
         />
       )}
-      <div className="relative isolate flex min-h-min w-full max-w-7xl min-w-0 flex-1 flex-col overflow-hidden">
+      {!isDraftNavigationBlocked && <><div className="relative isolate flex min-h-min w-full max-w-7xl min-w-0 flex-1 flex-col overflow-hidden">
         <PersonalValuesCard
           rosterRef={rosterRef}
           appearance={appearance}
@@ -241,6 +247,7 @@ export default function Hub({
           {PERSONAL_HUB_COPY.browse}
         </Button>
       </nav>
+      </>}
     </MapacheScreen>
   )
 }
