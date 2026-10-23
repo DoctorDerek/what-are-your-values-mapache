@@ -97,6 +97,7 @@ for (const locale of ["en", "es-MX"] as const) {
           await reading.evaluate((element) => {
             element.scrollTop = 0
           })
+          await page.mouse.move(0, 0)
           await expectReadableRegion(reading)
           await expectNoPageOverflow(page)
           await expect(action).toBeInViewport({ ratio: 1 })
