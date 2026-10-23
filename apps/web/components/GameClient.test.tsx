@@ -1231,6 +1231,7 @@ describe("GameClient Integration", () => {
       await screen.findByRole("heading", { name: "Achievements", level: 1 }),
     ).toBeVisible()
 
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     await openProductMenuDestination("Import & Export")
     expect(
       await screen.findByRole("heading", {
@@ -1298,7 +1299,7 @@ describe("GameClient Integration", () => {
     expect(screen.getByText("2,400 Battles")).toBeVisible()
     expect(screen.getByText("Reach Level 100")).toBeVisible()
 
-    fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     expect(await screen.findByRole("button", { name: "Menu" })).toHaveFocus()
 
     fireEvent.click(screen.getByRole("button", { name: "Battle" }))
