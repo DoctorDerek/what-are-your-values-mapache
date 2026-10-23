@@ -13,7 +13,7 @@ type NativeInformationPanelFrameProps = Readonly<{
   isPrimaryActionPending?: boolean
   accessibleCloseLabel?: string
   modal?: boolean
-  presentation?: "introduction" | "reference"
+  presentation?: "standard" | "introduction" | "reference"
   titleContent?: ReactNode
   titleDecoration?: ReactNode
   decoration?: ReactNode
@@ -29,7 +29,7 @@ function NativeInformationPanelFrame({
   isPrimaryActionPending = false,
   accessibleCloseLabel,
   modal = false,
-  presentation = "reference",
+  presentation = "standard",
   titleContent = title,
   titleDecoration,
   decoration,
@@ -37,8 +37,9 @@ function NativeInformationPanelFrame({
   afterActions,
 }: NativeInformationPanelFrameProps) {
   const isIntroduction = presentation === "introduction"
-  const Header = isIntroduction ? View : ScrollView
-  const Footer = isIntroduction ? View : ScrollView
+  const isStandard = presentation === "standard"
+  const Header = isStandard ? ScrollView : View
+  const Footer = isStandard ? ScrollView : View
   return (
     <MapacheScreen
       accessibilityLabel={modal ? title : undefined}
@@ -62,9 +63,11 @@ function NativeInformationPanelFrame({
               "relative z-20 border-black",
               isIntroduction
                 ? "min-h-24 justify-center border-b-6 px-4 py-5 xl:min-h-32 xl:px-8 xl:py-6"
-                : "max-h-[40%] shrink-0 grow-0 border-b-4",
+                : isStandard
+                  ? "max-h-[40%] shrink-0 grow-0 border-b-4"
+                  : "border-b-4 px-4 py-5",
             )}
-            {...(!isIntroduction && {
+            {...(isStandard && {
               contentContainerClassName: "p-4",
             })}
           >
@@ -72,11 +75,14 @@ function NativeInformationPanelFrame({
             <Text
               variant="h1"
               className={cx(
-                "relative z-20 text-center font-black",
+                "relative z-20 font-black",
                 isIntroduction
-                  ? "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-arrival-title text-mapache-vivid-primary-cyan text-[36.4px] leading-[35px] tracking-normal xl:text-[62.4px] xl:leading-[60px]"
-                  : "text-mapache-vivid-primary-cyan text-left text-xl",
+                  ? "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-arrival-title text-mapache-vivid-primary-cyan text-center text-[36.4px] leading-[35px] tracking-normal xl:text-[62.4px] xl:leading-[60px]"
+                  : isStandard
+                    ? "text-mapache-vivid-primary-cyan text-left text-xl"
+                    : "text-mapache-vivid-primary-cyan text-center text-2xl uppercase",
                 accessibleCloseLabel && "pr-14",
+                accessibleCloseLabel && isStandard && "min-h-12",
               )}
               {...(isIntroduction && {
                 adjustsFontSizeToFit: true,
@@ -118,9 +124,11 @@ function NativeInformationPanelFrame({
               "relative z-20 border-black",
               isIntroduction
                 ? "border-t-6"
-                : "max-h-[35%] shrink-0 grow-0 border-t-4",
+                : isStandard
+                  ? "max-h-[35%] shrink-0 grow-0 border-t-4"
+                  : "border-t-4 px-4 pt-3 pb-5",
             )}
-            {...(!isIntroduction && {
+            {...(isStandard && {
               contentContainerClassName: "px-4 pt-3 pb-5",
             })}
           >
