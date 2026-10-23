@@ -698,9 +698,8 @@ function NativeGameClientContent({
       <View className="flex-1">
         <NativeAchievements
           achievements={achievementPresentations}
-          canOpenMenu={state.matches("Achievements")}
+          canClose={state.matches("Achievements")}
           onClose={() => send({ type: "ACHIEVEMENTS.CLOSE_REQUESTED" })}
-          onOpenMenu={() => setIsProductMenuOpen(true)}
         />
         <NativeProductMenu
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}
