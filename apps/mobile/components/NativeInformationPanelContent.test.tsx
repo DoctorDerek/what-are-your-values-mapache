@@ -3,9 +3,12 @@ import {
   HOW_IT_WORKS_INFORMATION_PANEL,
   WHY_I_MADE_THIS_GAME_INFORMATION_PANEL,
 } from "@game/data/src/InformationPanels"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import { describe, expect, it, jest } from "@jest/globals"
 import { render, screen, userEvent } from "@testing-library/react-native"
-import { Linking } from "react-native"
+import { Alert, Linking } from "react-native"
+import { ReopenedNativeInformationPanel } from "@/components/NativeInformationPanel"
 import NativeInformationPanelContent from "@/components/NativeInformationPanelContent"
 
 describe("NativeInformationPanelContent", () => {
@@ -59,4 +62,49 @@ describe("NativeInformationPanelContent", () => {
       "https://www.who.int/europe/publications/i/item/9789240003910",
     )
   })
+
+  it.each(["en", "es-MX"] as const)(
+    "keeps the %s information panel usable after a rejected resource open and permits retry",
+    async (locale) => {
+      const catalog = getLocaleCatalog(locale)
+      const panel = catalog.interfaceCopy.information["free-resources"]
+      const resource = panel.blocks.find((block) => block.kind === "resource")
+      if (!resource) throw new Error("The resource fixture is missing")
+      const openUrl = jest.spyOn(Linking, "openURL")
+        .mockRejectedValueOnce(new Error("No browser available"))
+        .mockResolvedValue(undefined)
+      const alert = jest.spyOn(Alert, "alert")
+      const onClose = jest.fn()
+      const user = userEvent.setup()
+      await render(
+        <LocaleProvider locale={locale}>
+          <ReopenedNativeInformationPanel
+            title={panel.title}
+            primaryActionLabel={panel.primaryActionLabel}
+            accessibleCloseLabel={panel.accessibleCloseLabel}
+            open
+            onOpenChange={jest.fn()}
+            onPrimaryAction={onClose}
+          >
+            <NativeInformationPanelContent informationPanel={panel} />
+          </ReopenedNativeInformationPanel>
+        </LocaleProvider>,
+      )
+
+      const resourceLink = screen.getByRole("link", { name: resource.actionLabel })
+      await user.press(resourceLink)
+      expect(alert).toHaveBeenCalledWith(
+        catalog.firstArrival.websiteErrorTitle,
+        catalog.firstArrival.websiteErrorMessage,
+      )
+      expect(onClose).not.toHaveBeenCalled()
+      expect(screen.getByLabelText(panel.title)).toBeOnTheScreen()
+      await user.press(resourceLink)
+      expect(openUrl).toHaveBeenCalledTimes(2)
+      expect(openUrl).toHaveBeenLastCalledWith(resource.url)
+      expect(alert).toHaveBeenCalledTimes(1)
+      await user.press(screen.getByRole("button", { name: panel.primaryActionLabel }))
+      expect(onClose).toHaveBeenCalledTimes(1)
+    },
+  )
 })

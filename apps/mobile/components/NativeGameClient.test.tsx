@@ -281,6 +281,7 @@ describe("NativeGameClient Menu navigation", () => {
     await openMenuDestination(user, "Achievements")
     expect(await screen.findByText("Achievements")).toBeOnTheScreen()
 
+    await user.press(screen.getByRole("button", { name: "Back" }))
     await openMenuDestination(user, "Import & Export")
     expect(await screen.findByText("Import & Export")).toBeOnTheScreen()
 
@@ -394,7 +395,7 @@ describe("NativeGameClient Menu navigation", () => {
     await openMenuDestination(user, "Achievements")
     expect(await screen.findByText("Achievements")).toBeOnTheScreen()
     await user.press(
-      screen.getByRole("button", { name: "Back to Your Values" }),
+      screen.getByRole("button", { name: "Back" }),
     )
 
     await openMenuDestination(user, "Import & Export")
@@ -441,6 +442,8 @@ describe("NativeGameClient Menu navigation", () => {
     expect(await screen.findByText("Achievements")).toBeOnTheScreen()
     expect(screen.queryByLabelText("Value battle")).toBeNull()
 
+    await user.press(screen.getByRole("button", { name: "Back" }))
+    expect(getPresentedChoiceNames()).toHaveLength(2)
     await openMenuDestination(user, "Settings")
     expect(await screen.findByText("Settings")).toBeOnTheScreen()
 
