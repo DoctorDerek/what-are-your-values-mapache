@@ -441,7 +441,11 @@ describe("NativeGameClient Menu navigation", () => {
     expect(screen.queryByLabelText("Value battle")).toBeNull()
 
     await user.press(screen.getByRole("button", { name: "Back" }))
-    expect(getPresentedChoiceNames()).toHaveLength(2)
+    expect(
+      await screen.findByRole("header", {
+        name: /^My (?:Top Five Life )?Values$/,
+      }),
+    ).toBeOnTheScreen()
     await openMenuDestination(user, "Settings")
     expect(await screen.findByText("Settings")).toBeOnTheScreen()
 
