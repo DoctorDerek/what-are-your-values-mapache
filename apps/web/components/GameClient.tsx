@@ -43,7 +43,7 @@ import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnap
 import { useReducedMotion } from "motion/react"
 import dynamic from "next/dynamic"
 import type { StaticImageData } from "next/image"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { type MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Controls from "@/components/Controls"
 import GameSession from "@/components/GameSession"
 import { ReopenedInformationPanel } from "@/components/InformationPanel"
@@ -383,10 +383,11 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     },
     [send],
   )
-  const handleProductMenuOpen = useCallback(() => {
-    const activeElement = document.activeElement
+  const handleProductMenuOpen = useCallback((event?: MouseEvent<HTMLButtonElement>) => {
+    const returnFocusTarget = event?.currentTarget ??
+      document.getElementById(HUB_MENU_BUTTON_ID) ?? document.activeElement
     productMenuReturnFocusTargetRef.current =
-      activeElement instanceof HTMLElement ? activeElement : null
+      returnFocusTarget instanceof HTMLElement ? returnFocusTarget : null
     setIsProductMenuOpen(true)
   }, [])
   useWebControllerActions(0, (command) => {
