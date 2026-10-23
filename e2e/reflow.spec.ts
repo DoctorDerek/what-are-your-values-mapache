@@ -684,6 +684,7 @@ test("Achievements and Import Export reflow without document overflow", async ({
   ).toBeVisible()
   await expectNoDocumentHorizontalOverflow(page, "Achievements")
 
+  await page.getByRole("button", { name: "Back", exact: true }).click()
   await openMenuDestination(page, "Import & Export")
   await expect(
     page.getByRole("heading", { level: 1, name: "Import & Export" }),

@@ -181,6 +181,7 @@ test("values and player-data surfaces meet automated accessibility rules", async
   ).toBeVisible()
   await expectNoAccessibilityViolations(page, "Achievements")
 
+  await page.getByRole("button", { name: "Back", exact: true }).click()
   await openMenuDestination(page, "Import & Export")
   await expect(
     page.getByRole("heading", { level: 1, name: "Import & Export" }),
