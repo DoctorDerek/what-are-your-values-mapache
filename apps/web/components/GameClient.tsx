@@ -43,7 +43,14 @@ import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnap
 import { useReducedMotion } from "motion/react"
 import dynamic from "next/dynamic"
 import type { StaticImageData } from "next/image"
-import { type MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent,
+} from "react"
 import Controls from "@/components/Controls"
 import GameSession from "@/components/GameSession"
 import { ReopenedInformationPanel } from "@/components/InformationPanel"
@@ -383,13 +390,18 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     },
     [send],
   )
-  const handleProductMenuOpen = useCallback((event?: MouseEvent<HTMLButtonElement>) => {
-    const returnFocusTarget = event?.currentTarget ??
-      document.getElementById(HUB_MENU_BUTTON_ID) ?? document.activeElement
-    productMenuReturnFocusTargetRef.current =
-      returnFocusTarget instanceof HTMLElement ? returnFocusTarget : null
-    setIsProductMenuOpen(true)
-  }, [])
+  const handleProductMenuOpen = useCallback(
+    (event?: MouseEvent<HTMLButtonElement>) => {
+      const returnFocusTarget =
+        event?.currentTarget ??
+        document.getElementById(HUB_MENU_BUTTON_ID) ??
+        document.activeElement
+      productMenuReturnFocusTargetRef.current =
+        returnFocusTarget instanceof HTMLElement ? returnFocusTarget : null
+      setIsProductMenuOpen(true)
+    },
+    [],
+  )
   useWebControllerActions(0, (command) => {
     if (command === "back" || command === "cancel") return handleSemanticBack()
     if (command !== "menu") return false
