@@ -40,6 +40,7 @@ for (const locale of ["en", "es-MX"] as const) {
       await page.setViewportSize({ width, height: width === 320 ? 540 : 900 })
       await page.goto(locale === "en" ? "/" : "/que-valoras-en-la-vida")
       await page.getByRole("button", { name: catalog.introduction.startAction, exact: true }).click()
+      await page.evaluate(() => document.fonts.ready)
 
       const menu = page.getByRole("button", { name: copy.menu.openAction, exact: true })
       const destinations = copy.menuDestinations.filter((destination) =>
@@ -77,10 +78,12 @@ for (const locale of ["en", "es-MX"] as const) {
           await expect(action).toBeInViewport({ ratio: 1 })
           await page.screenshot({ path: testInfo.outputPath(`${destination.id}-${scale}.png`) })
           await scrollWithPinnedAction(reading, action)
-          if (isAchievements)
-            await expect(surface.getByRole("listitem").last().getByRole("heading")).toBeInViewport()
-          else
-            await expect(reading.locator("p").last()).toBeInViewport()
+          const finalContent = isAchievements
+            ? surface.getByRole("listitem").last().getByRole("heading")
+            : reading.locator("p").last()
+          await finalContent.scrollIntoViewIfNeeded()
+          await expect(finalContent).toBeInViewport()
+          await expect(action).toBeInViewport({ ratio: 1 })
           await scaling?.evaluate((element) => element.remove())
         }
         await action.click()
