@@ -947,9 +947,8 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
       <>
         <Achievements
           achievements={achievementPresentations}
-          canOpenMenu={!isRecordingAchievementPresentation}
+          canClose={!isRecordingAchievementPresentation}
           onClose={() => send({ type: "ACHIEVEMENTS.CLOSE_REQUESTED" })}
-          onOpenMenu={handleProductMenuOpen}
         />
         <ProductMenu
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}

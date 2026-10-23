@@ -25,10 +25,10 @@ function AchievementCard({
       }
     >
       <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
-        <h2 className="min-w-0 flex-1 text-2xl font-black [overflow-wrap:anywhere] uppercase sm:text-3xl">
+        <h2 className="min-w-0 flex-[1_1_190px] text-2xl font-black [overflow-wrap:anywhere] hyphens-auto uppercase sm:text-3xl">
           {achievement.title}
         </h2>
-        <span className="shrink-0 border-4 border-black bg-black px-3 py-1 font-black text-white uppercase">
+        <span className="max-w-full shrink-0 border-4 border-black bg-black px-2 py-1 text-sm font-black text-white [overflow-wrap:anywhere] uppercase">
           {isUnlocked
             ? localizedCopy.interfaceCopy.screen.unlocked
             : localizedCopy.interfaceCopy.screen.locked}
@@ -67,17 +67,14 @@ function AchievementCard({
 
 export default function Achievements({
   achievements,
-  canOpenMenu,
+  canClose,
   onClose,
-  onOpenMenu,
 }: {
   readonly achievements: readonly AchievementPresentation[]
-  readonly canOpenMenu: boolean
+  readonly canClose: boolean
   readonly onClose: () => void
-  readonly onOpenMenu: () => void
 }) {
   const localizedCopy = useLocaleCatalog()
-  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
 
   const headingRef = useRef<HTMLHeadingElement>(null)
   const { integer } = useMemo(
@@ -93,66 +90,53 @@ export default function Achievements({
   }, [])
 
   return (
-    <MapacheScreen spacing="standard" viewport="scrollable">
-      <header className="mx-auto flex w-full max-w-5xl flex-col items-stretch gap-5 xl:flex-row xl:items-center xl:justify-between">
+    <MapacheScreen spacing="readable-xl" viewport="fixed" className="flex flex-col">
+      <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col">
+      <div data-controller-scroll tabIndex={0} className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pr-[8px] pb-[8px]">
+      <header className="flex min-w-0 flex-wrap items-center justify-between gap-3 pb-[12px]">
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="text-mapache-vivid-primary-cyan text-4xl font-black [overflow-wrap:anywhere] uppercase drop-shadow-[5px_5px_0px_#000000] outline-none sm:text-6xl"
+          id="achievements-heading"
+          className="text-mapache-vivid-primary-cyan min-w-0 text-xl leading-tight font-black [overflow-wrap:anywhere] hyphens-auto drop-shadow-[3px_3px_0px_#000000] outline-none"
         >
           {localizedCopy.interfaceCopy.screen.achievements}
         </h1>
-        <div className="flex flex-wrap gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            disabled={!canOpenMenu}
-            onClick={onOpenMenu}
-            wrap
-            className="flex-1"
-          >
-            {PRODUCT_MENU_COPY.openAction}
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            disabled={!canOpenMenu}
-            onClick={onClose}
-            wrap
-            className="flex-1"
-          >
-            {localizedCopy.interfaceCopy.screen.backToValues}
-          </Button>
-        </div>
-      </header>
-
-      <section
-        aria-labelledby="achievement-catalog-heading"
-        className="mx-auto mt-8 w-full max-w-5xl border-4 border-black bg-white p-4 shadow-[8px_8px_0px_0px_#000000] sm:p-8"
-      >
-        <h2
-          id="achievement-catalog-heading"
-          className="text-mapache-vivid-dark text-3xl font-black uppercase sm:text-4xl"
-        >
-          {localizedCopy.interfaceCopy.screen.localMilestones}
-        </h2>
-        <p className="text-mapache-vivid-dark mt-3 text-lg font-bold sm:text-xl">
-          {localizedCopy.interfaceCopy.screen.achievementPrivacy}
-        </p>
-        <p className="bg-mapache-vivid-secondary-green text-mapache-vivid-dark mt-5 border-4 border-black p-4 text-xl font-black uppercase">
+        <p className="bg-mapache-vivid-secondary-green text-mapache-vivid-dark max-w-full border-4 border-black px-[10px] py-[6px] text-base leading-tight font-black [overflow-wrap:anywhere]">
           {localizedCopy.interfaceCopy.screen.achievementsUnlocked(
             integer(unlockedCount),
             integer(achievements.length),
           )}
         </p>
-        <ol className="mt-6 flex min-w-0 flex-col gap-5 pr-1 pb-2">
+      </header>
+
+      <section
+        aria-labelledby="achievements-heading"
+        className="w-full min-w-0 border-4 border-black bg-white p-[12px] shadow-[5px_5px_0px_0px_#000000] xl:p-5"
+      >
+        <p className="text-mapache-vivid-dark text-base leading-snug font-bold [overflow-wrap:anywhere] hyphens-auto">
+          {localizedCopy.interfaceCopy.screen.achievementPrivacy}
+        </p>
+        <ol className="mt-[14px] flex min-w-0 flex-col gap-[16px] pr-[5px] pb-[5px]">
           {achievements.map((achievement) => (
             <AchievementCard key={achievement.id} achievement={achievement} />
           ))}
         </ol>
       </section>
+      </div>
+      <footer className="flex max-h-[35%] shrink-0 justify-end overflow-auto pt-[12px] pr-[8px] pb-[8px]">
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={!canClose}
+          onClick={onClose}
+          wrap
+          className="w-full min-w-0 xl:w-50"
+        >
+          {localizedCopy.interfaceCopy.controlActions.back}
+        </Button>
+      </footer>
+      </div>
     </MapacheScreen>
   )
 }
