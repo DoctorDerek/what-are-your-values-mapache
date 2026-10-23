@@ -1158,7 +1158,7 @@ describe("GameClient Integration", () => {
       })
     ).map((button) => button.getAttribute("aria-label"))
     const menuAction = screen.getByRole("button", { name: "Menu" })
-    menuAction.focus()
+    expect(menuAction).not.toHaveFocus()
 
     fireEvent.click(menuAction)
     fireEvent.click(await screen.findByRole("button", { name: "How It Works" }))
