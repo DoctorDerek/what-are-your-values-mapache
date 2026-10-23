@@ -60,7 +60,6 @@ function createCallbacks() {
     onAddCustomValue: jest.fn(),
     onClose: jest.fn(),
     onDeleteCustomValue: jest.fn(),
-    onOpenMenu: jest.fn(),
     onUpdateCustomValue: jest.fn(),
   }
 }
@@ -102,7 +101,10 @@ describe("NativeAllValues", () => {
           values,
           interfaceCopy: {
             ...english.interfaceCopy,
-            screen: { ...english.interfaceCopy.screen, close: "⟦Close⟧" },
+            dressingRoom: {
+              ...english.interfaceCopy.dressingRoom,
+              back: "⟦Back⟧",
+            },
           },
         }}
       />,
@@ -115,52 +117,41 @@ describe("NativeAllValues", () => {
     ).toBeOnTheScreen()
     await userEvent
       .setup()
-      .press(screen.getByRole("button", { name: "⟦Close⟧" }))
+      .press(screen.getByRole("button", { name: "⟦Back⟧" }))
     expect(callbacks.onClose).toHaveBeenCalledTimes(1)
   })
-  it("routes Menu and Close when no Custom Value work is pending", async () => {
+  it("routes Back and Add to their existing owners", async () => {
     const callbacks = createCallbacks()
     const user = userEvent.setup()
     const rankedValues = createRankedValues(createActiveDeck([])).slice(0, 3)
     await render(<NativeAllValues {...callbacks} rankedValues={rankedValues} />)
 
-    const menu = screen.getByRole("button", { name: "Menu" })
-    const close = screen.getByRole("button", { name: "Close" })
-    expect(menu).toBeEnabled()
+    const add = screen.getByRole("button", { name: "Add value" })
+    const close = screen.getByRole("button", { name: "Back" })
+    expect(add).toBeEnabled()
     expect(close).toBeEnabled()
 
-    await user.press(menu)
+    await user.press(add)
     await user.press(close)
 
-    expect(callbacks.onOpenMenu).toHaveBeenCalledTimes(1)
+    expect(callbacks.onAddCustomValue).toHaveBeenCalledTimes(1)
     expect(callbacks.onClose).toHaveBeenCalledTimes(1)
   })
 
-  it("blocks navigation for an add draft and restores it after Cancel", async () => {
+  it("carries an unmatched search into Home authoring without creating data", async () => {
     const callbacks = createCallbacks()
     const user = userEvent.setup()
-    const rankedValues = createRankedValues(createActiveDeck([])).slice(0, 3)
     await render(
       <NativeAllValues
         {...callbacks}
-        openCustomValueBuilder
-        rankedValues={rankedValues}
+        rankedValues={createRankedValues(createActiveDeck([]))}
       />,
     )
-
-    const menu = screen.getByRole("button", { name: "Menu" })
-    const close = screen.getByRole("button", { name: "Close" })
-    expect(menu).toBeDisabled()
-    expect(close).toBeDisabled()
-
-    await user.press(menu)
-    await user.press(close)
-    expect(callbacks.onOpenMenu).not.toHaveBeenCalled()
-    expect(callbacks.onClose).not.toHaveBeenCalled()
-
-    await user.press(screen.getByRole("button", { name: "Cancel" }))
-    expect(menu).toBeEnabled()
-    expect(close).toBeEnabled()
+    await user.type(screen.getByLabelText("Search All Values"), "Mapachecraft")
+    await user.press(screen.getByRole("button", { name: "Add value" }))
+    expect(callbacks.onAddCustomValue).toHaveBeenCalledTimes(1)
+    expect(callbacks.onAddCustomValue).toHaveBeenCalledWith("Mapachecraft")
+    expect(screen.queryByLabelText("Value name")).not.toBeOnTheScreen()
   })
 
   it("blocks navigation through edit drafts and delete confirmations", async () => {
@@ -172,23 +163,23 @@ describe("NativeAllValues", () => {
     )
     await render(<NativeAllValues {...callbacks} rankedValues={rankedValues} />)
 
-    const menu = screen.getByRole("button", { name: "Menu" })
-    const close = screen.getByRole("button", { name: "Close" })
+    const add = screen.getByRole("button", { name: "Add value" })
+    const close = screen.getByRole("button", { name: "Back" })
     const ingenuity = getLegacyCustomDetails()
 
     await user.press(within(ingenuity).getByRole("button", { name: "Edit" }))
-    expect(menu).toBeDisabled()
+    expect(add).toBeDisabled()
     expect(close).toBeDisabled()
     await user.press(screen.getByRole("button", { name: "Cancel" }))
-    expect(menu).toBeEnabled()
+    expect(add).toBeEnabled()
     expect(close).toBeEnabled()
 
     await user.press(within(ingenuity).getByRole("button", { name: "Delete" }))
     expect(screen.getByLabelText("Remove Ingenuity?")).toBeOnTheScreen()
-    expect(menu).toBeDisabled()
+    expect(add).toBeDisabled()
     expect(close).toBeDisabled()
     await user.press(screen.getByRole("button", { name: "Cancel" }))
-    expect(menu).toBeEnabled()
+    expect(add).toBeEnabled()
     expect(close).toBeEnabled()
   })
 
@@ -204,36 +195,16 @@ describe("NativeAllValues", () => {
       />,
     )
 
-    const menu = screen.getByRole("button", { name: "Menu" })
-    const close = screen.getByRole("button", { name: "Close" })
-    expect(menu).toBeDisabled()
+    const add = screen.getByRole("button", { name: "Add value" })
+    const close = screen.getByRole("button", { name: "Back" })
+    expect(add).toBeDisabled()
     expect(close).toBeDisabled()
 
-    await user.press(menu)
+    await user.press(add)
     await user.press(close)
 
-    expect(callbacks.onOpenMenu).not.toHaveBeenCalled()
+    expect(callbacks.onAddCustomValue).not.toHaveBeenCalled()
     expect(callbacks.onClose).not.toHaveBeenCalled()
-  })
-
-  it("adds a complete Custom Value through the composed builder", async () => {
-    const callbacks = createCallbacks()
-    const user = userEvent.setup()
-    const rankedValues = createRankedValues(createActiveDeck([])).slice(0, 3)
-    await render(<NativeAllValues {...callbacks} rankedValues={rankedValues} />)
-
-    await user.press(screen.getByRole("button", { name: "Add Custom Value" }))
-    await user.type(screen.getByLabelText("Value Name"), "Mapachecraft")
-    await user.type(
-      screen.getByLabelText("What This Value Means to Me"),
-      "To solve meaningful problems with playful ingenuity.",
-    )
-    await user.press(screen.getByRole("button", { name: "Save Value" }))
-
-    expect(callbacks.onAddCustomValue).toHaveBeenCalledWith(
-      "Mapachecraft",
-      "To solve meaningful problems with playful ingenuity.",
-    )
   })
 
   it("updates a Custom Value only after composed edit review", async () => {
@@ -284,24 +255,20 @@ describe("NativeAllValues", () => {
     expect(callbacks.onDeleteCustomValue).toHaveBeenCalledWith(ingenuity.id)
   })
 
-  it("closes the builder and reveals an existing matching value", async () => {
+  it("keeps matching ranked values visible without opening an editor", async () => {
     const callbacks = createCallbacks()
     const user = userEvent.setup()
-    const rankedValues = createRankedValues(createActiveDeck([])).filter(
-      ({ definition }) =>
-        definition.kind === "canonical" && definition.englishName === "Health",
+    await render(
+      <NativeAllValues
+        {...callbacks}
+        rankedValues={createRankedValues(createActiveDeck([]))}
+      />,
     )
-    await render(<NativeAllValues {...callbacks} rankedValues={rankedValues} />)
-
     const search = screen.getByLabelText("Search All Values")
     await user.type(search, "Health")
-    await user.press(screen.getByRole("button", { name: "Add Custom Value" }))
-    await user.type(screen.getByLabelText("Value Name"), "Health")
-    await user.press(screen.getByRole("button", { name: "Open Health" }))
-
-    expect(screen.queryByLabelText("Add Custom Value")).not.toBeOnTheScreen()
     expect(screen.getByLabelText("Health details")).toBeOnTheScreen()
-    expect(search).toHaveDisplayValue("")
+    expect(search).toHaveDisplayValue("Health")
+    expect(callbacks.onAddCustomValue).not.toHaveBeenCalled()
   })
 
   it("separates the evidence-ranked Top Five from every remaining value", async () => {

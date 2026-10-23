@@ -53,7 +53,7 @@ for (const width of [320, 390, 1280]) {
         .getByRole("button", { name: "Browse All Values", exact: true })
         .click()
       await expect(rows).toHaveCount(103)
-      await page.getByRole("button", { name: "Close", exact: true }).click()
+      await page.getByRole("button", { name: "Back", exact: true }).click()
       await expect(rows).toHaveCount(103)
       const editorial = page.getByRole("article", {
         name: "What Are Your Values, Mapache? information",

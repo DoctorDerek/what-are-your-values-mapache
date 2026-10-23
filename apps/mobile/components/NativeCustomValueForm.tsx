@@ -24,7 +24,6 @@ export default function NativeCustomValueForm({
   initialDefinition = "",
   initialName = "",
   isPersistencePending,
-  mode,
   onCancel,
   onOpenMatchingValue,
   onSubmit,
@@ -35,14 +34,12 @@ export default function NativeCustomValueForm({
   readonly initialDefinition?: string
   readonly initialName?: string
   readonly isPersistencePending: boolean
-  readonly mode: "add" | "edit"
   readonly onCancel: () => void
   readonly onOpenMatchingValue: (valueId: ValueId) => void
   readonly onSubmit: (name: string, definition: string) => void
   readonly rankedValues: readonly RankedValue[]
 }) {
   const localizedCopy = useLocaleCatalog()
-  const copy = localizedCopy.interfaceCopy.customValues
 
   const definitionInputRef = useRef<TextInput>(null)
   const [name, setName] = useState(initialName)
@@ -62,19 +59,25 @@ export default function NativeCustomValueForm({
   )
   const matchingValues = useMemo(
     () =>
-      findRankedValueNameMatches(rankedValues, validation.name.value).filter(
+      findRankedValueNameMatches(
+        rankedValues,
+        validation.name.value,
+        localizedCopy.values,
+      ).filter(
         ({ definition: matchingDefinition }) =>
           matchingDefinition.id !== excludedCustomValueId,
       ),
-    [excludedCustomValueId, rankedValues, validation.name.value],
+    [
+      excludedCustomValueId,
+      rankedValues,
+      validation.name.value,
+      localizedCopy.values,
+    ],
   )
   const hasChanged =
     validation.name.value !== initialName ||
     validation.definition.value !== initialDefinition
-  const canSubmit =
-    validation.isValid &&
-    !isPersistencePending &&
-    (mode === "add" || hasChanged)
+  const canSubmit = validation.isValid && !isPersistencePending && hasChanged
 
   const submitDraft = () => {
     if (!canSubmit) {
@@ -83,7 +86,7 @@ export default function NativeCustomValueForm({
       return
     }
 
-    if (mode === "edit" && !isConfirmingEdit) {
+    if (!isConfirmingEdit) {
       setIsConfirmingEdit(true)
       return
     }
@@ -93,22 +96,16 @@ export default function NativeCustomValueForm({
 
   return (
     <View
-      accessibilityLabel={
-        mode === "add"
-          ? localizedCopy.interfaceCopy.screen.addCustomValue
-          : localizedCopy.interfaceCopy.screen.editValue(initialName)
-      }
+      accessibilityLabel={localizedCopy.interfaceCopy.screen.editValue(
+        initialName,
+      )}
       className="gap-4 border-4 border-black bg-white p-4 shadow-[6px_6px_0px_0px_#000000]"
     >
-      {mode === "add" && (
-        <Text className="text-sm leading-5 text-black">{copy.example}</Text>
-      )}
       <Text className="text-lg font-black text-black uppercase">
         {localizedCopy.interfaceCopy.screen.valueName}
       </Text>
       <TextInput
         accessibilityLabel={localizedCopy.interfaceCopy.screen.valueName}
-        accessibilityHint={mode === "add" ? copy.example : undefined}
         aria-invalid={isNameTouched && validation.name.validationCode !== null}
         autoCapitalize="words"
         className="min-h-14 border-4 border-black bg-white p-3 text-xl font-bold text-black"
@@ -224,9 +221,7 @@ export default function NativeCustomValueForm({
             <Text>
               {isPersistencePending
                 ? localizedCopy.interfaceCopy.screen.saving
-                : mode === "edit"
-                  ? localizedCopy.interfaceCopy.screen.reviewUpdate
-                  : localizedCopy.interfaceCopy.screen.saveValue}
+                : localizedCopy.interfaceCopy.screen.reviewUpdate}
             </Text>
           </Button>
           <Button

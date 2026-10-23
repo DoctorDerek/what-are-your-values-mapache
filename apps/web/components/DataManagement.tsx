@@ -6,13 +6,14 @@ import type {
   PlayerDataResetReview as PlayerDataResetReviewState,
 } from "@game/machines/src/PlayerDataReset"
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
+import { cx } from "classix"
 import { useEffect, useRef } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
+import PlayerDataImportPreview from "@/components/PlayerDataImportPreview"
+import PlayerDataResetActions from "@/components/PlayerDataResetActions"
+import PlayerDataResetReview from "@/components/PlayerDataResetReview"
 import { Button } from "@/components/ui/button"
 import { WAYVM_IMPORT_FILE_ACCEPT } from "@/lib/PlayerDataFiles"
-import PlayerDataImportPreview from "./PlayerDataImportPreview"
-import PlayerDataResetActions from "./PlayerDataResetActions"
-import PlayerDataResetReview from "./PlayerDataResetReview"
 
 export type DataManagementActivity = string
 
@@ -105,46 +106,50 @@ export default function DataManagement({
 
   return (
     <MapacheScreen
-      spacing="standard"
+      spacing={preview ? "readable-xl" : "standard"}
       viewport="scrollable"
-      className="flex flex-col items-center"
+      className={cx(
+        "flex flex-col items-center",
+        preview && "h-[100dvh] overflow-y-auto",
+      )}
     >
       <div className="flex w-full max-w-5xl flex-wrap items-center justify-between gap-4">
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="text-mapache-vivid-primary-cyan text-4xl font-black uppercase drop-shadow-[5px_5px_0px_#000000] outline-none sm:text-6xl"
+          className="text-mapache-vivid-primary-cyan text-2xl font-black wrap-anywhere uppercase drop-shadow-[3px_3px_0px_#000000] outline-none xl:text-4xl"
         >
           {playerDataPortabilityCopy.screenTitle}
         </h1>
-        <div className="flex flex-wrap gap-3">
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={isNavigationBlocked}
-            onClick={onOpenMenu}
-          >
-            {PRODUCT_MENU_COPY.openAction}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isNavigationBlocked}
-            onClick={onClose}
-          >
-            {localizedCopy.interfaceCopy.screen.backToValues}
-          </Button>
-        </div>
+        {!preview && (
+          <div className="flex flex-wrap gap-3">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={isNavigationBlocked}
+              onClick={onOpenMenu}
+            >
+              {PRODUCT_MENU_COPY.openAction}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isNavigationBlocked}
+              onClick={onClose}
+            >
+              {localizedCopy.interfaceCopy.screen.backToValues}
+            </Button>
+          </div>
+        )}
       </div>
 
       <div
         aria-busy={isBusy}
-        className="mt-8 flex w-full max-w-5xl flex-col gap-5"
+        className={cx(
+          "mt-5 flex w-full max-w-5xl flex-col gap-5 [&_button]:max-w-full [&_button]:whitespace-normal",
+          preview && "min-h-0 flex-1",
+        )}
       >
-        <p className="text-lg font-bold text-white sm:text-xl">
-          {playerDataPortabilityCopy.introduction}
-        </p>
-
         {activity ? (
           <p
             role="status"
@@ -201,9 +206,6 @@ export default function DataManagement({
                 >
                   {playerDataPortabilityCopy.exportTitle}
                 </h2>
-                <p className="text-mapache-vivid-dark flex-1 py-5 text-lg font-bold sm:text-xl">
-                  {playerDataPortabilityCopy.exportDescription}
-                </p>
                 <Button
                   type="button"
                   size="lg"
@@ -213,6 +215,9 @@ export default function DataManagement({
                 >
                   {playerDataPortabilityCopy.exportAction}
                 </Button>
+                <p className="text-mapache-vivid-dark pt-4 font-bold">
+                  {playerDataPortabilityCopy.exportDescription}
+                </p>
               </section>
 
               <section
@@ -225,9 +230,6 @@ export default function DataManagement({
                 >
                   {playerDataPortabilityCopy.importTitle}
                 </h2>
-                <p className="text-mapache-vivid-dark flex-1 py-5 text-lg font-bold sm:text-xl">
-                  {playerDataPortabilityCopy.importDescription}
-                </p>
                 <input
                   ref={importInputRef}
                   type="file"
@@ -252,8 +254,14 @@ export default function DataManagement({
                 >
                   {playerDataPortabilityCopy.chooseBackupAction}
                 </Button>
+                <p className="text-mapache-vivid-dark pt-4 font-bold">
+                  {playerDataPortabilityCopy.importDescription}
+                </p>
               </section>
             </div>
+            <p className="font-bold text-white">
+              {playerDataPortabilityCopy.introduction}
+            </p>
             <PlayerDataResetActions
               customValueCount={customValueCount}
               isBusy={isBusy}

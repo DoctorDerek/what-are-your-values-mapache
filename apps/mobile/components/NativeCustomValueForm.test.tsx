@@ -1,8 +1,5 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
-import {
-  CUSTOM_VALUE_INVITATION_COPY as copy,
-  CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
-} from "@game/data/src/CustomValueInvitationCopy"
+import { CUSTOM_VALUE_INVITATION_COPY as copy } from "@game/data/src/CustomValueInvitationCopy"
 import { customValueValidationMessages } from "@game/data/src/CustomValueValidationMessages"
 import {
   createCustomValueId,
@@ -42,52 +39,22 @@ function createCallbacks() {
   }
 }
 
-function createAddProps() {
+function createEditProps() {
   return {
     ...createCallbacks(),
-    existingCustomValues: [] as readonly CustomValueDefinition[],
+    existingCustomValues: [ingenuity],
+    excludedCustomValueId: ingenuity.id,
+    initialName: ingenuity.name,
+    initialDefinition: ingenuity.definition,
     isPersistencePending: false,
-    mode: "add" as const,
-    rankedValues: createRankedValues([]),
+    rankedValues: createRankedValues([ingenuity]),
   }
 }
 
 describe("NativeCustomValueForm", () => {
-  it("shows an informational example and saves only an explicitly authored value", async () => {
-    const props = createAddProps()
-    const user = userEvent.setup()
-    await render(<NativeCustomValueForm {...props} />)
-
-    expect(screen.getByLabelText("Value Name")).toHaveDisplayValue("")
-    expect(
-      screen.getByLabelText("What This Value Means to Me"),
-    ).toHaveDisplayValue("")
-    expect(
-      screen.getByText(
-        "For example: Craftsmanship — to take care and pride in making things well",
-      ),
-    ).toBeOnTheScreen()
-    expect(screen.getByRole("button", { name: "Save Value" })).toBeDisabled()
-    expect(
-      screen.queryByRole("button", { name: /Start with/ }),
-    ).not.toBeOnTheScreen()
-    expect(props.onSubmit).not.toHaveBeenCalled()
-    await user.type(screen.getByLabelText("Value Name"), example.name)
-    await user.type(
-      screen.getByLabelText("What This Value Means to Me"),
-      example.definition,
-    )
-
-    await user.press(screen.getByRole("button", { name: "Save Value" }))
-
-    expect(props.onSubmit).toHaveBeenCalledWith(
-      "Craftsmanship",
-      "to take care and pride in making things well",
-    )
-  })
-
   it("reveals required-field guidance only after each field is touched", async () => {
-    const props = createAddProps()
+    const props = createEditProps()
+    const user = userEvent.setup()
     await render(<NativeCustomValueForm {...props} />)
 
     expect(
@@ -97,6 +64,8 @@ describe("NativeCustomValueForm", () => {
       screen.queryByText(customValueValidationMessages.definition.required),
     ).not.toBeOnTheScreen()
 
+    await user.clear(screen.getByLabelText("Value Name"))
+    await user.clear(screen.getByLabelText("What This Value Means to Me"))
     await fireEvent(screen.getByLabelText("Value Name"), "blur")
     await fireEvent(
       screen.getByLabelText("What This Value Means to Me"),
@@ -109,11 +78,11 @@ describe("NativeCustomValueForm", () => {
     expect(
       screen.getByText(customValueValidationMessages.definition.required),
     ).toHaveProp("accessibilityRole", "alert")
-    expect(screen.getByRole("button", { name: "Save Value" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Review Update" })).toBeDisabled()
   })
 
   it("keeps the name-field Next action separate from saving", async () => {
-    const props = createAddProps()
+    const props = createEditProps()
     await render(<NativeCustomValueForm {...props} />)
     const valueName = screen.getByLabelText("Value Name")
     const definition = screen.getByLabelText("What This Value Means to Me")
@@ -127,10 +96,11 @@ describe("NativeCustomValueForm", () => {
   })
 
   it("opens exact canonical collisions instead of saving duplicates", async () => {
-    const props = createAddProps()
+    const props = createEditProps()
     const user = userEvent.setup()
     await render(<NativeCustomValueForm {...props} />)
 
+    await user.clear(screen.getByLabelText("Value Name"))
     await user.type(screen.getByLabelText("Value Name"), "Health")
     await user.type(
       screen.getByLabelText("What This Value Means to Me"),
@@ -150,14 +120,15 @@ describe("NativeCustomValueForm", () => {
           definition.englishName === "Health",
       )?.definition.id,
     )
-    expect(screen.getByRole("button", { name: "Save Value" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Review Update" })).toBeDisabled()
   })
 
   it("offers partial name matches as suggestions without blocking a valid draft", async () => {
-    const props = createAddProps()
+    const props = createEditProps()
     const user = userEvent.setup()
     await render(<NativeCustomValueForm {...props} />)
 
+    await user.clear(screen.getByLabelText("Value Name"))
     await user.type(screen.getByLabelText("Value Name"), "Heal")
     await user.type(
       screen.getByLabelText("What This Value Means to Me"),
@@ -166,7 +137,7 @@ describe("NativeCustomValueForm", () => {
 
     expect(screen.getByText("Matching values")).toBeOnTheScreen()
     expect(screen.getByRole("button", { name: "Open Health" })).toBeEnabled()
-    expect(screen.getByRole("button", { name: "Save Value" })).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Review Update" })).toBeEnabled()
   })
 
   it("requires review before preserving progress through an edited value", async () => {
@@ -180,7 +151,6 @@ describe("NativeCustomValueForm", () => {
         initialDefinition={ingenuity.definition}
         initialName={ingenuity.name}
         isPersistencePending={false}
-        mode="edit"
         rankedValues={createRankedValues([ingenuity])}
       />,
     )
@@ -220,7 +190,6 @@ describe("NativeCustomValueForm", () => {
         initialDefinition={ingenuity.definition}
         initialName={ingenuity.name}
         isPersistencePending={false}
-        mode="edit"
         rankedValues={createRankedValues([ingenuity])}
       />,
     )
@@ -239,7 +208,7 @@ describe("NativeCustomValueForm", () => {
   })
 
   it("locks every editable action while persistence is pending", async () => {
-    const props = createAddProps()
+    const props = createEditProps()
     await render(<NativeCustomValueForm {...props} isPersistencePending />)
 
     expect(screen.getByLabelText("Value Name")).toHaveProp("editable", false)

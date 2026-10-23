@@ -41,12 +41,10 @@ describe("native localization resilience", () => {
   it("renders recovered values, searches their meaning, and allows navigation", async () => {
     const deck = createActiveDeck([])
     const onClose = jest.fn()
-    const onOpenMenu = jest.fn()
     await render(
       <NativeAllValues
         rankedValues={rankValues(deck, createInitialValueProgress(deck))}
         onClose={onClose}
-        onOpenMenu={onOpenMenu}
         onAddCustomValue={jest.fn()}
         onUpdateCustomValue={jest.fn()}
         onDeleteCustomValue={jest.fn()}
@@ -59,9 +57,7 @@ describe("native localization resilience", () => {
     )
     expect(screen.getByRole("header", { name: "Acceptance" })).toBeOnTheScreen()
     expect(screen.getByText("1 Value Shown")).toBeOnTheScreen()
-    await fireEvent.press(screen.getByRole("button", { name: "Menu" }))
-    await fireEvent.press(screen.getByRole("button", { name: "Close" }))
-    expect(onOpenMenu).toHaveBeenCalledTimes(1)
+    await fireEvent.press(screen.getByRole("button", { name: "Back" }))
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 })

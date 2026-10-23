@@ -113,7 +113,10 @@ describe("NativeDataManagement", () => {
   it("keeps reviewed imports inside Import & Export until resolved", async () => {
     const { callbacks } = await renderDataManagement({ preview })
     const user = userEvent.setup()
-    await expectNavigationIsInert(callbacks)
+    expect(screen.queryByRole("button", { name: "Menu" })).not.toBeOnTheScreen()
+    expect(
+      screen.queryByRole("button", { name: "Back to Your Values" }),
+    ).not.toBeOnTheScreen()
 
     await user.press(screen.getByRole("button", { name: "Import & Replace" }))
     await user.press(screen.getByRole("button", { name: "Cancel" }))

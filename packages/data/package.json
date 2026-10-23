@@ -7,7 +7,11 @@
     "unicode-case-folding": "^1",
     "unicode-segmenter": "^0.17.3"
   },
+  "peerDependencies": {
+    "react": "^19"
+  },
   "devDependencies": {
+    "@types/react": "^19",
     "typescript": "^6"
   }
 }

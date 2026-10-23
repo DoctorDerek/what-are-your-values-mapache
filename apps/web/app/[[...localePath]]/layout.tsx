@@ -26,6 +26,7 @@ export async function generateMetadata({
 
 export const viewport: Viewport = {
   viewportFit: "cover",
+  interactiveWidget: "resizes-content",
 }
 
 export default async function RootLayout({

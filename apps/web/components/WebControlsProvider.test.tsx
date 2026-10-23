@@ -314,11 +314,13 @@ describe("scoped controller input", () => {
     const apply = vi.fn()
     const props = {
       editorRequestId: 1,
+      deckRevision: 0,
       existingCustomValues: [],
       isSaving: false,
       saveIssue: null,
       onApply: apply,
       onExport: vi.fn(async () => {}),
+      onExit: vi.fn(),
       onNavigationBlockedChange: vi.fn(),
     }
     const view = (isSaving = false) => (
@@ -337,21 +339,19 @@ describe("scoped controller input", () => {
       target: { value: "To make things well." },
     })
     button(1, true)
-    expect(screen.queryByLabelText("Value name")).toBeNull()
-    expect(screen.getByRole("button", { name: "Add value" })).toHaveFocus()
+    expect(screen.getByRole("dialog")).toBeVisible()
+    expect(
+      screen.getByRole("button", { name: "Save and return" }),
+    ).toBeEnabled()
     expect(apply).not.toHaveBeenCalled()
     button(1, false)
-    button(15, true)
-    expect(
-      screen.getByRole("button", { name: "Continue editing" }),
-    ).toHaveFocus()
-    button(15, false)
-    button(0, true)
+    button(1, true)
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     expect(screen.getByLabelText("Value name")).toHaveValue("Craftsmanship")
     expect(screen.getByLabelText("Definition")).toHaveValue(
       "To make things well.",
     )
-    button(0, false)
+    button(1, false)
     rerender(view(true))
     button(8, true)
     expect(screen.getByLabelText("Value name")).toBeDisabled()
