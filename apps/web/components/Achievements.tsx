@@ -110,7 +110,7 @@ export default function Achievements({
             >
               {localizedCopy.interfaceCopy.screen.achievements}
             </h1>
-            <p className="bg-mapache-vivid-secondary-green text-mapache-vivid-dark max-w-full border-4 border-black px-[10px] py-[6px] text-base leading-tight font-black [overflow-wrap:anywhere]">
+            <p className="bg-mapache-vivid-secondary-green max-w-full border-4 border-black px-[10px] py-[6px] text-base leading-tight font-black text-black [overflow-wrap:anywhere]">
               {localizedCopy.interfaceCopy.screen.achievementsUnlocked(
                 integer(unlockedCount),
                 integer(achievements.length),
