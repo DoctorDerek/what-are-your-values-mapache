@@ -136,7 +136,10 @@ function InformationPanelFrame({
           onClick={onPrimaryAction}
           disabled={isPrimaryActionPending}
           aria-busy={isPrimaryActionPending}
-          className="w-full min-w-0"
+          className={cx(
+            "w-full min-w-0",
+            !isIntroduction && !isReference && "@max-[12em]:px-[12px]",
+          )}
           typographyClassName={
             isIntroduction
               ? "text-3xl leading-none"
