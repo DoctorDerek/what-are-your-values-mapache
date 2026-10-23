@@ -13,7 +13,7 @@ type NativeInformationPanelFrameProps = Readonly<{
   isPrimaryActionPending?: boolean
   accessibleCloseLabel?: string
   modal?: boolean
-  presentation?: "standard" | "introduction" | "reference"
+  presentation?: "introduction" | "reference"
   titleContent?: ReactNode
   titleDecoration?: ReactNode
   decoration?: ReactNode
@@ -29,7 +29,7 @@ function NativeInformationPanelFrame({
   isPrimaryActionPending = false,
   accessibleCloseLabel,
   modal = false,
-  presentation = "standard",
+  presentation = "reference",
   titleContent = title,
   titleDecoration,
   decoration,
@@ -37,7 +37,8 @@ function NativeInformationPanelFrame({
   afterActions,
 }: NativeInformationPanelFrameProps) {
   const isIntroduction = presentation === "introduction"
-  const isReference = presentation === "reference"
+  const Header = isIntroduction ? View : ScrollView
+  const Footer = isIntroduction ? View : ScrollView
   return (
     <MapacheScreen
       accessibilityLabel={modal ? title : undefined}
@@ -45,10 +46,7 @@ function NativeInformationPanelFrame({
       role={modal ? "dialog" : undefined}
     >
       <View
-        className={cx(
-          "flex-1",
-          !isIntroduction && (isReference ? "p-3" : "p-5"),
-        )}
+        className={cx("min-h-0 flex-1", !isIntroduction && "p-3")}
       >
         <View
           className={cx(
@@ -59,15 +57,16 @@ function NativeInformationPanelFrame({
           )}
         >
           {decoration}
-          <View
+          <Header
             className={cx(
               "relative z-20 border-black",
               isIntroduction
                 ? "min-h-24 justify-center border-b-6 px-4 py-5 xl:min-h-32 xl:px-8 xl:py-6"
-                : isReference
-                  ? "border-b-4 px-4 py-5"
-                  : "border-b-4 p-5",
+                : "max-h-[40%] shrink-0 grow-0 border-b-4",
             )}
+            {...(!isIntroduction && {
+              contentContainerClassName: "p-4",
+            })}
           >
             {titleDecoration}
             <Text
@@ -76,9 +75,7 @@ function NativeInformationPanelFrame({
                 "relative z-20 text-center font-black",
                 isIntroduction
                   ? "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-arrival-title text-mapache-vivid-primary-cyan text-[36.4px] leading-[35px] tracking-normal xl:text-[62.4px] xl:leading-[60px]"
-                  : isReference
-                    ? "text-mapache-vivid-primary-cyan text-2xl uppercase"
-                    : "text-mapache-vivid-primary-raspberry text-4xl tracking-tight uppercase",
+                  : "text-mapache-vivid-primary-cyan text-left text-xl",
                 accessibleCloseLabel && "pr-14",
               )}
               {...(isIntroduction && {
@@ -100,7 +97,7 @@ function NativeInformationPanelFrame({
                 <Text>×</Text>
               </Button>
             ) : null}
-          </View>
+          </Header>
 
           <ScrollView
             className={cx(
@@ -110,23 +107,22 @@ function NativeInformationPanelFrame({
             contentContainerClassName={
               isIntroduction
                 ? "gap-4 px-5 py-5 xl:px-10 xl:py-7"
-                : isReference
-                  ? "gap-4 px-4 py-4"
-                  : "gap-4 p-5"
+                : "gap-4 px-4 py-4"
             }
           >
             {children}
           </ScrollView>
 
-          <View
+          <Footer
             className={cx(
               "relative z-20 border-black",
               isIntroduction
                 ? "border-t-6"
-                : isReference
-                  ? "border-t-4 px-4 pt-3 pb-5"
-                  : "border-t-4 p-5",
+                : "max-h-[35%] shrink-0 grow-0 border-t-4",
             )}
+            {...(!isIntroduction && {
+              contentContainerClassName: "px-4 pt-3 pb-5",
+            })}
           >
             <View
               className={cx(
@@ -136,7 +132,7 @@ function NativeInformationPanelFrame({
             >
               {beforePrimaryAction}
               <Button
-                size={isReference ? "compact" : "large"}
+                size={isIntroduction ? "large" : "compact"}
                 onPress={onPrimaryAction}
                 disabled={isPrimaryActionPending}
                 accessibilityState={{
@@ -148,7 +144,7 @@ function NativeInformationPanelFrame({
                   {...(isIntroduction && {
                     className: "text-3xl leading-none font-black uppercase",
                   })}
-                  {...(isReference && {
+                  {...(!isIntroduction && {
                     className:
                       "text-center text-xl font-black text-black uppercase",
                   })}
@@ -157,7 +153,7 @@ function NativeInformationPanelFrame({
                 </Text>
               </Button>
             </View>
-          </View>
+          </Footer>
           {afterActions}
         </View>
       </View>
