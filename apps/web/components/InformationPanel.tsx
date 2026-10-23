@@ -15,7 +15,7 @@ type InformationPanelFrameProps = Readonly<{
   isPrimaryActionPending?: boolean
   accessibleCloseLabel?: string
   dialogTitle?: boolean
-  presentation?: "standard" | "introduction" | "reference"
+  presentation?: "introduction" | "reference"
   titleContent?: ReactNode
   titleDecoration?: ReactNode
   decoration?: ReactNode
@@ -31,7 +31,7 @@ function InformationPanelFrame({
   isPrimaryActionPending = false,
   accessibleCloseLabel,
   dialogTitle = false,
-  presentation = "standard",
+  presentation = "reference",
   titleContent = title,
   titleDecoration,
   decoration,
@@ -40,15 +40,12 @@ function InformationPanelFrame({
 }: InformationPanelFrameProps) {
   const titleId = useId()
   const isIntroduction = presentation === "introduction"
-  const isReference = presentation === "reference"
   const titleClassName = cx(
     "relative z-20 text-mapache-vivid-primary-cyan",
     isIntroduction
       ? "font-arrival-title text-[calc(clamp(21px,6.85vw,36px)*1.3)] leading-[calc(1.25/1.3)] font-normal tracking-normal xl:text-[calc(clamp(2.625rem,4vw,4rem)*1.3)]"
-      : isReference
-        ? "text-2xl leading-tight font-black [overflow-wrap:anywhere] hyphens-auto uppercase sm:text-3xl"
-        : "text-4xl leading-tight font-black [overflow-wrap:anywhere] uppercase sm:text-5xl lg:text-7xl",
-    accessibleCloseLabel && (isReference ? "@min-[16rem]:pr-14" : "px-12"),
+      : "min-w-0 text-left text-xl leading-tight font-black [overflow-wrap:anywhere] hyphens-auto",
+    accessibleCloseLabel && isIntroduction && "px-12",
   )
 
   return (
@@ -56,11 +53,10 @@ function InformationPanelFrame({
       aria-label={dialogTitle ? title : undefined}
       aria-labelledby={dialogTitle ? undefined : titleId}
       className={cx(
-        "relative isolate grid min-h-0 w-full min-w-0 bg-white",
-        isReference && "@container",
+        "relative isolate min-h-0 w-full min-w-0 bg-white",
         isIntroduction
-          ? "h-full grid-rows-[auto_minmax(0,1fr)_auto_auto]"
-          : "max-w-4xl grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden border-4 border-black shadow-[12px_12px_0px_0px_#000000]",
+          ? "grid h-full grid-rows-[auto_minmax(0,1fr)_auto_auto]"
+          : "@container flex max-w-4xl flex-col overflow-hidden border-4 border-black shadow-[12px_12px_0px_0px_#000000]",
       )}
     >
       {decoration}
@@ -69,16 +65,12 @@ function InformationPanelFrame({
           "relative z-20 border-black",
           isIntroduction
             ? "flex min-h-24 items-center justify-center border-b-6 px-4 py-5 xl:min-h-32 xl:px-8 xl:py-6"
-            : isReference
-              ? "min-w-0 border-b-4 px-[16px] py-[20px]"
-              : "border-b-4 px-5 py-5 sm:px-10 sm:py-7",
+            : "grid max-h-[40%] min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3 overflow-auto overscroll-contain border-b-4 p-[16px] @max-[12em]:grid-cols-1",
         )}
       >
         {titleDecoration}
         {dialogTitle ? (
-          <DialogTitle
-            className={cx(titleClassName, !isReference && "xl:text-5xl")}
-          >
+          <DialogTitle className={titleClassName}>
             {titleContent}
           </DialogTitle>
         ) : (
@@ -92,10 +84,11 @@ function InformationPanelFrame({
             type="button"
             variant="outline"
             size="icon"
-            className={cx(
-              "absolute top-4 right-4",
-              isReference && "@max-[16rem]:hidden",
-            )}
+            className={
+              isIntroduction
+                ? "absolute top-4 right-4"
+                : "@max-[12em]:hidden"
+            }
             onClick={onPrimaryAction}
           >
             ×
@@ -111,9 +104,7 @@ function InformationPanelFrame({
           "relative z-20 min-h-0 min-w-0 overflow-y-auto overscroll-contain",
           isIntroduction
             ? "mx-auto w-full max-w-4xl [scrollbar-gutter:stable] px-5 py-5 text-left xl:px-10 xl:py-7"
-            : isReference
-              ? "px-[20px] py-[16px] sm:px-8"
-              : "px-5 py-6 sm:px-10 sm:py-8",
+            : "flex-1 px-[20px] py-[16px] [overflow-wrap:anywhere] hyphens-auto sm:px-8",
         )}
       >
         {children}
@@ -124,16 +115,14 @@ function InformationPanelFrame({
           "relative z-20 border-black",
           isIntroduction
             ? "grid grid-cols-[minmax(0,36rem)] justify-center gap-3 border-t-6 px-6 pt-4 pb-5"
-            : isReference
-              ? "min-w-0 border-t-4 bg-white px-[16px] pt-[12px] pb-[20px]"
-              : "border-t-4 bg-white px-5 py-5 sm:px-10 sm:py-6",
+            : "max-h-[35%] min-w-0 shrink-0 overflow-auto overscroll-contain border-t-4 bg-white px-[16px] pt-[12px] pr-[20px] pb-[20px]",
         )}
       >
         {beforePrimaryAction}
         <Button
           type="button"
-          size={isReference ? "sm" : "lg"}
-          wrap={isReference}
+          size={isIntroduction ? "lg" : "default"}
+          wrap={!isIntroduction}
           onClick={onPrimaryAction}
           disabled={isPrimaryActionPending}
           aria-busy={isPrimaryActionPending}
@@ -141,9 +130,7 @@ function InformationPanelFrame({
           typographyClassName={
             isIntroduction
               ? "text-3xl leading-none"
-              : isReference
-                ? "text-xl leading-tight [overflow-wrap:anywhere]"
-                : "text-4xl sm:text-5xl"
+              : "text-xl leading-tight [overflow-wrap:anywhere]"
           }
         >
           {primaryActionLabel}
