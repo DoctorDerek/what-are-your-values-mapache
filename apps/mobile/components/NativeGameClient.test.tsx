@@ -394,9 +394,7 @@ describe("NativeGameClient Menu navigation", () => {
 
     await openMenuDestination(user, "Achievements")
     expect(await screen.findByText("Achievements")).toBeOnTheScreen()
-    await user.press(
-      screen.getByRole("button", { name: "Back" }),
-    )
+    await user.press(screen.getByRole("button", { name: "Back" }))
 
     await openMenuDestination(user, "Import & Export")
     expect(await screen.findByText("Import & Export")).toBeOnTheScreen()

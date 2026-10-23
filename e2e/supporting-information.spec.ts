@@ -32,30 +32,49 @@ async function expectNoPageOverflow(page: Page) {
 
 for (const locale of ["en", "es-MX"] as const) {
   for (const width of [320, 390, 1440]) {
-    test(`supporting information stays readable and dismissible at ${width}px in ${locale}`, async ({ page }, testInfo) => {
+    test(`supporting information stays readable and dismissible at ${width}px in ${locale}`, async ({
+      page,
+    }, testInfo) => {
       const catalog = getLocaleCatalog(locale)
       const copy = catalog.interfaceCopy
       const pageErrors: string[] = []
       page.on("pageerror", (error) => pageErrors.push(error.message))
       await page.setViewportSize({ width, height: width === 320 ? 540 : 900 })
       await page.goto(locale === "en" ? "/" : "/que-valoras-en-la-vida")
-      await page.getByRole("button", { name: catalog.introduction.startAction, exact: true }).click()
+      await page
+        .getByRole("button", {
+          name: catalog.introduction.startAction,
+          exact: true,
+        })
+        .click()
       await page.evaluate(() => document.fonts.ready)
 
-      const menu = page.getByRole("button", { name: copy.menu.openAction, exact: true })
-      const destinations = copy.menuDestinations.filter((destination) =>
-        destination.id === "achievements" || destination.kind === "information-panel",
+      const menu = page.getByRole("button", {
+        name: copy.menu.openAction,
+        exact: true,
+      })
+      const destinations = copy.menuDestinations.filter(
+        (destination) =>
+          destination.id === "achievements" ||
+          destination.kind === "information-panel",
       )
       for (const destination of destinations) {
         await menu.click()
-        await page.getByRole("button", { name: destination.label, exact: true }).click()
+        await page
+          .getByRole("button", { name: destination.label, exact: true })
+          .click()
         const isAchievements = destination.id === "achievements"
-        const panel = destination.kind === "information-panel"
-          ? copy.information[destination.id]
-          : null
-        const surface = isAchievements ? page.getByRole("main") : page.getByRole("dialog", { name: panel!.title, exact: true })
+        const panel =
+          destination.kind === "information-panel"
+            ? copy.information[destination.id]
+            : null
+        const surface = isAchievements
+          ? page.getByRole("main")
+          : page.getByRole("dialog", { name: panel!.title, exact: true })
         const action = surface.getByRole("button", {
-          name: isAchievements ? copy.controlActions.back : panel!.primaryActionLabel,
+          name: isAchievements
+            ? copy.controlActions.back
+            : panel!.primaryActionLabel,
           exact: true,
         })
         const reading = isAchievements
@@ -64,19 +83,26 @@ for (const locale of ["en", "es-MX"] as const) {
         await expect(surface).toBeVisible()
         if (isAchievements) {
           await expect(surface.getByRole("listitem")).toHaveCount(40)
-          await expect(surface.getByRole("listitem").first().getByRole("heading")).toBeInViewport({ ratio: 1 })
+          await expect(
+            surface.getByRole("listitem").first().getByRole("heading"),
+          ).toBeInViewport({ ratio: 1 })
           await expect(surface.getByRole("button")).toHaveCount(1)
         }
 
         for (const scale of [100, 200]) {
-          const scaling = scale === 200
-            ? await page.addStyleTag({ content: "html { font-size: 200%; }" })
-            : null
-          await reading.evaluate((element) => { element.scrollTop = 0 })
+          const scaling =
+            scale === 200
+              ? await page.addStyleTag({ content: "html { font-size: 200%; }" })
+              : null
+          await reading.evaluate((element) => {
+            element.scrollTop = 0
+          })
           await expectReadableRegion(reading)
           await expectNoPageOverflow(page)
           await expect(action).toBeInViewport({ ratio: 1 })
-          await page.screenshot({ path: testInfo.outputPath(`${destination.id}-${scale}.png`) })
+          await page.screenshot({
+            path: testInfo.outputPath(`${destination.id}-${scale}.png`),
+          })
           await scrollWithPinnedAction(reading, action)
           const finalContent = isAchievements
             ? surface.getByRole("listitem").last().getByRole("heading")
@@ -90,10 +116,19 @@ for (const locale of ["en", "es-MX"] as const) {
         await expect(menu).toBeFocused()
       }
       const introduction = copy.information.introduction
-      const introductionDestination = copy.menuDestinations.find((destination) => destination.id === "introduction")!
+      const introductionDestination = copy.menuDestinations.find(
+        (destination) => destination.id === "introduction",
+      )!
       await menu.click()
-      await page.getByRole("button", { name: introductionDestination.label, exact: true }).click()
-      await expect(page.getByRole("dialog", { name: introduction.title, exact: true })).toBeVisible()
+      await page
+        .getByRole("button", {
+          name: introductionDestination.label,
+          exact: true,
+        })
+        .click()
+      await expect(
+        page.getByRole("dialog", { name: introduction.title, exact: true }),
+      ).toBeVisible()
       await page.keyboard.press("Escape")
       await expect(page.getByRole("dialog")).toHaveCount(0)
       await expect(menu).toBeFocused()

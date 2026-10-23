@@ -70,7 +70,8 @@ describe("NativeInformationPanelContent", () => {
       const panel = catalog.interfaceCopy.information["free-resources"]
       const resource = panel.blocks.find((block) => block.kind === "resource")
       if (!resource) throw new Error("The resource fixture is missing")
-      const openUrl = jest.spyOn(Linking, "openURL")
+      const openUrl = jest
+        .spyOn(Linking, "openURL")
         .mockRejectedValueOnce(new Error("No browser available"))
         .mockResolvedValue(undefined)
       const alert = jest.spyOn(Alert, "alert")
@@ -91,7 +92,9 @@ describe("NativeInformationPanelContent", () => {
         </LocaleProvider>,
       )
 
-      const resourceLink = screen.getByRole("link", { name: resource.actionLabel })
+      const resourceLink = screen.getByRole("link", {
+        name: resource.actionLabel,
+      })
       await user.press(resourceLink)
       expect(alert).toHaveBeenCalledWith(
         catalog.firstArrival.websiteErrorTitle,
@@ -103,7 +106,9 @@ describe("NativeInformationPanelContent", () => {
       expect(openUrl).toHaveBeenCalledTimes(2)
       expect(openUrl).toHaveBeenLastCalledWith(resource.url)
       expect(alert).toHaveBeenCalledTimes(1)
-      await user.press(screen.getByRole("button", { name: panel.primaryActionLabel }))
+      await user.press(
+        screen.getByRole("button", { name: panel.primaryActionLabel }),
+      )
       expect(onClose).toHaveBeenCalledTimes(1)
     },
   )

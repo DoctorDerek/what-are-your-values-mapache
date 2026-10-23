@@ -46,9 +46,7 @@ function NativeInformationPanelFrame({
       accessibilityViewIsModal={modal || undefined}
       role={modal ? "dialog" : undefined}
     >
-      <View
-        className={cx("min-h-0 flex-1", !isIntroduction && "p-3")}
-      >
+      <View className={cx("min-h-0 flex-1", !isIntroduction && "p-3")}>
         <View
           className={cx(
             "relative w-full flex-1 bg-white",

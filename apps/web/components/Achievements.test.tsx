@@ -77,11 +77,7 @@ describe("Achievements", () => {
     const achievements = createInitialPresentations()
 
     render(
-      <Achievements
-        achievements={achievements}
-        canClose
-        onClose={vi.fn()}
-      />,
+      <Achievements achievements={achievements} canClose onClose={vi.fn()} />,
     )
 
     expect(screen.getByRole("main")).toHaveAttribute(

@@ -23,7 +23,7 @@ export default function NativeAchievementCard({
       <View className="flex-row flex-wrap items-start justify-between gap-3">
         <Text
           accessibilityRole="header"
-          className="min-w-0 basis-[190px] grow shrink text-2xl font-black text-black uppercase"
+          className="min-w-0 shrink grow basis-[190px] text-2xl font-black text-black uppercase"
         >
           {achievement.title}
         </Text>

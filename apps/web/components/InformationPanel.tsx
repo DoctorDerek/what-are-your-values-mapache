@@ -48,7 +48,8 @@ function InformationPanelFrame({
       : isReference
         ? "text-2xl leading-tight font-black [overflow-wrap:anywhere] hyphens-auto uppercase sm:text-3xl"
         : "min-w-0 text-left text-xl leading-tight font-black [overflow-wrap:anywhere] hyphens-auto",
-    accessibleCloseLabel && (isIntroduction ? "px-12" : isReference && "@min-[16rem]:pr-14"),
+    accessibleCloseLabel &&
+      (isIntroduction ? "px-12" : isReference && "@min-[16rem]:pr-14"),
   )
 
   return (
@@ -57,10 +58,13 @@ function InformationPanelFrame({
       aria-labelledby={dialogTitle ? undefined : titleId}
       className={cx(
         "relative isolate min-h-0 w-full min-w-0 bg-white",
-        !isIntroduction && "@container max-w-4xl overflow-hidden border-4 border-black shadow-[12px_12px_0px_0px_#000000]",
+        !isIntroduction &&
+          "@container max-w-4xl overflow-hidden border-4 border-black shadow-[12px_12px_0px_0px_#000000]",
         isIntroduction
           ? "grid h-full grid-rows-[auto_minmax(0,1fr)_auto_auto]"
-          : isReference ? "grid grid-rows-[auto_minmax(0,1fr)_auto]" : "flex flex-col",
+          : isReference
+            ? "grid grid-rows-[auto_minmax(0,1fr)_auto]"
+            : "flex flex-col",
       )}
     >
       {decoration}
@@ -76,9 +80,7 @@ function InformationPanelFrame({
       >
         {titleDecoration}
         {dialogTitle ? (
-          <DialogTitle className={titleClassName}>
-            {titleContent}
-          </DialogTitle>
+          <DialogTitle className={titleClassName}>{titleContent}</DialogTitle>
         ) : (
           <h1 id={titleId} className={titleClassName}>
             {titleContent}
