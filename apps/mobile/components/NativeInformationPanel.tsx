@@ -39,7 +39,6 @@ function NativeInformationPanelFrame({
   const isIntroduction = presentation === "introduction"
   const isStandard = presentation === "standard"
   const Header = isStandard ? ScrollView : View
-  const Footer = isStandard ? ScrollView : View
   return (
     <MapacheScreen
       accessibilityLabel={modal ? title : undefined}
@@ -117,18 +116,13 @@ function NativeInformationPanelFrame({
             {children}
           </ScrollView>
 
-          <Footer
+          <View
             className={cx(
               "relative z-20 border-black",
               isIntroduction
                 ? "border-t-6"
-                : isStandard
-                  ? "max-h-[35%] shrink-0 grow-0 border-t-4"
-                  : "border-t-4 px-4 pt-3 pb-5",
+                : "shrink-0 border-t-4 px-4 pt-3 pb-5",
             )}
-            {...(isStandard && {
-              contentContainerClassName: "px-4 pt-3 pb-5",
-            })}
           >
             <View
               className={cx(
@@ -159,7 +153,7 @@ function NativeInformationPanelFrame({
                 </Text>
               </Button>
             </View>
-          </Footer>
+          </View>
           {afterActions}
         </View>
       </View>
