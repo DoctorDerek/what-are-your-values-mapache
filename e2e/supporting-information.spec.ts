@@ -31,34 +31,34 @@ async function expectNoPageOverflow(page: Page) {
 }
 
 for (const locale of ["en", "es-MX"] as const) {
+  const catalog = getLocaleCatalog(locale)
+  const copy = catalog.interfaceCopy
+  const destinations = copy.menuDestinations.filter(
+    (destination) =>
+      destination.id === "achievements" ||
+      destination.kind === "information-panel",
+  )
   for (const width of [320, 390, 1440]) {
-    test(`supporting information stays readable and dismissible at ${width}px in ${locale}`, async ({
-      page,
-    }, testInfo) => {
-      const catalog = getLocaleCatalog(locale)
-      const copy = catalog.interfaceCopy
-      const pageErrors: string[] = []
-      page.on("pageerror", (error) => pageErrors.push(error.message))
-      await page.setViewportSize({ width, height: width === 320 ? 540 : 900 })
-      await page.goto(locale === "en" ? "/" : "/que-valoras-en-la-vida")
-      await page
-        .getByRole("button", {
-          name: catalog.introduction.startAction,
+    for (const destination of destinations) {
+      test(`${destination.id} stays readable and dismissible at ${width}px in ${locale}`, async ({
+        page,
+      }, testInfo) => {
+        const pageErrors: string[] = []
+        page.on("pageerror", (error) => pageErrors.push(error.message))
+        await page.setViewportSize({ width, height: width === 320 ? 540 : 900 })
+        await page.goto(locale === "en" ? "/" : "/que-valoras-en-la-vida")
+        await page
+          .getByRole("button", {
+            name: catalog.introduction.startAction,
+            exact: true,
+          })
+          .click()
+        await page.evaluate(() => document.fonts.ready)
+
+        const menu = page.getByRole("button", {
+          name: copy.menu.openAction,
           exact: true,
         })
-        .click()
-      await page.evaluate(() => document.fonts.ready)
-
-      const menu = page.getByRole("button", {
-        name: copy.menu.openAction,
-        exact: true,
-      })
-      const destinations = copy.menuDestinations.filter(
-        (destination) =>
-          destination.id === "achievements" ||
-          destination.kind === "information-panel",
-      )
-      for (const destination of destinations) {
         await menu.click()
         await page
           .getByRole("button", { name: destination.label, exact: true })
@@ -115,25 +115,26 @@ for (const locale of ["en", "es-MX"] as const) {
         }
         await action.click()
         await expect(menu).toBeFocused()
-      }
-      const introduction = copy.information.introduction
-      const introductionDestination = copy.menuDestinations.find(
-        (destination) => destination.id === "introduction",
-      )!
-      await menu.click()
-      await page
-        .getByRole("button", {
-          name: introductionDestination.label,
-          exact: true,
-        })
-        .click()
-      await expect(
-        page.getByRole("dialog", { name: introduction.title, exact: true }),
-      ).toBeVisible()
-      await page.keyboard.press("Escape")
-      await expect(page.getByRole("dialog")).toHaveCount(0)
-      await expect(menu).toBeFocused()
-      expect(pageErrors).toEqual([])
-    })
+        if (destination.id === "introduction") {
+          await menu.click()
+          await page
+            .getByRole("button", {
+              name: destination.label,
+              exact: true,
+            })
+            .click()
+          await expect(
+            page.getByRole("dialog", {
+              name: copy.information.introduction.title,
+              exact: true,
+            }),
+          ).toBeVisible()
+          await page.keyboard.press("Escape")
+          await expect(page.getByRole("dialog")).toHaveCount(0)
+          await expect(menu).toBeFocused()
+        }
+        expect(pageErrors).toEqual([])
+      })
+    }
   }
 }
