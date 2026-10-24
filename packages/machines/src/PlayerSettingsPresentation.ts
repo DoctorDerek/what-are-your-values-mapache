@@ -12,8 +12,31 @@ import type {
 export type LanguageSelectorProps = Readonly<{
   locale: SupportedLocale
   disabled?: boolean
+  labelPlacement?: "inline" | "section"
   onLocaleChange: (locale: SupportedLocale) => void
 }>
+
+const SPANISH_SETTINGS_WORD_BREAKS: ReadonlyMap<string, string> = new Map([
+  ["Configuración", "Con\u00adfi\u00adgu\u00adra\u00adción"],
+  ["movimiento", "movi\u00admiento"],
+  ["Indicaciones", "Indica\u00adciones"],
+  ["controles", "con\u00adtroles"],
+  ["Desactivado", "Desacti\u00advado"],
+  ["Automáticas", "Auto\u00admáti\u00adcas"],
+  ["Desactivadas", "Desacti\u00advadas"],
+])
+
+export function getWrappableSettingsText(
+  text: string,
+  languageTag: string,
+): string {
+  return languageTag.startsWith("es-")
+    ? text.replace(
+        /\p{L}+/gu,
+        (word) => SPANISH_SETTINGS_WORD_BREAKS.get(word) ?? word,
+      )
+    : text
+}
 
 export const SETTINGS_PLAYER_DATA_RESET_KINDS = Object.freeze([
   "reset-levels-and-experience",

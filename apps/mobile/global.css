@@ -1,3 +1,11 @@
 @import "tailwindcss";
 @import "uniwind";
 @import "@game/design-tokens/mapachito-vivid.css";
+
+@utility basis-readable-action {
+  flex-basis: fontScale(112);
+}
+
+@utility basis-readable-setting {
+  flex-basis: fontScale(288);
+}

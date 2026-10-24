@@ -6,13 +6,9 @@ import {
   createInitialPlayerSettings,
   type PlayerSettings,
 } from "@game/machines/src/PlayerSettings"
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import { describe, expect, it, jest } from "@jest/globals"
-import {
-  render,
-  screen,
-  userEvent,
-  within,
-} from "@testing-library/react-native"
+import { render, screen, userEvent } from "@testing-library/react-native"
 import { useState } from "react"
 import NativeSettings from "@/components/NativeSettings"
 
@@ -37,36 +33,67 @@ async function renderSettings(
     ...overrides,
   } satisfies Parameters<typeof NativeSettings>[0]
 
-  await render(<NativeSettings {...props} />)
+  await render(
+    <LocaleProvider locale={props.settings.locale}>
+      <NativeSettings {...props} />
+    </LocaleProvider>,
+  )
   return props
 }
 
 describe("NativeSettings", () => {
+  it("preserves Spanish names, checked state and language selection with the compact presentation", async () => {
+    const props = await renderSettings({
+      settings: { ...createInitialPlayerSettings(), locale: "es-MX" },
+    })
+    const user = userEvent.setup()
+    expect(
+      screen.getByRole("heading", { name: "Configuración" }),
+    ).toBeOnTheScreen()
+    expect(
+      screen.getByRole("header", { name: "Reducir movimiento" }),
+    ).toBeOnTheScreen()
+    expect(
+      screen.getByRole("radio", { name: "Seguir al sistema" }),
+    ).toBeChecked()
+    await user.press(screen.getByRole("radio", { name: "Desactivado" }))
+    expect(props.onUpdateSettings).toHaveBeenLastCalledWith({
+      ...props.settings,
+      reducedMotion: "off",
+    })
+    const language = screen.getByRole("button", { name: "Idioma" })
+    expect(language).toHaveAccessibilityValue({ text: "Español (México)" })
+    await user.press(language)
+    await user.press(screen.getByRole("radio", { name: "English (US)" }))
+    expect(props.onUpdateSettings).toHaveBeenLastCalledWith({
+      ...props.settings,
+      locale: "en",
+    })
+  })
+
   it("shows truthful language status and sends complete settings through touch-native radios", async () => {
     const props = await renderSettings()
     const user = userEvent.setup()
-    const reducedMotionGroup = screen.getByLabelText("Reduced Motion")
-    const controlHintsGroup = screen.getByLabelText("Control Hints")
-    const followSystem = within(reducedMotionGroup).getByRole("radio", {
+    const followSystem = screen.getByRole("radio", {
       name: "Follow System",
     })
-    const reduceMotion = within(reducedMotionGroup).getByRole("radio", {
+    const reduceMotion = screen.getByRole("radio", {
       name: "On",
     })
-    const alwaysShowHints = within(controlHintsGroup).getByRole("radio", {
+    const alwaysShowHints = screen.getByRole("radio", {
       name: "Always",
     })
 
     expect(screen.getByText("English (US) ▾")).toBeOnTheScreen()
-    expect(reducedMotionGroup).toHaveProp("accessibilityRole", "radiogroup")
-    expect(controlHintsGroup).toHaveProp("accessibilityRole", "radiogroup")
+    expect(
+      screen.getByRole("header", { name: "Reduced Motion" }),
+    ).toBeOnTheScreen()
+    expect(
+      screen.getByRole("header", { name: "Control Hints" }),
+    ).toBeOnTheScreen()
     expect(followSystem).toBeChecked()
     expect(reduceMotion).not.toBeChecked()
-    expect(within(reducedMotionGroup).getByText("Selected")).toBeOnTheScreen()
-    expect(
-      within(controlHintsGroup).getByRole("radio", { name: "Auto" }),
-    ).toBeChecked()
-    expect(within(controlHintsGroup).getByText("Selected")).toBeOnTheScreen()
+    expect(screen.getByRole("radio", { name: "Auto" })).toBeChecked()
 
     await user.press(reduceMotion)
     await user.press(alwaysShowHints)

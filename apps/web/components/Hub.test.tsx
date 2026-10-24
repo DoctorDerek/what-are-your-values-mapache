@@ -265,11 +265,6 @@ describe("Hub Component Integration", () => {
       "data-slot",
       "mapache-screen",
     )
-    expect(screen.getByRole("main")).toHaveClass(
-      "min-h-[100dvh]",
-      "[--mapache-screen-spacing:1rem]",
-      "xl:[--mapache-screen-spacing:2rem]",
-    )
     expect(
       screen.getByRole("heading", { name: "My Values", level: 2 }),
     ).toBeVisible()

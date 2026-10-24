@@ -158,8 +158,20 @@ describe("NativeGameClient Menu navigation", () => {
     await openMenuDestination(user, "Settings")
     expect(await pressBack()).toBe(true)
     await screen.findByRole("button", { name: "Battle" })
-    await user.press(screen.getByRole("button", { name: "Browse All Values" }))
-    await screen.findByRole("button", { name: "Close" })
+    await user.press(screen.getByRole("button", { name: "Add value" }))
+    await fireEvent.changeText(screen.getByLabelText("Value name"), "Health")
+    expect(await pressBack()).toBe(true)
+    await user.press(screen.getByRole("button", { name: "Keep editing" }))
+    expect(screen.getByLabelText("Value name")).toHaveDisplayValue("Health")
+    await user.press(screen.getByRole("button", { name: "Menu" }))
+    await user.press(screen.getByRole("button", { name: "Discard changes" }))
+    await user.press(await screen.findByRole("button", { name: "Close Menu" }))
+    await user.press(screen.getByRole("button", { name: "Add value" }))
+    await fireEvent.changeText(screen.getByLabelText("Value name"), "Health")
+    await user.press(screen.getByRole("button", { name: "Open Health" }))
+    await user.press(screen.getByRole("button", { name: "Discard changes" }))
+    expect(await screen.findByText("All Values")).toBeOnTheScreen()
+    await screen.findByRole("button", { name: "Back" })
     expect(await pressBack()).toBe(true)
     await screen.findByRole("button", { name: "Battle" })
     expect(await pressBack()).toBe(false)
@@ -261,18 +273,20 @@ describe("NativeGameClient Menu navigation", () => {
     await openMenuDestination(user, "Browse All Values")
     expect(await screen.findByText("All Values")).toBeOnTheScreen()
 
+    await user.press(screen.getByRole("button", { name: "Back" }))
     await openMenuDestination(user, "Custom Values")
-    expect(await screen.findByLabelText("Value Name")).toBeOnTheScreen()
-    await user.press(screen.getByRole("button", { name: "Cancel" }))
+    expect(await screen.findByLabelText("Value name")).toBeOnTheScreen()
+    await user.press(screen.getByRole("button", { name: "Back" }))
 
     await openMenuDestination(user, "Achievements")
     expect(await screen.findByText("Achievements")).toBeOnTheScreen()
 
+    await user.press(screen.getByRole("button", { name: "Back" }))
     await openMenuDestination(user, "Import & Export")
     expect(await screen.findByText("Import & Export")).toBeOnTheScreen()
 
     await openMenuDestination(user, "Browse All Values")
-    await user.press(await screen.findByRole("button", { name: "Close" }))
+    await user.press(await screen.findByRole("button", { name: "Back" }))
     expect(
       await screen.findByRole("header", {
         name: /^My (?:Top Five Life )?Values$/,
@@ -285,7 +299,15 @@ describe("NativeGameClient Menu navigation", () => {
 
     await openMenuDestination(user, "Settings")
     expect(await screen.findByText("Settings")).toBeOnTheScreen()
-    const controlHintsGroup = screen.getByLabelText("Control Hints")
+    const getControlHintsGroup = () => {
+      const group = screen
+        .getAllByLabelText("Control Hints")
+        .find(({ props }) => props.accessibilityRole === "radiogroup")
+      if (!group)
+        throw new Error("The native Control Hints group is unavailable")
+      return group
+    }
+    const controlHintsGroup = getControlHintsGroup()
     expect(
       within(controlHintsGroup).getByRole("radio", { name: "Auto" }),
     ).toBeChecked()
@@ -294,7 +316,7 @@ describe("NativeGameClient Menu navigation", () => {
     )
     await waitFor(() => {
       expect(
-        within(screen.getByLabelText("Control Hints")).getByRole("radio", {
+        within(getControlHintsGroup()).getByRole("radio", {
           name: "Off",
         }),
       ).toBeChecked()
@@ -322,7 +344,7 @@ describe("NativeGameClient Menu navigation", () => {
 
     await openMenuDestination(user, "Settings")
     expect(
-      within(await screen.findByLabelText("Control Hints")).getByRole("radio", {
+      within(getControlHintsGroup()).getByRole("radio", {
         name: "Off",
       }),
     ).toBeChecked()
@@ -372,9 +394,7 @@ describe("NativeGameClient Menu navigation", () => {
 
     await openMenuDestination(user, "Achievements")
     expect(await screen.findByText("Achievements")).toBeOnTheScreen()
-    await user.press(
-      screen.getByRole("button", { name: "Back to Your Values" }),
-    )
+    await user.press(screen.getByRole("button", { name: "Back" }))
 
     await openMenuDestination(user, "Import & Export")
     expect(await screen.findByText("Import & Export")).toBeOnTheScreen()
@@ -384,7 +404,7 @@ describe("NativeGameClient Menu navigation", () => {
 
     await user.press(screen.getByRole("button", { name: "Browse All Values" }))
     expect(await screen.findByText("All Values")).toBeOnTheScreen()
-    await user.press(screen.getByRole("button", { name: "Close" }))
+    await user.press(screen.getByRole("button", { name: "Back" }))
 
     await fireEvent(
       screen.getByTestId("hub-animal-pvcs-2011:acceptance", {
@@ -398,9 +418,8 @@ describe("NativeGameClient Menu navigation", () => {
     expect(screen.queryByText("All Values")).not.toBeOnTheScreen()
 
     await user.press(screen.getByRole("button", { name: "Add value" }))
-    expect(await screen.findByLabelText("Value Name")).toBeOnTheScreen()
-    await user.press(screen.getByRole("button", { name: "Cancel" }))
-    await user.press(screen.getByRole("button", { name: "Close" }))
+    expect(await screen.findByLabelText("Value name")).toBeOnTheScreen()
+    await user.press(screen.getByRole("button", { name: "Back" }))
 
     expect(
       await screen.findByRole("header", {
@@ -421,6 +440,12 @@ describe("NativeGameClient Menu navigation", () => {
     expect(await screen.findByText("Achievements")).toBeOnTheScreen()
     expect(screen.queryByLabelText("Value battle")).toBeNull()
 
+    await user.press(screen.getByRole("button", { name: "Back" }))
+    expect(
+      await screen.findByRole("header", {
+        name: /^My (?:Top Five Life )?Values$/,
+      }),
+    ).toBeOnTheScreen()
     await openMenuDestination(user, "Settings")
     expect(await screen.findByText("Settings")).toBeOnTheScreen()
 
@@ -429,7 +454,7 @@ describe("NativeGameClient Menu navigation", () => {
     expect(screen.queryByText("Achievements")).toBeNull()
     expect(screen.queryByText("Settings")).toBeNull()
 
-    await user.press(screen.getByRole("button", { name: "Close" }))
+    await user.press(screen.getByRole("button", { name: "Back" }))
     expect(
       await screen.findByRole("header", {
         name: /^My (?:Top Five Life )?Values$/,
@@ -719,12 +744,12 @@ describe("NativeGameClient file operations and destructive actions", () => {
 
     await user.press(await screen.findByRole("button", { name: "Start" }))
     await user.press(await screen.findByRole("button", { name: "Add value" }))
-    await user.type(screen.getByLabelText("Value Name"), "Craftsmanship")
-    await user.type(
-      screen.getByLabelText("What This Value Means to Me"),
-      "To hone my craft.",
+    await user.type(screen.getByLabelText("Value name"), "Craftsmanship")
+    await user.type(screen.getByLabelText("Definition"), "To hone my craft.")
+    await user.press(screen.getByRole("button", { name: "Save" }))
+    await user.press(
+      await screen.findByRole("button", { name: "Browse All Values" }),
     )
-    await user.press(screen.getByRole("button", { name: "Save Value" }))
 
     await user.type(screen.getByLabelText("Search All Values"), "Craftsmanship")
     const craftsmanship = await screen.findByLabelText("Craftsmanship details")
@@ -992,13 +1017,10 @@ describe("NativeGameClient file operations and destructive actions", () => {
 
     await user.press(await screen.findByRole("button", { name: "Start" }))
     await user.press(await screen.findByRole("button", { name: "Add value" }))
-    await user.type(screen.getByLabelText("Value Name"), "Craftsmanship")
-    await user.type(
-      screen.getByLabelText("What This Value Means to Me"),
-      "To hone my craft.",
-    )
-    await user.press(screen.getByRole("button", { name: "Save Value" }))
-    await user.press(await screen.findByRole("button", { name: "Close" }))
+    await user.type(screen.getByLabelText("Value name"), "Craftsmanship")
+    await user.type(screen.getByLabelText("Definition"), "To hone my craft.")
+    await user.press(screen.getByRole("button", { name: "Save" }))
+    await screen.findByRole("button", { name: "Battle" })
     await openMenuDestination(user, "Import & Export")
 
     await user.press(

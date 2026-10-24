@@ -16,6 +16,7 @@ describe("NativeInformationPanel", () => {
     const user = userEvent.setup()
     await render(
       <NativeInformationPanel
+        presentation="introduction"
         title="Introduction"
         primaryActionLabel="Start"
         onPrimaryAction={onStart}

@@ -8,11 +8,37 @@ import { describe, expect, it } from "vitest"
 import {
   getInitialWebControlHintInputModality,
   getValueChoiceControlHint,
+  getWrappableSettingsText,
   resolveShouldReduceMotion,
   SETTINGS_PLAYER_DATA_RESET_KINDS,
 } from "./PlayerSettingsPresentation"
 
 describe("Player Settings presentation", () => {
+  it("adds discretionary Spanish syllable breaks without changing copy or English", () => {
+    for (const heading of [
+      "Configuración",
+      "Reducir movimiento",
+      "Indicaciones de controles",
+      "Desactivado",
+      "Automáticas",
+      "Desactivadas",
+    ]) {
+      const wrappable = getWrappableSettingsText(heading, "es-MX")
+      expect(wrappable).toContain("\u00ad")
+      expect(wrappable.replaceAll("\u00ad", "")).toBe(heading)
+      expect(getWrappableSettingsText(wrappable, "es-MX")).toBe(wrappable)
+    }
+    expect(getWrappableSettingsText("Configuración", "es-MX")).toBe(
+      "Con\u00adfi\u00adgu\u00adra\u00adción",
+    )
+    expect(getWrappableSettingsText("Seguir al sistema", "es-MX")).toBe(
+      "Seguir al sistema",
+    )
+    expect(getWrappableSettingsText("Reduced Motion", "en-US")).toBe(
+      "Reduced Motion",
+    )
+  })
+
   it("owns the immutable functional launch catalog", () => {
     expect(PLAYER_SETTINGS_COPY).toEqual({
       title: "Settings",

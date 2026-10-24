@@ -9,7 +9,6 @@ import {
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { useEffect, useRef } from "react"
 import CustomValueFieldFeedback from "@/components/CustomValueFieldFeedback"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
@@ -18,13 +17,11 @@ export default function CustomValueDraftEditor({
   validation,
   onChange,
   onSubmit,
-  onBack,
 }: {
   draft: CustomValueDraft
   validation: CustomValueDraftValidation
   onChange: (draft: CustomValueDraft) => void
   onSubmit: () => void
-  onBack: () => void
 }) {
   const localizedCopy = useLocaleCatalog()
   const copy = localizedCopy.interfaceCopy.customValues
@@ -45,9 +42,6 @@ export default function CustomValueDraftEditor({
     >
       <div className="flex flex-wrap items-center justify-between gap-2 xl:col-span-2">
         <h2 className="text-xl font-black uppercase">{copy.editorTitle}</h2>
-        <Button type="button" variant="link" onClick={onBack}>
-          {copy.back}
-        </Button>
       </div>
       <p
         id="hub-custom-value-example"

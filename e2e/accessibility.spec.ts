@@ -165,13 +165,14 @@ test("values and player-data surfaces meet automated accessibility rules", async
   ).toBeVisible()
   await expectNoAccessibilityViolations(page, "Browse All Values")
 
+  await page.getByRole("button", { name: "Back", exact: true }).click()
   await openMenuDestination(page, "Custom Values")
   const customValueForm = page.getByRole("form", {
     name: "Add Custom Value",
   })
   await expect(customValueForm).toBeVisible()
   await expectNoAccessibilityViolations(page, "Custom Value builder")
-  await page.getByRole("button", { name: "Close editor" }).click()
+  await page.getByRole("button", { name: "Back", exact: true }).click()
   await expect(customValueForm).not.toBeVisible()
 
   await openMenuDestination(page, "Achievements")
@@ -180,6 +181,7 @@ test("values and player-data surfaces meet automated accessibility rules", async
   ).toBeVisible()
   await expectNoAccessibilityViolations(page, "Achievements")
 
+  await page.getByRole("button", { name: "Back", exact: true }).click()
   await openMenuDestination(page, "Import & Export")
   await expect(
     page.getByRole("heading", { level: 1, name: "Import & Export" }),

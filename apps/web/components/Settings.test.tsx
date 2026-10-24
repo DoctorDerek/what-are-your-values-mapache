@@ -6,6 +6,7 @@ import {
   createInitialPlayerSettings,
   type PlayerSettings,
 } from "@game/machines/src/PlayerSettings"
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import {
   fireEvent,
   render,
@@ -15,7 +16,7 @@ import {
 } from "@testing-library/react"
 import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
-import Settings from "./Settings"
+import Settings from "@/components/Settings"
 
 function renderSettings(
   overrides: Partial<Parameters<typeof Settings>[0]> = {},
@@ -37,11 +38,49 @@ function renderSettings(
     ...overrides,
   } satisfies Parameters<typeof Settings>[0]
 
-  render(<Settings {...props} />)
+  render(
+    <LocaleProvider locale={props.settings.locale}>
+      <Settings {...props} />
+    </LocaleProvider>,
+  )
   return props
 }
 
 describe("Settings", () => {
+  it("retains complete Spanish accessible labels and routes the native language picker through settings", () => {
+    const props = renderSettings({
+      settings: { ...createInitialPlayerSettings(), locale: "es-MX" },
+    })
+    const heading = screen.getByRole("heading", {
+      name: "Configuración",
+      level: 1,
+    })
+    expect(heading.textContent?.replaceAll("\u00ad", "")).toBe("Configuración")
+    const reduceMotion = screen.getByRole("group", {
+      name: "Reducir movimiento",
+    })
+    expect(
+      within(reduceMotion).getByRole("radio", { name: "Seguir al sistema" }),
+    ).toBeChecked()
+    const off = within(reduceMotion).getByRole("radio", {
+      name: "Desactivado",
+    })
+    expect(off).toHaveAccessibleDescription("Usa todo el movimiento.")
+    fireEvent.click(off)
+    expect(props.onUpdateSettings).toHaveBeenLastCalledWith({
+      ...props.settings,
+      reducedMotion: "off",
+    })
+    const language = screen.getByRole("combobox", { name: "Idioma" })
+    expect(language).toHaveDisplayValue("Español (México)")
+    expect(screen.getAllByRole("combobox")).toHaveLength(1)
+    fireEvent.change(language, { target: { value: "en" } })
+    expect(props.onUpdateSettings).toHaveBeenLastCalledWith({
+      ...props.settings,
+      locale: "en",
+    })
+  })
+
   it("shows truthful language status and changes preferences only through native radio activation", async () => {
     const props = renderSettings()
     const settingsScreen = screen.getByRole("main")
@@ -67,17 +106,12 @@ describe("Settings", () => {
       ).toHaveFocus(),
     )
     expect(settingsScreen).toHaveAttribute("data-slot", "mapache-screen")
-    expect(settingsScreen).toHaveClass(
-      "h-[100dvh]",
-      "overflow-hidden",
-      "[--mapache-screen-spacing:1rem]",
-      "xl:[--mapache-screen-spacing:2rem]",
-    )
     expect(
-      within(screen.getByRole("region", { name: "Language" })).getByText(
-        "English (US)",
+      within(screen.getByRole("region", { name: "Language" })).getByRole(
+        "combobox",
+        { name: "Language" },
       ),
-    ).toBeVisible()
+    ).toHaveDisplayValue("English (US)")
     expect(followSystem).toBeChecked()
     expect(followSystem.closest("label")).toHaveClass(
       "bg-mapache-vivid-primary-cyan",

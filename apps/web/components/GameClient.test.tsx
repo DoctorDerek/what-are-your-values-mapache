@@ -554,6 +554,7 @@ describe("GameClient Integration", () => {
         name: "Restore Last Known-Good Save?",
       }),
     ).toBeVisible()
+    fireEvent.click(screen.getByText("Technical details"))
     expect(screen.getByText("known-good-browser-build")).toBeVisible()
     expect(
       screen.getByText(/unreadable current save will be preserved/),
@@ -610,6 +611,7 @@ describe("GameClient Integration", () => {
     expect(
       await screen.findByRole("heading", { name: "Review Import" }),
     ).toBeVisible()
+    fireEvent.click(screen.getByText("Technical details"))
     expect(screen.getByText("selected-browser-build")).toBeVisible()
     expect(
       screen.getByText(
@@ -907,7 +909,7 @@ describe("GameClient Integration", () => {
     expect(screen.getByText("103 Active Values")).toBeVisible()
     expect(screen.getAllByRole("listitem")).toHaveLength(103)
 
-    fireEvent.click(screen.getByRole("button", { name: "Close" }))
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
 
     expect(
       await screen.findByRole("heading", {
@@ -960,7 +962,14 @@ describe("GameClient Integration", () => {
     expect(screen.getByLabelText("Definition")).toHaveValue(
       "To solve problems in my own way.",
     )
-    expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
+    fireEvent.click(screen.getByRole("button", { name: "Menu" }))
+    expect(
+      screen.getByRole("dialog", { name: "Keep your changes?" }),
+    ).toBeVisible()
+    fireEvent.click(screen.getByRole("button", { name: "Keep editing" }))
+    expect(screen.getByLabelText("Definition")).toHaveValue(
+      "To solve problems in my own way.",
+    )
     durableStoreFailure.writeEnabled = false
     fireEvent.click(screen.getByRole("button", { name: "Save" }))
     expect(
@@ -971,7 +980,9 @@ describe("GameClient Integration", () => {
     expect(
       screen.queryByRole("button", { name: "Edit Craftsmanship" }),
     ).not.toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Add value" })).toHaveFocus()
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Add value" })).toHaveFocus(),
+    )
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
     expect(await screen.findByText("104 Active Values")).toBeVisible()
   })
@@ -1011,7 +1022,7 @@ describe("GameClient Integration", () => {
     expect(
       await screen.findByRole("heading", { name: "All Values", level: 1 }),
     ).toBeVisible()
-    fireEvent.click(screen.getByRole("button", { name: "Close" }))
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     fireEvent.click(await screen.findByRole("button", { name: "Battle" }))
 
     expect(
@@ -1147,7 +1158,7 @@ describe("GameClient Integration", () => {
       })
     ).map((button) => button.getAttribute("aria-label"))
     const menuAction = screen.getByRole("button", { name: "Menu" })
-    menuAction.focus()
+    expect(menuAction).not.toHaveFocus()
 
     fireEvent.click(menuAction)
     fireEvent.click(await screen.findByRole("button", { name: "How It Works" }))
@@ -1220,6 +1231,7 @@ describe("GameClient Integration", () => {
       await screen.findByRole("heading", { name: "Achievements", level: 1 }),
     ).toBeVisible()
 
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     await openProductMenuDestination("Import & Export")
     expect(
       await screen.findByRole("heading", {
@@ -1233,6 +1245,7 @@ describe("GameClient Integration", () => {
       await screen.findByRole("heading", { name: "All Values", level: 1 }),
     ).toBeVisible()
 
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     await openProductMenuDestination("Custom Values")
     expect(
       await screen.findByRole("form", { name: "Add Custom Value" }),
@@ -1251,7 +1264,7 @@ describe("GameClient Integration", () => {
         target: { value: "My craftsmanship" },
       },
     )
-    fireEvent.click(screen.getByRole("button", { name: "Add Custom Value" }))
+    fireEvent.click(screen.getByRole("button", { name: "Add value" }))
     expect(await screen.findByLabelText("Value name")).toHaveValue(
       "My craftsmanship",
     )
@@ -1260,11 +1273,13 @@ describe("GameClient Integration", () => {
     ).toHaveLength(1)
     expect(
       screen.getByRole("heading", {
-        name: /^My (?:Top Five Life )?Values$/,
-        level: 2,
+        name: "What Are Your Values, Mapache?",
+        level: 1,
       }),
     ).toBeVisible()
-    expect(screen.getByRole("button", { name: "Battle" })).toBeDisabled()
+    expect(
+      screen.queryByRole("button", { name: "Battle" }),
+    ).not.toBeInTheDocument()
   })
 
   it("opens the complete live achievement catalog and restores focus to its Hub action", async () => {
@@ -1284,7 +1299,7 @@ describe("GameClient Integration", () => {
     expect(screen.getByText("2,400 Battles")).toBeVisible()
     expect(screen.getByText("Reach Level 100")).toBeVisible()
 
-    fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     expect(await screen.findByRole("button", { name: "Menu" })).toHaveFocus()
 
     fireEvent.click(screen.getByRole("button", { name: "Battle" }))
@@ -1457,7 +1472,7 @@ describe("GameClient Integration", () => {
     ).toBeVisible()
     expect(screen.getByRole("heading", { name: "Acceptance" })).toBeVisible()
 
-    fireEvent.click(screen.getByRole("button", { name: "Close" }))
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     expect(
       await screen.findByRole("heading", {
         name: /^My (?:Top Five Life )?Values$/,
@@ -1626,6 +1641,7 @@ describe("GameClient Integration", () => {
     expect(
       await screen.findByRole("heading", { name: "Review Import" }),
     ).toBeVisible()
+    fireEvent.click(screen.getByText("Technical details"))
     expect(screen.getByText("portable-build-49")).toBeVisible()
     expect(screen.queryByText("Craftsmanship")).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
@@ -1744,7 +1760,7 @@ describe("GameClient Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
     await screen.findByText("104 Active Values")
     expect(await screen.findByText("104 Active Values")).toBeVisible()
-    fireEvent.click(screen.getByRole("button", { name: "Close" }))
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     await openProductMenuDestination("Import & Export")
 
     fireEvent.click(

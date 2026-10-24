@@ -52,15 +52,9 @@ describe("Player Data Import Preview", () => {
         screen.getByRole("heading", { name: "Review Import" }),
       ).toHaveFocus(),
     )
-    const previewFacts = screen
-      .getByText("Backup Created")
-      .closest("div")?.parentElement
-    expect(previewFacts).toHaveClass("grid-cols-1", "xl:grid-cols-2")
-    expect(previewFacts).not.toHaveClass("sm:grid-cols-2")
-    expect(screen.getByRole("time")).toHaveAttribute(
-      "datetime",
-      preview.exportedAt,
-    )
+    expect(getPreviewValue("Backup Created")).not.toBeEmptyDOMElement()
+    expect(screen.getByText("Source Application")).not.toBeVisible()
+    fireEvent.click(screen.getByText("Technical details"))
     expect(getPreviewValue("Source Application")).toHaveTextContent(
       "Version 0.1.0",
     )
@@ -74,7 +68,7 @@ describe("Player Data Import Preview", () => {
     expect(getPreviewValue("Custom Values")).toHaveTextContent("2")
     expect(getPreviewValue("Active Values")).toHaveTextContent("102")
     expect(getPreviewValue("Current Cycle")).toHaveTextContent("3")
-    expect(getPreviewValue("Cycle Pairings")).toHaveTextContent("5151")
+    expect(getPreviewValue("Cycle Pairings")).toHaveTextContent("5,151")
     expect(getPreviewValue("Deck Revision")).toHaveTextContent("2")
     expect(getPreviewValue("Progress Generation")).toHaveTextContent("1")
     expect(getPreviewValue("Achievements")).toHaveTextContent("4")
@@ -104,11 +98,6 @@ describe("Player Data Import Preview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
     fireEvent.click(screen.getByRole("button", { name: "Import & Replace" }))
-    const actionLayout = screen.getByRole("button", {
-      name: "Cancel",
-    }).parentElement
-    expect(actionLayout).toHaveClass("flex-col", "xl:flex-row")
-    expect(actionLayout).not.toHaveClass("sm:flex-row")
     expect(onCancel).toHaveBeenCalledOnce()
     expect(onConfirm).toHaveBeenCalledOnce()
 

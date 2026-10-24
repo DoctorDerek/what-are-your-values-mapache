@@ -53,6 +53,7 @@ export const MEXICAN_SPANISH_RECOVERY_COPY: Pick<
       "Elige un respaldo JSON de WAYVM. La aplicación lo validará y te mostrará una vista previa antes de reemplazar los datos de este dispositivo.",
     chooseBackupAction: "Elegir respaldo",
     importPreviewTitle: "Revisar importación",
+    technicalDetails: "Detalles técnicos",
     importPreviewWarning:
       "Importar este respaldo reemplazará los datos actuales de WAYVM en este dispositivo. Primero se creará un respaldo de seguridad local.",
     importCancelAction: "Cancelar",

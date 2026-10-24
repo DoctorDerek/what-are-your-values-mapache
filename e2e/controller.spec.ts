@@ -244,11 +244,11 @@ test("controller authors a value, scrolls the catalog and cancels edit and delet
   )
   await tapControllerButton(page, 1)
   await expect(
-    page.getByRole("textbox", { name: "Value name", exact: true }),
-  ).toHaveCount(0)
+    page.getByRole("dialog", { name: "Keep your changes?", exact: true }),
+  ).toBeVisible()
   await activateWithController(
     page,
-    page.getByRole("button", { name: "Continue editing", exact: true }),
+    page.getByRole("button", { name: "Keep editing", exact: true }),
   )
   await expect(
     page.getByRole("textbox", { name: "Value name", exact: true }),
@@ -266,10 +266,10 @@ test("controller authors a value, scrolls the catalog and cancels edit and delet
   )
   const values = page.getByRole("region", { name: "Values", exact: true })
   await focusWithController(page, values)
-  const beforeScroll = await page.evaluate(() => window.scrollY)
+  const beforeScroll = await values.evaluate((element) => element.scrollTop)
   await tapControllerButton(page, 13)
   await expect
-    .poll(() => page.evaluate(() => window.scrollY))
+    .poll(() => values.evaluate((element) => element.scrollTop))
     .toBeGreaterThan(beforeScroll)
   await enterKeyboardText(
     page,

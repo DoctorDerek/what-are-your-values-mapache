@@ -2,7 +2,8 @@ import type {
   InformationPanelBlock,
   InformationPanelDefinition,
 } from "@game/data/src/InformationPanels"
-import { Linking, View } from "react-native"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
+import { Alert, Linking, View } from "react-native"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 
@@ -11,6 +12,8 @@ function NativeInformationPanelContentBlock({
 }: {
   readonly block: InformationPanelBlock
 }) {
+  const { firstArrival } = useLocaleCatalog()
+
   if (block.kind === "section")
     return (
       <View className="gap-3">
@@ -61,7 +64,14 @@ function NativeInformationPanelContentBlock({
         <Button
           accessibilityRole="link"
           variant="outline"
-          onPress={() => void Linking.openURL(block.url)}
+          onPress={() => {
+            void Linking.openURL(block.url).catch(() =>
+              Alert.alert(
+                firstArrival.websiteErrorTitle,
+                firstArrival.websiteErrorMessage,
+              ),
+            )
+          }}
         >
           <Text>{block.actionLabel}</Text>
         </Button>

@@ -13,7 +13,7 @@ import {
   within,
 } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
-import Achievements from "./Achievements"
+import Achievements from "@/components/Achievements"
 
 const UNLOCKED_AT = "2026-07-30T04:30:00.000Z"
 
@@ -77,43 +77,19 @@ describe("Achievements", () => {
     const achievements = createInitialPresentations()
 
     render(
-      <Achievements
-        achievements={achievements}
-        canOpenMenu
-        onClose={vi.fn()}
-        onOpenMenu={vi.fn()}
-      />,
+      <Achievements achievements={achievements} canClose onClose={vi.fn()} />,
     )
 
     expect(screen.getByRole("main")).toHaveAttribute(
       "data-slot",
       "mapache-screen",
     )
-    expect(screen.getByRole("main")).toHaveClass(
-      "min-h-[100dvh]",
-      "[--mapache-screen-spacing:1rem]",
-      "sm:[--mapache-screen-spacing:2rem]",
-    )
     await waitFor(() =>
       expect(
         screen.getByRole("heading", { name: "Achievements", level: 1 }),
       ).toHaveFocus(),
     )
-    const pageHeader = screen
-      .getByRole("heading", { name: "Achievements", level: 1 })
-      .closest("header")
-    expect(pageHeader).toHaveClass(
-      "flex-col",
-      "items-stretch",
-      "xl:flex-row",
-      "xl:items-center",
-      "xl:justify-between",
-    )
-    expect(pageHeader).not.toHaveClass(
-      "sm:flex-row",
-      "sm:items-center",
-      "sm:justify-between",
-    )
+    expect(screen.queryByText("Local Milestones")).not.toBeInTheDocument()
     expect(screen.getByText("0 of 40 unlocked")).toBeVisible()
     expect(
       screen.getByText(
@@ -137,9 +113,8 @@ describe("Achievements", () => {
     render(
       <Achievements
         achievements={createPresentationsWithFirstBattleUnlocked()}
-        canOpenMenu
+        canClose
         onClose={vi.fn()}
-        onOpenMenu={vi.fn()}
       />,
     )
 
@@ -167,39 +142,32 @@ describe("Achievements", () => {
     render(
       <Achievements
         achievements={createInitialPresentations()}
-        canOpenMenu
+        canClose
         onClose={onClose}
-        onOpenMenu={vi.fn()}
       />,
     )
 
     expect(
       screen.getAllByRole("button").map((button) => button.textContent),
-    ).toEqual(["Menu", "Back to Your Values"])
-    fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
+    ).toEqual(["Back"])
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     expect(onClose).toHaveBeenCalledOnce()
   })
 
   it("keeps navigation unavailable while achievement acknowledgement is pending", () => {
     const onClose = vi.fn()
-    const onOpenMenu = vi.fn()
 
     render(
       <Achievements
         achievements={createInitialPresentations()}
-        canOpenMenu={false}
+        canClose={false}
         onClose={onClose}
-        onOpenMenu={onOpenMenu}
       />,
     )
 
-    const menu = screen.getByRole("button", { name: "Menu" })
-    const close = screen.getByRole("button", { name: "Back to Your Values" })
-    expect(menu).toBeDisabled()
+    const close = screen.getByRole("button", { name: "Back" })
     expect(close).toBeDisabled()
-    fireEvent.click(menu)
     fireEvent.click(close)
-    expect(onOpenMenu).not.toHaveBeenCalled()
     expect(onClose).not.toHaveBeenCalled()
   })
 
@@ -207,9 +175,8 @@ describe("Achievements", () => {
     render(
       <Achievements
         achievements={createPresentationsAfterTopFiveReset()}
-        canOpenMenu
+        canClose
         onClose={vi.fn()}
-        onOpenMenu={vi.fn()}
       />,
     )
 

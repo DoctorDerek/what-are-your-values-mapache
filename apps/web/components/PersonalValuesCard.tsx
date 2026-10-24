@@ -43,10 +43,10 @@ export default function PersonalValuesCard({
     <section
       inert={inert}
       aria-labelledby="your-values-heading"
-      className="border-player-card-frame bg-player-card-background grid min-h-min w-full max-w-7xl flex-1 grid-cols-1 grid-rows-[auto_minmax(8rem,1fr)] overflow-hidden border-4 inert:opacity-50 xl:grid-cols-[minmax(12rem,1fr)_minmax(0,3fr)]"
+      className="border-player-card-frame bg-player-card-background grid min-h-min w-full max-w-7xl min-w-0 flex-1 grid-cols-1 grid-rows-[auto_minmax(8rem,1fr)] overflow-hidden border-4 inert:opacity-50 xl:grid-cols-[minmax(12rem,1fr)_minmax(0,3fr)]"
     >
       <div className="flex flex-wrap items-center xl:contents">
-        <div className="min-w-0 flex-[1_1_10rem] self-center px-3 py-4 xl:col-span-2 xl:row-start-1 xl:text-center">
+        <div className="min-w-0 flex-[1_1_10rem] self-center px-[12px] py-[16px] xl:col-span-2 xl:row-start-1 xl:px-3 xl:py-4 xl:text-center">
           <h2
             id="your-values-heading"
             className="text-player-card-ink flex flex-col text-2xl leading-tight font-black xl:flex-row xl:justify-center xl:gap-x-[0.25em] xl:text-3xl"
@@ -65,11 +65,11 @@ export default function PersonalValuesCard({
             </p>
           )}
         </div>
-        <div className="xl:bg-player-card-values flex min-h-0 w-24 max-w-full shrink-0 items-center justify-center py-2 pr-2 xl:col-start-1 xl:row-start-2 xl:w-auto xl:p-4">
+        <div className="xl:bg-player-card-values flex min-h-0 w-[96px] max-w-full shrink-0 items-center justify-center py-[8px] pr-[8px] xl:col-start-1 xl:row-start-2 xl:w-auto xl:p-4">
           <Heroes99Hero
             appearance={appearance}
             shouldReduceMotion={shouldReduceMotion}
-            className="h-28 w-full xl:h-full xl:max-h-96"
+            className="h-[112px] w-full xl:h-full xl:max-h-96"
           />
         </div>
       </div>

@@ -62,6 +62,11 @@ test("browser Back closes actual parents, preserves drafts and permits Hub depar
   await page.getByRole("button", { name: "Add value", exact: true }).click()
   await page.getByLabel("Value name", { exact: true }).fill("Keep my draft")
   await page.evaluate(() => history.back())
+  await expect(
+    page.getByRole("dialog", { name: "Keep your changes?" }),
+  ).toBeVisible()
+  await page.getByRole("button", { name: "Keep editing", exact: true }).click()
+  await expect(page.getByLabel("Value name", { exact: true })).toBeFocused()
   await expect(page.getByLabel("Value name", { exact: true })).toHaveValue(
     "Keep my draft",
   )

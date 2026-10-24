@@ -36,6 +36,7 @@ describe("selected interface catalog", () => {
       values,
       interfaceCopy: {
         ...english.interfaceCopy,
+        dressingRoom: { ...english.interfaceCopy.dressingRoom, back: "⟦Back⟧" },
         screen: {
           ...english.interfaceCopy.screen,
           close: "⟦Close⟧",
@@ -53,7 +54,6 @@ describe("selected interface catalog", () => {
           shouldReduceMotion
           isMenuOpen={false}
           onClose={onClose}
-          onOpenMenu={vi.fn()}
           onAddCustomValue={vi.fn()}
           onUpdateCustomValue={vi.fn()}
           onDeleteCustomValue={vi.fn()}
@@ -68,7 +68,7 @@ describe("selected interface catalog", () => {
       { target: { value: "Selected meaning" } },
     )
     expect(screen.getAllByRole("listitem")).toHaveLength(1)
-    fireEvent.click(screen.getByRole("button", { name: "⟦Close⟧" }))
+    fireEvent.click(screen.getByRole("button", { name: "⟦Back⟧" }))
     expect(onClose).toHaveBeenCalledOnce()
     view.rerender(
       <LocaleProvider locale="en">

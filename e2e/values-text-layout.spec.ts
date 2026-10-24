@@ -11,6 +11,7 @@ for (const copy of [
     search: "Search All Values",
     names: ["Acceptance", "Responsibility", "Self-Knowledge"],
     menu: "Menu",
+    back: "Back",
     settings: "Settings",
   },
   {
@@ -21,6 +22,7 @@ for (const copy of [
     search: "Buscar en todos los valores",
     names: ["Aceptación", "Autoconocimiento"],
     menu: "Menú",
+    back: "Volver",
     settings: "Configuración",
   },
 ]) {
@@ -57,6 +59,7 @@ for (const copy of [
         path: testInfo.outputPath(`${name}-readable.png`),
       })
     }
+    await page.getByRole("button", { name: copy.back, exact: true }).click()
     await page.getByRole("button", { name: copy.menu, exact: true }).click()
     await page.getByRole("button", { name: copy.settings, exact: true }).click()
     for (const legend of await page.locator("fieldset legend").all()) {

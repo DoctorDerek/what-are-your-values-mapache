@@ -3,6 +3,7 @@ import {
   SHIPPED_LANGUAGE_OPTIONS,
 } from "@game/data/src/LocalizationCatalog"
 import { type LanguageSelectorProps } from "@game/machines/src/PlayerSettingsPresentation"
+import { cx } from "classix"
 import { useState } from "react"
 import { Modal, Pressable, View } from "react-native"
 import { Button } from "@/components/ui/button"
@@ -11,6 +12,7 @@ import { Text } from "@/components/ui/text"
 export default function NativeLanguageSelector({
   locale,
   disabled = false,
+  labelPlacement = "inline",
   onLocaleChange,
 }: LanguageSelectorProps) {
   const { language: copy } = getLocaleCatalog(locale)
@@ -28,10 +30,17 @@ export default function NativeLanguageSelector({
         accessibilityState={{ disabled, expanded: isOpen }}
         disabled={disabled}
         onPress={() => setIsOpen(true)}
-        className="min-h-12 flex-row items-center justify-between gap-3 border-3 border-black bg-white px-3 py-2 shadow-[3px_3px_0_#000] active:bg-gray-100"
+        className="min-h-12 min-w-0 flex-row flex-wrap items-center justify-between gap-3 border-3 border-black bg-white px-3 py-2 shadow-[3px_3px_0_#000] active:bg-gray-100"
       >
-        <Text className="font-semibold text-black">{copy.heading}</Text>
-        <Text className="font-semibold text-black">
+        <Text
+          className={cx(
+            "shrink font-semibold text-black",
+            labelPlacement === "section" && "hidden xl:flex",
+          )}
+        >
+          {copy.heading}
+        </Text>
+        <Text className="min-w-0 shrink font-semibold text-black">
           {selectedOption?.label} ▾
         </Text>
       </Pressable>

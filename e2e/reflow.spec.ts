@@ -53,9 +53,7 @@ for (const width of [390, 1440]) {
     await expect(
       page.getByText("0 Values Shown", { exact: true }),
     ).toBeVisible()
-    await page
-      .getByRole("button", { name: "Add Custom Value", exact: true })
-      .click()
+    await page.getByRole("button", { name: "Add value", exact: true }).click()
     await expect(page.getByLabel("Value name", { exact: true })).toHaveValue(
       "Resourceful experimentation",
     )
@@ -63,10 +61,10 @@ for (const width of [390, 1440]) {
     await page
       .getByLabel("Definition", { exact: true })
       .fill("to explore practical solutions through experiments")
+    await page.getByRole("button", { name: "Back", exact: true }).click()
     await page
-      .getByRole("button", { name: "Close editor", exact: true })
+      .getByRole("button", { name: "Keep editing", exact: true })
       .click()
-    await page.getByRole("button", { name: "Add value", exact: true }).click()
     await expect(page.getByLabel("Definition", { exact: true })).toHaveValue(
       "to explore practical solutions through experiments",
     )
@@ -124,7 +122,7 @@ for (const width of [390, 1440]) {
     const row = page.getByRole("main").getByRole("listitem").first()
     const active = row.locator('[data-hub-active-clip="true"]')
     await page.mouse.move(0, 0)
-    await page.getByRole("button", { name: "Menu", exact: true }).focus()
+    await page.getByRole("button", { name: "Back", exact: true }).focus()
     await expect(active.locator("img")).toHaveAttribute("src", source!)
     await expect(active.locator('[data-playback-ready="true"]')).toHaveCount(1)
     await row.scrollIntoViewIfNeeded()
@@ -144,7 +142,7 @@ for (const width of [390, 1440]) {
     await page.mouse.move(0, 0)
     await expect(row).toBeFocused()
     await expect(active.locator("img")).toBeVisible()
-    await page.getByRole("button", { name: "Menu", exact: true }).focus()
+    await page.getByRole("button", { name: "Back", exact: true }).focus()
     await expect(active.locator("img")).toHaveAttribute("src", source!)
     await page.emulateMedia({ reducedMotion: "reduce" })
     await page.reload()
@@ -633,9 +631,7 @@ test("All Values and Custom Values reflow without document overflow", async ({
   ).toBeVisible()
   await expectNoDocumentHorizontalOverflow(page, "All Values")
 
-  await page
-    .getByRole("button", { name: "Add Custom Value", exact: true })
-    .click()
+  await page.getByRole("button", { name: "Add value", exact: true }).click()
   await expect(
     page.getByRole("form", { name: "Add Custom Value" }),
   ).toBeVisible()
@@ -688,6 +684,7 @@ test("Achievements and Import Export reflow without document overflow", async ({
   ).toBeVisible()
   await expectNoDocumentHorizontalOverflow(page, "Achievements")
 
+  await page.getByRole("button", { name: "Back", exact: true }).click()
   await openMenuDestination(page, "Import & Export")
   await expect(
     page.getByRole("heading", { level: 1, name: "Import & Export" }),
