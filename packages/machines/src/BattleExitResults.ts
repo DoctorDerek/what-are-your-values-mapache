@@ -1,6 +1,11 @@
+import { projectHubValues } from "@game/data/src/HubValueProjection"
 import type { ValueId } from "@game/data/src/Value"
 import type { ValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues, type RankedValue } from "@game/data/src/ValueRanking"
+import {
+  getValueRankPresentation,
+  type ValueRankMedalColor,
+} from "@game/data/src/ValueRankMedal"
 import {
   getExactLevelProgressFromXP,
   getExactLevelStartingXp,
@@ -28,6 +33,8 @@ export type BattleExitResultsValue = {
 }
 
 export type BattleExitResults = {
+  readonly hasEntryRanking: boolean
+  readonly hasExitRanking: boolean
   readonly values: readonly BattleExitResultsValue[]
   readonly entryProfileXp: bigint
   readonly exitProfileXp: bigint
@@ -41,6 +48,8 @@ export type BattleExitResults = {
 export type BattleExitResultsFrameValue = {
   readonly value: BattleExitResultsValue
   readonly rank: number
+  readonly medal: ValueRankMedalColor | null
+  readonly finalMedal: ValueRankMedalColor | null
   readonly rankLabelPlaceholder: string
   readonly stackingOrder: number
   readonly totalXp: number
@@ -163,6 +172,8 @@ export function createBattleExitResults(
 
   return Object.freeze({
     values: Object.freeze(values),
+    hasEntryRanking: projectHubValues(entryRankedValues).hasComparisons,
+    hasExitRanking: projectHubValues(exitRankedValues).hasComparisons,
     entryProfileXp,
     exitProfileXp,
     profileXpChange: exitProfileXp - entryProfileXp,
@@ -274,7 +285,22 @@ export function projectBattleExitResultsFrame(
     throw new Error(`Invalid Results presentation time: ${elapsedMs}`)
   }
 
+  const isRankingSettled =
+    areRowPositionsSettled || elapsedMs >= BATTLE_RESULTS_REORDER_MOTION_MS
+  const hasDisplayedRanking = isRankingSettled
+    ? results.hasExitRanking
+    : results.hasEntryRanking
   const values = results.values.map((value) => {
+    const rank =
+      value.entryRank +
+      Math.trunc(
+        (value.exitRank - value.entryRank) *
+          (isRankingSettled
+            ? 1
+            : projectResultsQuadraticEaseOut(
+                elapsedMs / BATTLE_RESULTS_REORDER_MOTION_MS,
+              )),
+      )
     const progress = projectPresentationProgress(
       BigInt(value.entryProgress.totalXp),
       BigInt(value.exitProgress.totalXp),
@@ -292,16 +318,13 @@ export function projectBattleExitResultsFrame(
           )
     return Object.freeze({
       value,
-      rank:
-        value.entryRank +
-        Math.trunc(
-          (value.exitRank - value.entryRank) *
-            (areRowPositionsSettled
-              ? 1
-              : projectResultsQuadraticEaseOut(
-                  Math.min(1, elapsedMs / BATTLE_RESULTS_REORDER_MOTION_MS),
-                )),
-        ),
+      rank,
+      medal: hasDisplayedRanking
+        ? (getValueRankPresentation(rank).medal?.color ?? null)
+        : null,
+      finalMedal: results.hasExitRanking
+        ? (getValueRankPresentation(value.exitRank).medal?.color ?? null)
+        : null,
       rankLabelPlaceholder: `#${results.values.length}`,
       stackingOrder: results.values.length + 1 - value.exitRank,
       motion: projectBattleExitResultsMotion(
