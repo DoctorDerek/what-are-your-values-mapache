@@ -30,6 +30,8 @@ export function getWrappableSettingsText(
   text: string,
   languageTag: string,
 ): string {
+  if (languageTag.startsWith("en") && text === "Settings")
+    return "Set\u00adtings"
   return languageTag.startsWith("es-")
     ? text.replace(
         /\p{L}+/gu,
