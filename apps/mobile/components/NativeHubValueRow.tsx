@@ -9,10 +9,12 @@ import {
   getValueDisplayName,
 } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
+import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { getLevelFromXP } from "@game/utils/src/LevelMath"
 import { useState } from "react"
 import { Pressable, View } from "react-native"
+import NativeRankMedal from "@/components/NativeRankMedal"
 import { useNativeSeethingSwarmAssetStatus } from "@/components/NativeSeethingSwarmAssetPreparation"
 import NativeSeethingSwarmHubAnimal from "@/components/NativeSeethingSwarmHubAnimal"
 import { Text } from "@/components/ui/text"
@@ -33,6 +35,10 @@ export default function NativeHubValueRow({
   const PERSONAL_HUB_COPY = localizedCopy.hub
 
   const { definition, progress, rank } = rankedValue
+  const { medal, accessibleLabel } = getValueRankPresentation(
+    rank,
+    localizedCopy.interfaceCopy.rank,
+  )
   const presentation = resolveValueAnimalPresentation(
     definition,
     runtimeClipCatalog,
@@ -49,9 +55,16 @@ export default function NativeHubValueRow({
   return (
     <View className="border-player-card-frame flex-row items-center gap-2 border-b-2 px-2 py-3 xl:gap-5 xl:px-6">
       {showRank && (
-        <Text className="bg-player-card-rank text-player-card-ink min-w-8 text-center text-xl tabular-nums">
-          #{rank}
-        </Text>
+        <View
+          accessible
+          accessibilityLabel={accessibleLabel}
+          className="items-center gap-1"
+        >
+          <Text className="bg-player-card-rank text-player-card-ink min-w-8 text-center text-xl tabular-nums">
+            #{rank}
+          </Text>
+          {medal && <NativeRankMedal color={medal.color} />}
+        </View>
       )}
       <Pressable
         testID={`hub-animal-${definition.id}`}

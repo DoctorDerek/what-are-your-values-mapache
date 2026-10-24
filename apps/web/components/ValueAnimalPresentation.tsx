@@ -10,6 +10,7 @@ import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingS
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import { useState, type CSSProperties } from "react"
+import RankMedal from "@/components/RankMedal"
 import { useSeethingSwarmAssetStatus } from "@/components/SeethingSwarmAssetPreparation"
 import SeethingSwarmHubAnimal from "@/components/SeethingSwarmHubAnimal"
 
@@ -66,7 +67,7 @@ export default function ValueAnimalPresentation({
         className="bg-mapache-vivid-secondary-purple flex flex-none items-center gap-2 border-4 border-black px-3 py-2 text-2xl font-black text-white uppercase"
       >
         {showRank ? <span>#{rank}</span> : null}
-        {showRank && medal ? <span>{medal.emoji}</span> : null}
+        {showRank && medal ? <RankMedal color={medal.color} /> : null}
       </span>
     )
 
@@ -109,9 +110,7 @@ export default function ValueAnimalPresentation({
           ) : null}
         </span>
       </span>
-      {showRank && medal ? (
-        <span className="text-2xl">{medal.emoji}</span>
-      ) : null}
+      {showRank && medal ? <RankMedal color={medal.color} /> : null}
     </span>
   )
 }
