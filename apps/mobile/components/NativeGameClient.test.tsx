@@ -298,7 +298,9 @@ describe("NativeGameClient Menu navigation", () => {
     expect(presentedChoiceNames).toHaveLength(2)
 
     await openMenuDestination(user, "Settings")
-    expect(await screen.findByText("Settings")).toBeOnTheScreen()
+    expect(
+      await screen.findByRole("heading", { name: "Settings" }),
+    ).toBeOnTheScreen()
     const getControlHintsGroup = () => {
       const group = screen
         .getAllByLabelText("Control Hints")
@@ -330,12 +332,12 @@ describe("NativeGameClient Menu navigation", () => {
     await user.press(
       within(settingsMenu).getByRole("button", { name: "Close Menu" }),
     )
-    expect(screen.getByText("Settings")).toBeOnTheScreen()
+    expect(screen.getByRole("heading", { name: "Settings" })).toBeOnTheScreen()
 
     await user.press(screen.getByRole("button", { name: "Reset Achievements" }))
     expect(await screen.findByText("Reset Achievements?")).toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Cancel" }))
-    expect(screen.getByText("Settings")).toBeOnTheScreen()
+    expect(screen.getByRole("heading", { name: "Settings" })).toBeOnTheScreen()
 
     await user.press(screen.getByRole("button", { name: "Back" }))
     await waitFor(() =>
@@ -447,12 +449,14 @@ describe("NativeGameClient Menu navigation", () => {
       }),
     ).toBeOnTheScreen()
     await openMenuDestination(user, "Settings")
-    expect(await screen.findByText("Settings")).toBeOnTheScreen()
+    expect(
+      await screen.findByRole("heading", { name: "Settings" }),
+    ).toBeOnTheScreen()
 
     await openMenuDestination(user, "Browse All Values")
     expect(await screen.findByText("All Values")).toBeOnTheScreen()
     expect(screen.queryByText("Achievements")).toBeNull()
-    expect(screen.queryByText("Settings")).toBeNull()
+    expect(screen.queryByRole("heading", { name: "Settings" })).toBeNull()
 
     await user.press(screen.getByRole("button", { name: "Back" }))
     expect(

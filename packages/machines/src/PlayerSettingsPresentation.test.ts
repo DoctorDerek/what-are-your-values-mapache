@@ -14,6 +14,17 @@ import {
 } from "./PlayerSettingsPresentation"
 
 describe("Player Settings presentation", () => {
+  it("lets the English Settings title wrap without changing its copy or unrelated words", () => {
+    for (const languageTag of ["en", "en-US"]) {
+      expect(getWrappableSettingsText("Settings", languageTag)).toBe(
+        "Set\u00adtings",
+      )
+      expect(getWrappableSettingsText("Reduced Motion", languageTag)).toBe(
+        "Reduced Motion",
+      )
+    }
+    expect(getWrappableSettingsText("Settings", "fr-FR")).toBe("Settings")
+  })
   it("adds discretionary Spanish syllable breaks without changing copy or English", () => {
     for (const heading of [
       "Configuración",
