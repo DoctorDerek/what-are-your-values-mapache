@@ -6,8 +6,40 @@ import {
   INTRODUCTION_INFORMATION_PANEL,
 } from "./InformationPanels"
 import { introductionCopy } from "./IntroductionCopy"
+import { getLocaleCatalog } from "./LocalizationCatalog"
 
 describe("Information Panel Catalog", () => {
+  it.each(["en", "es-MX"] as const)(
+    "credits Microsoft’s bundled medal artwork and MIT license in %s",
+    (locale) => {
+      const blocks =
+        getLocaleCatalog(locale).interfaceCopy.information["credits-privacy"]
+          .blocks
+      expect(
+        blocks.some(
+          (block) =>
+            block.kind === "section" &&
+            block.paragraphs.some(
+              (text) =>
+                text.includes("Microsoft Fluent Emoji") &&
+                text.includes("MIT") &&
+                text.includes("Microsoft Corporation"),
+            ),
+        ),
+      ).toBe(true)
+      const resources = blocks.filter((block) => block.kind === "resource")
+      expect(resources).toContainEqual(
+        expect.objectContaining({
+          url: "https://github.com/microsoft/fluentui-emoji/tree/1ffb34c752ecf5d402f04cfb4b392c77f57c54bc/assets",
+        }),
+      )
+      expect(resources).toContainEqual(
+        expect.objectContaining({
+          url: "https://github.com/microsoft/fluentui-emoji/blob/1ffb34c752ecf5d402f04cfb4b392c77f57c54bc/LICENSE",
+        }),
+      )
+    },
+  )
   it("owns every shipped panel in the approved immutable order", () => {
     const expectedAccessibleCloseLabels = Object.freeze({
       introduction: "Close Introduction",
