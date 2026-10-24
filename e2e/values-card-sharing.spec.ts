@@ -54,13 +54,11 @@ for (const locale of ["en", "es-MX"] as const) {
       [6, "silver"],
       [11, "bronze"],
     ] as const) {
-      const row = page
-        .getByRole("listitem")
-        .filter({
-          has: page.getByText(copy.rank.medal(rank, copy.rank[color]), {
-            exact: true,
-          }),
-        })
+      const row = page.getByRole("listitem").filter({
+        has: page.getByText(copy.rank.medal(rank, copy.rank[color]), {
+          exact: true,
+        }),
+      })
       await row.scrollIntoViewIfNeeded()
       const medal = row.locator('img[aria-hidden="true"]')
       await expect(medal).toBeInViewport()
