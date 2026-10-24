@@ -34,6 +34,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated"
 import MapacheScreen from "@/components/MapacheScreen"
+import NativeRankMedal from "@/components/NativeRankMedal"
 import NativeResultsValueCell from "@/components/NativeResultsValueCell"
 import NativeSeethingSwarmHubAnimal from "@/components/NativeSeethingSwarmHubAnimal"
 import { Button } from "@/components/ui/button"
@@ -80,6 +81,12 @@ function NativeResultsValueRow({
         getValueDisplayName(value.definition, localizedCopy.values),
         integer(finalLevel),
         integer(value.exitProgress.totalXp),
+        frameValue.finalMedal
+          ? localizedCopy.interfaceCopy.rank.medal(
+              value.exitRank,
+              localizedCopy.interfaceCopy.rank[frameValue.finalMedal],
+            )
+          : undefined,
       )}
       onFocus={onFocus}
       className={cx(
@@ -88,13 +95,18 @@ function NativeResultsValueRow({
           "border-l-mapache-vivid-secondary-gold border-l-8",
       )}
     >
-      <View className="relative shrink-0">
-        <Text className="invisible font-mono text-lg font-black text-black">
-          {frameValue.rankLabelPlaceholder}
-        </Text>
-        <Text className="absolute inset-0 text-center font-mono text-lg font-black text-black">
-          #{rank}
-        </Text>
+      <View className="shrink-0 items-center gap-0.5">
+        <View className="relative">
+          <Text className="invisible font-mono text-lg font-black text-black">
+            {frameValue.rankLabelPlaceholder}
+          </Text>
+          <Text className="absolute inset-0 text-center font-mono text-lg font-black text-black">
+            #{rank}
+          </Text>
+        </View>
+        <View className="size-6">
+          {frameValue.medal && <NativeRankMedal color={frameValue.medal} />}
+        </View>
       </View>
       {valuePresentation.kind === "animal" && geometry ? (
         <View
