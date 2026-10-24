@@ -178,7 +178,9 @@ describe("All Values Component Integration", () => {
     const rankedValues = createRankedValues(createActiveDeck([]))
 
     renderAllValues(rankedValues)
-    expect(screen.queryByText(/🥇|🥈|🥉/)).not.toBeInTheDocument()
+    expect(
+      screen.queryAllByRole("presentation", { hidden: true }),
+    ).toHaveLength(0)
 
     expect(screen.getByRole("main")).toHaveAttribute(
       "data-slot",
@@ -549,8 +551,14 @@ describe("All Values Component Integration", () => {
     )
 
     expect(screen.getAllByText("Top Five")).toHaveLength(1)
-    for (const medal of ["🥇", "🥈", "🥉"]) {
-      expect(screen.getAllByText(medal)).toHaveLength(5)
+    for (let rank = 1; rank <= 15; rank++) {
+      const color = rank <= 5 ? "gold" : rank <= 10 ? "silver" : "bronze"
+      const row = screen.getByText(`Rank ${rank}, ${color} medal`).closest("li")
+      expect(row?.querySelector("img")).toHaveAttribute(
+        "src",
+        expect.stringContaining(`${color}.png`),
+      )
+      expect(row?.querySelector("img")).toHaveAttribute("aria-hidden", "true")
     }
     expect(screen.getByText("Rank 5, gold medal")).toBeInTheDocument()
     expect(screen.getByText("Rank 6, silver medal")).toBeInTheDocument()
@@ -565,8 +573,9 @@ describe("All Values Component Integration", () => {
       },
     )
     expect(screen.getByText("#6")).toBeVisible()
-    expect(screen.getByText("🥈")).toBeVisible()
-    expect(screen.queryByText("🥇")).not.toBeInTheDocument()
+    const medal = screen.getByRole("listitem").querySelector("img")
+    expect(medal).toBeVisible()
+    expect(medal).toHaveAttribute("src", expect.stringContaining("silver.png"))
     fireEvent.click(screen.getByRole("button", { name: "Back" }))
     expect(onClose).toHaveBeenCalledTimes(1)
   })

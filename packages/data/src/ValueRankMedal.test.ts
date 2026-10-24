@@ -3,17 +3,17 @@ import { getValueRankPresentation } from "./ValueRankMedal"
 
 describe("current rank medal presentation", () => {
   it.each([
-    [1, "🥇", "gold"],
-    [5, "🥇", "gold"],
-    [6, "🥈", "silver"],
-    [10, "🥈", "silver"],
-    [11, "🥉", "bronze"],
-    [15, "🥉", "bronze"],
+    [1, "gold"],
+    [5, "gold"],
+    [6, "silver"],
+    [10, "silver"],
+    [11, "bronze"],
+    [15, "bronze"],
   ] as const)(
     "presents rank %i with its medal color, not podium place",
-    (rank, emoji, color) => {
+    (rank, color) => {
       expect(getValueRankPresentation(rank)).toEqual({
-        medal: { emoji, color },
+        medal: { color },
         accessibleLabel: `Rank ${rank}, ${color} medal`,
       })
     },

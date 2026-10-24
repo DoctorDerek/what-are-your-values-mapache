@@ -148,6 +148,9 @@ vi.mock("react-native", () => ({
 vi.mock("@/generated/heroes99/Heroes99Assets", () => ({
   HEROES99_ASSETS: { layers: {} },
 }))
+vi.mock("@/lib/FluentMedalArtwork", () => ({
+  FLUENT_MEDAL_ARTWORK: { gold: 201, silver: 202, bronze: 203 },
+}))
 vi.mock("./ComposeNativeHeroes99", () => ({
   composeNativeHeroes99: native.compose,
 }))
@@ -156,7 +159,7 @@ vi.mock("@shopify/react-native-skia", () => ({
   AlphaType: { Unpremul: 0 },
   ColorType: { RGBA_8888: 0 },
   ImageFormat: { PNG: 0 },
-  FilterMode: { Nearest: 0 },
+  FilterMode: { Nearest: 0, Linear: 1 },
   MipmapMode: { None: 0 },
   Skia: {
     Surface: { MakeOffscreen: native.makeOffscreen },
@@ -186,6 +189,7 @@ const model: ValuesCardModel<number> = {
       level: 14,
       levelLabel: "Level 14",
       rankLabel: "#1",
+      medal: "gold",
       animal: {
         kind: "character",
         animalId: "bat",
@@ -257,6 +261,21 @@ describe("native values-card files", () => {
   it("passes exact names to native font fallback and copies prepared PNG bytes without overwriting an existing file", async () => {
     const card = await prepare()
     expect(native.fromURI).toHaveBeenCalledWith("asset:1")
+    expect(native.fromURI).toHaveBeenCalledWith("asset:201")
+    expect(native.canvas.drawImageRectOptions).toHaveBeenCalledWith(
+      expect.anything(),
+      { x: 0, y: 0, width: 256, height: 256 },
+      expect.objectContaining({ width: 72, height: 72 }),
+      1,
+      0,
+    )
+    expect(native.canvas.drawImageRectOptions).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ width: 20, height: 20 }),
+      expect.anything(),
+      0,
+      0,
+    )
     expect(native.paragraphs.map(({ value }) => value)).toContain(
       "Creativity 🦝 创造力",
     )
