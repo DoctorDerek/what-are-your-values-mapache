@@ -19,7 +19,7 @@ interface ResponsiveStrikeEvidence {
   inViewport: boolean
   overlapsVisibleText: boolean
   imageIsLoaded: boolean
-  attackerIsUnobscured: boolean
+  attackerIsAboveBattlefield: boolean
 }
 
 declare global {
@@ -106,6 +106,9 @@ for (const viewport of [
     await page.setViewportSize(viewport)
     await page.emulateMedia({ reducedMotion: "no-preference" })
     await page.addInitScript(() => {
+      Object.defineProperty(crypto, "randomUUID", {
+        value: () => "bfc518dd-4ee2-42c6-906a-e9baf8edfc40",
+      })
       window.responsiveStrikes = []
       document.addEventListener(
         "animationstart",
@@ -139,14 +142,20 @@ for (const viewport of [
           const current = traveler.getBoundingClientRect()
           const target = defender.getBoundingClientRect()
           const previousPointerEvents = traveler.style.pointerEvents
-          let attackerIsUnobscured: boolean
+          let attackerIsAboveBattlefield: boolean
           try {
             traveler.style.pointerEvents = "auto"
-            attackerIsUnobscured = traveler.contains(
-              document.elementFromPoint(
+            const battlefieldHitTarget = document
+              .elementsFromPoint(
                 current.x + current.width / 2,
                 current.y + current.height / 2,
-              ),
+              )
+              .find(
+                (element) =>
+                  !element.closest('aside[aria-label="Achievement unlocked"]'),
+              )
+            attackerIsAboveBattlefield = traveler.contains(
+              battlefieldHitTarget ?? null,
             )
           } finally {
             traveler.style.pointerEvents = previousPointerEvents
@@ -171,7 +180,7 @@ for (const viewport of [
                 bounds.bottom <= innerHeight,
             ),
             imageIsLoaded: image.complete && image.naturalWidth > 0,
-            attackerIsUnobscured,
+            attackerIsAboveBattlefield,
             overlapsVisibleText: [...stage.querySelectorAll("h2, p")].some(
               (text) => {
                 const { left, right, top, bottom } =
@@ -262,7 +271,9 @@ for (const viewport of [
       for (const strike of strikes) {
         expect(strike.side).toBe(side)
         expect(strike.imageIsLoaded).toBe(true)
-        expect(strike.attackerIsUnobscured, JSON.stringify(strike)).toBe(true)
+        expect(strike.attackerIsAboveBattlefield, JSON.stringify(strike)).toBe(
+          true,
+        )
         expect(strike.inViewport, JSON.stringify(strike)).toBe(true)
         expect(strike.overlapsVisibleText).toBe(false)
         expect(strike.contactDistance).toBeLessThan(strike.originDistance)
