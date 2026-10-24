@@ -53,6 +53,9 @@ export default function PlayerDataImportPreview({
           {title ?? copy.importPreviewTitle}
         </h2>
         <div className="p-3 xl:p-5">
+          <p className="bg-mapache-vivid-secondary-gold mb-4 border-2 border-black p-2 text-sm font-bold">
+            {warning ?? copy.importPreviewWarning}
+          </p>
           <dl className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-3">
             {facts.summary.map(({ key, label, value }) => (
               <div
@@ -82,9 +85,6 @@ export default function PlayerDataImportPreview({
               ))}
             </dl>
           </details>
-          <p className="bg-mapache-vivid-secondary-gold mt-4 border-2 border-black p-2 text-sm font-bold">
-            {warning ?? copy.importPreviewWarning}
-          </p>
         </div>
       </div>
       <footer className="shrink-0 border-t-4 border-black p-[12px] pb-[20px] xl:p-5">

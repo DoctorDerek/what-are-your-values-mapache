@@ -33,18 +33,22 @@ export default function NativePlayerDataImportPreview({
   return (
     <View
       accessibilityState={{ busy: isBusy }}
-      className="min-h-0 flex-1 border-4 border-black bg-white"
+      className="min-h-readable-import flex-1 border-4 border-black bg-white"
     >
       <ScrollView
         className="min-h-0 flex-1"
         contentContainerClassName="gap-3 p-3"
         keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled
       >
         <Text
           accessibilityRole="header"
           className="border-b-4 border-black pb-2 text-2xl font-black text-black uppercase"
         >
           {title ?? copy.importPreviewTitle}
+        </Text>
+        <Text className="bg-mapache-vivid-secondary-gold border-2 border-black p-2 text-sm font-bold text-black">
+          {warning ?? copy.importPreviewWarning}
         </Text>
         {facts.summary.map(({ key, label, value }) => (
           <View key={key} className="border-b-2 border-black/20 py-2">
@@ -67,9 +71,6 @@ export default function NativePlayerDataImportPreview({
               <Text className="text-black">{value}</Text>
             </View>
           ))}
-        <Text className="bg-mapache-vivid-secondary-gold border-2 border-black p-2 text-sm font-bold text-black">
-          {warning ?? copy.importPreviewWarning}
-        </Text>
       </ScrollView>
       <View className="shrink-0 border-t-4 border-black p-3 pb-5">
         <View className="flex-row flex-wrap gap-3">

@@ -90,7 +90,11 @@ export default function NativeDataManagement({
       </View>
 
       {preview && !resetReview ? (
-        <View className="min-h-0 flex-1 gap-2 p-3">
+        <ScrollView
+          className="min-h-0 flex-1"
+          contentContainerClassName="grow gap-2 p-3"
+          keyboardShouldPersistTaps="handled"
+        >
           <NativeOperationMessages
             activity={activity}
             issue={issue}
@@ -102,7 +106,7 @@ export default function NativeDataManagement({
             onCancel={onCancelImport}
             onConfirm={onConfirmImport}
           />
-        </View>
+        </ScrollView>
       ) : (
         <ScrollView
           className="flex-1"
