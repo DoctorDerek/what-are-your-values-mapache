@@ -49,7 +49,7 @@ describe("NativeValueDetailsCard", () => {
     expect(
       within(details).getByLabelText("Rank 1, gold medal"),
     ).toBeOnTheScreen()
-    expect(within(details).getByText("#1 🥇")).toBeOnTheScreen()
+    expect(within(details).getByText("#1")).toBeOnTheScreen()
     expect(
       within(details).getByText("“to be accepted as I am”"),
     ).toBeOnTheScreen()
@@ -57,7 +57,7 @@ describe("NativeValueDetailsCard", () => {
     expect(within(details).queryByRole("button", { name: "Edit" })).toBeNull()
     expect(within(details).queryByRole("button", { name: "Delete" })).toBeNull()
     for (const [rank, label, text] of [
-      [11, "Rank 11, bronze medal", "#11 🥉"],
+      [11, "Rank 11, bronze medal", "#11"],
       [16, "Rank 16", "#16"],
     ] as const) {
       await rerender(

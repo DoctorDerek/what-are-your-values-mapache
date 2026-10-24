@@ -78,20 +78,34 @@ async function expectReadableText(locator: Locator) {
 }
 
 for (const copy of languages) {
-  for (const { width, scale } of [
+  for (const { width, scale, fontFamily } of [
     { width: 320, scale: 100 },
     { width: 320, scale: 200 },
     { width: 390, scale: 200 },
     { width: 1440, scale: 100 },
     { width: 1440, scale: 200 },
+    {
+      width: 320,
+      scale: 100,
+      fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
+    },
+    {
+      width: 320,
+      scale: 200,
+      fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
+    },
   ]) {
-    test(`${copy.locale} Home and Settings preserve readable controls at ${width}px/${scale}% text`, async ({
+    test(`${copy.locale} Home and Settings preserve readable controls at ${width}px/${scale}% text${fontFamily ? " with wider fallback fonts" : ""}`, async ({
       page,
     }) => {
       await page.setViewportSize({ width, height: width < 1280 ? 720 : 900 })
       await page.goto(copy.path)
       await page.getByRole("button", { name: copy.start, exact: true }).click()
       await page.addStyleTag({ content: `html { font-size: ${scale}%; }` })
+      if (fontFamily)
+        await page.addStyleTag({
+          content: `body { font-family: ${fontFamily}; }`,
+        })
       await page.evaluate(() => document.fonts.ready.then(() => undefined))
       const actions = page.getByRole("main").getByRole("navigation")
       const buttons = actions.getByRole("button")
@@ -137,7 +151,13 @@ for (const copy of languages) {
         }))
         expect(title.fontSize).toBeGreaterThanOrEqual((32 * scale) / 100)
         expect(title.height).toBeLessThanOrEqual(
-          title.lineHeight * (scale === 100 ? 1 : 2) + 1,
+          title.lineHeight *
+            (scale === 100
+              ? 1
+              : fontFamily && copy.locale === "es-MX"
+                ? 3
+                : 2) +
+            1,
         )
       }
       const language = page.getByRole("combobox", { name: copy.language })

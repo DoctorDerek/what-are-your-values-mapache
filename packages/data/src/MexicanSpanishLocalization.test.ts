@@ -158,6 +158,7 @@ describe("Mexican Spanish catalog", () => {
       "interfaceCopy.information.free-resources.blocks.8.title",
       "interfaceCopy.information.credits-privacy.blocks.6.title",
       "interfaceCopy.information.credits-privacy.blocks.8.title",
+      "interfaceCopy.information.credits-privacy.blocks.11.title",
     ])
   })
 })

@@ -284,7 +284,9 @@ describe("Hub Component Integration", () => {
     expect(screen.getByText(/Not ranked yet/)).toBeVisible()
     expect(container.querySelector("[data-animal-id]")).toBeNull()
     expect(screen.queryByText(/^Rank \d/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/🥇|🥈|🥉/)).not.toBeInTheDocument()
+    expect(
+      screen.queryAllByRole("presentation", { hidden: true }),
+    ).toHaveLength(0)
     const [winnerId] = projectScheduledPair(
       battleCycle.activeDeck,
       battleCycle.scheduler,
@@ -305,7 +307,9 @@ describe("Hub Component Integration", () => {
     )
     expect(screen.getByText("#1")).toBeVisible()
     rerender(<Hub {...hubProps} rankedValues={currentRanking} />)
-    expect(screen.queryByText(/🥇|🥈|🥉/)).not.toBeInTheDocument()
+    expect(
+      screen.queryAllByRole("presentation", { hidden: true }),
+    ).toHaveLength(0)
     const firstRow = screen.getAllByRole("listitem")[0]
     expect(within(firstRow).getByText("Acceptance")).toBeVisible()
   })

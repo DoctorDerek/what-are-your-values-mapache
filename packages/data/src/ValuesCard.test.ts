@@ -5,7 +5,11 @@ import { getLocaleCatalog } from "./LocalizationCatalog"
 import { resolveLocalizationCatalog } from "./ResolveLocalizationCatalog"
 import { createInitialValueProgress } from "./ValueProgress"
 import { rankValues } from "./ValueRanking"
-import { createValuesCardModel, readValuesCardPalette } from "./ValuesCard"
+import {
+  createValuesCardModel,
+  getValuesCardMedals,
+  readValuesCardPalette,
+} from "./ValuesCard"
 import {
   getValuesCardLoopFrameCount,
   paintValuesCard,
@@ -112,11 +116,72 @@ describe("values-card composition", () => {
     const card = model()
     expect(card.title).toBe("My Values")
     expect(card.hasComparisons).toBe(false)
+    expect(getValuesCardMedals(card)).toEqual([])
     expect(card.values).toHaveLength(5)
     expect(card.values[0].name).toBe("Acceptance")
     expect(card.appearance).not.toBe(DEFAULT_HEROES99_APPEARANCE)
     expect(Object.isFrozen(card.values)).toBe(true)
     expect(card).not.toHaveProperty("playerData")
+  })
+
+  it("shares current-rank medal identity with the export scene without replacing rank or level labels", () => {
+    const deck = createActiveDeck([])
+    const ranked = rankValues(deck, createInitialValueProgress(deck))
+    const card = createValuesCardModel(
+      ranked.map((value, index) =>
+        index === 0
+          ? {
+              ...value,
+              progress: {
+                ...value.progress,
+                totalXp: 4,
+                profileWins: 1,
+                profileComparisons: 1,
+                currentCycleWins: 1,
+              },
+            }
+          : value,
+      ),
+      DEFAULT_HEROES99_APPEARANCE,
+      { mode: "typography-only" },
+      getLocaleCatalog("es-MX"),
+    )
+    expect(card.values.map(({ medal }) => medal)).toEqual(Array(5).fill("gold"))
+    expect(getValuesCardMedals(card)).toEqual(["gold"])
+    const painter: ValuesCardPainter = {
+      rectangle: vi.fn(),
+      sprite: vi.fn(),
+      text: vi.fn(),
+      measure: (value, size) => value.length * size * 0.52,
+    }
+    paintValuesCard({
+      painter,
+      model: card,
+      palette: readValuesCardPalette([
+        "#009dae",
+        "#71dfe7",
+        "#c2fff9",
+        "#ffe652",
+        "#18233e",
+        "#384873",
+        "#1e1e1e",
+        "#ffffff",
+      ]),
+      frame: 0,
+      hero: null,
+    })
+    expect(painter.sprite).toHaveBeenCalledTimes(5)
+    expect(painter.sprite).toHaveBeenCalledWith(
+      "gold",
+      { x: 0, y: 0, width: 256, height: 256 },
+      expect.objectContaining({ width: 72, height: 72 }),
+      "smooth",
+    )
+    for (const value of card.values)
+      for (const text of [value.name, value.rankLabel, value.levelLabel])
+        expect(painter.text).toHaveBeenCalledWith(
+          expect.objectContaining({ value: text }),
+        )
   })
 
   it("uses complete idle loops including the hero rather than arbitrary frame truncation", () => {

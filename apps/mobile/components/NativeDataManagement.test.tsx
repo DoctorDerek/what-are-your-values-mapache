@@ -1,8 +1,11 @@
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import type { PlayerDataResetReview } from "@game/machines/src/PlayerDataReset"
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import { describe, expect, it, jest } from "@jest/globals"
 import { render, screen, userEvent } from "@testing-library/react-native"
 import NativeDataManagement from "@/components/NativeDataManagement"
+import NativePlayerDataImportPreview from "@/components/NativePlayerDataImportPreview"
 
 const preview = Object.freeze({
   exportedAt: "2026-08-06T12:34:56.000Z",
@@ -81,6 +84,35 @@ async function expectNavigationIsInert({
 }
 
 describe("NativeDataManagement", () => {
+  it("keeps Spanish import actions accessible while retaining the warning and expandable details", async () => {
+    const callbacks = createCallbacks()
+    const user = userEvent.setup()
+    const copy = getLocaleCatalog("es-MX").interfaceCopy.portability
+    await render(
+      <LocaleProvider locale="es-MX">
+        <NativePlayerDataImportPreview
+          preview={preview}
+          isBusy={false}
+          onCancel={callbacks.onCancelImport}
+          onConfirm={callbacks.onConfirmImport}
+        />
+      </LocaleProvider>,
+    )
+    expect(screen.getByText(copy.importPreviewWarning)).toBeOnTheScreen()
+    expect(screen.queryByText(copy.preview.sourceBuild)).not.toBeOnTheScreen()
+    await user.press(
+      screen.getByRole("button", { name: copy.technicalDetails }),
+    )
+    expect(screen.getByText(copy.preview.sourceBuild)).toBeOnTheScreen()
+    await user.press(
+      screen.getByRole("button", { name: copy.importReplaceAction }),
+    )
+    await user.press(
+      screen.getByRole("button", { name: copy.importCancelAction }),
+    )
+    expect(callbacks.onConfirmImport).toHaveBeenCalledTimes(1)
+    expect(callbacks.onCancelImport).toHaveBeenCalledTimes(1)
+  })
   it("routes Menu and Hub navigation when no player-data work is pending", async () => {
     const { callbacks } = await renderDataManagement()
     const user = userEvent.setup()

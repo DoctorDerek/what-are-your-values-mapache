@@ -23,6 +23,7 @@ const model: ValuesCardModel<never> = {
       level: 12,
       levelLabel: "Level 12",
       rankLabel: "#1",
+      medal: "gold",
       animal: null,
     },
   ],

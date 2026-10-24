@@ -2,6 +2,15 @@ import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
 import type { LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
 import type { WayvmImportPreview } from "./WayvmImportPreview"
 
+export function getWrappableImportAction(
+  label: string,
+  languageTag: string,
+): string {
+  return languageTag.startsWith("es")
+    ? label.replace(/\breemplazar\b/gu, "reem\u00adpla\u00adzar")
+    : label
+}
+
 export function presentWayvmImportPreview(
   preview: WayvmImportPreview,
   localization: LocalizationCatalog,

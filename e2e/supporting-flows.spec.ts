@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from "@playwright/test"
 import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
 import { test } from "./fixtures"
+import { getRenderedTextLines } from "./visible-text-bounds"
 
 test.use({ serviceWorkers: "block" })
 
@@ -190,7 +191,17 @@ for (const locale of ["en", "es-MX"] as const) {
         exact: true,
       })
       await replace.scrollIntoViewIfNeeded()
+      await page.mouse.move(0, 0)
       await expectReadableControl(replace)
+      const actionLines = await replace.evaluate(getRenderedTextLines)
+      expect(
+        actionLines.every((line) => line.length > 1),
+        actionLines.join(" / "),
+      ).toBe(true)
+      const reading = preview.locator("[data-controller-scroll]")
+      expect(
+        await reading.evaluate((element) => element.clientHeight),
+      ).toBeGreaterThan(80)
       await expectNoHorizontalOverflow(page)
       await page.screenshot({
         path: testInfo.outputPath("import-short-large-text.png"),

@@ -6,6 +6,25 @@ declare global {
   }
 }
 
+export function getRenderedTextLines(element: Element): string[] {
+  const rows = new Map<number, string>()
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
+  while (walker.nextNode()) {
+    const text = walker.currentNode
+    for (let index = 0; index < text.textContent!.length; index += 1) {
+      const character = text.textContent![index]
+      if (!/\p{L}/u.test(character)) continue
+      const range = document.createRange()
+      range.setStart(text, index)
+      range.setEnd(text, index + 1)
+      const bounds = range.getBoundingClientRect()
+      const row = Math.round(bounds.top)
+      rows.set(row, (rows.get(row) ?? "") + character)
+    }
+  }
+  return [...rows.values()]
+}
+
 export function installVisibleTextBounds(): void {
   window.getVisibleTextBounds = (text) => {
     let { left, right, top, bottom } = text.getBoundingClientRect()

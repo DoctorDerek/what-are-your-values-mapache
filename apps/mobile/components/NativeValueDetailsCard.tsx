@@ -9,6 +9,7 @@ import type { RankedValue } from "@game/data/src/ValueRanking"
 import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { cx } from "classix"
 import { View } from "react-native"
+import NativeRankMedal from "@/components/NativeRankMedal"
 import NativeValueLevelProgress from "@/components/NativeValueLevelProgress"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
@@ -54,13 +55,14 @@ export default function NativeValueDetailsCard({
     >
       <View className="flex-row flex-wrap items-center gap-2">
         {showRank ? (
-          <Text
+          <View
+            accessible
             accessibilityLabel={accessibleLabel}
-            className="bg-mapache-vivid-secondary-purple border-2 border-black px-2 py-1 text-xl font-black text-white"
+            className="bg-mapache-vivid-secondary-purple flex-row items-center gap-2 border-2 border-black px-2 py-1"
           >
-            #{rank}
-            {medal ? ` ${medal.emoji}` : ""}
-          </Text>
+            <Text className="text-xl font-black text-white">#{rank}</Text>
+            {medal && <NativeRankMedal color={medal.color} />}
+          </View>
         ) : null}
         <Text
           accessibilityRole="header"

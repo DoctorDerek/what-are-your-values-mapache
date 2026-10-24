@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect } from "@playwright/test"
 import { test } from "./fixtures"
+import { getRenderedTextLines } from "./visible-text-bounds"
 
 for (const copy of [
   {
@@ -39,21 +40,7 @@ for (const copy of [
       const heading = page.getByRole("heading", { name, exact: true })
       await heading.scrollIntoViewIfNeeded()
       await expect(heading).toBeInViewport({ ratio: 1 })
-      const lines = await heading.evaluate((element) => {
-        const text = element.firstChild!
-        const rows = new Map<number, string>()
-        for (let index = 0; index < text.textContent!.length; index += 1) {
-          const character = text.textContent![index]
-          if (!/\p{L}/u.test(character)) continue
-          const range = document.createRange()
-          range.setStart(text, index)
-          range.setEnd(text, index + 1)
-          const bounds = range.getBoundingClientRect()
-          const row = Math.round(bounds.top)
-          rows.set(row, (rows.get(row) ?? "") + character)
-        }
-        return [...rows.values()]
-      })
+      const lines = await heading.evaluate(getRenderedTextLines)
       expect(lines.every((line) => line.length > 1)).toBe(true)
       await page.screenshot({
         path: testInfo.outputPath(`${name}-readable.png`),

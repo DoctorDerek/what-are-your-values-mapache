@@ -5,7 +5,7 @@ import {
   type LocalizedValueCopy,
 } from "./Value"
 
-const VALUE_NAME_WORD_BREAKS: ReadonlyMap<string, string> = new Map([
+const ENGLISH_VALUE_NAME_WORD_BREAKS: ReadonlyMap<string, string> = new Map([
   ["Acceptance", "Accep\u00adtance"],
   ["Achievement", "Achieve\u00adment"],
   ["Adventure", "Adven\u00adture"],
@@ -39,16 +39,71 @@ const VALUE_NAME_WORD_BREAKS: ReadonlyMap<string, string> = new Map([
   ["Spirituality", "Spir\u00aditual\u00adity"],
 ])
 
+const SPANISH_VALUE_NAME_WORD_BREAKS: ReadonlyMap<string, string> = new Map([
+  ["Aceptación", "Acep\u00adta\u00adción"],
+  ["Atractivo", "Atrac\u00adti\u00advo"],
+  ["Autoridad", "Auto\u00adri\u00addad"],
+  ["Autonomía", "Auto\u00adno\u00admía"],
+  ["Pertenencia", "Per\u00adte\u00adnen\u00adcia"],
+  ["Comodidad", "Como\u00addi\u00addad"],
+  ["Compromiso", "Com\u00adpro\u00admi\u00adso"],
+  ["Compasión", "Com\u00adpa\u00adsión"],
+  ["Complejidad", "Com\u00adple\u00adji\u00addad"],
+  ["Contribución", "Con\u00adtri\u00adbu\u00adción"],
+  ["Cooperación", "Coo\u00adpe\u00adra\u00adción"],
+  ["Creatividad", "Crea\u00adti\u00advi\u00addad"],
+  ["Curiosidad", "Curio\u00adsi\u00addad"],
+  ["Confiabilidad", "Con\u00adfia\u00adbi\u00adli\u00addad"],
+  ["Diligencia", "Dili\u00adgen\u00adcia"],
+  ["Fidelidad", "Fide\u00adli\u00addad"],
+  ["Condición", "Con\u00addi\u00adción"],
+  ["Flexibilidad", "Fle\u00adxi\u00adbi\u00adli\u00addad"],
+  ["Diversión", "Diver\u00adsión"],
+  ["Generosidad", "Gene\u00adro\u00adsi\u00addad"],
+  ["Autenticidad", "Auten\u00adti\u00adci\u00addad"],
+  ["Crecimiento", "Cre\u00adci\u00admien\u00adto"],
+  ["Honestidad", "Hones\u00adti\u00addad"],
+  ["Esperanza", "Espe\u00adran\u00adza"],
+  ["Imaginación", "Ima\u00adgi\u00adna\u00adción"],
+  ["Independencia", "Inde\u00adpen\u00adden\u00adcia"],
+  ["Laboriosidad", "Labo\u00adrio\u00adsi\u00addad"],
+  ["Integridad", "Inte\u00adgri\u00addad"],
+  ["Inteligencia", "Inte\u00adli\u00adgen\u00adcia"],
+  ["Intimidad", "Inti\u00admi\u00addad"],
+  ["Conocimiento", "Cono\u00adci\u00admien\u00adto"],
+  ["Moderación", "Mode\u00adra\u00adción"],
+  ["Monogamia", "Mono\u00adga\u00admia"],
+  ["Inconformismo", "Incon\u00adfor\u00admis\u00admo"],
+  ["Patriotismo", "Pa\u00adtrio\u00adtis\u00admo"],
+  ["Popularidad", "Popu\u00adla\u00adri\u00addad"],
+  ["Racionalidad", "Racio\u00adna\u00adli\u00addad"],
+  ["Responsabilidad", "Res\u00adpon\u00adsa\u00adbi\u00adli\u00addad"],
+  ["Seguridad", "Segu\u00adri\u00addad"],
+  ["Autoaceptación", "Autoa\u00adcep\u00adta\u00adción"],
+  ["Autocontrol", "Auto\u00adcon\u00adtrol"],
+  ["Autoestima", "Autoes\u00adti\u00adma"],
+  ["Autoconocimiento", "Auto\u00adcono\u00adci\u00admien\u00adto"],
+  ["Sexualidad", "Sexua\u00adli\u00addad"],
+  ["Sencillez", "Sen\u00adci\u00adllez"],
+  ["Espiritualidad", "Espi\u00adri\u00adtua\u00adli\u00addad"],
+  ["Estabilidad", "Esta\u00adbi\u00adli\u00addad"],
+  ["Tolerancia", "Tole\u00adran\u00adcia"],
+  ["Tradición", "Tra\u00addi\u00adción"],
+])
+
+const VALUE_NAME_WORD_BREAKS = new Map([
+  ["en", ENGLISH_VALUE_NAME_WORD_BREAKS],
+  ["es", SPANISH_VALUE_NAME_WORD_BREAKS],
+])
+
 export function getWrappableValueDisplayName(
   value: ActiveValueDefinition,
   translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>,
   languageTag = "en-US",
 ): string {
   const name = getValueDisplayName(value, translations)
-  return value.kind === "canonical" && languageTag.split("-")[0] === "en"
-    ? name.replace(
-        /[A-Za-z]+/g,
-        (word) => VALUE_NAME_WORD_BREAKS.get(word) ?? word,
-      )
+  const wordBreaks = VALUE_NAME_WORD_BREAKS.get(languageTag.split("-")[0])
+  return value.kind === "canonical" && wordBreaks
+    ? name.replace(/\p{L}+/gu, (word) => wordBreaks.get(word) ?? word)
     : name
 }

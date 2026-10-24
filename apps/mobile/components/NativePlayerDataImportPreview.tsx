@@ -1,6 +1,9 @@
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
-import { presentWayvmImportPreview } from "@game/machines/src/WayvmImportPreviewPresentation"
+import {
+  getWrappableImportAction,
+  presentWayvmImportPreview,
+} from "@game/machines/src/WayvmImportPreviewPresentation"
 import { useState } from "react"
 import { ScrollView, View } from "react-native"
 import { Button } from "@/components/ui/button"
@@ -30,18 +33,22 @@ export default function NativePlayerDataImportPreview({
   return (
     <View
       accessibilityState={{ busy: isBusy }}
-      className="min-h-0 flex-1 border-4 border-black bg-white"
+      className="min-h-readable-import flex-1 border-4 border-black bg-white"
     >
       <ScrollView
         className="min-h-0 flex-1"
         contentContainerClassName="gap-3 p-3"
         keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled
       >
         <Text
           accessibilityRole="header"
           className="border-b-4 border-black pb-2 text-2xl font-black text-black uppercase"
         >
           {title ?? copy.importPreviewTitle}
+        </Text>
+        <Text className="bg-mapache-vivid-secondary-gold border-2 border-black p-2 text-sm font-bold text-black">
+          {warning ?? copy.importPreviewWarning}
         </Text>
         {facts.summary.map(({ key, label, value }) => (
           <View key={key} className="border-b-2 border-black/20 py-2">
@@ -65,13 +72,7 @@ export default function NativePlayerDataImportPreview({
             </View>
           ))}
       </ScrollView>
-      <ScrollView
-        className="max-h-1/2 shrink-0 grow-0 border-t-4 border-black"
-        contentContainerClassName="gap-3 p-3 pb-5"
-      >
-        <Text className="bg-mapache-vivid-secondary-gold border-2 border-black p-2 text-sm font-bold text-black">
-          {warning ?? copy.importPreviewWarning}
-        </Text>
+      <View className="shrink-0 border-t-4 border-black p-3 pb-5">
         <View className="flex-row flex-wrap gap-3">
           <Button
             size="compact"
@@ -87,11 +88,17 @@ export default function NativePlayerDataImportPreview({
             className="basis-readable-action min-w-0 shrink grow"
             disabled={isBusy}
             onPress={onConfirm}
+            accessibilityLabel={confirmLabel ?? copy.importReplaceAction}
           >
-            <Text>{confirmLabel ?? copy.importReplaceAction}</Text>
+            <Text>
+              {getWrappableImportAction(
+                confirmLabel ?? copy.importReplaceAction,
+                localization.metadata.languageTag,
+              )}
+            </Text>
           </Button>
         </View>
-      </ScrollView>
+      </View>
     </View>
   )
 }

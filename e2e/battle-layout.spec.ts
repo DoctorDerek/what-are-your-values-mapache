@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test"
 import { test } from "./fixtures"
+import { getRenderedTextLines } from "./visible-text-bounds"
 
 test.use({ serviceWorkers: "block", reducedMotion: "reduce", hasTouch: true })
 
@@ -48,6 +49,13 @@ for (const viewport of battleViewports) {
     await expect(
       choiceButtons.last().getByRole("heading"),
     ).toHaveAccessibleName("Independencia")
+    for (const heading of await choiceButtons.getByRole("heading").all()) {
+      const lines = await heading.evaluate(getRenderedTextLines)
+      expect(
+        lines.every((line) => line.length > 1),
+        lines.join(" / "),
+      ).toBe(true)
+    }
     const animals = battle.locator("[data-combatant-side]")
     await expect(animals).toHaveCount(2)
     for (const animal of await animals.all()) {

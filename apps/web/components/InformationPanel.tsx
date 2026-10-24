@@ -127,7 +127,7 @@ function InformationPanelFrame({
             ? "grid grid-cols-[minmax(0,36rem)] justify-center gap-3 border-t-6 px-6 pt-4 pb-5"
             : isReference
               ? "min-w-0 border-t-4 bg-white px-[16px] pt-[12px] pb-[20px]"
-              : "max-h-[35%] min-w-0 shrink-0 overflow-auto overscroll-contain border-t-4 bg-white px-[16px] pt-[12px] pr-[20px] pb-[20px]",
+              : "min-w-0 shrink-0 border-t-4 bg-white px-[16px] pt-[12px] pr-[20px] pb-[20px]",
         )}
       >
         {beforePrimaryAction}
@@ -140,7 +140,7 @@ function InformationPanelFrame({
           aria-busy={isPrimaryActionPending}
           className={cx(
             "w-full min-w-0",
-            !isIntroduction && !isReference && "@max-[12em]:px-[12px]",
+            !isIntroduction && "px-[12px] py-[8px]",
           )}
           typographyClassName={
             isIntroduction

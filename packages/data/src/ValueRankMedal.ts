@@ -1,15 +1,25 @@
+export type ValueRankMedalColor = "gold" | "silver" | "bronze"
+
+export const FLUENT_MEDAL_SOURCE_SIZE = Object.freeze({
+  width: 256,
+  height: 256,
+})
+
+export type ValueRankMedalArtwork<Asset> = Readonly<
+  Record<ValueRankMedalColor, Asset>
+>
+
 type ValueRankMedal = Readonly<{
-  emoji: string
-  color: "gold" | "silver" | "bronze"
+  color: ValueRankMedalColor
 }>
 
 const VALUE_RANK_MEDAL_TIERS: readonly Readonly<{
   maximumRank: number
   medal: ValueRankMedal
 }>[] = Object.freeze([
-  { maximumRank: 5, medal: { emoji: "🥇", color: "gold" } },
-  { maximumRank: 10, medal: { emoji: "🥈", color: "silver" } },
-  { maximumRank: 15, medal: { emoji: "🥉", color: "bronze" } },
+  { maximumRank: 5, medal: { color: "gold" } },
+  { maximumRank: 10, medal: { color: "silver" } },
+  { maximumRank: 15, medal: { color: "bronze" } },
 ])
 
 export const VALUE_RANK_COPY = Object.freeze({

@@ -194,10 +194,15 @@ test("a player uses the informational example to author a custom value and retai
   )
   await page.getByLabel("Value name", { exact: true }).fill(example.name)
   await page.getByLabel("Definition", { exact: true }).fill(example.definition)
+  const returnedToHome = page.waitForEvent(
+    "framenavigated",
+    (frame) => frame === page.mainFrame(),
+  )
   await page.getByRole("button", { name: "Save", exact: true }).click()
   await expect(
     page.getByText("Your Custom Values are saved and ready to battle."),
   ).toBeVisible()
+  await returnedToHome
   await page.reload()
   await page
     .getByRole("button", { name: "Browse All Values", exact: true })

@@ -12,6 +12,7 @@ import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { getLevelFromXP } from "@game/utils/src/LevelMath"
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
+import RankMedal from "@/components/RankMedal"
 import ValueAnimalPresentation from "@/components/ValueAnimalPresentation"
 import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
 
@@ -54,7 +55,7 @@ export default function PersonalValueRow({
             >
               #{value.rank}
             </span>
-            {medal && <span aria-hidden="true">{medal.emoji}</span>}
+            {medal && <RankMedal color={medal.color} />}
           </>
         )}
       </span>

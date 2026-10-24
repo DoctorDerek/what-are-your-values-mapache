@@ -13,6 +13,10 @@ import type {
 } from "./SeethingSwarmRuntimeClipCatalog"
 import { getValueDisplayName } from "./Value"
 import type { RankedValue } from "./ValueRanking"
+import {
+  getValueRankPresentation,
+  type ValueRankMedalColor,
+} from "./ValueRankMedal"
 import { VALUES_CARD_COPY } from "./ValuesCardCopy"
 
 export const VALUES_CARD_SIZE = Object.freeze({ width: 1600, height: 900 })
@@ -94,6 +98,7 @@ export type ValuesCardModel<Asset> = Readonly<{
     level: number
     levelLabel: string
     rankLabel: string
+    medal: ValueRankMedalColor | null
     animal: SeethingSwarmRuntimeCharacterClip<Asset> | null
   }>[]
 }>
@@ -115,7 +120,7 @@ export function createValuesCardModel<Asset>(
     hasComparisons,
     appearance: Object.freeze({ ...appearance }),
     values: Object.freeze(
-      topFive.map(({ definition, progress }, index) => {
+      topFive.map(({ definition, progress, rank }, index) => {
         const presentation = resolveValueAnimalPresentation(definition, catalog)
         const level = getLevelFromXP(progress.totalXp)
         return Object.freeze({
@@ -123,11 +128,20 @@ export function createValuesCardModel<Asset>(
           level,
           levelLabel: localization.hub.level(level),
           rankLabel: localization.card.rank(formatters.integer(index + 1)),
+          medal: hasComparisons
+            ? (getValueRankPresentation(rank).medal?.color ?? null)
+            : null,
           animal: presentation.kind === "animal" ? presentation.clip : null,
         })
       }),
     ),
   })
+}
+
+export function getValuesCardMedals<Asset>(model: ValuesCardModel<Asset>) {
+  return [
+    ...new Set(model.values.flatMap(({ medal }) => (medal ? [medal] : []))),
+  ]
 }
 
 export type ValuesCardDelivery =
