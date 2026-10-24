@@ -95,8 +95,13 @@ export const SCREEN_COPY = Object.freeze({
   unlockedOn: (date: string) => `Unlocked ${date}`,
   achievementsUnlocked: (current: string, total: string) =>
     `${current} of ${total} unlocked`,
-  valueResult: (rank: string, name: string, level: string, xp: string) =>
-    `Rank ${rank}, ${name}, Level ${level}, ${xp} total XP.`,
+  valueResult: (
+    rank: string,
+    name: string,
+    level: string,
+    xp: string,
+    rankLabel = `Rank ${rank}`,
+  ) => `${rankLabel}, ${name}, Level ${level}, ${xp} total XP.`,
   resultSummary: (summary: string, xp: string, level: string, change: string) =>
     `${summary}. Profile XP ${xp}, ${change}. Profile Level ${level}.`,
   profileXpTowardLevel: (level: string) => `Profile XP toward Level ${level}`,
