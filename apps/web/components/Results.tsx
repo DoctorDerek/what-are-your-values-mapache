@@ -28,6 +28,7 @@ import {
   type ReactNode,
 } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
+import RankMedal from "@/components/RankMedal"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import ValueAnimalPresentation from "@/components/ValueAnimalPresentation"
@@ -111,15 +112,26 @@ function ResultsValueRow({
           getValueDisplayName(value.definition, localizedCopy.values),
           integer(finalLevel),
           integer(value.exitProgress.totalXp),
+          frameValue.finalMedal
+            ? localizedCopy.interfaceCopy.rank.medal(
+                value.exitRank,
+                localizedCopy.interfaceCopy.rank[frameValue.finalMedal],
+              )
+            : undefined,
         )}
       </span>
       <div
         aria-hidden="true"
         className="flex min-w-0 flex-wrap items-center gap-2"
       >
-        <span className="text-mapache-vivid-dark relative shrink-0 text-center font-mono text-lg font-black tabular-nums">
-          <span className="invisible">{frameValue.rankLabelPlaceholder}</span>
-          <span className="absolute inset-0">#{rank}</span>
+        <span className="flex shrink-0 flex-col items-center gap-0.5">
+          <span className="text-mapache-vivid-dark relative text-center font-mono text-lg font-black tabular-nums">
+            <span className="invisible">{frameValue.rankLabelPlaceholder}</span>
+            <span className="absolute inset-0">#{rank}</span>
+          </span>
+          <span className="size-6" data-results-medal={frameValue.medal ?? "none"}>
+            {frameValue.medal && <RankMedal color={frameValue.medal} />}
+          </span>
         </span>
         <ValueAnimalPresentation
           rank={rank}
