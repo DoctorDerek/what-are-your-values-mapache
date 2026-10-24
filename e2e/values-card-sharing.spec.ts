@@ -1,7 +1,129 @@
 import { readFile } from "node:fs/promises"
 import { expect } from "@playwright/test"
+import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
 import sharp from "sharp"
 import { test } from "./fixtures"
+
+for (const locale of ["en", "es-MX"] as const) {
+  test(`bundled Fluent medals preserve localized ranks and appear in saved cards in ${locale}`, async ({
+    page,
+  }, testInfo) => {
+    const catalog = getLocaleCatalog(locale)
+    const copy = catalog.interfaceCopy
+    await page.setViewportSize({ width: 320, height: 720 })
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await page.goto(locale === "en" ? "/" : "/que-valoras-en-la-vida")
+    await page
+      .getByRole("button", {
+        name: catalog.introduction.startAction,
+        exact: true,
+      })
+      .click()
+    await expect(page.locator('img[src*="/gold."]')).toHaveCount(0)
+    await page
+      .getByRole("button", { name: catalog.hub.battle, exact: true })
+      .click()
+    await page
+      .getByRole("button", { name: locale === "en" ? /^Choose / : /^Elegir / })
+      .first()
+      .click()
+    await expect(
+      page.getByRole("button", { name: copy.controlActions.undo, exact: true }),
+    ).toBeEnabled()
+    await page
+      .getByRole("button", { name: copy.controlActions.stop, exact: true })
+      .click()
+    await page
+      .getByRole("button", { name: copy.results.seeValuesAction, exact: true })
+      .click()
+    const homeRank = page.getByLabel(copy.rank.medal(1, copy.rank.gold), {
+      exact: true,
+    })
+    await homeRank.scrollIntoViewIfNeeded()
+    await expect(homeRank).toHaveText("#1")
+    await expect(homeRank.locator("..").locator("img")).toHaveAttribute(
+      "src",
+      /\/gold\.[^/]+\.png$/,
+    )
+    await page.screenshot({ path: testInfo.outputPath("medals-home-320.png") })
+    await page
+      .getByRole("button", { name: catalog.hub.browse, exact: true })
+      .click()
+    for (const [rank, color] of [
+      [1, "gold"],
+      [6, "silver"],
+      [11, "bronze"],
+    ] as const) {
+      const row = page
+        .getByRole("listitem")
+        .filter({
+          has: page.getByText(copy.rank.medal(rank, copy.rank[color]), {
+            exact: true,
+          }),
+        })
+      await row.scrollIntoViewIfNeeded()
+      const medal = row.locator('img[aria-hidden="true"]')
+      await expect(medal).toBeInViewport()
+      await expect(medal).toHaveAttribute("alt", "")
+      await expect(medal).toHaveAttribute("aria-hidden", "true")
+      await expect
+        .poll(() =>
+          medal.evaluate((image: HTMLImageElement) => ({
+            loaded: image.complete && image.naturalWidth === 256,
+            local: new URL(image.src).origin === location.origin,
+            width: image.getBoundingClientRect().width,
+            height: image.getBoundingClientRect().height,
+          })),
+        )
+        .toEqual({ loaded: true, local: true, width: 24, height: 24 })
+      await expect(medal).toHaveAttribute(
+        "src",
+        new RegExp(`/${color}\\.[^/]+\\.png$`),
+      )
+      await row.screenshot({
+        path: testInfo.outputPath(`${color}-rank-${rank}-320.png`),
+      })
+    }
+    await expect(
+      page
+        .getByRole("listitem")
+        .filter({ has: page.getByText(copy.rank.rank(16), { exact: true }) })
+        .locator('img[aria-hidden="true"]'),
+    ).toHaveCount(0)
+    await page
+      .getByRole("button", { name: copy.controlActions.back, exact: true })
+      .click()
+    await page
+      .getByRole("button", { name: catalog.card.title, exact: true })
+      .click()
+    const preview = page.getByRole("dialog", {
+      name: catalog.card.title,
+      exact: true,
+    })
+    await preview.getByRole("button", { name: /PNG/ }).click()
+    const save = preview.getByRole("button", {
+      name: catalog.card.save("png"),
+      exact: true,
+    })
+    await expect(save).toBeEnabled({ timeout: 30_000 })
+    const download = page.waitForEvent("download")
+    await save.click()
+    const path = testInfo.outputPath(`medals-${locale}.png`)
+    await (await download).saveAs(path)
+    expect(await sharp(path).metadata()).toMatchObject({
+      format: "png",
+      width: 1600,
+      height: 900,
+    })
+    const medalPixels = await sharp(path)
+      .extract({ left: 540, top: 199, width: 72, height: 72 })
+      .stats()
+    expect(medalPixels.entropy).toBeGreaterThan(3)
+    await preview.screenshot({
+      path: testInfo.outputPath("medals-preview-320.png"),
+    })
+  })
+}
 
 for (const copy of [
   {
