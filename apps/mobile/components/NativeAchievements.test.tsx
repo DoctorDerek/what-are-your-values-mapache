@@ -32,53 +32,43 @@ const unlockedAchievement = Object.freeze({
 } satisfies AchievementPresentation)
 
 describe("NativeAchievements", () => {
-  it("routes Menu and Hub navigation from a stable achievement catalog", async () => {
+  it("offers one non-destructive return action without interactive milestone rows", async () => {
     const onClose = jest.fn()
-    const onOpenMenu = jest.fn()
     const user = userEvent.setup()
     await render(
       <NativeAchievements
         achievements={[lockedAchievement]}
-        canOpenMenu
+        canClose
         onClose={onClose}
-        onOpenMenu={onOpenMenu}
       />,
     )
 
-    const menu = screen.getByRole("button", { name: "Menu" })
-    const close = screen.getByRole("button", { name: "Back to Your Values" })
-    expect(menu).toBeEnabled()
+    const close = screen.getByRole("button", { name: "Back" })
+    expect(screen.getAllByRole("button")).toHaveLength(1)
+    expect(screen.queryByText("Local Milestones")).toBeNull()
     expect(close).toBeEnabled()
 
-    await user.press(menu)
     await user.press(close)
 
-    expect(onOpenMenu).toHaveBeenCalledTimes(1)
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it("keeps navigation inert while achievement acknowledgement is pending", async () => {
     const onClose = jest.fn()
-    const onOpenMenu = jest.fn()
     const user = userEvent.setup()
     await render(
       <NativeAchievements
         achievements={[lockedAchievement]}
-        canOpenMenu={false}
+        canClose={false}
         onClose={onClose}
-        onOpenMenu={onOpenMenu}
       />,
     )
 
-    const menu = screen.getByRole("button", { name: "Menu" })
-    const close = screen.getByRole("button", { name: "Back to Your Values" })
-    expect(menu).toBeDisabled()
+    const close = screen.getByRole("button", { name: "Back" })
     expect(close).toBeDisabled()
 
-    await user.press(menu)
     await user.press(close)
 
-    expect(onOpenMenu).not.toHaveBeenCalled()
     expect(onClose).not.toHaveBeenCalled()
   })
 
@@ -86,9 +76,8 @@ describe("NativeAchievements", () => {
     await render(
       <NativeAchievements
         achievements={[lockedAchievement, unlockedAchievement]}
-        canOpenMenu
+        canClose
         onClose={jest.fn()}
-        onOpenMenu={jest.fn()}
       />,
     )
 

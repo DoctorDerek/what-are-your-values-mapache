@@ -2,7 +2,7 @@ import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
 import { useMemo } from "react"
-import { FlatList, View } from "react-native"
+import { FlatList, ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeAchievementCard from "@/components/NativeAchievementCard"
 import { Button } from "@/components/ui/button"
@@ -10,17 +10,14 @@ import { Text } from "@/components/ui/text"
 
 export default function NativeAchievements({
   achievements,
-  canOpenMenu,
+  canClose,
   onClose,
-  onOpenMenu,
 }: {
   readonly achievements: readonly AchievementPresentation[]
-  readonly canOpenMenu: boolean
+  readonly canClose: boolean
   readonly onClose: () => void
-  readonly onOpenMenu: () => void
 }) {
   const localizedCopy = useLocaleCatalog()
-  const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
 
   const { integer } = useMemo(
     () => createLocaleFormatters(localizedCopy.metadata.languageTag),
@@ -32,63 +29,66 @@ export default function NativeAchievements({
 
   return (
     <MapacheScreen>
-      <View className="gap-4 border-b-4 border-black p-4">
-        <Text
-          variant="h1"
-          className="text-mapache-vivid-primary-cyan text-left text-4xl font-black tracking-tight uppercase"
+      <View className="mx-auto min-h-0 w-full max-w-5xl flex-1 p-4 xl:p-8">
+        <FlatList
+          className="min-h-0 flex-1"
+          contentContainerClassName="pr-2 pb-2"
+          data={achievements}
+          keyExtractor={({ id }) => id}
+          ListHeaderComponent={
+            <View>
+              <View className="flex-row flex-wrap items-center justify-between gap-3 pb-3">
+                <Text
+                  variant="h1"
+                  className="text-mapache-vivid-primary-cyan text-left text-xl font-black"
+                >
+                  {localizedCopy.interfaceCopy.screen.achievements}
+                </Text>
+                <Text
+                  accessibilityLiveRegion="polite"
+                  className="bg-mapache-vivid-secondary-green max-w-full border-4 border-black px-2.5 py-1.5 text-base font-black text-black"
+                >
+                  {localizedCopy.interfaceCopy.screen.achievementsUnlocked(
+                    integer(unlockedCount),
+                    integer(achievements.length),
+                  )}
+                </Text>
+              </View>
+              <View className="border-x-4 border-t-4 border-black bg-white p-3 xl:p-5">
+                <Text className="text-base leading-6 font-bold text-black">
+                  {localizedCopy.interfaceCopy.screen.achievementPrivacy}
+                </Text>
+              </View>
+            </View>
+          }
+          renderItem={({ item }) => (
+            <View className="border-x-4 border-black bg-white px-3 pb-4 xl:px-5">
+              <View className="pr-1">
+                <NativeAchievementCard achievement={item} />
+              </View>
+            </View>
+          )}
+          ListFooterComponent={
+            <View className="border-x-4 border-b-4 border-black bg-white pb-2" />
+          }
+        />
+        <ScrollView
+          className="max-h-[35%] shrink-0 grow-0"
+          contentContainerClassName="items-end pt-3 pr-2 pb-2"
         >
-          {localizedCopy.interfaceCopy.screen.achievements}
-        </Text>
-        <View className="flex-row gap-3">
           <Button
-            className="flex-1"
-            disabled={!canOpenMenu}
-            variant="outline"
-            onPress={onOpenMenu}
-          >
-            <Text>{PRODUCT_MENU_COPY.openAction}</Text>
-          </Button>
-          <Button
-            className="flex-1"
-            disabled={!canOpenMenu}
+            className="w-full xl:w-50"
+            disabled={!canClose}
             variant="secondary"
+            size="compact"
             onPress={onClose}
           >
-            <Text>{localizedCopy.interfaceCopy.screen.backToValues}</Text>
-          </Button>
-        </View>
-      </View>
-      <FlatList
-        className="flex-1 px-4"
-        contentContainerClassName="gap-4 py-5 pb-10"
-        data={achievements}
-        keyExtractor={({ id }) => id}
-        ListHeaderComponent={
-          <View className="gap-4">
-            <View className="border-4 border-black bg-white p-4 shadow-[5px_5px_0px_0px_#000000]">
-              <Text
-                accessibilityRole="header"
-                className="text-3xl font-black text-black uppercase"
-              >
-                {localizedCopy.interfaceCopy.screen.localMilestones}
-              </Text>
-              <Text className="mt-3 text-lg leading-7 font-bold text-black">
-                {localizedCopy.interfaceCopy.screen.achievementPrivacy}
-              </Text>
-            </View>
-            <Text
-              accessibilityLiveRegion="polite"
-              className="bg-mapache-vivid-secondary-green border-4 border-black p-4 text-xl font-black text-black uppercase"
-            >
-              {localizedCopy.interfaceCopy.screen.achievementsUnlocked(
-                integer(unlockedCount),
-                integer(achievements.length),
-              )}
+            <Text className="text-center text-lg font-black text-black uppercase">
+              {localizedCopy.interfaceCopy.controlActions.back}
             </Text>
-          </View>
-        }
-        renderItem={({ item }) => <NativeAchievementCard achievement={item} />}
-      />
+          </Button>
+        </ScrollView>
+      </View>
     </MapacheScreen>
   )
 }

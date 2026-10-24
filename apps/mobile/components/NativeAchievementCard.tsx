@@ -23,11 +23,11 @@ export default function NativeAchievementCard({
       <View className="flex-row flex-wrap items-start justify-between gap-3">
         <Text
           accessibilityRole="header"
-          className="min-w-0 flex-1 text-2xl font-black text-black uppercase"
+          className="min-w-0 shrink grow basis-[190px] text-2xl font-black text-black uppercase"
         >
           {achievement.title}
         </Text>
-        <Text className="shrink-0 border-4 border-black bg-black px-3 py-1 text-sm font-black text-white uppercase">
+        <Text className="max-w-full shrink-0 border-4 border-black bg-black px-2 py-1 text-sm font-black text-white uppercase">
           {isUnlocked
             ? localizedCopy.interfaceCopy.screen.unlocked
             : localizedCopy.interfaceCopy.screen.locked}

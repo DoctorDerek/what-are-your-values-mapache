@@ -43,7 +43,14 @@ import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnap
 import { useReducedMotion } from "motion/react"
 import dynamic from "next/dynamic"
 import type { StaticImageData } from "next/image"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent,
+} from "react"
 import Controls from "@/components/Controls"
 import GameSession from "@/components/GameSession"
 import { ReopenedInformationPanel } from "@/components/InformationPanel"
@@ -383,12 +390,18 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     },
     [send],
   )
-  const handleProductMenuOpen = useCallback(() => {
-    const activeElement = document.activeElement
-    productMenuReturnFocusTargetRef.current =
-      activeElement instanceof HTMLElement ? activeElement : null
-    setIsProductMenuOpen(true)
-  }, [])
+  const handleProductMenuOpen = useCallback(
+    (event?: MouseEvent<HTMLButtonElement>) => {
+      const returnFocusTarget =
+        event?.currentTarget ??
+        document.getElementById(HUB_MENU_BUTTON_ID) ??
+        document.activeElement
+      productMenuReturnFocusTargetRef.current =
+        returnFocusTarget instanceof HTMLElement ? returnFocusTarget : null
+      setIsProductMenuOpen(true)
+    },
+    [],
+  )
   useWebControllerActions(0, (command) => {
     if (command === "back" || command === "cancel") return handleSemanticBack()
     if (command !== "menu") return false
@@ -947,9 +960,8 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
       <>
         <Achievements
           achievements={achievementPresentations}
-          canOpenMenu={!isRecordingAchievementPresentation}
+          canClose={!isRecordingAchievementPresentation}
           onClose={() => send({ type: "ACHIEVEMENTS.CLOSE_REQUESTED" })}
-          onOpenMenu={handleProductMenuOpen}
         />
         <ProductMenu
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}

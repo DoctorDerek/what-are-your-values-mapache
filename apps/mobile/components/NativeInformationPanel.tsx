@@ -37,19 +37,16 @@ function NativeInformationPanelFrame({
   afterActions,
 }: NativeInformationPanelFrameProps) {
   const isIntroduction = presentation === "introduction"
-  const isReference = presentation === "reference"
+  const isStandard = presentation === "standard"
+  const Header = isStandard ? ScrollView : View
+  const Footer = isStandard ? ScrollView : View
   return (
     <MapacheScreen
       accessibilityLabel={modal ? title : undefined}
       accessibilityViewIsModal={modal || undefined}
       role={modal ? "dialog" : undefined}
     >
-      <View
-        className={cx(
-          "flex-1",
-          !isIntroduction && (isReference ? "p-3" : "p-5"),
-        )}
-      >
+      <View className={cx("min-h-0 flex-1", !isIntroduction && "p-3")}>
         <View
           className={cx(
             "relative w-full flex-1 bg-white",
@@ -59,27 +56,31 @@ function NativeInformationPanelFrame({
           )}
         >
           {decoration}
-          <View
+          <Header
             className={cx(
               "relative z-20 border-black",
               isIntroduction
                 ? "min-h-24 justify-center border-b-6 px-4 py-5 xl:min-h-32 xl:px-8 xl:py-6"
-                : isReference
-                  ? "border-b-4 px-4 py-5"
-                  : "border-b-4 p-5",
+                : isStandard
+                  ? "max-h-[40%] shrink-0 grow-0 border-b-4"
+                  : "border-b-4 px-4 py-5",
             )}
+            {...(isStandard && {
+              contentContainerClassName: "p-4",
+            })}
           >
             {titleDecoration}
             <Text
               variant="h1"
               className={cx(
-                "relative z-20 text-center font-black",
+                "relative z-20 font-black",
                 isIntroduction
-                  ? "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-arrival-title text-mapache-vivid-primary-cyan text-[36.4px] leading-[35px] tracking-normal xl:text-[62.4px] xl:leading-[60px]"
-                  : isReference
-                    ? "text-mapache-vivid-primary-cyan text-2xl uppercase"
-                    : "text-mapache-vivid-primary-raspberry text-4xl tracking-tight uppercase",
+                  ? "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-arrival-title text-mapache-vivid-primary-cyan text-center text-[36.4px] leading-[35px] tracking-normal xl:text-[62.4px] xl:leading-[60px]"
+                  : isStandard
+                    ? "text-mapache-vivid-primary-cyan text-left text-xl"
+                    : "text-mapache-vivid-primary-cyan text-center text-2xl uppercase",
                 accessibleCloseLabel && "pr-14",
+                accessibleCloseLabel && isStandard && "min-h-12",
               )}
               {...(isIntroduction && {
                 adjustsFontSizeToFit: true,
@@ -100,7 +101,7 @@ function NativeInformationPanelFrame({
                 <Text>×</Text>
               </Button>
             ) : null}
-          </View>
+          </Header>
 
           <ScrollView
             className={cx(
@@ -110,23 +111,24 @@ function NativeInformationPanelFrame({
             contentContainerClassName={
               isIntroduction
                 ? "gap-4 px-5 py-5 xl:px-10 xl:py-7"
-                : isReference
-                  ? "gap-4 px-4 py-4"
-                  : "gap-4 p-5"
+                : "gap-4 px-4 py-4"
             }
           >
             {children}
           </ScrollView>
 
-          <View
+          <Footer
             className={cx(
               "relative z-20 border-black",
               isIntroduction
                 ? "border-t-6"
-                : isReference
-                  ? "border-t-4 px-4 pt-3 pb-5"
-                  : "border-t-4 p-5",
+                : isStandard
+                  ? "max-h-[35%] shrink-0 grow-0 border-t-4"
+                  : "border-t-4 px-4 pt-3 pb-5",
             )}
+            {...(isStandard && {
+              contentContainerClassName: "px-4 pt-3 pb-5",
+            })}
           >
             <View
               className={cx(
@@ -136,7 +138,7 @@ function NativeInformationPanelFrame({
             >
               {beforePrimaryAction}
               <Button
-                size={isReference ? "compact" : "large"}
+                size={isIntroduction ? "large" : "compact"}
                 onPress={onPrimaryAction}
                 disabled={isPrimaryActionPending}
                 accessibilityState={{
@@ -148,7 +150,7 @@ function NativeInformationPanelFrame({
                   {...(isIntroduction && {
                     className: "text-3xl leading-none font-black uppercase",
                   })}
-                  {...(isReference && {
+                  {...(!isIntroduction && {
                     className:
                       "text-center text-xl font-black text-black uppercase",
                   })}
@@ -157,7 +159,7 @@ function NativeInformationPanelFrame({
                 </Text>
               </Button>
             </View>
-          </View>
+          </Footer>
           {afterActions}
         </View>
       </View>

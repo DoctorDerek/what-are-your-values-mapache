@@ -56,7 +56,7 @@ describe("InformationPanel Component Integration", () => {
 
     const primaryAction = screen.getByRole("button", { name: "Start" })
     expect(primaryAction).toHaveAttribute("data-slot", "button")
-    expect(primaryAction).toHaveClass("w-full", "text-4xl", "sm:text-5xl")
+    expect(informationPanelBody).not.toContainElement(primaryAction)
 
     fireEvent.click(primaryAction)
     expect(onPrimaryAction).toHaveBeenCalledTimes(1)
@@ -75,7 +75,6 @@ describe("InformationPanel Component Integration", () => {
     const accessibleCloseAction = screen.getByRole("button", {
       name: "Close Why Values Matter",
     })
-    expect(accessibleCloseAction).toHaveClass("absolute", "top-4", "right-4")
     expect(screen.getByRole("button", { name: "Close" })).toBeInTheDocument()
 
     fireEvent.click(accessibleCloseAction)
