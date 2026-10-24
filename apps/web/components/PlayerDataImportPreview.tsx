@@ -2,7 +2,10 @@
 
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
-import { presentWayvmImportPreview } from "@game/machines/src/WayvmImportPreviewPresentation"
+import {
+  getWrappableImportAction,
+  presentWayvmImportPreview,
+} from "@game/machines/src/WayvmImportPreviewPresentation"
 import { useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 
@@ -35,7 +38,7 @@ export default function PlayerDataImportPreview({
     <section
       aria-labelledby="import-preview-heading"
       aria-busy={isBusy}
-      className="text-mapache-vivid-dark flex max-h-[85dvh] min-h-[min(32rem,85dvh)] min-w-0 flex-1 flex-col border-4 border-black bg-white wrap-anywhere shadow-[8px_8px_0px_0px_#000000]"
+      className="text-mapache-vivid-dark flex max-h-[85dvh] min-h-[20rem] min-w-0 flex-1 flex-col border-4 border-black bg-white wrap-anywhere shadow-[8px_8px_0px_0px_#000000]"
     >
       <div
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
@@ -79,20 +82,20 @@ export default function PlayerDataImportPreview({
               ))}
             </dl>
           </details>
+          <p className="bg-mapache-vivid-secondary-gold mt-4 border-2 border-black p-2 text-sm font-bold">
+            {warning ?? copy.importPreviewWarning}
+          </p>
         </div>
       </div>
-      <footer className="max-h-1/2 shrink-0 overflow-y-auto border-t-4 border-black p-[12px] pb-[20px] xl:p-5">
-        <p className="bg-mapache-vivid-secondary-gold border-2 border-black p-2 text-sm font-bold">
-          {warning ?? copy.importPreviewWarning}
-        </p>
-        <div className="mt-3 flex flex-wrap gap-3">
+      <footer className="shrink-0 border-t-4 border-black p-[12px] pb-[20px] xl:p-5">
+        <div className="flex flex-wrap gap-3">
           <Button
             size="sm"
             wrap
             variant="outline"
             disabled={isBusy}
             onClick={onCancel}
-            className="min-w-0 flex-[1_1_8rem] wrap-anywhere max-xl:px-[12px] max-xl:py-[8px]"
+            className="min-w-0 flex-[1_1_8rem] wrap-anywhere max-xl:px-[4px] max-xl:py-[8px]"
           >
             {copy.importCancelAction}
           </Button>
@@ -101,9 +104,13 @@ export default function PlayerDataImportPreview({
             wrap
             disabled={isBusy}
             onClick={onConfirm}
-            className="min-w-0 flex-[1_1_8rem] wrap-anywhere max-xl:px-[12px] max-xl:py-[8px]"
+            aria-label={confirmLabel ?? copy.importReplaceAction}
+            className="min-w-0 flex-[1_1_8rem] wrap-anywhere hyphens-manual max-xl:px-[4px] max-xl:py-[8px]"
           >
-            {confirmLabel ?? copy.importReplaceAction}
+            {getWrappableImportAction(
+              confirmLabel ?? copy.importReplaceAction,
+              localization.metadata.languageTag,
+            )}
           </Button>
         </div>
       </footer>
