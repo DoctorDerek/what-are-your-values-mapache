@@ -2,6 +2,10 @@ import { graphemeSegments } from "unicode-segmenter/grapheme"
 import { HEROES99_IDLE_FRAME_COUNT } from "./Heroes99SpatialArchitecture"
 import { SEETHING_SWARM_CALM_FRAME_DURATION_MS } from "./SeethingSwarmAnimalPresentation"
 import {
+  FLUENT_MEDAL_SOURCE_SIZE,
+  type ValueRankMedalColor,
+} from "./ValueRankMedal"
+import {
   VALUES_CARD_SIZE,
   type ValuesCardModel,
   type ValuesCardPalette,
@@ -27,9 +31,10 @@ export type ValuesCardPainter = Readonly<{
   text: (text: CardText) => void
   measure: (value: string, size: number, weight: CardText["weight"]) => number
   sprite: (
-    key: number | "hero",
+    key: number | "hero" | ValueRankMedalColor,
     source: CardRectangle,
     target: CardRectangle,
+    sampling?: "pixel" | "smooth",
   ) => void
 }>
 
@@ -152,6 +157,13 @@ export function paintValuesCard<Asset>({
         color: palette.ink,
         align: "center",
       })
+      if (value.medal)
+        painter.sprite(
+          value.medal,
+          { x: 0, y: 0, ...FLUENT_MEDAL_SOURCE_SIZE },
+          { x: 540 + shift, y: middle - 36, width: 72, height: 72 },
+          "smooth",
+        )
     }
     const animal = value.animal
     if (animal) {
@@ -160,7 +172,12 @@ export function paintValuesCard<Asset>({
         1,
         Math.min(
           6,
-          Math.floor(Math.min(170 / bounds.width, 104 / bounds.height)),
+          Math.floor(
+            Math.min(
+              (value.medal ? 110 : 170) / bounds.width,
+              104 / bounds.height,
+            ),
+          ),
         ),
       )
       painter.sprite(
@@ -172,7 +189,9 @@ export function paintValuesCard<Asset>({
           height: bounds.height,
         },
         {
-          x: Math.round(620 + shift - (bounds.width * scale) / 2),
+          x: Math.round(
+            (value.medal ? 670 : 620) + shift - (bounds.width * scale) / 2,
+          ),
           y: middle + 46 - bounds.height * scale,
           width: bounds.width * scale,
           height: bounds.height * scale,

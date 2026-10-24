@@ -1,4 +1,6 @@
+import type { ValueRankMedalColor } from "@game/data/src/ValueRankMedal"
 import {
+  getValuesCardMedals,
   readValuesCardPalette,
   VALUES_CARD_COLOR_VARIABLES,
   VALUES_CARD_SIZE,
@@ -17,6 +19,7 @@ import { encodeGif } from "@game/utils/src/EncodeGif"
 import type { StaticImageData } from "next/image"
 import { HEROES99_ASSETS } from "@/generated/heroes99/Heroes99Assets"
 import { composeHeroes99 } from "@/lib/ComposeHeroes99"
+import { FLUENT_MEDAL_ARTWORK } from "@/lib/FluentMedalArtwork"
 
 export async function prepareWebValuesCard(
   model: ValuesCardModel<StaticImageData>,
@@ -35,15 +38,21 @@ export async function prepareWebValuesCard(
   const context = canvas.getContext("2d", { willReadFrequently: true })
   if (!context) throw new Error("Card rendering is unavailable in this browser")
   context.imageSmoothingEnabled = false
-  const animals = new Map<number, ImageBitmap>()
+  const images = new Map<number | ValueRankMedalColor, ImageBitmap>()
   let hero: Awaited<ReturnType<typeof composeHeroes99>> | null = null
   try {
+    const sources = new Map<number | ValueRankMedalColor, string>()
     for (const [index, value] of model.values.entries()) {
       if (!value.animal) continue
-      const response = await fetch(value.animal.asset.src, { signal })
-      if (!response.ok) throw new Error("An animal image could not be loaded")
+      sources.set(index, value.animal.asset.src)
+    }
+    for (const medal of getValuesCardMedals(model))
+      sources.set(medal, FLUENT_MEDAL_ARTWORK[medal].src)
+    for (const [key, source] of sources) {
+      const response = await fetch(source, { signal })
+      if (!response.ok) throw new Error("Card artwork could not be loaded")
       const bitmap = await createImageBitmap(await response.blob())
-      animals.set(index, bitmap)
+      images.set(key, bitmap)
       signal.throwIfAborted()
     }
     if (includeHero)
@@ -65,9 +74,11 @@ export async function prepareWebValuesCard(
         context.fillStyle = color
         context.fillText(value, x, y)
       },
-      sprite: (key, source, target) => {
-        const image = key === "hero" ? hero?.canvas : animals.get(key)
+      sprite: (key, source, target, sampling = "pixel") => {
+        const image = key === "hero" ? hero?.canvas : images.get(key)
         if (!image) throw new Error("Card artwork is unavailable")
+        context.imageSmoothingEnabled = sampling === "smooth"
+        context.imageSmoothingQuality = "high"
         context.drawImage(
           image,
           source.x,
@@ -153,7 +164,7 @@ export async function prepareWebValuesCard(
       },
     }
   } finally {
-    animals.forEach((image) => image.close())
+    images.forEach((image) => image.close())
     if (hero) {
       hero.canvas.width = 0
       hero.canvas.height = 0

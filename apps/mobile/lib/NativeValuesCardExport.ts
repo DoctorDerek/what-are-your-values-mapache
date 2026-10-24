@@ -1,4 +1,6 @@
+import type { ValueRankMedalColor } from "@game/data/src/ValueRankMedal"
 import {
+  getValuesCardMedals,
   VALUES_CARD_SIZE,
   type PreparedValuesCard,
   type ValuesCardModel,
@@ -27,6 +29,7 @@ import { Directory, File, Paths } from "expo-file-system"
 import { isAvailableAsync, shareAsync } from "expo-sharing"
 import { Image, Platform } from "react-native"
 import { HEROES99_ASSETS } from "@/generated/heroes99/Heroes99Assets"
+import { FLUENT_MEDAL_ARTWORK } from "@/lib/FluentMedalArtwork"
 import { composeNativeHeroes99 } from "./ComposeNativeHeroes99"
 
 async function loadImage(uri: string, signal: AbortSignal) {
@@ -53,7 +56,7 @@ export async function prepareNativeValuesCard(
   const paint = Skia.Paint()
   const paragraphs = new Map<string, SkParagraph>()
   const measuredWidths = new Map<string, number>()
-  const images = new Map<number | "hero", SkImage>()
+  const images = new Map<number | "hero" | ValueRankMedalColor, SkImage>()
   const cache = new Directory(
     Paths.cache,
     `values-card-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -70,6 +73,14 @@ export async function prepareNativeValuesCard(
         ),
       )
     }
+    for (const medal of getValuesCardMedals(model))
+      images.set(
+        medal,
+        await loadImage(
+          Image.resolveAssetSource(FLUENT_MEDAL_ARTWORK[medal]).uri,
+          signal,
+        ),
+      )
     const hero = includeHero
       ? await composeNativeHeroes99(model.appearance, HEROES99_ASSETS, signal)
       : null
@@ -137,14 +148,14 @@ export async function prepareNativeValuesCard(
           y - baseline,
         )
       },
-      sprite: (key, source, target) => {
+      sprite: (key, source, target, sampling = "pixel") => {
         const image = images.get(key)
         if (!image) throw new Error("Card artwork is unavailable")
         canvas.drawImageRectOptions(
           image,
           Skia.XYWHRect(source.x, source.y, source.width, source.height),
           Skia.XYWHRect(target.x, target.y, target.width, target.height),
-          FilterMode.Nearest,
+          sampling === "smooth" ? FilterMode.Linear : FilterMode.Nearest,
           MipmapMode.None,
         )
       },
