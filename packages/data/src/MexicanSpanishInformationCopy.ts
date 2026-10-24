@@ -335,6 +335,29 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
       },
       {
         kind: "section",
+        heading: "Ilustraciones de medallas",
+        paragraphs: [
+          "Las medallas 3D de oro, plata y bronce son ilustraciones de Microsoft Fluent Emoji, incluidas en WAYVM bajo la licencia MIT. Copyright (c) Microsoft Corporation.",
+        ],
+      },
+      {
+        kind: "resource",
+        title: "Microsoft Fluent Emoji",
+        description:
+          "Fuente de los archivos PNG de medallas incluidos en el juego y en las imágenes para compartir.",
+        actionLabel: "Ver ilustraciones de medallas",
+        url: "https://github.com/microsoft/fluentui-emoji/tree/1ffb34c752ecf5d402f04cfb4b392c77f57c54bc/assets",
+      },
+      {
+        kind: "resource",
+        title: "Licencia MIT de Microsoft Fluent Emoji",
+        description:
+          "Permiso y aviso de derechos de autor de Microsoft para las ilustraciones de medallas. La licencia completa también se incluye en el proyecto.",
+        actionLabel: "Leer licencia MIT",
+        url: "https://github.com/microsoft/fluentui-emoji/blob/1ffb34c752ecf5d402f04cfb4b392c77f57c54bc/LICENSE",
+      },
+      {
+        kind: "section",
         heading: "Arte y animación de animales",
         paragraphs: [
           "El arte en píxeles y las animaciones de animales son de SeethingSwarm y se usan bajo las licencias correspondientes de los paquetes de animales. Estos recursos comerciales no están cubiertos por la licencia del software de la aplicación. El diseño de la interfaz es del Dr. Derek Austin. La presentación actual del juego es silenciosa. Los avisos completos del software de código abierto están disponibles en los registros de licencias del proyecto.",

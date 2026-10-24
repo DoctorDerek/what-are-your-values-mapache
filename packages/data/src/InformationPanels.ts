@@ -397,6 +397,29 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "section",
+      heading: "Medal Artwork",
+      paragraphs: Object.freeze([
+        "The 3D gold, silver, and bronze medals are Microsoft Fluent Emoji artwork, bundled with WAYVM under the MIT License. Copyright (c) Microsoft Corporation.",
+      ]),
+    }),
+    Object.freeze({
+      kind: "resource",
+      title: "Microsoft Fluent Emoji",
+      description:
+        "Source of the locally bundled medal PNGs used in the game and shared images.",
+      actionLabel: "View Medal Artwork",
+      url: "https://github.com/microsoft/fluentui-emoji/tree/1ffb34c752ecf5d402f04cfb4b392c77f57c54bc/assets",
+    }),
+    Object.freeze({
+      kind: "resource",
+      title: "Microsoft Fluent Emoji MIT License",
+      description:
+        "Microsoft’s permission and copyright notice for the medal artwork. The complete license is also included in the project.",
+      actionLabel: "Read MIT License",
+      url: "https://github.com/microsoft/fluentui-emoji/blob/1ffb34c752ecf5d402f04cfb4b392c77f57c54bc/LICENSE",
+    }),
+    Object.freeze({
+      kind: "section",
       heading: "Animal Art and Animation",
       paragraphs: Object.freeze([
         "Animal pixel art and animations are by SeethingSwarm, used under the applicable animal-pack licenses. These commercial source assets are not covered by the application’s software license. Interface design is by Dr. Derek Austin. The current game presentation is silent. Complete open-source software notices are available in the project’s license records.",

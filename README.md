@@ -91,6 +91,12 @@ Recovery is not catalog acceptance. `LocalizationCatalogQuality.test.ts` checks 
 
 `LOCALIZATION_CATALOG_RESOLUTIONS` exposes startup diagnostics. `resolveLocalizedFormatter` returns diagnostics for a particular formatter invocation, and `createLocaleFormatters` accepts an optional scoped diagnostic callback. Diagnostics contain only locale, key, reason, and fallback category—not copy, player data, or exception contents. They are not uploaded, logged globally, or shown as repeated player toasts. Formatter probes are representative, not proof of every possible input or translation meaning; locale review and in-context QA remain necessary.
 
+## Medal artwork
+
+The game and exported values cards use Microsoft Fluent Emoji’s original 3D gold, silver, and bronze medal PNGs, bundled locally in `packages/data/assets/fluent-medals`. These assets are licensed under Microsoft’s MIT License, separately from the application. The [complete license and pinned source attribution](packages/data/assets/fluent-medals/LICENSE.txt) include the original upstream paths and revision. In-game Credits also identify Microsoft, the MIT License, and the artwork source in each supported language.
+
+`ValueRankMedal.ts` owns the typed medal colors and current-rank tiers. Each platform’s `FluentMedalArtwork.ts` binds the same three packaged files for both its UI and image exporter: Next static imports on web, literal Metro asset references on native. The shared card scene owns medal placement. There is no emoji library, font-rendered medal, or runtime CDN dependency. Localized rank labels remain authoritative; the embossed artwork numbers do not replace the player’s actual rank.
+
 ## Verification
 
 `eslint.config.ts` applies Next’s TypeScript rules to authored `.ts`, `.tsx`, `.mts`, and `.cts` files across both apps, shared packages, scripts, and tests. Next/React rules remain active, Prettier owns formatting, and the existing `only-warn` policy keeps ordinary findings advisory. JavaScript tool configurations retain their existing rules.
