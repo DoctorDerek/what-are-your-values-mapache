@@ -30,15 +30,19 @@ for (const width of [320, 1440]) {
     const winnerId = await page
       .locator('[data-combatant-side="first"]')
       .getAttribute("data-value-id")
-    await page.getByRole("button", { name: /^Choose / }).first().click()
+    await page
+      .getByRole("button", { name: /^Choose / })
+      .first()
+      .click()
     await page
       .getByRole("button", {
         name: "Dismiss achievement: First Battle",
         exact: true,
       })
       .click()
-    await expect(page.getByRole("button", { name: "Undo", exact: true }))
-      .toBeEnabled()
+    await expect(
+      page.getByRole("button", { name: "Undo", exact: true }),
+    ).toBeEnabled()
     await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1_000))
     await page.getByRole("button", { name: "Stop", exact: true }).click()
     const row = page.locator(`[data-results-value="${winnerId}"]`)
@@ -90,9 +94,12 @@ for (const width of [320, 1440]) {
     }
     await page.clock.runFor(2_100)
     await expect(slot).toHaveAttribute("data-results-medal", "gold")
-    await page.getByRole("button", { name: "See my values", exact: true }).click()
-    await expect(page.getByRole("button", { name: "Battle", exact: true }))
-      .toBeVisible()
+    await page
+      .getByRole("button", { name: "See my values", exact: true })
+      .click()
+    await expect(
+      page.getByRole("button", { name: "Battle", exact: true }),
+    ).toBeVisible()
   })
 
   test(`Results medals progress visibly without shifting their slot at ${width}px`, async ({

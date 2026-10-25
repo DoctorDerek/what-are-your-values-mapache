@@ -124,8 +124,9 @@ describe("Results rank medals", () => {
     }
     const progressing = projectBattleExitResultsFrame(results, 50)
     const settled = projectBattleExitResultsFrame(results, 50, 50, true)
-    expect(settled.values.every(({ medal, finalMedal }) => medal === finalMedal))
-      .toBe(true)
+    expect(
+      settled.values.every(({ medal, finalMedal }) => medal === finalMedal),
+    ).toBe(true)
     expect(settled.values.map(({ totalXp }) => totalXp)).toEqual(
       progressing.values.map(({ totalXp }) => totalXp),
     )
@@ -150,8 +151,9 @@ describe("Results rank medals", () => {
       [700, "silver"],
       [1_600, "gold"],
     ] as const)
-      expect(projectBattleExitResultsFrame(results, elapsedMs).values[0])
-        .toMatchObject({ rank: 1, medal, finalMedal: "gold" })
+      expect(
+        projectBattleExitResultsFrame(results, elapsedMs).values[0],
+      ).toMatchObject({ rank: 1, medal, finalMedal: "gold" })
   })
 
   it("removes medals when Undo returns to an unranked profile", () => {

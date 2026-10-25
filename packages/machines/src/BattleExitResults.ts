@@ -281,9 +281,8 @@ function projectFirstRankingMedal(
     (VALUE_RANK_MEDAL_TIERS.length - finalTierIndex) * rankingProgress,
   )
   return (
-    VALUE_RANK_MEDAL_TIERS[
-      VALUE_RANK_MEDAL_TIERS.length - revealedTierCount
-    ]?.medal.color ?? null
+    VALUE_RANK_MEDAL_TIERS[VALUE_RANK_MEDAL_TIERS.length - revealedTierCount]
+      ?.medal.color ?? null
   )
 }
 
