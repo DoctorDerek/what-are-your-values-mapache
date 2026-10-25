@@ -2,6 +2,8 @@ import { expect, type Locator, type Page } from "@playwright/test"
 import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
 import { test } from "./fixtures"
 
+test.use({ screenshot: "only-on-failure" })
+
 async function expectReadableRegion(region: Locator) {
   const dimensions = await region.evaluate((element) => ({
     width: element.clientWidth,
@@ -42,7 +44,7 @@ for (const locale of ["en", "es-MX"] as const) {
     for (const destination of destinations) {
       test(`${destination.id} stays readable and dismissible at ${width}px in ${locale}`, async ({
         page,
-      }, testInfo) => {
+      }) => {
         const pageErrors: string[] = []
         page.on("pageerror", (error) => pageErrors.push(error.message))
         await page.setViewportSize({ width, height: width === 320 ? 540 : 900 })
@@ -101,9 +103,6 @@ for (const locale of ["en", "es-MX"] as const) {
           await expectReadableRegion(reading)
           await expectNoPageOverflow(page)
           await expect(action).toBeInViewport({ ratio: 1 })
-          await page.screenshot({
-            path: testInfo.outputPath(`${destination.id}-${scale}.png`),
-          })
           await scrollWithPinnedAction(reading, action)
           const finalContent = isAchievements
             ? surface.getByRole("listitem").last().getByRole("heading")
