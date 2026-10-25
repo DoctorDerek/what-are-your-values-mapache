@@ -3,16 +3,101 @@ import { test } from "./fixtures"
 
 test.use({ serviceWorkers: "block", reducedMotion: "no-preference" })
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(crypto, "randomUUID", {
+      value: () => "bfc518dd-4ee2-42c6-906a-e9baf8edfc40",
+    })
+  })
+})
+
 for (const width of [320, 1440]) {
+  test(`First Results reveal medal tiers before sorting finishes at ${width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.clock.install()
+    await page.setViewportSize({ width, height: width === 320 ? 720 : 900 })
+    await page.goto("/")
+    await page.getByRole("button", { name: "Start", exact: true }).click()
+    await page.getByRole("button", { name: "Battle", exact: true }).click()
+    await page
+      .getByRole("button", { name: "Skip battle animations", exact: true })
+      .click()
+    const winnerId = await page
+      .locator('[data-combatant-side="first"]')
+      .getAttribute("data-value-id")
+    await page.getByRole("button", { name: /^Choose / }).first().click()
+    await page
+      .getByRole("button", {
+        name: "Dismiss achievement: First Battle",
+        exact: true,
+      })
+      .click()
+    await expect(page.getByRole("button", { name: "Undo", exact: true }))
+      .toBeEnabled()
+    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1_000))
+    await page.getByRole("button", { name: "Stop", exact: true }).click()
+    const row = page.locator(`[data-results-value="${winnerId}"]`)
+    const slot = row.locator("[data-results-medal]")
+    await expect(slot).toHaveAttribute("data-results-medal", "none")
+    const summary = await row.locator(".sr-only").textContent()
+    const initialGeometry = await slot.evaluate((element: HTMLElement) => ({
+      width: element.offsetWidth,
+      height: element.offsetHeight,
+      left: element.offsetLeft,
+      top: element.offsetTop,
+    }))
+    expect(initialGeometry.width).toBe(24)
+    expect(initialGeometry.height).toBe(24)
+    for (const [advanceMs, medal] of [
+      [50, "bronze"],
+      [650, "silver"],
+      [900, "gold"],
+    ] as const) {
+      await page.clock.runFor(advanceMs)
+      await expect(slot).toHaveAttribute("data-results-medal", medal)
+      const image = slot.locator("img")
+      await expect(image).toHaveAttribute(
+        "src",
+        new RegExp(`/${medal}(?:\\.[^/]+)?\\.png$`),
+      )
+      await image.evaluate((element: HTMLImageElement) => element.decode())
+      await expect(image).toBeInViewport()
+      const evidence = await slot.evaluate((element: HTMLElement) => {
+        const bounds = element.getBoundingClientRect()
+        return {
+          geometry: {
+            width: element.offsetWidth,
+            height: element.offsetHeight,
+            left: element.offsetLeft,
+            top: element.offsetTop,
+          },
+          painted: element.contains(
+            document.elementFromPoint(
+              bounds.left + bounds.width / 2,
+              bounds.top + bounds.height / 2,
+            ),
+          ),
+        }
+      })
+      expect(evidence.geometry).toEqual(initialGeometry)
+      expect(evidence.painted).toBe(true)
+      await expect(row.locator(".sr-only")).toHaveText(summary!)
+      await page.screenshot({
+        path: testInfo.outputPath(`first-results-${width}-${medal}.png`),
+      })
+    }
+    await page.clock.runFor(2_100)
+    await expect(slot).toHaveAttribute("data-results-medal", "gold")
+    await page.getByRole("button", { name: "See my values", exact: true }).click()
+    await expect(page.getByRole("button", { name: "Battle", exact: true }))
+      .toBeVisible()
+  })
+
   test(`Results medals progress visibly without shifting their slot at ${width}px`, async ({
     page,
   }, testInfo) => {
     await page.setViewportSize({ width, height: width === 320 ? 720 : 900 })
-    await page.addInitScript(() => {
-      Object.defineProperty(crypto, "randomUUID", {
-        value: () => "bfc518dd-4ee2-42c6-906a-e9baf8edfc40",
-      })
-    })
     await page.goto("/")
     await page.getByRole("button", { name: "Start", exact: true }).click()
     await page.getByRole("button", { name: "Battle", exact: true }).click()
