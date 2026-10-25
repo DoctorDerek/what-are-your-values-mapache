@@ -13,7 +13,7 @@ type ValueRankMedal = Readonly<{
   color: ValueRankMedalColor
 }>
 
-const VALUE_RANK_MEDAL_TIERS: readonly Readonly<{
+export const VALUE_RANK_MEDAL_TIERS: readonly Readonly<{
   maximumRank: number
   medal: ValueRankMedal
 }>[] = Object.freeze([
