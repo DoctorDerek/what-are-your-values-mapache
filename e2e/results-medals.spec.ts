@@ -93,5 +93,26 @@ for (const width of [320, 1440]) {
     await page.screenshot({
       path: testInfo.outputPath(`results-medals-${width}.png`),
     })
+    if (width === 320) {
+      await page.addStyleTag({ content: "html { font-size: 200%; }" })
+      const heading = page.getByRole("heading", { name: "Results", exact: true })
+      const menu = page.getByRole("button", { name: "Menu", exact: true })
+      const headingBounds = await heading.boundingBox()
+      const menuBounds = await menu.boundingBox()
+      expect(headingBounds).not.toBeNull()
+      expect(menuBounds).not.toBeNull()
+      expect(menuBounds!.y).toBeGreaterThanOrEqual(
+        headingBounds!.y + headingBounds!.height,
+      )
+      const keepBattling = page.getByRole("button", {
+        name: "Keep battling",
+        exact: true,
+      })
+      await keepBattling.scrollIntoViewIfNeeded()
+      await expect(keepBattling).toBeInViewport()
+      await expect(
+        page.getByRole("button", { name: "See my values", exact: true }),
+      ).toBeInViewport()
+    }
   })
 }
