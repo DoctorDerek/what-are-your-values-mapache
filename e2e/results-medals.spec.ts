@@ -16,9 +16,9 @@ for (const width of [320, 1440]) {
     await page.goto("/")
     await page.getByRole("button", { name: "Start", exact: true }).click()
     await page.getByRole("button", { name: "Battle", exact: true }).click()
-      await page
-        .getByRole("button", { name: "Skip battle animations", exact: true })
-        .click()
+    await page
+      .getByRole("button", { name: "Skip battle animations", exact: true })
+      .click()
     const choices = page.getByRole("button", { name: /^Choose / })
     await choices.first().click()
     await page
@@ -95,7 +95,10 @@ for (const width of [320, 1440]) {
     })
     if (width === 320) {
       await page.addStyleTag({ content: "html { font-size: 200%; }" })
-      const heading = page.getByRole("heading", { name: "Results", exact: true })
+      const heading = page.getByRole("heading", {
+        name: "Results",
+        exact: true,
+      })
       const menu = page.getByRole("button", { name: "Menu", exact: true })
       const headingBounds = await heading.boundingBox()
       const menuBounds = await menu.boundingBox()

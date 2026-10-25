@@ -129,7 +129,10 @@ function ResultsValueRow({
             <span className="invisible">{frameValue.rankLabelPlaceholder}</span>
             <span className="absolute inset-0">#{rank}</span>
           </span>
-          <span className="size-6" data-results-medal={frameValue.medal ?? "none"}>
+          <span
+            className="size-6"
+            data-results-medal={frameValue.medal ?? "none"}
+          >
             {frameValue.medal && <RankMedal color={frameValue.medal} />}
           </span>
         </span>
@@ -312,7 +315,7 @@ export default function Results({
     >
       <div className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-2">
         <header className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex min-w-0 basis-36 grow flex-wrap items-center gap-x-2">
+          <div className="flex min-w-0 grow basis-36 flex-wrap items-center gap-x-2">
             <h1 className="text-mapache-vivid-primary-cyan max-w-full text-2xl font-black [overflow-wrap:anywhere]">
               {RESULTS_COPY.heading}
             </h1>
