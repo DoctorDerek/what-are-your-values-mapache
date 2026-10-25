@@ -1,7 +1,11 @@
 import { expect } from "@playwright/test"
 import { test } from "./fixtures"
 
-test.use({ serviceWorkers: "block", reducedMotion: "no-preference" })
+test.use({
+  serviceWorkers: "block",
+  reducedMotion: "no-preference",
+  screenshot: "only-on-failure",
+})
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -14,7 +18,7 @@ test.beforeEach(async ({ page }) => {
 for (const width of [320, 1440]) {
   test(`First Results reveal medal tiers before sorting finishes at ${width}px`, async ({
     page,
-  }, testInfo) => {
+  }) => {
     await page.clock.install()
     await page.setViewportSize({ width, height: width === 320 ? 720 : 900 })
     await page.goto("/")
@@ -83,9 +87,6 @@ for (const width of [320, 1440]) {
       expect(evidence.geometry).toEqual(initialGeometry)
       expect(evidence.painted).toBe(true)
       await expect(row.locator(".sr-only")).toHaveText(summary!)
-      await page.screenshot({
-        path: testInfo.outputPath(`first-results-${width}-${medal}.png`),
-      })
     }
     await page.clock.runFor(2_100)
     await expect(slot).toHaveAttribute("data-results-medal", "gold")
@@ -96,7 +97,7 @@ for (const width of [320, 1440]) {
 
   test(`Results medals progress visibly without shifting their slot at ${width}px`, async ({
     page,
-  }, testInfo) => {
+  }) => {
     await page.setViewportSize({ width, height: width === 320 ? 720 : 900 })
     await page.goto("/")
     await page.getByRole("button", { name: "Start", exact: true }).click()
@@ -175,9 +176,6 @@ for (const width of [320, 1440]) {
     await expect(
       page.getByRole("button", { name: "Keep battling", exact: true }),
     ).toBeInViewport()
-    await page.screenshot({
-      path: testInfo.outputPath(`results-medals-${width}.png`),
-    })
     if (width === 320) {
       await page.addStyleTag({ content: "html { font-size: 200%; }" })
       const heading = page.getByRole("heading", {
