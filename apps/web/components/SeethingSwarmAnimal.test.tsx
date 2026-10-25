@@ -154,11 +154,11 @@ describe("SeethingSwarmAnimal", () => {
       />,
     )
     const image = screen.getByAltText("")
-    const animation = { currentTime: 480, play: vi.fn() }
+    const animation = { cancel: vi.fn(), play: vi.fn() }
     Object.defineProperty(image, "getAnimations", { value: () => [animation] })
     fireEvent.load(image)
-    await waitFor(() => expect(animation.currentTime).toBe(0))
-    animation.currentTime = 480
+    await waitFor(() => expect(animation.play).toHaveBeenCalledTimes(1))
+    expect(animation.cancel).toHaveBeenCalledTimes(1)
     rerender(
       <SeethingSwarmAnimal
         geometry={geometry}
@@ -166,7 +166,8 @@ describe("SeethingSwarmAnimal", () => {
         playbackIdentity="attention:0"
       />,
     )
-    expect(animation.currentTime).toBe(480)
+    expect(animation.cancel).toHaveBeenCalledTimes(1)
+    expect(animation.play).toHaveBeenCalledTimes(1)
     rerender(
       <SeethingSwarmAnimal
         geometry={geometry}
@@ -179,7 +180,7 @@ describe("SeethingSwarmAnimal", () => {
       "data-playback-ready",
       "true",
     )
-    expect(animation.currentTime).toBe(0)
+    expect(animation.cancel).toHaveBeenCalledTimes(2)
     expect(animation.play).toHaveBeenCalledTimes(2)
   })
   it("recognizes a valid cached image before painting a loading state", () => {
