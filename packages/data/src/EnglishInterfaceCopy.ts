@@ -171,7 +171,10 @@ export const INTERFACE_FORMATTER_SAMPLES: Readonly<
     ["0", "40"],
     ["40", "40"],
   ],
-  "interfaceCopy.screen.valueResult": [["1", "Fun", "5", "100"]],
+  "interfaceCopy.screen.valueResult": [
+    ["1", "Fun", "5", "100"],
+    ["1", "Fun", "5", "100", "Rank 1, gold medal"],
+  ],
   "interfaceCopy.screen.resultSummary": [
     ["Your values were re-ranked", "4", "2", "+4"],
   ],
