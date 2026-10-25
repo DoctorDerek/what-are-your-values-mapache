@@ -312,8 +312,8 @@ export default function Results({
     >
       <div className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-2">
         <header className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2">
-            <h1 className="text-mapache-vivid-primary-cyan text-2xl font-black">
+          <div className="flex min-w-0 basis-36 grow flex-wrap items-center gap-x-2">
+            <h1 className="text-mapache-vivid-primary-cyan max-w-full text-2xl font-black [overflow-wrap:anywhere]">
               {RESULTS_COPY.heading}
             </h1>
             <span
