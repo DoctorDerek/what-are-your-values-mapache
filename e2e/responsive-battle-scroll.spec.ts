@@ -253,7 +253,9 @@ for (const viewport of [
         )
         .toBe(true)
       await expect(
-        page.getByRole("button", { name: /^Choose / }).nth(side === "first" ? 0 : 1),
+        page
+          .getByRole("button", { name: /^Choose / })
+          .nth(side === "first" ? 0 : 1),
       ).toBeEnabled()
       await stage
         .locator(`[data-battle-arena-side="${side}"]`)
