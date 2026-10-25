@@ -1,3 +1,4 @@
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import { getValueDisplayName } from "@game/data/src/Value"
 import { createBattleExitResults } from "@game/machines/src/BattleExitResults"
@@ -6,6 +7,7 @@ import {
   createInitialBattleProfile,
 } from "@game/machines/src/BattleProfile"
 import { projectBattlePair } from "@game/machines/src/BattleScheduler"
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import { describe, expect, it, jest } from "@jest/globals"
 import {
   act,
@@ -17,6 +19,7 @@ import {
 import { StyleSheet } from "react-native"
 import NativeResults from "@/components/NativeResults"
 import { Text } from "@/components/ui/text"
+import { FLUENT_MEDAL_ARTWORK } from "@/lib/FluentMedalArtwork"
 
 function createResults() {
   const entry = createInitialBattleProfile("native-results-test-seed")
@@ -32,6 +35,45 @@ function createResults() {
 }
 
 describe("Native Battle-exit Results", () => {
+  it.each(["en", "es-MX"] as const)(
+    "shows bundled final medals with localized %s summaries under Reduced Motion",
+    async (locale) => {
+      const results = createResults()
+      const copy = getLocaleCatalog(locale)
+      const winner = results.values[0]
+      await render(
+        <LocaleProvider locale={locale}>
+          <NativeResults
+            results={results}
+            runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+            shouldReduceMotion
+            onOpenMenu={jest.fn()}
+            onSeeValues={jest.fn()}
+            onKeepBattling={jest.fn()}
+          />
+        </LocaleProvider>,
+      )
+      const row = screen.getByLabelText(
+        copy.interfaceCopy.screen.valueResult(
+          "1",
+          getValueDisplayName(winner.definition, copy.values),
+          "3",
+          "4",
+          copy.interfaceCopy.rank.medal(1, copy.interfaceCopy.rank.gold),
+        ),
+      )
+      expect(row).toBeOnTheScreen()
+      const medals = row.queryAll(
+        (element) => element.props.source === FLUENT_MEDAL_ARTWORK.gold,
+      )
+      expect(medals).toHaveLength(1)
+      const [medal] = medals
+      expect(medal.props.accessible).toBe(false)
+      expect(medal.props.accessibilityElementsHidden).toBe(true)
+      expect(screen.queryAllByRole("image")).toHaveLength(0)
+    },
+  )
+
   it("expires Saved locally without removing its reserved content or restarting on remount", async () => {
     jest.useFakeTimers()
     try {
@@ -74,11 +116,13 @@ describe("Native Battle-exit Results", () => {
           onKeepBattling={jest.fn()}
         />,
       )
-      expect(screen.getByLabelText(/Rank 2, Acceptance/)).toBeOnTheScreen()
+      expect(
+        screen.getByLabelText(/Rank 2, gold medal, Acceptance/),
+      ).toBeOnTheScreen()
       await act(async () => jest.advanceTimersByTime(50))
       const winner = results.values[0]
       const row = screen.getByLabelText(
-        `Rank 1, ${getValueDisplayName(winner.definition)}, Level 3, 4 total XP.`,
+        `Rank 1, gold medal, ${getValueDisplayName(winner.definition)}, Level 3, 4 total XP.`,
       )
       expect(row).toBeOnTheScreen()
       const cells = screen.container.queryAll(
@@ -100,6 +144,17 @@ describe("Native Battle-exit Results", () => {
         ),
       ).toBe(true)
       expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
+      expect(
+        row.queryAll(
+          (element) => element.props.source === FLUENT_MEDAL_ARTWORK.gold,
+        ),
+      ).toHaveLength(0)
+      await act(async () => jest.advanceTimersByTime(3_650))
+      expect(
+        row.queryAll(
+          (element) => element.props.source === FLUENT_MEDAL_ARTWORK.gold,
+        ),
+      ).toHaveLength(1)
     } finally {
       jest.useRealTimers()
     }

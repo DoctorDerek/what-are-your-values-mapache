@@ -94,7 +94,7 @@ export default function SeethingSwarmAnimal({
     )
       return
     for (const animation of imageRef.current?.getAnimations?.() ?? []) {
-      animation.currentTime = 0
+      animation.cancel()
       animation.play()
     }
   }, [

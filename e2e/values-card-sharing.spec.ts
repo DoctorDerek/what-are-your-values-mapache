@@ -217,7 +217,7 @@ for (const copy of [
   }
 }
 
-test("a player previews and saves genuine GIF and PNG cards, then returns to an unchanged appearance draft", async ({
+test("a player previews and saves genuine GIF and PNG cards", async ({
   page,
 }, testInfo) => {
   await page.goto("/")
@@ -274,6 +274,14 @@ test("a player previews and saves genuine GIF and PNG cards, then returns to an 
   await expect(
     page.getByRole("heading", { name: "My Values", exact: true }),
   ).toBeVisible()
+})
+
+test("sharing returns to the unchanged appearance draft without saving it", async ({
+  page,
+}) => {
+  await page.goto("/")
+  await page.getByRole("button", { name: "Start", exact: true }).click()
+  const preview = page.getByRole("dialog", { name: "Share my values card" })
   await page
     .getByRole("button", { name: "Customize my card", exact: true })
     .click()

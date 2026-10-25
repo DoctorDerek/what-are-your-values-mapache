@@ -231,6 +231,13 @@ for (const viewport of [
     expect(first.card.bottom).toBeLessThanOrEqual(first.animal.top)
     expect(second.card.bottom).toBeLessThanOrEqual(second.animal.top)
     for (const side of ["first", "second"] as const) {
+      if (side === "second")
+        await page
+          .getByRole("button", {
+            name: "Dismiss achievement: First Battle",
+            exact: true,
+          })
+          .click()
       const identity = await stage.getAttribute("data-choreography-identity")
       await expect
         .poll(() =>
@@ -245,6 +252,11 @@ for (const viewport of [
             ),
         )
         .toBe(true)
+      await expect(
+        page
+          .getByRole("button", { name: /^Choose / })
+          .nth(side === "first" ? 0 : 1),
+      ).toBeEnabled()
       await stage
         .locator(`[data-battle-arena-side="${side}"]`)
         .scrollIntoViewIfNeeded()

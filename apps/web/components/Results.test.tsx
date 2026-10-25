@@ -1,3 +1,4 @@
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import { getValueDisplayName } from "@game/data/src/Value"
 import { createBattleExitResults } from "@game/machines/src/BattleExitResults"
@@ -6,6 +7,7 @@ import {
   createInitialBattleProfile,
 } from "@game/machines/src/BattleProfile"
 import { projectBattlePair } from "@game/machines/src/BattleScheduler"
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import Results from "./Results"
@@ -24,6 +26,80 @@ function createResults() {
 }
 
 describe("Battle-exit Results presentation", () => {
+  it.each(["en", "es-MX"] as const)(
+    "shows bundled medal promotions with a stable %s final announcement",
+    (locale) => {
+      vi.useFakeTimers()
+      try {
+        const initial = createInitialBattleProfile("web-medal-progression")
+        const progressById = new Map(initial.progressById)
+        progressById.set(initial.activeDeck.valueIds[0], {
+          totalXp: 4,
+          profileWins: 1,
+          profileComparisons: 1,
+          currentCycleWins: 1,
+        })
+        const entry = { ...initial, progressById }
+        const exitProgressById = new Map(progressById)
+        exitProgressById.set(initial.activeDeck.valueIds[13], {
+          totalXp: 8,
+          profileWins: 2,
+          profileComparisons: 2,
+          currentCycleWins: 1,
+        })
+        const results = createBattleExitResults(entry, {
+          ...entry,
+          progressById: exitProgressById,
+        })!
+        const copy = getLocaleCatalog(locale)
+        const winner = results.values[0]
+        const summary = copy.interfaceCopy.screen.valueResult(
+          "1",
+          getValueDisplayName(winner.definition, copy.values),
+          "5",
+          "8",
+          copy.interfaceCopy.rank.medal(1, copy.interfaceCopy.rank.gold),
+        )
+        render(
+          <LocaleProvider locale={locale}>
+            <Results
+              results={results}
+              runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+              shouldReduceMotion={false}
+              isMenuOpen={false}
+              onOpenMenu={vi.fn()}
+              onSeeValues={vi.fn()}
+              onKeepBattling={vi.fn()}
+            />
+          </LocaleProvider>,
+        )
+        const announcement = screen.getByText(summary, { exact: true })
+        const row = announcement.closest("li")!
+        const slot = row.querySelector("[data-results-medal]")!
+        for (const [advanceMs, medal] of [
+          [0, "bronze"],
+          [950, "silver"],
+          [950, "gold"],
+        ] as const) {
+          act(() => vi.advanceTimersByTime(advanceMs))
+          expect(row.querySelector("[data-results-medal]")).toBe(slot)
+          const image = slot.querySelector("img")!
+          expect(image).toBeVisible()
+          expect(image).toHaveAttribute(
+            "src",
+            expect.stringContaining(`${medal}.png`),
+          )
+          expect(image).toHaveAttribute("alt", "")
+          expect(image).toHaveAttribute("aria-hidden", "true")
+          expect(announcement).toHaveTextContent(summary)
+        }
+        expect(within(row).queryByRole("img")).toBeNull()
+      } finally {
+        vi.useRealTimers()
+      }
+    },
+  )
+
   it("expires the accepted-save status once without removing its geometry or restarting on remount", () => {
     vi.useFakeTimers()
     try {
@@ -69,9 +145,10 @@ describe("Battle-exit Results presentation", () => {
     const roster = screen.getByRole("list", { name: "Your value results" })
     const firstRow = within(roster).getAllByRole("listitem")[0]
     expect(firstRow).toHaveTextContent(
-      `Rank 1, ${getValueDisplayName(results.values[0].definition)}`,
+      `Rank 1, gold medal, ${getValueDisplayName(results.values[0].definition)}`,
     )
     expect(firstRow).toHaveTextContent("Level 1")
+    expect(firstRow.querySelector("[data-results-medal] img")).toBeNull()
     expect(firstRow).not.toHaveAttribute("tabindex")
     expect(within(roster).queryAllByRole("button")).toHaveLength(0)
   })
@@ -197,8 +274,11 @@ describe("Battle-exit Results presentation", () => {
         expect(profile).toHaveTextContent("Profile Level 1")
         const firstRow = within(roster).getAllByRole("listitem")[0]
         expect(firstRow).toHaveAttribute("data-results-settled", "true")
+        expect(
+          firstRow.querySelector("[data-results-medal] img"),
+        ).toHaveAttribute("src", expect.stringContaining("gold.png"))
         expect(firstRow).toHaveTextContent(
-          `Rank 1, ${getValueDisplayName(results.values[0].definition)}`,
+          `Rank 1, gold medal, ${getValueDisplayName(results.values[0].definition)}`,
         )
         const valueBar = firstRow.querySelector(
           '[data-slot="progress-indicator"]',

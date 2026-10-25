@@ -28,6 +28,7 @@ import {
   type ReactNode,
 } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
+import RankMedal from "@/components/RankMedal"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import ValueAnimalPresentation from "@/components/ValueAnimalPresentation"
@@ -111,15 +112,29 @@ function ResultsValueRow({
           getValueDisplayName(value.definition, localizedCopy.values),
           integer(finalLevel),
           integer(value.exitProgress.totalXp),
+          frameValue.finalMedal
+            ? localizedCopy.interfaceCopy.rank.medal(
+                value.exitRank,
+                localizedCopy.interfaceCopy.rank[frameValue.finalMedal],
+              )
+            : undefined,
         )}
       </span>
       <div
         aria-hidden="true"
         className="flex min-w-0 flex-wrap items-center gap-2"
       >
-        <span className="text-mapache-vivid-dark relative shrink-0 text-center font-mono text-lg font-black tabular-nums">
-          <span className="invisible">{frameValue.rankLabelPlaceholder}</span>
-          <span className="absolute inset-0">#{rank}</span>
+        <span className="flex shrink-0 flex-col items-center gap-0.5">
+          <span className="text-mapache-vivid-dark relative text-center font-mono text-lg font-black tabular-nums">
+            <span className="invisible">{frameValue.rankLabelPlaceholder}</span>
+            <span className="absolute inset-0">#{rank}</span>
+          </span>
+          <span
+            className="size-6"
+            data-results-medal={frameValue.medal ?? "none"}
+          >
+            {frameValue.medal && <RankMedal color={frameValue.medal} />}
+          </span>
         </span>
         <ValueAnimalPresentation
           rank={rank}
@@ -300,8 +315,8 @@ export default function Results({
     >
       <div className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-2">
         <header className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2">
-            <h1 className="text-mapache-vivid-primary-cyan text-2xl font-black">
+          <div className="flex min-w-0 grow basis-36 flex-wrap items-center gap-x-2">
+            <h1 className="text-mapache-vivid-primary-cyan max-w-full text-2xl font-black [overflow-wrap:anywhere]">
               {RESULTS_COPY.heading}
             </h1>
             <span

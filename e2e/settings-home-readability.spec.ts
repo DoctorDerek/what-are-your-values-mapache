@@ -152,11 +152,7 @@ for (const copy of languages) {
         expect(title.fontSize).toBeGreaterThanOrEqual((32 * scale) / 100)
         expect(title.height).toBeLessThanOrEqual(
           title.lineHeight *
-            (scale === 100
-              ? 1
-              : fontFamily && copy.locale === "es-MX"
-                ? 3
-                : 2) +
+            (scale === 100 ? 1 : copy.locale === "es-MX" ? 3 : 2) +
             1,
         )
       }

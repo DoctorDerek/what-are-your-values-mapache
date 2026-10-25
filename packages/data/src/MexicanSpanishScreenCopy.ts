@@ -95,8 +95,8 @@ export const MEXICAN_SPANISH_SCREEN_COPY: InterfaceCopy["screen"] = {
   unlockedOn: (date) => `Desbloqueado el ${date}`,
   achievementsUnlocked: (current, total) =>
     `${current} de ${total} desbloqueados`,
-  valueResult: (rank, name, level, xp) =>
-    `Puesto ${rank}, ${name}, nivel ${level}, ${xp} XP en total.`,
+  valueResult: (rank, name, level, xp, rankLabel = `Puesto ${rank}`) =>
+    `${rankLabel}, ${name}, nivel ${level}, ${xp} XP en total.`,
   resultSummary: (summary, xp, level, change) =>
     `${summary}. XP del perfil: ${xp}, ${change}. Nivel del perfil: ${level}.`,
   profileXpTowardLevel: (level) =>

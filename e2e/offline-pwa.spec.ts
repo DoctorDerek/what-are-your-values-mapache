@@ -165,7 +165,12 @@ test("the web runtime follows its deployment offline policy", async ({
   await page
     .getByLabel("Definition", { exact: true })
     .fill("to solve problems without a connection")
-  await page.getByRole("button", { name: "Save", exact: true }).click()
+  await Promise.all([
+    page.waitForEvent("framenavigated", {
+      predicate: (frame) => frame === page.mainFrame(),
+    }),
+    page.getByRole("button", { name: "Save", exact: true }).click(),
+  ])
   await expect(
     page.getByText("Your Custom Values are saved and ready to battle.", {
       exact: true,
