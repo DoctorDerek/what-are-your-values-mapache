@@ -51,126 +51,146 @@ export default function NativeValuesCardShare({
       animationType={shouldReduceMotion ? "none" : "fade"}
       onRequestClose={onClose}
     >
-      <MapacheScreen>
-        <ScrollView
-          contentContainerClassName="min-h-full w-full max-w-[45rem] self-center gap-2 p-3 xl:gap-4 xl:p-6"
-          accessibilityViewIsModal
-        >
-          <View>
-            <Text
-              accessibilityRole="header"
-              className="text-mapache-vivid-primary-cyan text-center text-xl leading-6 font-black xl:text-3xl"
-            >
-              {copy.title}
-            </Text>
-          </View>
-          <View
-            accessibilityLabel={copy.format}
-            className="flex-row flex-wrap gap-2 xl:w-80 xl:self-center"
+      <MapacheScreen accessibilityViewIsModal>
+        <View className="min-h-0 w-full max-w-[45rem] flex-1 self-center">
+          <ScrollView
+            className="min-h-0 flex-1"
+            contentContainerClassName="gap-2 p-3 xl:gap-4 xl:p-6"
           >
-            {(["gif", "png"] as const).map((option) => (
-              <Button
-                key={option}
-                size="compact"
-                className="relative min-w-0 grow basis-28"
-                accessibilityLabel={`${copy[option].name} · ${copy[option].description}`}
-                variant={format === option ? "secondary" : "outline"}
-                accessibilityState={{
-                  selected: format === option,
-                  disabled: isDelivering,
-                }}
-                disabled={isDelivering}
-                onPress={() =>
-                  send({ type: "CARD_SHARE.FORMAT", format: option })
-                }
+            <View>
+              <Text
+                accessibilityRole="header"
+                className="text-mapache-vivid-primary-cyan text-center text-xl leading-6 font-black xl:text-3xl"
               >
-                {format === option && (
+                {copy.title}
+              </Text>
+            </View>
+            <View
+              accessibilityLabel={copy.format}
+              className="flex-row flex-wrap gap-2 xl:w-80 xl:self-center"
+            >
+              {(["gif", "png"] as const).map((option) => (
+                <Button
+                  key={option}
+                  size="compact"
+                  className="relative min-w-0 grow basis-28"
+                  accessibilityLabel={`${copy[option].name} · ${copy[option].description}`}
+                  variant={format === option ? "secondary" : "outline"}
+                  accessibilityState={{
+                    selected: format === option,
+                    disabled: isDelivering,
+                  }}
+                  disabled={isDelivering}
+                  onPress={() =>
+                    send({ type: "CARD_SHARE.FORMAT", format: option })
+                  }
+                >
+                  {format === option && (
+                    <Text
+                      accessible={false}
+                      className="absolute top-1 left-1 text-base font-black text-black"
+                    >
+                      ✓
+                    </Text>
+                  )}
+                  <View className="items-center px-2">
+                    <Text>{copy[option].name}</Text>
+                    <Text className="text-center text-sm font-bold text-black">
+                      {copy[option].description}
+                    </Text>
+                  </View>
+                </Button>
+              ))}
+            </View>
+            <View className="bg-player-card-background aspect-video w-full">
+              {artifact ? (
+                <CardImage
+                  source={{
+                    uri: shouldReduceMotion
+                      ? artifact.stillPreviewUri
+                      : artifact.previewUri,
+                  }}
+                  contentFit="contain"
+                  className="h-full w-full"
+                  accessibilityLabel={localizedCopy.interfaceCopy.screen.cardPreview(
+                    model.title,
+                    model.values.map((value) => value.name),
+                  )}
+                  accessible
+                />
+              ) : (
+                <View className="h-full items-center justify-center p-4">
                   <Text
-                    accessible={false}
-                    className="absolute top-1 left-1 text-base font-black text-black"
+                    accessibilityLiveRegion="polite"
+                    className="text-player-card-ink text-center font-bold"
                   >
-                    ✓
-                  </Text>
-                )}
-                <View className="items-center px-2">
-                  <Text>{copy[option].name}</Text>
-                  <Text className="text-center text-sm font-bold text-black">
-                    {copy[option].description}
+                    {state.matches("Preparing") ? copy.preparing : copy.failure}
                   </Text>
                 </View>
-              </Button>
-            ))}
-          </View>
-          <View className="bg-player-card-background aspect-video w-full">
-            {artifact ? (
-              <CardImage
-                source={{
-                  uri: shouldReduceMotion
-                    ? artifact.stillPreviewUri
-                    : artifact.previewUri,
-                }}
-                contentFit="contain"
-                className="h-full w-full"
-                accessibilityLabel={localizedCopy.interfaceCopy.screen.cardPreview(
-                  model.title,
-                  model.values.map((value) => value.name),
-                )}
-                accessible
-              />
-            ) : (
-              <View className="h-full items-center justify-center p-4">
-                <Text
-                  accessibilityLiveRegion="polite"
-                  className="text-player-card-ink text-center font-bold"
-                >
-                  {state.matches("Preparing") ? copy.preparing : copy.failure}
-                </Text>
-              </View>
-            )}
-          </View>
-          <Pressable
-            accessibilityRole="checkbox"
-            accessibilityState={{
-              checked: includeHero,
-              disabled: isDelivering,
-            }}
-            disabled={isDelivering}
-            onPress={() =>
-              send({ type: "CARD_SHARE.HERO", includeHero: !includeHero })
-            }
-            className="min-h-12 flex-row items-center gap-2"
-          >
-            <Text className="text-2xl text-white">
-              {includeHero ? "☑" : "☐"}
-            </Text>
-            <Text className="min-w-0 flex-1 font-bold text-white">
-              {copy.includeHero}
-            </Text>
-          </Pressable>
-          {error && (
-            <View className="gap-2 border-4 border-black bg-white p-3">
-              <Text accessibilityRole="alert" className="font-bold text-black">
-                {artifact ? copy.deliveryFailure : copy.failure}
-              </Text>
-              <Button
-                variant="outline"
-                size="compact"
-                onPress={() => setShowDetails((value) => !value)}
-              >
-                <Text>{copy.details}</Text>
-              </Button>
-              {showDetails && (
-                <Text selectable className="text-black">
-                  {error}
-                </Text>
               )}
             </View>
-          )}
-          <View className="mt-auto gap-2 pb-2">
+            <Pressable
+              accessibilityRole="checkbox"
+              accessibilityState={{
+                checked: includeHero,
+                disabled: isDelivering,
+              }}
+              disabled={isDelivering}
+              onPress={() =>
+                send({ type: "CARD_SHARE.HERO", includeHero: !includeHero })
+              }
+              className="min-h-12 flex-row items-center gap-2"
+            >
+              <Text className="text-2xl text-white">
+                {includeHero ? "☑" : "☐"}
+              </Text>
+              <Text className="min-w-0 flex-1 font-bold text-white">
+                {copy.includeHero}
+              </Text>
+            </Pressable>
+            {error && (
+              <View className="gap-2 border-4 border-black bg-white p-3">
+                <Text
+                  accessibilityRole="alert"
+                  className="font-bold text-black"
+                >
+                  {artifact ? copy.deliveryFailure : copy.failure}
+                </Text>
+                <Button
+                  variant="outline"
+                  size="compact"
+                  onPress={() => setShowDetails((value) => !value)}
+                >
+                  <Text>{copy.details}</Text>
+                </Button>
+                {showDetails && (
+                  <Text selectable className="text-black">
+                    {error}
+                  </Text>
+                )}
+              </View>
+            )}
+            {artifact && !artifact.canShare && (
+              <Text className="text-sm text-white">
+                {copy.unsupportedShare}
+              </Text>
+            )}
+            {(isDelivering || outcome) && (
+              <Text
+                accessibilityLiveRegion="polite"
+                className="text-center text-sm font-medium text-white"
+              >
+                {isDelivering
+                  ? copy.delivering
+                  : getValuesCardDeliveryMessage(outcome, copy)}
+              </Text>
+            )}
+          </ScrollView>
+          <View className="shrink-0 gap-2 p-3 pb-5 xl:px-6">
             <View className="flex-row flex-wrap gap-2">
               <Button
                 size="compact"
-                className="min-w-0 grow basis-28"
+                className="basis-readable-action min-w-0 shrink grow"
                 variant="outline"
                 onPress={onClose}
               >
@@ -179,7 +199,7 @@ export default function NativeValuesCardShare({
               {state.matches("Failed") ? (
                 <Button
                   size="compact"
-                  className="min-w-0 grow basis-28"
+                  className="basis-readable-action min-w-0 shrink grow"
                   onPress={() => send({ type: "CARD_SHARE.RETRY" })}
                 >
                   <Text>{copy.retry}</Text>
@@ -187,7 +207,7 @@ export default function NativeValuesCardShare({
               ) : (
                 <Button
                   size="compact"
-                  className="min-w-0 grow basis-28"
+                  className="basis-readable-action min-w-0 shrink grow"
                   disabled={!artifact || isDelivering}
                   onPress={() =>
                     send({ type: "CARD_SHARE.DELIVER", delivery: "save" })
@@ -210,20 +230,7 @@ export default function NativeValuesCardShare({
               </Button>
             )}
           </View>
-          {artifact && !artifact.canShare && (
-            <Text className="text-sm text-white">{copy.unsupportedShare}</Text>
-          )}
-          {(isDelivering || outcome) && (
-            <Text
-              accessibilityLiveRegion="polite"
-              className="text-center text-sm font-medium text-white"
-            >
-              {isDelivering
-                ? copy.delivering
-                : getValuesCardDeliveryMessage(outcome, copy)}
-            </Text>
-          )}
-        </ScrollView>
+        </View>
       </MapacheScreen>
     </Modal>
   )
