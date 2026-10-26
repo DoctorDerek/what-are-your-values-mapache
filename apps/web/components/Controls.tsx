@@ -52,11 +52,11 @@ function ControlReferenceRow({
   const explanation =
     actionId === "stop" ? controls.stopDescription : description
   return (
-    <div className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] items-start gap-3 border-b-2 border-gray-200 py-3 last:border-b-0 @max-[16rem]:grid-cols-1">
-      <dt className="text-sm leading-snug font-bold [overflow-wrap:anywhere] text-gray-800">
+    <div className="flex flex-wrap items-start gap-3 border-b-2 border-gray-200 py-3 last:border-b-0">
+      <dt className="min-w-0 flex-[0.8_1_6rem] text-sm leading-snug font-bold [overflow-wrap:anywhere] text-gray-800">
         {input}
       </dt>
-      <dd className="text-base leading-snug font-black [overflow-wrap:anywhere]">
+      <dd className="min-w-0 flex-[1.2_1_9rem] text-base leading-snug font-black [overflow-wrap:anywhere]">
         {controlActions[actionId]}
         {explanation && (
           <p className="mt-1 text-sm leading-snug font-medium text-gray-700">
