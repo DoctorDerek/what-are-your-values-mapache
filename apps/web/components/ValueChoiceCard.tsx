@@ -114,7 +114,7 @@ export const ValueChoiceCard = forwardRef<
             )}
           />
           <div className="w-full min-w-0">
-            <div className="@container/choice-title flow-root w-full min-w-0">
+            <div className="flow-root w-full min-w-0">
               {controlHint ? (
                 <span
                   aria-hidden="true"
@@ -144,7 +144,7 @@ export const ValueChoiceCard = forwardRef<
                     : undefined
                 }
                 className={cx(
-                  "clear-both mx-auto flow-root w-max max-w-full min-w-0 pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black break-words hyphens-auto text-white drop-shadow-[4px_4px_0px_#000000] [hyphenate-limit-chars:6_3_3] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000] @max-[6rem]/choice-title:pr-[0.5ch]",
+                  "clear-both mx-auto flow-root w-max max-w-full min-w-0 px-[0.25ch] pt-2 text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-black break-words hyphens-auto text-white drop-shadow-[4px_4px_0px_#000000] [hyphenate-limit-chars:6_3_3] xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000]",
                   Boolean(controlHint) && "xl:clear-none xl:pt-0",
                 )}
               >
