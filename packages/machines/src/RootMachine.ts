@@ -4,6 +4,10 @@ import {
   type SupportedLocale,
 } from "@game/data/src/LocaleRegistry"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
+import {
+  IMPORT_CONFIRMATION_DURATION_MS,
+  type ImportConfirmation,
+} from "@game/machines/src/ImportConfirmation"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { assign, forwardTo, setup } from "xstate"
@@ -131,6 +135,7 @@ type RootMachineContext = {
   persistenceIssue: string | null
   portabilityIssue: string | null
   portabilityNotice: string | null
+  importConfirmation: ImportConfirmation | null
 }
 
 type RootMachineEvent =
@@ -680,6 +685,7 @@ export const rootMachine = setup({
     portabilityIssue: null,
     portabilityNotice: null,
     durableStore: input.durableStore,
+    importConfirmation: null,
     appVersion: input.appVersion,
     sourceBuild: input.sourceBuild,
     now: input.now,
@@ -831,6 +837,12 @@ export const rootMachine = setup({
       },
     },
     Hub: {
+      exit: assign({ importConfirmation: null }),
+      after: {
+        [IMPORT_CONFIRMATION_DURATION_MS]: {
+          actions: assign({ importConfirmation: null }),
+        },
+      },
       on: {
         "AVATAR.OPEN_REQUESTED": {
           target: "DressingRoom",
@@ -1668,9 +1680,16 @@ export const rootMachine = setup({
                 pendingImport: null,
                 preImportBackupBytes: null,
                 portabilityIssue: null,
-                portabilityNotice: ({ context }) =>
-                  getRootLocalization(context).interfaceCopy.portability
-                    .importSuccess,
+                portabilityNotice: null,
+                importConfirmation: ({ event }) => {
+                  const copy = getLocaleCatalog(
+                    event.output.head.playerData.settings.locale,
+                  ).interfaceCopy.portability
+                  return {
+                    summary: copy.importSuccessSummary,
+                    message: copy.importSuccess,
+                  }
+                },
               }),
             },
             onError: {

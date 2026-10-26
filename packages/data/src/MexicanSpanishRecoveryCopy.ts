@@ -60,6 +60,7 @@ export const MEXICAN_SPANISH_RECOVERY_COPY: Pick<
     importReplaceAction: "Importar y reemplazar",
     importCancelled: "Se canceló la importación. Tus datos no cambiaron.",
     importSuccess: "Respaldo restaurado. Tu progreso importado está listo.",
+    importSuccessSummary: "Respaldo restaurado",
     importInvalid:
       "Este archivo no es un respaldo válido de WAYVM. Tus datos no cambiaron.",
     importNewer:
