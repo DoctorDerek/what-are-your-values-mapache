@@ -588,7 +588,11 @@ describe("Hub Component Integration", () => {
           battleCycle.activeDeck,
           battleCycle.progressById,
         )}
-        dataNotice="Backup restored. Your imported progress is ready."
+        dataNotice={null}
+        importConfirmation={{
+          summary: "Backup restored",
+          message: "Backup restored. Your imported progress is ready.",
+        }}
         onBrowseAllValues={vi.fn()}
         onAddCustomValue={vi.fn()}
         onOpenMenu={vi.fn()}
@@ -596,9 +600,12 @@ describe("Hub Component Integration", () => {
       />,
     )
 
-    expect(
-      screen.getByText("Backup restored. Your imported progress is ready."),
-    ).toBeVisible()
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Backup restored. Your imported progress is ready.",
+    )
+    expect(screen.getByText("Backup restored", { exact: true })).toBeVisible()
+    expect(screen.getByRole("status").closest("header")).not.toBeNull()
+    expect(screen.getByRole("button", { name: "Menu" })).toBeEnabled()
     expect(screen.getAllByRole("listitem")).toHaveLength(
       battleCycle.activeDeck.values.length,
     )

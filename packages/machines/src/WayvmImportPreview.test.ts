@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
+import { presentWayvmImportPreview } from "./WayvmImportPreviewPresentation"
 import { applyAchievementTransition } from "./AchievementTransition"
 import { applyBattleChoice } from "./BattleProfile"
 import { createBattleChoiceEvent } from "./BattleProfileEvent"
@@ -83,6 +85,17 @@ function addCustomValue({
 }
 
 describe("WAYVM Import Preview", () => {
+  it.each([
+    ["en", "English (US)"],
+    ["es-MX", "Español (México)"],
+  ] as const)("names the %s backup language independently of the current UI", async (locale, languageName) => {
+    const preview = createWayvmImportPreview(await createPlayedExport())
+    const presentation = presentWayvmImportPreview(
+      { ...preview, locale },
+      getLocaleCatalog("es-MX"),
+    )
+    expect(presentation.summary.find(({ key }) => key === "language")?.value).toBe(languageName)
+  })
   it("projects understandable replacement facts from validated player data", async () => {
     const wayvmExport = await createPlayedExport()
 

@@ -21,7 +21,7 @@ describe("MapacheScreen", () => {
       "w-full",
       "min-h-[100dvh]",
       "[--mapache-screen-spacing:1rem]",
-      "sm:[--mapache-screen-spacing:2rem]",
+      "xl:[--mapache-screen-spacing:2rem]",
       ...SAFE_AREA_EDGE_CLASS_NAMES,
     )
   })
@@ -50,13 +50,13 @@ describe("MapacheScreen", () => {
     render(
       <>
         <MapacheScreen aria-label="Introduction" spacing="compact" />
-        <MapacheScreen aria-label="Settings" spacing="standard-xl" />
+        <MapacheScreen aria-label="Settings" spacing="standard" />
       </>,
     )
 
     expect(screen.getByRole("main", { name: "Introduction" })).toHaveClass(
-      "[--mapache-screen-spacing:1rem]",
-      "sm:[--mapache-screen-spacing:1.5rem]",
+      "[--mapache-screen-spacing:16px]",
+      "xl:[--mapache-screen-spacing:1.5rem]",
     )
     expect(screen.getByRole("main", { name: "Settings" })).toHaveClass(
       "[--mapache-screen-spacing:1rem]",

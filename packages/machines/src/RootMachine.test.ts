@@ -1,7 +1,7 @@
 import { playerDataPortabilityCopy } from "@game/data/src/PlayerDataPortabilityCopy"
 import { createCustomValueId } from "@game/data/src/Value"
 import { describe, expect, it, vi } from "vitest"
-import { createActor, fromPromise, waitFor } from "xstate"
+import { createActor, fromPromise, SimulatedClock, waitFor } from "xstate"
 import { ACHIEVEMENT_CATALOG } from "./AchievementCatalog"
 import { getPendingAchievementUnlocks } from "./AchievementState"
 import {
@@ -285,12 +285,15 @@ function createRootActor({
   durableStore = createInMemoryDurableStore(),
   randomUuid = () => crypto.randomUUID(),
   rootLogic = rootMachine,
+  clock,
 }: {
   readonly durableStore?: DurableStoreAdapter
   readonly randomUuid?: () => string
   readonly rootLogic?: typeof rootMachine
+  readonly clock?: SimulatedClock
 } = {}) {
   const actor = createActor(rootLogic, {
+    ...(clock && { clock }),
     input: {
       durableStore,
       appVersion: "0.1.0",
@@ -323,14 +326,16 @@ async function bootRootActor({
   randomUuid,
   rootLogic,
   skipIntroduction = false,
+  clock,
 }: {
   readonly schedulerSeed?: string
   readonly durableStore?: DurableStoreAdapter
   readonly randomUuid?: () => string
   readonly rootLogic?: typeof rootMachine
   readonly skipIntroduction?: boolean
+  readonly clock?: SimulatedClock
 } = {}) {
-  const root = createRootActor({ durableStore, randomUuid, rootLogic })
+  const root = createRootActor({ durableStore, randomUuid, rootLogic, clock })
   root.actor.start()
   root.actor.send({ type: "APP.HYDRATED", schedulerSeed })
   await waitFor(
@@ -2755,7 +2760,7 @@ describe("Root Machine", () => {
       target.actor,
       (candidate) =>
         candidate.matches("Hub") &&
-        candidate.context.portabilityNotice ===
+        candidate.context.importConfirmation?.message ===
           playerDataPortabilityCopy.importSuccess,
     )
 
@@ -2779,6 +2784,14 @@ describe("Root Machine", () => {
       },
     })
     expect(reviewSnapshot.context.playerData).toBe(targetPlayerData)
+    expect(importedSnapshot.context.portabilityNotice).toBeNull()
+    expect(importedSnapshot.context.importConfirmation?.summary).toBe(
+      playerDataPortabilityCopy.importSuccessSummary,
+    )
+    target.actor.send({ type: "ALL_VALUES.OPEN_REQUESTED" })
+    target.actor.send({ type: "ALL_VALUES.CLOSE_REQUESTED" })
+    expect(target.actor.getSnapshot().matches("Hub")).toBe(true)
+    expect(target.actor.getSnapshot().context.importConfirmation).toBeNull()
   })
 
   it("preserves the reviewed import and current data after a failed replacement so the player can retry", async () => {
@@ -2808,9 +2821,11 @@ describe("Root Machine", () => {
         return memoryStore.compareAndSwapVerified(transaction)
       },
     }) satisfies DurableStoreAdapter
+    const clock = new SimulatedClock()
     const target = await bootRootActor({
       durableStore,
       schedulerSeed: "root-retry-target-seed",
+      clock,
     })
     const targetPlayerData = target.actor.getSnapshot().context.playerData
     target.actor.send({ type: "DATA_MANAGEMENT.OPEN_REQUESTED" })
@@ -2835,6 +2850,7 @@ describe("Root Machine", () => {
     expect(failedSnapshot.context.playerData).toBe(targetPlayerData)
     expect(failedSnapshot.context.pendingImport).not.toBeNull()
     expect(failedSnapshot.context.preImportBackupBytes).toBeNull()
+    expect(failedSnapshot.context.importConfirmation).toBeNull()
 
     shouldFail = false
     target.actor.send({ type: "DATA_MANAGEMENT.IMPORT_CONFIRM_REQUESTED" })
@@ -2842,7 +2858,7 @@ describe("Root Machine", () => {
       target.actor,
       (candidate) =>
         candidate.matches("Hub") &&
-        candidate.context.portabilityNotice ===
+        candidate.context.importConfirmation?.message ===
           playerDataPortabilityCopy.importSuccess,
     )
 
@@ -2850,6 +2866,15 @@ describe("Root Machine", () => {
     expect(retriedSnapshot.context.playerData?.profile.scheduler.seed).toBe(
       "root-retry-source-seed",
     )
+    const acceptedPlayerData = retriedSnapshot.context.playerData
+    const acceptedStorage = await memoryStore.readAll()
+    clock.increment(4_999)
+    expect(target.actor.getSnapshot().context.importConfirmation).not.toBeNull()
+    clock.increment(1)
+    expect(target.actor.getSnapshot().context.importConfirmation).toBeNull()
+    expect(target.actor.getSnapshot().context.playerData).toBe(acceptedPlayerData)
+    expect(await memoryStore.readAll()).toEqual(acceptedStorage)
+    target.actor.stop()
   })
 
   it("deletes every Custom Value only after the matching review confirmation", async () => {
