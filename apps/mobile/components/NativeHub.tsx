@@ -85,7 +85,7 @@ export default function NativeHub({
               accessibilityRole="header"
               android_hyphenationFrequency="normal"
               className={cx(
-                "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-home-title text-lg leading-tight font-black tracking-normal text-white web:font-normal xl:text-[32px]",
+                "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-home-title web:font-normal text-lg leading-tight font-black tracking-normal text-white xl:text-[32px]",
                 importConfirmation && "opacity-0",
               )}
             >
