@@ -60,7 +60,7 @@ function InformationPanelFrame({
         !isIntroduction &&
           "max-w-4xl overflow-hidden border-4 border-black shadow-[12px_12px_0px_0px_#000000]",
         isIntroduction
-          ? "grid h-full grid-rows-[auto_minmax(0,1fr)_auto_auto]"
+          ? "grid h-full grid-rows-[minmax(0,auto)_minmax(2rem,1fr)_auto_minmax(0,auto)]"
           : isReference
             ? "grid grid-rows-[auto_minmax(0,1fr)_auto]"
             : "flex flex-col",
@@ -71,7 +71,7 @@ function InformationPanelFrame({
         className={cx(
           "relative z-20 border-black",
           isIntroduction
-            ? "flex min-h-24 items-center justify-center border-b-6 px-4 py-5 xl:min-h-32 xl:px-8 xl:py-6"
+            ? "flex min-h-0 items-center justify-center overflow-y-auto border-b-6 px-4 py-5 xl:px-8 xl:py-6"
             : isReference
               ? "flex min-w-0 flex-wrap items-start gap-3 border-b-4 px-[16px] py-[20px]"
               : "flex max-h-[40%] min-w-0 shrink-0 flex-wrap items-start gap-3 overflow-auto overscroll-contain border-b-4 p-[16px]",
@@ -119,7 +119,7 @@ function InformationPanelFrame({
         className={cx(
           "relative z-20 border-black",
           isIntroduction
-            ? "grid grid-cols-[minmax(0,36rem)] justify-center gap-3 border-t-6 px-6 pt-4 pb-5"
+            ? "grid min-w-0 grid-cols-1 justify-items-center gap-[12px] border-t-6 px-[24px] pt-[16px] pb-[20px] [&>*]:w-full [&>*]:max-w-xl"
             : isReference
               ? "min-w-0 border-t-4 bg-white px-[16px] pt-[12px] pb-[20px]"
               : "min-w-0 shrink-0 border-t-4 bg-white px-[16px] pt-[12px] pr-[20px] pb-[20px]",
@@ -129,7 +129,7 @@ function InformationPanelFrame({
         <Button
           type="button"
           size={isIntroduction ? "lg" : isReference ? "sm" : "default"}
-          wrap={!isIntroduction}
+          wrap
           onClick={onPrimaryAction}
           disabled={isPrimaryActionPending}
           aria-busy={isPrimaryActionPending}
@@ -146,7 +146,11 @@ function InformationPanelFrame({
           {primaryActionLabel}
         </Button>
       </footer>
-      {afterActions}
+      {afterActions && (
+        <div className="relative z-20 min-h-0 overflow-y-auto">
+          {afterActions}
+        </div>
+      )}
     </section>
   )
 }

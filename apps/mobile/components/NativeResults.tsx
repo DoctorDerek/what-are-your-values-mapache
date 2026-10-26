@@ -294,7 +294,10 @@ export default function NativeResults({
 
   return (
     <MapacheScreen className="p-3">
-      <View className="flex-row flex-wrap items-center justify-between gap-2 pb-2">
+      <ScrollView
+        className="max-h-[25%] shrink-0 grow-0"
+        contentContainerClassName="flex-row flex-wrap items-center justify-between gap-2 pb-2"
+      >
         <View className="min-w-0 flex-1 flex-row flex-wrap items-center gap-x-2">
           <Text
             accessibilityRole="header"
@@ -324,7 +327,7 @@ export default function NativeResults({
         <Button size="compact" variant="secondary" onPress={onOpenMenu}>
           <Text>{PRODUCT_MENU_COPY.openAction}</Text>
         </Button>
-      </View>
+      </ScrollView>
       <View className="relative min-h-0 flex-1 overflow-hidden">
         <FlatList
           className="min-h-0 flex-1"
@@ -351,35 +354,38 @@ export default function NativeResults({
           {notifications}
         </ScrollView>
       </View>
-      <View
-        accessible
-        accessibilityLabel={localizedCopy.interfaceCopy.screen.resultSummary(
-          changeSummary,
-          integer(results.exitProfileXp),
-          integer(finalProfileProgress.level),
-          changeLabel,
-        )}
-        className="border-2 border-black bg-white p-2"
-      >
-        <View className="flex-row flex-wrap justify-between gap-x-3">
-          <Text className="text-lg font-black text-black">
-            {RESULTS_COPY.profileLevel(integer(profileProgress.level))}
-          </Text>
-          <Text className="text-base font-semibold text-black">
-            {RESULTS_COPY.profileXp(integer(frame.profileXp))} · {changeLabel}
-          </Text>
+      <ScrollView className="max-h-[25%] shrink-0 grow-0">
+        <View
+          accessible
+          accessibilityLabel={localizedCopy.interfaceCopy.screen.resultSummary(
+            changeSummary,
+            integer(results.exitProfileXp),
+            integer(finalProfileProgress.level),
+            changeLabel,
+          )}
+          className="border-2 border-black bg-white p-2"
+        >
+          <View className="flex-row flex-wrap justify-between gap-x-3">
+            <Text className="text-lg font-black text-black">
+              {RESULTS_COPY.profileLevel(integer(profileProgress.level))}
+            </Text>
+            <Text className="text-base font-semibold text-black">
+              {RESULTS_COPY.profileXp(integer(frame.profileXp))} · {changeLabel}
+            </Text>
+          </View>
+          <View className="mt-1 h-3 flex-row overflow-hidden border border-black">
+            <View
+              className="bg-mapache-vivid-primary-raspberry"
+              style={{ flex: frame.profileLevelBarPercentage }}
+            />
+            <View style={{ flex: 100 - frame.profileLevelBarPercentage }} />
+          </View>
         </View>
-        <View className="mt-1 h-3 flex-row overflow-hidden border border-black">
-          <View
-            className="bg-mapache-vivid-primary-raspberry"
-            style={{ flex: frame.profileLevelBarPercentage }}
-          />
-          <View style={{ flex: 100 - frame.profileLevelBarPercentage }} />
-        </View>
-      </View>
-      <View className="gap-2 pt-2">
+      </ScrollView>
+      <View className="shrink-0 flex-row flex-wrap gap-2 pt-2 pb-2">
         <Button
           size="compact"
+          className="basis-readable-action min-w-0 flex-1"
           onPress={onSeeValues}
           onFocus={settleRowPositions}
         >
@@ -388,6 +394,7 @@ export default function NativeResults({
         <Button
           size="compact"
           variant="outline"
+          className="basis-readable-action min-w-0 flex-1"
           onPress={onKeepBattling}
           onFocus={settleRowPositions}
         >

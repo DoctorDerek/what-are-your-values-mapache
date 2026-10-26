@@ -22,7 +22,7 @@ export default function WebPublicPage({
       />
       <article
         aria-label={copy.publicInformation(localization.introduction.title)}
-        className="noise-bg bg-mapache-vivid-dark text-mapache-vivid-dark px-[max(1rem,env(safe-area-inset-left,0px))] pt-[max(2.5rem,env(safe-area-inset-top,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pb-[max(2.5rem,env(safe-area-inset-bottom,0px))] peer-has-[[data-game-surface=active]]:hidden xl:px-[max(2rem,env(safe-area-inset-left,0px))] xl:pr-[max(2rem,env(safe-area-inset-right,0px))] xl:pb-[max(4rem,env(safe-area-inset-bottom,0px))]"
+        className="noise-bg bg-mapache-vivid-dark text-mapache-vivid-dark px-[max(1rem,env(safe-area-inset-left,0px))] pt-[max(2.5rem,env(safe-area-inset-top,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pb-[max(2.5rem,env(safe-area-inset-bottom,0px))] [overflow-wrap:anywhere] hyphens-auto peer-has-[[data-game-surface=active]]:hidden xl:px-[max(2rem,env(safe-area-inset-left,0px))] xl:pr-[max(2rem,env(safe-area-inset-right,0px))] xl:pb-[max(4rem,env(safe-area-inset-bottom,0px))]"
       >
         <div className="mx-auto grid max-w-7xl min-w-0 grid-cols-1 gap-10">
           <a
