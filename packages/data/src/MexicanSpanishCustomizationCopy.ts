@@ -55,9 +55,11 @@ export const MEXICAN_SPANISH_CUSTOMIZATION_COPY: Pick<
     customize: "Personalizar mi tarjeta",
     randomize: "Al azar",
     save: "Guardar apariencia",
+    saveAction: "Guardar",
+    shareAction: "Compartir",
     cancel: "Cancelar",
     back: "Volver",
-    saving: "Guardando apariencia…",
+    saving: "Guardando…",
     error: "Error de guardado local",
     errorDetail:
       "Tus cambios de apariencia siguen aquí, pero no se han guardado.",
