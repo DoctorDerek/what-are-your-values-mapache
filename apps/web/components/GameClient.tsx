@@ -20,13 +20,11 @@ import {
   type AchievementPresentation,
 } from "@game/machines/src/AchievementPresentation"
 import { createBattleExitResults } from "@game/machines/src/BattleExitResults"
-import { inspectBattleProfileStore } from "@game/machines/src/BattleProfileHydration"
 import { BATTLE_PROFILE_PRE_IMPORT_BACKUP_KEY } from "@game/machines/src/BattleProfileStore"
 import {
   projectBattlePair,
   type BattleSchedulerRestorePoint,
 } from "@game/machines/src/BattleScheduler"
-import type { DurableStoreAdapter } from "@game/machines/src/DurableStoreAdapter"
 import { prepareWayvmDownload } from "@game/machines/src/PlayerDataPortabilityActors"
 import {
   DELETE_ALL_DATA_ACKNOWLEDGMENT,
@@ -56,6 +54,7 @@ import GameSession from "@/components/GameSession"
 import { ReopenedInformationPanel } from "@/components/InformationPanel"
 import InformationPanelContent from "@/components/InformationPanelContent"
 import ProductMenu from "@/components/ProductMenu"
+import ReadOnlyGameClient from "@/components/ReadOnlyGameClient"
 import RuntimeRecovery from "@/components/RuntimeRecovery"
 import SeethingSwarmAssetPreparation, {
   usePreparedSeethingSwarmBattle,
@@ -87,7 +86,6 @@ import PlayerDataRecovery, {
 import Results from "./Results"
 import Settings from "./Settings"
 import Splash from "./Splash"
-import WebWriterConflict from "./WebWriterConflict"
 
 const SOURCE_APP_VERSION = packageMetadata.version
 const SOURCE_BUILD =
@@ -95,62 +93,6 @@ const SOURCE_BUILD =
 const WEB_REDUCED_MOTION_ATTRIBUTE = "data-wayvm-reduced-motion"
 const DressingRoom = dynamic(() => import("@/components/DressingRoom"))
 const ValuesCardShare = dynamic(() => import("@/components/ValuesCardShare"))
-
-function ReadOnlyGameClient({
-  durableStore,
-}: {
-  readonly durableStore: DurableStoreAdapter
-}) {
-  const localizedCopy = useLocaleCatalog()
-  const playerDataPortabilityCopy = localizedCopy.interfaceCopy.portability
-
-  const [isExportPending, setIsExportPending] = useState(false)
-  const [issue, setIssue] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
-  const handleExportThisTab = useCallback(async () => {
-    setIsExportPending(true)
-    setIssue(null)
-    setNotice(null)
-
-    try {
-      const inspection = await inspectBattleProfileStore({
-        store: durableStore,
-        appVersion: SOURCE_APP_VERSION,
-      })
-      if (inspection.status !== "ready") {
-        setIssue(playerDataPortabilityCopy.exportFailure)
-        return
-      }
-
-      const preparedDownload = await prepareWayvmDownload({
-        exportedAt: new Date().toISOString(),
-        sourceAppVersion: SOURCE_APP_VERSION,
-        sourceBuild: SOURCE_BUILD,
-        playerData: inspection.state.head.playerData,
-      })
-      downloadPlayerDataFile(preparedDownload)
-      setNotice(playerDataPortabilityCopy.exportSuccess)
-    } catch {
-      setIssue(playerDataPortabilityCopy.exportFailure)
-    } finally {
-      setIsExportPending(false)
-    }
-  }, [
-    durableStore,
-    playerDataPortabilityCopy.exportFailure,
-    playerDataPortabilityCopy.exportSuccess,
-  ])
-
-  return (
-    <WebWriterConflict
-      isExportPending={isExportPending}
-      issue={issue}
-      notice={notice}
-      onExportThisTab={() => void handleExportThisTab()}
-      onLoadLatest={() => window.location.reload()}
-    />
-  )
-}
 
 function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
   const localizedCopy = useLocaleCatalog()
@@ -267,6 +209,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
   const [customValueBackRequestId, setCustomValueBackRequestId] = useState(0)
   const [isAllValuesNavigationBlocked, setIsAllValuesNavigationBlocked] =
     useState(false)
+  const [allValuesBackRequestId, setAllValuesBackRequestId] = useState(0)
   const backDisposition = projectRootBackDisposition(state)
   const hasSemanticParent =
     backDisposition.kind !== "root" ||
@@ -298,11 +241,11 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         setCustomValueBackRequestId((id) => id + 1)
         return true
       }
-      if (
-        isAllValuesNavigationBlocked ||
-        isReadingImportFile ||
-        isReadingRecoveryImportFile
-      )
+      if (isAllValuesNavigationBlocked) {
+        setAllValuesBackRequestId((id) => id + 1)
+        return true
+      }
+      if (isReadingImportFile || isReadingRecoveryImportFile)
         return true
       if (backDisposition.kind === "event") send(backDisposition.event)
       return backDisposition.kind !== "root"
@@ -1094,6 +1037,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           persistenceIssue={state.context.persistenceIssue}
           onClose={handleAllValuesClose}
           onNavigationBlockedChange={setIsAllValuesNavigationBlocked}
+          backRequestId={allValuesBackRequestId}
           onAddCustomValue={handleAddCustomValue}
           onUpdateCustomValue={handleUpdateCustomValue}
           onDeleteCustomValue={(valueId) =>
@@ -1174,7 +1118,10 @@ function GameClientShell({
   if (writerLease.status === "read-only")
     return (
       <div data-game-surface="active">
-        <ReadOnlyGameClient durableStore={durableStore} />
+        <ReadOnlyGameClient
+          durableStore={durableStore}
+          routeLocale={routeLocale}
+        />
       </div>
     )
 
