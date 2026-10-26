@@ -31,11 +31,11 @@ export default function RuntimeRecovery({
 
   return (
     <MapacheScreen className="flex items-center justify-center">
-      <section className="flex w-full max-w-2xl flex-col gap-5 border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] sm:p-8">
+      <section className="flex w-full max-w-2xl flex-col gap-5 border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] xl:p-8">
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="text-mapache-vivid-primary-cyan text-3xl font-black outline-none sm:text-4xl"
+          className="text-mapache-vivid-primary-cyan text-3xl font-black outline-none xl:text-4xl"
         >
           {copy.title}
         </h1>

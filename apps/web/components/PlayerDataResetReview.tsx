@@ -38,25 +38,25 @@ export default function PlayerDataResetReview({
   return (
     <section
       aria-labelledby="player-data-reset-review-heading"
-      className="border-mapache-vivid-primary-orange flex flex-col gap-5 border-8 bg-white p-5 shadow-[10px_10px_0px_0px_#000000] sm:p-8"
+      className="border-mapache-vivid-primary-orange flex flex-col gap-5 border-8 bg-white p-5 shadow-[10px_10px_0px_0px_#000000] xl:p-8"
     >
       <h2
         ref={headingRef}
         id="player-data-reset-review-heading"
         tabIndex={-1}
-        className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-3xl font-black uppercase outline-none sm:text-5xl"
+        className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-3xl font-black uppercase outline-none xl:text-5xl"
       >
         {copy.confirmationTitle}
       </h2>
 
-      <div className="text-mapache-vivid-dark flex flex-col gap-4 text-lg font-bold sm:text-xl">
+      <div className="text-mapache-vivid-dark flex flex-col gap-4 text-lg font-bold xl:text-xl">
         {copy.confirmationBody.map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
         ))}
       </div>
 
       {requiresCompleteErasureAcknowledgment ? (
-        <label className="text-mapache-vivid-dark bg-mapache-vivid-light flex min-h-14 cursor-pointer items-start gap-4 border-4 border-black p-4 text-lg font-black sm:text-xl">
+        <label className="text-mapache-vivid-dark bg-mapache-vivid-light flex min-h-14 cursor-pointer items-start gap-4 border-4 border-black p-4 text-lg font-black xl:text-xl">
           <input
             type="checkbox"
             checked={acknowledgedCompleteErasure}

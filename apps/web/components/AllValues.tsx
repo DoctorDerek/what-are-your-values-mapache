@@ -236,7 +236,7 @@ export default function AllValues({
                     ? localization.metadata.languageTag
                     : undefined
                 }
-                className="min-w-[min(100%,16rem)] flex-1 text-3xl font-black break-words hyphens-auto uppercase [hyphenate-limit-chars:6_3_3] sm:text-4xl"
+                className="min-w-[min(100%,16rem)] flex-1 text-3xl font-black break-words hyphens-auto uppercase [hyphenate-limit-chars:6_3_3] xl:text-4xl"
               >
                 {getWrappableValueDisplayName(
                   definition,

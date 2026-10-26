@@ -119,7 +119,7 @@ export default function PlayerDataRecovery(props: PlayerDataRecoveryProps) {
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="text-mapache-vivid-primary-cyan text-4xl font-black drop-shadow-[5px_5px_0px_#000000] outline-none sm:text-6xl"
+          className="text-mapache-vivid-primary-cyan text-4xl font-black drop-shadow-[5px_5px_0px_#000000] outline-none xl:text-6xl"
         >
           {props.mode === "storage-unavailable" && props.hasPendingSave ? (
             <span aria-hidden="true">✖ </span>
@@ -127,7 +127,7 @@ export default function PlayerDataRecovery(props: PlayerDataRecoveryProps) {
           {copy.title}
         </h1>
 
-        <div className="flex flex-col gap-3 text-lg font-bold text-white sm:text-xl">
+        <div className="flex flex-col gap-3 text-lg font-bold text-white xl:text-xl">
           {(Array.isArray(copy.body) ? copy.body : [copy.body]).map(
             (paragraph) => (
               <p key={paragraph}>{paragraph}</p>
@@ -139,7 +139,7 @@ export default function PlayerDataRecovery(props: PlayerDataRecoveryProps) {
         !props.hasLastKnownGoodSave &&
         !props.preview &&
         !props.resetReview ? (
-          <p className="bg-mapache-vivid-secondary-gold text-mapache-vivid-black border-4 border-black p-4 text-lg font-black shadow-[6px_6px_0px_0px_#000000] sm:text-xl">
+          <p className="bg-mapache-vivid-secondary-gold text-mapache-vivid-black border-4 border-black p-4 text-lg font-black shadow-[6px_6px_0px_0px_#000000] xl:text-xl">
             {playerDataRecoveryCopy.unreadableData.noKnownGoodSave}
           </p>
         ) : null}
