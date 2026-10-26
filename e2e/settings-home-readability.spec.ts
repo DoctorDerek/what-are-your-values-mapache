@@ -3,27 +3,30 @@ import { test } from "./fixtures"
 
 test.use({ serviceWorkers: "block", reducedMotion: "reduce" })
 
-test("the shipped stylesheet uses only the xl viewport boundary", async ({
+test("the shipped stylesheet uses only the xl breakpoint", async ({
   page,
 }) => {
   await page.goto("/")
-  const viewportQueries = await page.evaluate(() => {
-    const queries = new Set<string>()
+  const responsiveQueries = await page.evaluate(() => {
+    const viewport = new Set<string>()
+    const container = new Set<string>()
     function inspect(rules: CSSRuleList) {
       for (const rule of rules) {
         if (
           rule instanceof CSSMediaRule &&
-          /width|height|orientation/.test(rule.conditionText)
+          /width|height|size|orientation|aspect-ratio/.test(rule.conditionText)
         )
-          queries.add(rule.conditionText)
+          viewport.add(rule.conditionText)
+        if (rule instanceof CSSContainerRule) container.add(rule.conditionText)
         if (rule instanceof CSSGroupingRule) inspect(rule.cssRules)
       }
     }
     for (const sheet of document.styleSheets) inspect(sheet.cssRules)
-    return [...queries]
+    return { viewport: [...viewport], container: [...container] }
   })
-  expect(viewportQueries.length).toBeGreaterThan(0)
-  for (const query of viewportQueries)
+  expect(responsiveQueries.container).toEqual([])
+  expect(responsiveQueries.viewport.length).toBeGreaterThan(0)
+  for (const query of responsiveQueries.viewport)
     expect(query).toMatch(
       /^(?:not all and )?\((?:width (?:>=|<) |min-width: |max-width: )80rem\)$/,
     )
