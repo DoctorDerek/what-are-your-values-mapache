@@ -25,7 +25,7 @@ test("the shipped stylesheet uses only the xl viewport boundary", async ({
   expect(viewportQueries.length).toBeGreaterThan(0)
   for (const query of viewportQueries)
     expect(query).toMatch(
-      /^\((?:width (?:>=|<) |min-width: |max-width: )80rem\)$/,
+      /^(?:not all and )?\((?:width (?:>=|<) |min-width: |max-width: )80rem\)$/,
     )
 })
 
