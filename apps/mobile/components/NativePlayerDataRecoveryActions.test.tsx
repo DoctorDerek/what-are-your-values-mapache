@@ -35,11 +35,11 @@ describe("NativePlayerDataRecoveryActions", () => {
     )
 
     const expectedActions = [
-      playerDataRecoveryCopy.actions.restoreLastKnownGoodSave,
       playerDataRecoveryCopy.actions.importBackup,
       playerDataRecoveryCopy.actions.exportUnreadableData,
-      playerDataRecoveryCopy.actions.tryAgain,
       playerDataRecoveryCopy.actions.deleteAllData,
+      playerDataRecoveryCopy.actions.restoreLastKnownGoodSave,
+      playerDataRecoveryCopy.actions.tryAgain,
     ]
     const buttons = screen.getAllByRole("button")
     expect(buttons).toHaveLength(expectedActions.length)

@@ -165,7 +165,7 @@ describe("NativeCustomValueForm", () => {
     await user.press(reviewUpdate)
 
     expect(screen.getByText(/Earlier comparisons remain/)).toBeOnTheScreen()
-    await user.press(screen.getByRole("button", { name: "Cancel" }))
+    await user.press(screen.getByRole("button", { name: "Back" }))
     expect(
       screen.queryByText(/Earlier comparisons remain/),
     ).not.toBeOnTheScreen()
@@ -179,7 +179,7 @@ describe("NativeCustomValueForm", () => {
     )
   })
 
-  it("withdraws edit confirmation when the reviewed draft changes", async () => {
+  it("returns from review to the same editable draft before it can change", async () => {
     const callbacks = createCallbacks()
     const user = userEvent.setup()
     await render(
@@ -199,7 +199,10 @@ describe("NativeCustomValueForm", () => {
     await user.press(screen.getByRole("button", { name: "Review Update" }))
     expect(screen.getByText(/Earlier comparisons remain/)).toBeOnTheScreen()
 
-    await user.type(name, " More")
+    expect(screen.queryByLabelText("Value Name")).not.toBeOnTheScreen()
+    await user.press(screen.getByRole("button", { name: "Back" }))
+    expect(screen.getByLabelText("Value Name")).toHaveDisplayValue("Ingenuity Plus")
+    await user.type(screen.getByLabelText("Value Name"), " More")
 
     expect(
       screen.queryByText(/Earlier comparisons remain/),
@@ -218,5 +221,21 @@ describe("NativeCustomValueForm", () => {
     )
     for (const button of screen.getAllByRole("button"))
       expect(button).toBeDisabled()
+  })
+
+  it("uses native Back to leave review with the draft intact and ignores it during persistence", async () => {
+    const props = createEditProps()
+    await render(<NativeCustomValueForm {...props} backRequestId={0} />)
+    await fireEvent.changeText(screen.getByLabelText("Value Name"), "Curiosity Engine")
+    await fireEvent.press(screen.getByRole("button", { name: "Review Update" }))
+    expect(screen.queryByLabelText("Value Name")).not.toBeOnTheScreen()
+    await screen.rerender(<NativeCustomValueForm {...props} backRequestId={1} />)
+    expect(screen.getByLabelText("Value Name")).toHaveDisplayValue("Curiosity Engine")
+    expect(props.onCancel).not.toHaveBeenCalled()
+    await fireEvent.press(screen.getByRole("button", { name: "Review Update" }))
+    await screen.rerender(<NativeCustomValueForm {...props} isPersistencePending backRequestId={2} />)
+    expect(screen.queryByLabelText("Value Name")).not.toBeOnTheScreen()
+    expect(props.onCancel).not.toHaveBeenCalled()
+    expect(props.onSubmit).not.toHaveBeenCalled()
   })
 })

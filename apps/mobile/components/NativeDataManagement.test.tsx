@@ -160,7 +160,8 @@ describe("NativeDataManagement", () => {
   it("keeps reviewed resets inside Import & Export while preserving backup", async () => {
     const { callbacks } = await renderDataManagement({ resetReview })
     const user = userEvent.setup()
-    await expectNavigationIsInert(callbacks)
+    expect(screen.queryByRole("button", { name: "Menu" })).not.toBeOnTheScreen()
+    expect(screen.queryByRole("button", { name: "Back to Your Values" })).not.toBeOnTheScreen()
 
     const exportAction = screen.getByRole("button", { name: "Export Data" })
     expect(exportAction).toBeEnabled()

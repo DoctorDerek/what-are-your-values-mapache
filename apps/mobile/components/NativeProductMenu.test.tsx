@@ -30,12 +30,11 @@ function NativeProductMenuHarness({
 }
 
 describe("NativeProductMenu", () => {
-  it("presents Close Menu first followed by every shipped destination in canonical order", async () => {
+  it("preserves destination order and keeps Close Menu in the lower action row", async () => {
     await render(<NativeProductMenuHarness contextActionLabel="Close Menu" />)
 
     const dialog = screen.getByLabelText("Menu")
     const actionLabels = [
-      "Close Menu",
       "Browse All Values",
       "Custom Values",
       "Achievements",
@@ -48,6 +47,7 @@ describe("NativeProductMenu", () => {
       "Why I Made This Game",
       "Free Resources",
       "Credits & Privacy",
+      "Close Menu",
     ]
     const actions = within(dialog).getAllByRole("button")
 
@@ -57,7 +57,7 @@ describe("NativeProductMenu", () => {
     )
   })
 
-  it("presents Resume Battle first and reports the exact selected destination", async () => {
+  it("keeps Resume Battle after the destinations and reports the exact selected destination", async () => {
     const onDestinationSelect = jest.fn()
     const user = userEvent.setup()
     await render(
@@ -69,7 +69,7 @@ describe("NativeProductMenu", () => {
 
     const dialog = screen.getByLabelText("Menu")
     expect(
-      within(within(dialog).getAllByRole("button")[0]).getByText(
+      within(within(dialog).getAllByRole("button").slice(-1)[0]).getByText(
         "Resume Battle",
       ),
     ).toBeOnTheScreen()
