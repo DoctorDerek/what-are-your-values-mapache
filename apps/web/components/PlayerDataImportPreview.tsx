@@ -6,10 +6,11 @@ import {
   getWrappableImportAction,
   presentWayvmImportPreview,
 } from "@game/machines/src/WayvmImportPreviewPresentation"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 
 export default function PlayerDataImportPreview({
+  children,
   confirmLabel,
   isBusy,
   preview,
@@ -18,6 +19,7 @@ export default function PlayerDataImportPreview({
   onCancel,
   onConfirm,
 }: {
+  children?: ReactNode
   confirmLabel?: string
   isBusy: boolean
   preview: WayvmImportPreview
@@ -38,12 +40,13 @@ export default function PlayerDataImportPreview({
     <section
       aria-labelledby="import-preview-heading"
       aria-busy={isBusy}
-      className="text-mapache-vivid-dark flex max-h-[85dvh] min-h-[20rem] min-w-0 flex-1 flex-col border-4 border-black bg-white wrap-anywhere shadow-[8px_8px_0px_0px_#000000]"
+      className="text-mapache-vivid-dark flex min-h-0 min-w-0 flex-1 flex-col border-4 border-black bg-white wrap-anywhere shadow-[8px_8px_0px_0px_#000000]"
     >
       <div
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
         data-controller-scroll
       >
+        {children}
         <h2
           ref={headingRef}
           id="import-preview-heading"

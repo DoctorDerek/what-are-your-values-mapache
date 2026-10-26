@@ -1,20 +1,19 @@
 "use client"
 
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
-import {
-  DELETE_ALL_DATA_ACKNOWLEDGMENT,
-  type PlayerDataResetReview as PlayerDataResetReviewState,
-} from "@game/machines/src/PlayerDataReset"
-import { useEffect, useRef, useState } from "react"
+import { type PlayerDataResetReview as PlayerDataResetReviewState } from "@game/machines/src/PlayerDataReset"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 
 export default function PlayerDataResetReview({
+  children,
   isBusy,
   review,
   onCancel,
   onConfirm,
   onExport,
 }: {
+  children?: ReactNode
   isBusy: boolean
   review: PlayerDataResetReviewState
   onCancel: () => void
@@ -38,65 +37,75 @@ export default function PlayerDataResetReview({
   return (
     <section
       aria-labelledby="player-data-reset-review-heading"
-      className="border-mapache-vivid-primary-orange flex flex-col gap-5 border-8 bg-white p-5 shadow-[10px_10px_0px_0px_#000000] xl:p-8"
+      className="border-mapache-vivid-primary-orange flex min-h-0 flex-1 flex-col overflow-hidden border-8 bg-white shadow-[10px_10px_0px_0px_#000000]"
     >
-      <h2
-        ref={headingRef}
-        id="player-data-reset-review-heading"
-        tabIndex={-1}
-        className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-3xl font-black uppercase outline-none xl:text-5xl"
+      <div
+        data-controller-scroll
+        tabIndex={0}
+        className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-4 xl:p-8"
       >
-        {copy.confirmationTitle}
-      </h2>
+        {children}
+        <h2
+          ref={headingRef}
+          id="player-data-reset-review-heading"
+          tabIndex={-1}
+          className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-3xl font-black uppercase outline-none xl:text-5xl"
+        >
+          {copy.confirmationTitle}
+        </h2>
 
-      <div className="text-mapache-vivid-dark flex flex-col gap-4 text-lg font-bold xl:text-xl">
-        {copy.confirmationBody.map((paragraph) => (
-          <p key={paragraph}>{paragraph}</p>
-        ))}
-      </div>
+        <div className="text-mapache-vivid-dark flex flex-col gap-4 text-lg font-bold xl:text-xl">
+          {copy.confirmationBody.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </div>
 
-      {requiresCompleteErasureAcknowledgment ? (
-        <label className="text-mapache-vivid-dark bg-mapache-vivid-light flex min-h-14 cursor-pointer items-start gap-4 border-4 border-black p-4 text-lg font-black xl:text-xl">
-          <input
-            type="checkbox"
-            checked={acknowledgedCompleteErasure}
-            disabled={isBusy}
-            onChange={(event) =>
-              setAcknowledgedCompleteErasure(event.currentTarget.checked)
-            }
-            className="mt-1 size-6 shrink-0 accent-black"
-          />
-          <span>{DELETE_ALL_DATA_ACKNOWLEDGMENT}</span>
-        </label>
-      ) : null}
+        {requiresCompleteErasureAcknowledgment ? (
+          <label className="text-mapache-vivid-dark bg-mapache-vivid-light flex min-h-14 cursor-pointer items-start gap-4 border-4 border-black p-4 text-lg font-black xl:text-xl">
+            <input
+              type="checkbox"
+              checked={acknowledgedCompleteErasure}
+              disabled={isBusy}
+              onChange={(event) =>
+                setAcknowledgedCompleteErasure(event.currentTarget.checked)
+              }
+              className="mt-1 size-6 shrink-0 accent-black"
+            />
+            <span>
+              {localizedCopy.interfaceCopy.screen.deleteAllDataAcknowledgment}
+            </span>
+          </label>
+        ) : null}
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Button
           type="button"
           variant="secondary"
-          size="lg"
+          size="default"
           disabled={isBusy}
           onClick={onExport}
           wrap
-          className="w-full"
+          className="min-w-0 flex-1 basis-[8em]"
         >
           {localizedCopy.interfaceCopy.screen.exportData}
         </Button>
+      </div>
+      <div className="flex shrink-0 flex-wrap gap-[12px] border-t-4 border-black p-[12px] pb-[20px] xl:p-4">
         <Button
           type="button"
           variant="outline"
-          size="lg"
+          size="default"
           disabled={isBusy}
           onClick={onCancel}
           wrap
-          className="w-full"
+          typographyClassName="text-base leading-tight xl:text-lg"
+          className="min-w-0 flex-1 basis-[8em]"
         >
           {localizedCopy.interfaceCopy.screen.cancel}
         </Button>
         <Button
           type="button"
           variant="destructive"
-          size="lg"
+          size="default"
           disabled={
             isBusy ||
             (requiresCompleteErasureAcknowledgment &&
@@ -104,7 +113,8 @@ export default function PlayerDataResetReview({
           }
           onClick={() => onConfirm(review)}
           wrap
-          className="w-full"
+          typographyClassName="text-base leading-tight xl:text-lg"
+          className="min-w-0 flex-1 basis-[8em]"
         >
           {copy.actionLabel}
         </Button>

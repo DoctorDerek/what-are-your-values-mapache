@@ -4,12 +4,13 @@ import {
   getWrappableImportAction,
   presentWayvmImportPreview,
 } from "@game/machines/src/WayvmImportPreviewPresentation"
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import { ScrollView, View } from "react-native"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 
 export default function NativePlayerDataImportPreview({
+  children,
   confirmLabel,
   isBusy,
   preview,
@@ -18,6 +19,7 @@ export default function NativePlayerDataImportPreview({
   onCancel,
   onConfirm,
 }: {
+  readonly children?: ReactNode
   readonly confirmLabel?: string
   readonly isBusy: boolean
   readonly preview: WayvmImportPreview
@@ -33,14 +35,14 @@ export default function NativePlayerDataImportPreview({
   return (
     <View
       accessibilityState={{ busy: isBusy }}
-      className="min-h-readable-import flex-1 border-4 border-black bg-white"
+      className="min-h-0 flex-1 border-4 border-black bg-white"
     >
       <ScrollView
         className="min-h-0 flex-1"
         contentContainerClassName="gap-3 p-3"
         keyboardShouldPersistTaps="handled"
-        nestedScrollEnabled
       >
+        {children}
         <Text
           accessibilityRole="header"
           className="border-b-4 border-black pb-2 text-2xl font-black text-black uppercase"

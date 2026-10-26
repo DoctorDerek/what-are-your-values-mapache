@@ -19,6 +19,7 @@ export const MEXICAN_SPANISH_SCREEN_COPY: InterfaceCopy["screen"] = {
   matchingValue: "Valor coincidente",
   matchingValues: "Valores coincidentes",
   exportData: "Exportar datos",
+  deleteAllDataAcknowledgment: "Entiendo que esta acción no se puede deshacer.",
   valueName: "Nombre del valor",
   valueNamePlaceholder: "Nombre del valor",
   definition: "Qué significa este valor para mí",

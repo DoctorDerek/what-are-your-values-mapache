@@ -17,6 +17,7 @@ export const SCREEN_COPY = Object.freeze({
   matchingValue: "Matching value",
   matchingValues: "Matching values",
   exportData: "Export Data",
+  deleteAllDataAcknowledgment: "I understand that this cannot be undone.",
   valueName: "Value Name",
   valueNamePlaceholder: "Value name",
   definition: "What This Value Means to Me",
