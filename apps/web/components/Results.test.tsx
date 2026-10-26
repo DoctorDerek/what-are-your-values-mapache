@@ -27,6 +27,60 @@ function createResults() {
 
 describe("Battle-exit Results presentation", () => {
   it.each(["en", "es-MX"] as const)(
+    "reveals first-results medal images promptly with a stable %s summary",
+    (locale) => {
+      vi.useFakeTimers()
+      try {
+        const results = createResults()
+        const copy = getLocaleCatalog(locale)
+        const winner = results.values[0]
+        const summary = copy.interfaceCopy.screen.valueResult(
+          "1",
+          getValueDisplayName(winner.definition, copy.values),
+          "3",
+          "4",
+          copy.interfaceCopy.rank.medal(1, copy.interfaceCopy.rank.gold),
+        )
+        render(
+          <LocaleProvider locale={locale}>
+            <Results
+              results={results}
+              runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+              shouldReduceMotion={false}
+              isMenuOpen={false}
+              onOpenMenu={vi.fn()}
+              onSeeValues={vi.fn()}
+              onKeepBattling={vi.fn()}
+            />
+          </LocaleProvider>,
+        )
+        const announcement = screen.getByText(summary, { exact: true })
+        const row = announcement.closest("li")!
+        const slot = row.querySelector("[data-results-medal]")!
+        expect(slot.querySelector("img")).toBeNull()
+        for (const [advanceMs, medal] of [
+          [50, "bronze"],
+          [650, "silver"],
+          [900, "gold"],
+        ] as const) {
+          act(() => vi.advanceTimersByTime(advanceMs))
+          expect(row.querySelector("[data-results-medal]")).toBe(slot)
+          const image = slot.querySelector("img")!
+          expect(image).toBeVisible()
+          expect(image).toHaveAttribute(
+            "src",
+            expect.stringContaining(`${medal}.png`),
+          )
+          expect(announcement).toHaveTextContent(summary)
+        }
+        expect(within(row).queryByRole("img")).toBeNull()
+      } finally {
+        vi.useRealTimers()
+      }
+    },
+  )
+
+  it.each(["en", "es-MX"] as const)(
     "shows bundled medal promotions with a stable %s final announcement",
     (locale) => {
       vi.useFakeTimers()

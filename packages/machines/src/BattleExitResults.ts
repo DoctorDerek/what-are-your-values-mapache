@@ -4,6 +4,7 @@ import type { ValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues, type RankedValue } from "@game/data/src/ValueRanking"
 import {
   getValueRankPresentation,
+  VALUE_RANK_MEDAL_TIERS,
   type ValueRankMedalColor,
 } from "@game/data/src/ValueRankMedal"
 import {
@@ -269,6 +270,22 @@ function projectPresentationProgress(
   })
 }
 
+function projectFirstRankingMedal(
+  finalMedal: ValueRankMedalColor,
+  rankingProgress: number,
+) {
+  const finalTierIndex = VALUE_RANK_MEDAL_TIERS.findIndex(
+    ({ medal }) => medal.color === finalMedal,
+  )
+  const revealedTierCount = Math.ceil(
+    (VALUE_RANK_MEDAL_TIERS.length - finalTierIndex) * rankingProgress,
+  )
+  return (
+    VALUE_RANK_MEDAL_TIERS[VALUE_RANK_MEDAL_TIERS.length - revealedTierCount]
+      ?.medal.color ?? null
+  )
+}
+
 export function projectBattleExitResultsFrame(
   results: BattleExitResults,
   elapsedMs: number,
@@ -287,20 +304,25 @@ export function projectBattleExitResultsFrame(
 
   const isRankingSettled =
     areRowPositionsSettled || elapsedMs >= BATTLE_RESULTS_REORDER_MOTION_MS
-  const hasDisplayedRanking = isRankingSettled
-    ? results.hasExitRanking
-    : results.hasEntryRanking
+  const rankingProgress = isRankingSettled
+    ? 1
+    : projectResultsQuadraticEaseOut(
+        elapsedMs / BATTLE_RESULTS_REORDER_MOTION_MS,
+      )
   const values = results.values.map((value) => {
     const rank =
       value.entryRank +
-      Math.trunc(
-        (value.exitRank - value.entryRank) *
-          (isRankingSettled
-            ? 1
-            : projectResultsQuadraticEaseOut(
-                elapsedMs / BATTLE_RESULTS_REORDER_MOTION_MS,
-              )),
-      )
+      Math.trunc((value.exitRank - value.entryRank) * rankingProgress)
+    const finalMedal = results.hasExitRanking
+      ? (getValueRankPresentation(value.exitRank).medal?.color ?? null)
+      : null
+    const medal = isRankingSettled
+      ? finalMedal
+      : results.hasEntryRanking
+        ? (getValueRankPresentation(rank).medal?.color ?? null)
+        : finalMedal
+          ? projectFirstRankingMedal(finalMedal, rankingProgress)
+          : null
     const progress = projectPresentationProgress(
       BigInt(value.entryProgress.totalXp),
       BigInt(value.exitProgress.totalXp),
@@ -319,12 +341,8 @@ export function projectBattleExitResultsFrame(
     return Object.freeze({
       value,
       rank,
-      medal: hasDisplayedRanking
-        ? (getValueRankPresentation(rank).medal?.color ?? null)
-        : null,
-      finalMedal: results.hasExitRanking
-        ? (getValueRankPresentation(value.exitRank).medal?.color ?? null)
-        : null,
+      medal,
+      finalMedal,
       rankLabelPlaceholder: `#${results.values.length}`,
       stackingOrder: results.values.length + 1 - value.exitRank,
       motion: projectBattleExitResultsMotion(

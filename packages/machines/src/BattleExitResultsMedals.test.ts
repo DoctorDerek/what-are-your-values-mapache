@@ -96,7 +96,7 @@ describe("Results rank medals", () => {
     }
   })
 
-  it("does not fabricate entry medals before the first committed comparison", () => {
+  it("reveals the first ranking from blank through each earned medal tier", () => {
     const entry = createInitialBattleProfile("results-first-ranking-medals")
     const [winnerId] = projectBattlePair(entry.activeDeck, entry.scheduler)
     const { profile: exit } = applyBattleChoice({
@@ -107,18 +107,62 @@ describe("Results rank medals", () => {
     const results = createBattleExitResults(entry, exit)!
     expect(results.hasEntryRanking).toBe(false)
     expect(results.hasExitRanking).toBe(true)
-    for (const elapsedMs of [0, 925, 3_699])
-      expect(
-        projectBattleExitResultsFrame(results, elapsedMs).values.every(
-          ({ medal }) => medal === null,
-        ),
-      ).toBe(true)
+    for (const [elapsedMs, gold, silver, bronze] of [
+      [0, null, null, null],
+      [50, "bronze", "bronze", "bronze"],
+      [700, "silver", "bronze", "bronze"],
+      [1_100, "silver", "silver", "bronze"],
+      [1_600, "gold", "silver", "bronze"],
+      [3_700, "gold", "silver", "bronze"],
+    ] as const) {
+      const frame = projectBattleExitResultsFrame(results, elapsedMs)
+      const expectedMedals = { gold, silver, bronze }
+      for (const row of frame.values)
+        expect(row.medal).toBe(
+          row.finalMedal ? expectedMedals[row.finalMedal] : null,
+        )
+    }
+    const progressing = projectBattleExitResultsFrame(results, 50)
+    const settled = projectBattleExitResultsFrame(results, 50, 50, true)
     expect(
-      projectBattleExitResultsFrame(results, 3_700).values[0],
-    ).toMatchObject({
-      rank: 1,
-      medal: "gold",
-      finalMedal: "gold",
+      settled.values.every(({ medal, finalMedal }) => medal === finalMedal),
+    ).toBe(true)
+    expect(settled.values.map(({ totalXp }) => totalXp)).toEqual(
+      progressing.values.map(({ totalXp }) => totalXp),
+    )
+    expect(settled.profileXp).toBe(progressing.profileXp)
+    expect(results.presentationDurationMs).toBe(3_700)
+  })
+
+  it("reveals first medals even when the ranked card does not change position", () => {
+    const entry = createInitialBattleProfile("results-stationary-first-medal")
+    const progressById = new Map(entry.progressById)
+    progressById.set(entry.activeDeck.valueIds[0], {
+      totalXp: 4,
+      profileWins: 1,
+      profileComparisons: 1,
+      currentCycleWins: 1,
+    })
+    const results = createBattleExitResults(entry, { ...entry, progressById })!
+    expect(results.values[0]).toMatchObject({ entryRank: 1, exitRank: 1 })
+    for (const [elapsedMs, medal] of [
+      [0, null],
+      [50, "bronze"],
+      [700, "silver"],
+      [1_600, "gold"],
+    ] as const)
+      expect(
+        projectBattleExitResultsFrame(results, elapsedMs).values[0],
+      ).toMatchObject({ rank: 1, medal, finalMedal: "gold" })
+  })
+
+  it("removes medals when Undo returns to an unranked profile", () => {
+    const entry = createInitialBattleProfile("results-undo-ranking-medals")
+    const [winnerId] = projectBattlePair(entry.activeDeck, entry.scheduler)
+    const { profile: exit } = applyBattleChoice({
+      profile: entry,
+      winnerId,
+      expectedScheduler: entry.scheduler,
     })
     const undone = applyBattleUndo(exit)!
     const undoResults = createBattleExitResults(exit, undone.profile)!

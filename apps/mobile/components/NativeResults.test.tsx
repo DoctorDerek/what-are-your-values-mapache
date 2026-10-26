@@ -144,17 +144,20 @@ describe("Native Battle-exit Results", () => {
         ),
       ).toBe(true)
       expect(screen.getByText("Profile Level 1")).toBeOnTheScreen()
-      expect(
-        row.queryAll(
-          (element) => element.props.source === FLUENT_MEDAL_ARTWORK.gold,
-        ),
-      ).toHaveLength(0)
-      await act(async () => jest.advanceTimersByTime(3_650))
-      expect(
-        row.queryAll(
-          (element) => element.props.source === FLUENT_MEDAL_ARTWORK.gold,
-        ),
-      ).toHaveLength(1)
+      const summary = row.props.accessibilityLabel
+      for (const [advanceMs, medal] of [
+        [0, "bronze"],
+        [650, "silver"],
+        [900, "gold"],
+      ] as const) {
+        await act(async () => jest.advanceTimersByTime(advanceMs))
+        expect(
+          row.queryAll(
+            (element) => element.props.source === FLUENT_MEDAL_ARTWORK[medal],
+          ),
+        ).toHaveLength(1)
+        expect(row.props.accessibilityLabel).toBe(summary)
+      }
     } finally {
       jest.useRealTimers()
     }
