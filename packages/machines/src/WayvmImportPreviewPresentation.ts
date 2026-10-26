@@ -3,7 +3,7 @@ import {
   getLocaleCatalog,
   type LocalizationCatalog,
 } from "@game/data/src/LocalizationCatalog"
-import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
+import type { WayvmImportPreview } from "./WayvmImportPreview"
 
 export function getWrappableImportAction(
   label: string,

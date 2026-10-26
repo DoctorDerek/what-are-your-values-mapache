@@ -7,7 +7,7 @@ import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
   IMPORT_CONFIRMATION_DURATION_MS,
   type ImportConfirmation,
-} from "@game/machines/src/ImportConfirmation"
+} from "@game/data/src/ImportConfirmation"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { assign, forwardTo, setup } from "xstate"

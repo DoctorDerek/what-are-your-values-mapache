@@ -6,7 +6,7 @@ import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwa
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
-import type { ImportConfirmation } from "@game/machines/src/ImportConfirmation"
+import type { ImportConfirmation } from "@game/data/src/ImportConfirmation"
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import {

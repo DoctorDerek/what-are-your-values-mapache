@@ -5,7 +5,7 @@ import type { CustomValueAuthoringOptions } from "@game/data/src/useCustomValueA
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
-import type { ImportConfirmation } from "@game/machines/src/ImportConfirmation"
+import type { ImportConfirmation } from "@game/data/src/ImportConfirmation"
 import { cx } from "classix"
 import { useCallback, useState, type ReactNode } from "react"
 import { ScrollView, View } from "react-native"
