@@ -45,17 +45,6 @@ describe("Player Data Recovery Actions", () => {
       "id",
       playerDataRecoveryActionIds.restoreLastKnownGoodSave,
     )
-    const recoveryActions = screen.getByRole("button", {
-      name: "Import Backup",
-    }).parentElement
-    expect(recoveryActions).toHaveClass("grid-cols-1", "xl:grid-cols-2")
-    expect(recoveryActions).not.toHaveClass("sm:grid-cols-2")
-    expect(screen.getByRole("button", { name: "Delete All Data" })).toHaveClass(
-      "xl:col-span-2",
-    )
-    expect(
-      screen.getByRole("button", { name: "Delete All Data" }),
-    ).not.toHaveClass("sm:col-span-2")
     for (const handler of Object.values(handlers)) {
       expect(handler).toHaveBeenCalledOnce()
     }

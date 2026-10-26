@@ -24,7 +24,7 @@ function ProductMenuHarness({
 }
 
 describe("Product Menu", () => {
-  it("presents Close Menu first followed by every shipped destination in canonical order", () => {
+  it("keeps every shipped destination in canonical order with Close Menu in the lower action row", () => {
     render(<ProductMenuHarness contextActionLabel="Close Menu" />)
 
     const dialog = screen.getByRole("dialog", { name: "Menu" })
@@ -33,7 +33,6 @@ describe("Product Menu", () => {
       .map((button) => button.textContent)
 
     expect(actionLabels).toEqual([
-      "Close Menu",
       "Browse All Values",
       "Custom Values",
       "Achievements",
@@ -46,10 +45,11 @@ describe("Product Menu", () => {
       "Why I Made This Game",
       "Free Resources",
       "Credits & Privacy",
+      "Close Menu",
     ])
   })
 
-  it("presents Resume Battle first and reports the exact selected destination", () => {
+  it("keeps Resume Battle below the destinations and reports the exact selected destination", () => {
     const onDestinationSelect = vi.fn()
     render(
       <ProductMenuHarness
@@ -59,7 +59,7 @@ describe("Product Menu", () => {
     )
 
     const dialog = screen.getByRole("dialog", { name: "Menu" })
-    expect(within(dialog).getAllByRole("button")[0]).toHaveTextContent(
+    expect(within(dialog).getAllByRole("button").at(-1)).toHaveTextContent(
       "Resume Battle",
     )
 
