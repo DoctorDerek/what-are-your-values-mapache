@@ -44,8 +44,8 @@ describe("InformationPanel Component Integration", () => {
     expect(introductionScreen).toHaveClass(
       "h-[100dvh]",
       "overflow-hidden",
-      "[--mapache-screen-spacing:1rem]",
-      "sm:[--mapache-screen-spacing:1.5rem]",
+      "[--mapache-screen-spacing:16px]",
+      "xl:[--mapache-screen-spacing:1.5rem]",
     )
     expect(introductionScreen).not.toHaveClass("overscroll-none", "select-none")
     const informationPanelBody = screen.getByTestId("information-panel-body")

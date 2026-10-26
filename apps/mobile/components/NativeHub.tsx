@@ -1,5 +1,6 @@
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
 import { projectHubValues } from "@game/data/src/HubValueProjection"
+import type { ImportConfirmation } from "@game/data/src/ImportConfirmation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { CustomValueAuthoringOptions } from "@game/data/src/useCustomValueAuthoring"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
@@ -22,6 +23,7 @@ export default function NativeHub({
   rankedValues,
   runtimeClipCatalog,
   dataNotice,
+  importConfirmation = null,
   notifications,
   shouldReduceMotion,
   onAddCustomValue,
@@ -44,6 +46,7 @@ export default function NativeHub({
   rankedValues: readonly RankedValue[]
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
   dataNotice: string | null
+  importConfirmation?: ImportConfirmation | null
   notifications?: ReactNode
   shouldReduceMotion: boolean
   onAddCustomValue: () => void
@@ -77,13 +80,30 @@ export default function NativeHub({
     <MapacheScreen>
       <View className="min-h-0 flex-1 items-center gap-4 p-4 xl:gap-5 xl:p-6">
         <View className="w-full max-w-7xl flex-row flex-wrap items-center justify-between gap-3">
-          <Text
-            accessibilityRole="header"
-            android_hyphenationFrequency="normal"
-            className="min-w-0 flex-[1_1_10rem] text-base leading-tight font-bold tracking-tight text-white xl:text-2xl"
-          >
-            {introductionCopy.title}
-          </Text>
+          <View className="relative min-w-0 flex-[1_1_10rem] justify-center">
+            <Text
+              accessibilityRole="header"
+              android_hyphenationFrequency="normal"
+              className={cx(
+                "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-home-title web:font-normal text-lg leading-tight font-black tracking-normal text-white xl:text-[32px]",
+                importConfirmation && "opacity-0",
+              )}
+            >
+              {introductionCopy.title}
+            </Text>
+            {importConfirmation && (
+              <View className="absolute inset-0 justify-center">
+                <Text
+                  accessibilityLiveRegion="polite"
+                  accessibilityLabel={importConfirmation.message}
+                  className="text-sm leading-tight font-bold text-white xl:text-2xl"
+                >
+                  <Text className="text-green-300">✓</Text>{" "}
+                  {importConfirmation.summary}
+                </Text>
+              </View>
+            )}
+          </View>
           <Button
             className="ml-auto"
             size="compact"

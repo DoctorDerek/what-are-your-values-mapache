@@ -198,11 +198,11 @@ export default function DataManagement({
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
               <section
                 aria-labelledby="export-data-heading"
-                className="flex flex-col border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] sm:p-8"
+                className="flex flex-col border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] xl:p-8"
               >
                 <h2
                   id="export-data-heading"
-                  className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-3xl font-black uppercase sm:text-4xl"
+                  className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-3xl font-black uppercase xl:text-4xl"
                 >
                   {playerDataPortabilityCopy.exportTitle}
                 </h2>
@@ -222,11 +222,11 @@ export default function DataManagement({
 
               <section
                 aria-labelledby="import-data-heading"
-                className="flex flex-col border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] sm:p-8"
+                className="flex flex-col border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] xl:p-8"
               >
                 <h2
                   id="import-data-heading"
-                  className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-3xl font-black uppercase sm:text-4xl"
+                  className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-3xl font-black uppercase xl:text-4xl"
                 >
                   {playerDataPortabilityCopy.importTitle}
                 </h2>

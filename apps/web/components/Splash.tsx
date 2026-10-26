@@ -94,7 +94,6 @@ export default function Splash({
               fill
               unoptimized
               className="object-cover"
-              sizes="(min-width: 320px) 320px, 100vw"
             />
           </div>
           <div className="relative z-20 grid justify-items-center text-xl leading-7 font-black text-white">

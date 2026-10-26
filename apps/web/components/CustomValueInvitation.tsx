@@ -45,7 +45,7 @@ export default function CustomValueInvitation({
   return (
     <aside
       aria-label={localization.interfaceCopy.screen.addOwnValues}
-      className="text-mapache-vivid-dark flex min-h-0 w-full max-w-7xl min-w-0 flex-1 flex-col border-4 border-black bg-white [&_button]:max-w-full"
+      className="text-mapache-vivid-dark flex min-h-[16rem] w-full max-w-7xl min-w-0 flex-1 flex-col border-4 border-black bg-white [&_button]:max-w-full"
     >
       <fieldset
         disabled={authoring.isBusy}

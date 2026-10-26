@@ -49,6 +49,7 @@ export const playerDataPortabilityCopy = Object.freeze({
   importReplaceAction: "Import & Replace",
   importCancelled: "Import canceled. Your data was not changed.",
   importSuccess: "Backup restored. Your imported progress is ready.",
+  importSuccessSummary: "Backup restored",
   importInvalid:
     "This file is not a valid WAYVM backup. Your data was not changed.",
   importNewer:

@@ -13,10 +13,8 @@ const mapacheScreenVariants = cva(
       spacing: {
         "safe-area-only": "[--mapache-screen-spacing:0px]",
         compact:
-          "[--mapache-screen-spacing:1rem] sm:[--mapache-screen-spacing:1.5rem]",
+          "[--mapache-screen-spacing:16px] xl:[--mapache-screen-spacing:1.5rem]",
         standard:
-          "[--mapache-screen-spacing:1rem] sm:[--mapache-screen-spacing:2rem]",
-        "standard-xl":
           "[--mapache-screen-spacing:1rem] xl:[--mapache-screen-spacing:2rem]",
         "readable-xl":
           "[--mapache-screen-spacing:16px] xl:[--mapache-screen-spacing:2rem]",

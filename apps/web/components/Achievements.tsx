@@ -20,12 +20,12 @@ function AchievementCard({
     <li
       className={
         isUnlocked
-          ? "bg-mapache-vivid-secondary-gold text-mapache-vivid-black min-w-0 border-4 border-black p-4 shadow-[5px_5px_0px_0px_#000000] sm:p-5"
-          : "text-mapache-vivid-dark min-w-0 border-4 border-black bg-white p-4 shadow-[5px_5px_0px_0px_#000000] sm:p-5"
+          ? "bg-mapache-vivid-secondary-gold text-mapache-vivid-black min-w-0 border-4 border-black p-4 shadow-[5px_5px_0px_0px_#000000] xl:p-5"
+          : "text-mapache-vivid-dark min-w-0 border-4 border-black bg-white p-4 shadow-[5px_5px_0px_0px_#000000] xl:p-5"
       }
     >
       <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
-        <h2 className="min-w-0 flex-[1_1_190px] text-2xl font-black [overflow-wrap:anywhere] hyphens-auto uppercase sm:text-3xl">
+        <h2 className="min-w-0 flex-[1_1_190px] text-2xl font-black [overflow-wrap:anywhere] hyphens-auto uppercase xl:text-3xl">
           {achievement.title}
         </h2>
         <span className="max-w-full shrink-0 border-4 border-black bg-black px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-white uppercase">

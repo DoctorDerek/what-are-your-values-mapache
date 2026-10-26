@@ -125,6 +125,13 @@ for (const locale of ["en", "es-MX"] as const) {
       })
       await save.click()
       await expect(page.getByText(custom.saved, { exact: true })).toBeVisible()
+      await expect
+        .poll(() =>
+          page.evaluate(() =>
+            Boolean(history.state?.wayvmSemanticBackBoundary),
+          ),
+        )
+        .toBe(false)
       await page.reload()
       await page.setViewportSize({ width, height: 800 })
       await page
@@ -161,6 +168,9 @@ for (const locale of ["en", "es-MX"] as const) {
         exact: true,
       })
       await expect(preview).toBeVisible()
+      await expect(
+        preview.getByText(catalog.metadata.languageName, { exact: true }),
+      ).toBeVisible()
       await expect(
         preview.getByText(portability.preview.customValues, { exact: true }),
       ).toBeVisible()
@@ -207,9 +217,20 @@ for (const locale of ["en", "es-MX"] as const) {
         path: testInfo.outputPath("import-short-large-text.png"),
       })
       await replace.click()
-      await expect(
-        page.getByText(portability.importSuccess, { exact: true }),
-      ).toBeVisible()
+      const confirmation = page
+        .getByRole("status")
+        .filter({ hasText: portability.importSuccess })
+      await expect(confirmation).toBeVisible()
+      const header = page.getByRole("main").locator("header").first()
+      await expect(header).toContainText(portability.importSuccessSummary)
+      const card = page.getByRole("region", {
+        name: catalog.hub.unrankedTitle,
+        exact: true,
+      })
+      await expect(card).toBeVisible()
+      const cardBeforeExpiry = await card.boundingBox()
+      await expect(confirmation).toHaveCount(0, { timeout: 6500 })
+      expect(await card.boundingBox()).toEqual(cardBeforeExpiry)
     })
   }
 }

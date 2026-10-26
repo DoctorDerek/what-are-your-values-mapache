@@ -32,7 +32,7 @@ export default function PlayerDataResetActions({
     >
       <h2
         id="player-data-reset-actions-heading"
-        className="text-mapache-vivid-primary-cyan border-b-4 border-black pb-4 text-3xl font-black uppercase drop-shadow-[4px_4px_0px_#000000] sm:text-5xl"
+        className="text-mapache-vivid-primary-cyan border-b-4 border-black pb-4 text-3xl font-black uppercase drop-shadow-[4px_4px_0px_#000000] xl:text-5xl"
       >
         {localizedCopy.interfaceCopy.screen.resetOrDelete}
       </h2>
@@ -49,18 +49,18 @@ export default function PlayerDataResetActions({
             <article
               key={resetKind}
               className={cx(
-                "flex flex-col border-4 bg-white p-5 shadow-[8px_8px_0px_0px_#000000] sm:p-8",
+                "flex flex-col border-4 bg-white p-5 shadow-[8px_8px_0px_0px_#000000] xl:p-8",
                 isCompleteErasure
                   ? "border-mapache-vivid-secondary-red"
                   : "border-black",
               )}
             >
-              <h3 className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-2xl font-black uppercase sm:text-3xl">
+              <h3 className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-2xl font-black uppercase xl:text-3xl">
                 {copy.actionLabel}
               </h3>
               <p
                 id={descriptionId}
-                className="text-mapache-vivid-dark flex-1 py-5 text-lg font-bold sm:text-xl"
+                className="text-mapache-vivid-dark flex-1 py-5 text-lg font-bold xl:text-xl"
               >
                 {copy.summary}
               </p>

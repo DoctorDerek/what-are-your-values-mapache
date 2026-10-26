@@ -3,6 +3,33 @@ import { test } from "./fixtures"
 
 test.use({ serviceWorkers: "block", reducedMotion: "reduce" })
 
+test("the shipped stylesheet uses only the xl breakpoint", async ({ page }) => {
+  await page.goto("/")
+  const responsiveQueries = await page.evaluate(() => {
+    const viewport = new Set<string>()
+    const container = new Set<string>()
+    function inspect(rules: CSSRuleList) {
+      for (const rule of rules) {
+        if (
+          rule instanceof CSSMediaRule &&
+          /width|height|size|orientation|aspect-ratio/.test(rule.conditionText)
+        )
+          viewport.add(rule.conditionText)
+        if (rule instanceof CSSContainerRule) container.add(rule.conditionText)
+        if (rule instanceof CSSGroupingRule) inspect(rule.cssRules)
+      }
+    }
+    for (const sheet of document.styleSheets) inspect(sheet.cssRules)
+    return { viewport: [...viewport], container: [...container] }
+  })
+  expect(responsiveQueries.container).toEqual([])
+  expect(responsiveQueries.viewport.length).toBeGreaterThan(0)
+  for (const query of responsiveQueries.viewport)
+    expect(query).toMatch(
+      /^(?:not all and )?\((?:width (?:>=|<) |min-width: |max-width: )80rem\)$/,
+    )
+})
+
 const languages = [
   {
     locale: "en",
@@ -78,6 +105,40 @@ async function expectReadableText(locator: Locator) {
 }
 
 for (const copy of languages) {
+  test(`${copy.locale} Home keeps its condensed title and controls usable across the single xl boundary`, async ({
+    page,
+  }) => {
+    await page.goto(copy.path)
+    await page.getByRole("button", { name: copy.start, exact: true }).click()
+    const title = page
+      .getByRole("main")
+      .getByRole("heading", { level: 1 })
+      .first()
+    const menu = page.getByRole("button", { name: copy.menu, exact: true })
+    for (const width of [320, 390, 768, 1279, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 900 })
+      await page.evaluate(() => document.fonts.ready.then(() => undefined))
+      await expectReadableText(title)
+      await expect(menu).toBeInViewport({ ratio: 1 })
+      const titleBounds = await title.boundingBox()
+      const menuBounds = await menu.boundingBox()
+      expect(titleBounds!.x + titleBounds!.width).toBeLessThan(menuBounds!.x)
+      const typography = await title.evaluate((element) => {
+        const style = getComputedStyle(element)
+        return {
+          family: style.fontFamily,
+          size: parseFloat(style.fontSize),
+          spacing: style.letterSpacing,
+          height: element.getBoundingClientRect().height,
+          line: parseFloat(style.lineHeight),
+        }
+      })
+      expect(typography.family).toContain("WAYVM Condensed")
+      expect(typography.spacing).toBe("normal")
+      expect(typography.height).toBeLessThanOrEqual(typography.line + 1)
+      expect(typography.size).toBeGreaterThanOrEqual(width >= 768 ? 32 : 13.6)
+    }
+  })
   for (const { width, scale, fontFamily } of [
     { width: 320, scale: 100 },
     { width: 320, scale: 200 },

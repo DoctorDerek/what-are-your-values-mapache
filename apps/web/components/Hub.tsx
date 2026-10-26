@@ -2,10 +2,12 @@
 
 import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
+import type { ImportConfirmation } from "@game/data/src/ImportConfirmation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
+import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import {
   useCallback,
@@ -31,6 +33,7 @@ export default function Hub({
   browseAllValuesButtonRef,
   rosterRef,
   dataNotice,
+  importConfirmation = null,
   notifications,
   shouldReduceMotion,
   onBrowseAllValues,
@@ -60,6 +63,7 @@ export default function Hub({
   browseAllValuesButtonRef?: Ref<HTMLButtonElement>
   rosterRef?: Ref<HTMLDivElement>
   dataNotice: string | null
+  importConfirmation?: ImportConfirmation | null
   notifications?: ReactNode
   shouldReduceMotion: boolean
   onBrowseAllValues: (focusTargetId: string) => void
@@ -106,10 +110,30 @@ export default function Hub({
       className="flex h-[100dvh] min-w-0 flex-col items-center gap-[16px] xl:gap-4"
     >
       <header className="flex w-full max-w-7xl shrink-0 flex-wrap items-center justify-between gap-[12px] text-white xl:flex-nowrap xl:gap-3">
-        <div className="@container min-w-0 flex-[1_1_10rem] xl:flex-1">
-          <h1 className="text-[clamp(0.625rem,5.25cqw,1.5rem)] leading-tight font-bold tracking-tight text-balance xl:text-[min(5.25cqw,1.5rem)] xl:whitespace-nowrap">
+        <div className="@container grid min-w-0 flex-[1_1_10rem] items-center xl:flex-1">
+          <h1
+            className={cx(
+              "font-home-title col-start-1 row-start-1 text-[clamp(0.85rem,6.9cqw,2rem)] leading-[1.2] font-normal tracking-normal text-balance",
+              importConfirmation && "opacity-0",
+            )}
+          >
             {introductionCopy.title}
           </h1>
+          <p
+            role="status"
+            aria-hidden={!importConfirmation}
+            className={cx(
+              "col-start-1 row-start-1 text-sm leading-tight font-bold xl:text-2xl",
+              !importConfirmation && "opacity-0",
+            )}
+          >
+            <span aria-hidden="true">
+              <span className="text-green-300">✓</span>{" "}
+              {importConfirmation?.summary ??
+                localizedCopy.interfaceCopy.portability.importSuccessSummary}
+            </span>
+            <span className="sr-only">{importConfirmation?.message}</span>
+          </p>
         </div>
         <Button
           id={HUB_MENU_BUTTON_ID}

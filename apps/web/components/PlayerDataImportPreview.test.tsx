@@ -75,7 +75,7 @@ describe("Player Data Import Preview", () => {
     expect(
       getPreviewValue("Achievement Progress Generation"),
     ).toHaveTextContent("1")
-    expect(getPreviewValue("Language")).toHaveTextContent("en")
+    expect(getPreviewValue("Language")).toHaveTextContent("English (US)")
     expect(getPreviewValue("Replacement")).toHaveTextContent(
       "Replaces current data on this device",
     )

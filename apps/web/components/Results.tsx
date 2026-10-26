@@ -412,13 +412,13 @@ export default function Results({
           />
         </section>
         <nav
-          className="grid shrink-0 grid-cols-[repeat(auto-fit,minmax(min(100%,8rem),1fr))] gap-2"
+          className="flex shrink-0 flex-wrap gap-2 pb-[8px]"
           aria-label={localizedCopy.interfaceCopy.screen.resultsActions}
         >
           <Button
             size="sm"
             wrap
-            className="min-w-0 text-center leading-tight [overflow-wrap:anywhere]"
+            className="max-w-full min-w-min flex-[1_1_0] px-[6px] text-center leading-tight break-normal wrap-normal"
             onClick={onSeeValues}
           >
             {RESULTS_COPY.seeValuesAction}
@@ -427,7 +427,7 @@ export default function Results({
             size="sm"
             variant="outline"
             wrap
-            className="min-w-0 text-center leading-tight [overflow-wrap:anywhere]"
+            className="max-w-full min-w-min flex-[1_1_0] px-[6px] text-center leading-tight break-normal wrap-normal"
             onClick={onKeepBattling}
           >
             {RESULTS_COPY.keepBattlingAction}

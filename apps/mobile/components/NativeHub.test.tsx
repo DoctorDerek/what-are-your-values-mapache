@@ -310,14 +310,20 @@ describe("NativeHub", () => {
       <NativeHub
         {...createHubCallbacks()}
         {...animalPresentationProps}
-        dataNotice="Your imported data is ready."
+        dataNotice={null}
+        importConfirmation={{
+          summary: "Backup restored",
+          message: "Your imported data is ready.",
+        }}
         rankedValues={rankedValues}
       />,
     )
     expect(
       screen.getByRole("header", { name: "My Top Five Life Values" }),
     ).toBeOnTheScreen()
-    expect(screen.getByText("Your imported data is ready.")).toBeOnTheScreen()
+    expect(
+      screen.getByLabelText("Your imported data is ready."),
+    ).toBeOnTheScreen()
     expect(screen.getByText("#1")).toBeOnTheScreen()
     expect(screen.queryByText("#6")).toBeNull()
     expect(

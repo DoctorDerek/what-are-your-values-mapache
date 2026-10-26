@@ -59,7 +59,7 @@ describe("Player Data Recovery", () => {
     expect(screen.getByRole("main")).toHaveClass(
       "min-h-[100dvh]",
       "[--mapache-screen-spacing:1rem]",
-      "sm:[--mapache-screen-spacing:2rem]",
+      "xl:[--mapache-screen-spacing:2rem]",
     )
     const heading = screen.getByRole("heading", {
       name: "Your Saved Data Needs Attention",

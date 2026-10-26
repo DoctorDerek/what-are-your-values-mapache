@@ -1,4 +1,5 @@
 import { getPairCount } from "@game/data/src/ActiveDeck"
+import type { SupportedLocale } from "@game/data/src/LocaleRegistry"
 import type { WayvmExport } from "./WayvmExport"
 import { decodeWayvmExport } from "./WayvmExport"
 
@@ -18,7 +19,7 @@ export type WayvmImportPreview = {
   readonly progressGeneration: number
   readonly unlockedAchievementCount: number
   readonly achievementProgressGeneration: number
-  readonly locale: string
+  readonly locale: SupportedLocale
   readonly replacesCurrentLocalData: true
 }
 
