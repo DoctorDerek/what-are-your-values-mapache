@@ -32,20 +32,14 @@ export default function NativeProductMenu({
         accessibilityViewIsModal
         role="dialog"
       >
-        <View className="border-b-4 border-black px-5 py-5 xl:px-8 xl:py-7">
+        <ScrollView className="max-h-[25%] shrink-0 grow-0 border-b-4 border-black" contentContainerClassName="px-5 py-5 xl:px-8 xl:py-7">
           <Text
             variant="h1"
             className="text-mapache-vivid-primary-cyan text-left text-5xl font-black tracking-tight uppercase"
           >
             {PRODUCT_MENU_COPY.title}
           </Text>
-        </View>
-
-        <View className="border-b-4 border-black p-5 xl:p-8">
-          <Button size="large" onPress={() => onOpenChange(false)}>
-            <Text>{contextActionLabel}</Text>
-          </Button>
-        </View>
+        </ScrollView>
 
         <ScrollView
           accessibilityLabel={
@@ -67,6 +61,11 @@ export default function NativeProductMenu({
             </Button>
           ))}
         </ScrollView>
+        <View className="shrink-0 border-t-4 border-black p-3 pb-5 xl:p-5">
+          <Button size="compact" onPress={() => onOpenChange(false)}>
+            <Text>{contextActionLabel}</Text>
+          </Button>
+        </View>
       </MapacheScreen>
     </Modal>
   )

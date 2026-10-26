@@ -58,6 +58,43 @@ export default function NativeDataManagement({
   const isNavigationBlocked =
     isNavigationPending || isBusy || preview !== null || resetReview !== null
 
+  if (resetReview || preview)
+    return (
+      <MapacheScreen className="p-3 xl:p-6">
+        {resetReview ? (
+          <NativePlayerDataResetReview
+            key={resetReview.confirmationId}
+            isBusy={isBusy}
+            review={resetReview}
+            onCancel={onCancelReset}
+            onConfirm={onConfirmReset}
+            onExport={onExport}
+          >
+            <NativeOperationMessages
+              activity={activity}
+              issue={issue}
+              notice={notice}
+            />
+          </NativePlayerDataResetReview>
+        ) : (
+          preview && (
+            <NativePlayerDataImportPreview
+              isBusy={isBusy}
+              preview={preview}
+              onCancel={onCancelImport}
+              onConfirm={onConfirmImport}
+            >
+              <NativeOperationMessages
+                activity={activity}
+                issue={issue}
+                notice={notice}
+              />
+            </NativePlayerDataImportPreview>
+          )
+        )}
+      </MapacheScreen>
+    )
+
   return (
     <MapacheScreen>
       <View className="gap-4 border-b-4 border-black p-4">
@@ -67,117 +104,85 @@ export default function NativeDataManagement({
         >
           {playerDataPortabilityCopy.screenTitle}
         </Text>
-        {!preview && (
-          <View className="flex-row flex-wrap gap-3">
-            <Button
-              className="flex-1"
-              disabled={isNavigationBlocked}
-              variant="outline"
-              onPress={onOpenMenu}
-            >
-              <Text>{PRODUCT_MENU_COPY.openAction}</Text>
-            </Button>
-            <Button
-              className="flex-1"
-              disabled={isNavigationBlocked}
-              variant="secondary"
-              onPress={onClose}
-            >
-              <Text>{localizedCopy.interfaceCopy.screen.backToValues}</Text>
-            </Button>
-          </View>
-        )}
       </View>
 
-      {preview && !resetReview ? (
-        <ScrollView
-          className="min-h-0 flex-1"
-          contentContainerClassName="grow gap-2 p-3"
-          keyboardShouldPersistTaps="handled"
-        >
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="gap-5 p-5 pb-10"
+        keyboardShouldPersistTaps="handled"
+      >
+        <View accessibilityState={{ busy: isBusy }} className="gap-5">
           <NativeOperationMessages
             activity={activity}
             issue={issue}
             notice={notice}
           />
-          <NativePlayerDataImportPreview
-            isBusy={isBusy}
-            preview={preview}
-            onCancel={onCancelImport}
-            onConfirm={onConfirmImport}
-          />
-        </ScrollView>
-      ) : (
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="gap-5 p-5 pb-10"
-          keyboardShouldPersistTaps="handled"
-        >
-          <View accessibilityState={{ busy: isBusy }} className="gap-5">
-            <NativeOperationMessages
-              activity={activity}
-              issue={issue}
-              notice={notice}
-            />
 
-            {resetReview ? (
-              <NativePlayerDataResetReview
-                key={resetReview.confirmationId}
-                isBusy={isBusy}
-                review={resetReview}
-                onCancel={onCancelReset}
-                onConfirm={onConfirmReset}
-                onExport={onExport}
-              />
-            ) : (
-              <>
-                <View className="gap-4 border-4 border-black bg-white p-5 shadow-[6px_6px_0px_0px_#000000]">
-                  <Text
-                    accessibilityRole="header"
-                    className="border-b-4 border-black pb-3 text-3xl font-black text-black uppercase"
-                  >
-                    {playerDataPortabilityCopy.exportTitle}
-                  </Text>
-                  <Button disabled={isBusy} onPress={onExport}>
-                    <Text>{playerDataPortabilityCopy.exportAction}</Text>
-                  </Button>
-                  <Text className="font-bold text-black">
-                    {playerDataPortabilityCopy.exportDescription}
-                  </Text>
-                </View>
-
-                <View className="gap-4 border-4 border-black bg-white p-5 shadow-[6px_6px_0px_0px_#000000]">
-                  <Text
-                    accessibilityRole="header"
-                    className="border-b-4 border-black pb-3 text-3xl font-black text-black uppercase"
-                  >
-                    {playerDataPortabilityCopy.importTitle}
-                  </Text>
-                  <Button
-                    disabled={isBusy}
-                    variant="secondary"
-                    onPress={onChooseBackup}
-                  >
-                    <Text>{playerDataPortabilityCopy.chooseBackupAction}</Text>
-                  </Button>
-                  <Text className="font-bold text-black">
-                    {playerDataPortabilityCopy.importDescription}
-                  </Text>
-                </View>
-
-                <Text className="font-bold text-white">
-                  {playerDataPortabilityCopy.introduction}
-                </Text>
-                <NativePlayerDataResetActions
-                  customValueCount={customValueCount}
-                  isBusy={isBusy}
-                  onRequestReset={onRequestReset}
-                />
-              </>
-            )}
+          <View className="gap-4 border-4 border-black bg-white p-5 shadow-[6px_6px_0px_0px_#000000]">
+            <Text
+              accessibilityRole="header"
+              className="border-b-4 border-black pb-3 text-3xl font-black text-black uppercase"
+            >
+              {playerDataPortabilityCopy.exportTitle}
+            </Text>
+            <Button disabled={isBusy} onPress={onExport}>
+              <Text>{playerDataPortabilityCopy.exportAction}</Text>
+            </Button>
+            <Text className="font-bold text-black">
+              {playerDataPortabilityCopy.exportDescription}
+            </Text>
           </View>
-        </ScrollView>
-      )}
+
+          <View className="gap-4 border-4 border-black bg-white p-5 shadow-[6px_6px_0px_0px_#000000]">
+            <Text
+              accessibilityRole="header"
+              className="border-b-4 border-black pb-3 text-3xl font-black text-black uppercase"
+            >
+              {playerDataPortabilityCopy.importTitle}
+            </Text>
+            <Button
+              disabled={isBusy}
+              variant="secondary"
+              onPress={onChooseBackup}
+            >
+              <Text>{playerDataPortabilityCopy.chooseBackupAction}</Text>
+            </Button>
+            <Text className="font-bold text-black">
+              {playerDataPortabilityCopy.importDescription}
+            </Text>
+          </View>
+
+          <Text className="font-bold text-white">
+            {playerDataPortabilityCopy.introduction}
+          </Text>
+          <NativePlayerDataResetActions
+            customValueCount={customValueCount}
+            isBusy={isBusy}
+            onRequestReset={onRequestReset}
+          />
+        </View>
+      </ScrollView>
+
+      <View className="shrink-0 flex-row flex-wrap gap-3 border-t-4 border-black p-3 pb-5">
+        <Button
+          size="compact"
+          className="basis-readable-action min-w-0 flex-1"
+          disabled={isNavigationBlocked}
+          variant="outline"
+          onPress={onOpenMenu}
+        >
+          <Text>{PRODUCT_MENU_COPY.openAction}</Text>
+        </Button>
+        <Button
+          size="compact"
+          className="basis-readable-action min-w-0 flex-1"
+          disabled={isNavigationBlocked}
+          variant="secondary"
+          onPress={onClose}
+        >
+          <Text>{localizedCopy.interfaceCopy.screen.backToValues}</Text>
+        </Button>
+      </View>
     </MapacheScreen>
   )
 }

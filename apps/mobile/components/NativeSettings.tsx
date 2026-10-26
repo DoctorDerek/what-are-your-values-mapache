@@ -154,6 +154,26 @@ export default function NativeSettings({
   const isBusy = activity !== null || isNavigationPending
   const isNavigationBlocked = isBusy || resetReview !== null
 
+  if (resetReview)
+    return (
+      <MapacheScreen className="p-3 xl:p-6">
+        <NativePlayerDataResetReview
+          key={resetReview.confirmationId}
+          isBusy={isBusy}
+          review={resetReview}
+          onCancel={onCancelReset}
+          onConfirm={onConfirmReset}
+          onExport={onExport}
+        >
+          <NativeOperationMessages
+            activity={activity}
+            issue={issue}
+            notice={notice}
+          />
+        </NativePlayerDataResetReview>
+      </MapacheScreen>
+    )
+
   return (
     <MapacheScreen>
       <View className="gap-4 border-b-4 border-black p-4 xl:p-8">
@@ -168,26 +188,6 @@ export default function NativeSettings({
             localizedCopy.metadata.languageTag,
           )}
         </Text>
-        <View className="flex-row gap-3">
-          <Button
-            className="flex-1"
-            disabled={isNavigationBlocked}
-            size="compact"
-            variant="outline"
-            onPress={onOpenMenu}
-          >
-            <Text>{PRODUCT_MENU_COPY.openAction}</Text>
-          </Button>
-          <Button
-            className="flex-1"
-            disabled={isNavigationBlocked}
-            size="compact"
-            variant="secondary"
-            onPress={onClose}
-          >
-            <Text>{PLAYER_SETTINGS_COPY.closeAction}</Text>
-          </Button>
-        </View>
       </View>
 
       <ScrollView
@@ -202,70 +202,75 @@ export default function NativeSettings({
             notice={notice}
           />
 
-          {resetReview ? (
-            <NativePlayerDataResetReview
-              key={resetReview.confirmationId}
-              isBusy={isBusy}
-              review={resetReview}
-              onCancel={onCancelReset}
-              onConfirm={onConfirmReset}
-              onExport={onExport}
+          <View className="min-w-0 gap-4 border-4 border-black bg-white p-3 shadow-[6px_6px_0px_0px_#000000] xl:gap-5 xl:p-8">
+            <Text
+              accessibilityRole="header"
+              className="border-b-4 border-black pb-3 text-xl leading-tight font-black text-black xl:text-4xl xl:uppercase"
+            >
+              {PLAYER_SETTINGS_COPY.languageHeading}
+            </Text>
+            <NativeLanguageSelector
+              locale={settings.locale}
+              labelPlacement="section"
+              disabled={isBusy}
+              onLocaleChange={(locale) =>
+                onUpdateSettings(createPlayerSettings({ ...settings, locale }))
+              }
             />
-          ) : (
-            <>
-              <View className="min-w-0 gap-4 border-4 border-black bg-white p-3 shadow-[6px_6px_0px_0px_#000000] xl:gap-5 xl:p-8">
-                <Text
-                  accessibilityRole="header"
-                  className="border-b-4 border-black pb-3 text-xl leading-tight font-black text-black xl:text-4xl xl:uppercase"
-                >
-                  {PLAYER_SETTINGS_COPY.languageHeading}
-                </Text>
-                <NativeLanguageSelector
-                  locale={settings.locale}
-                  labelPlacement="section"
-                  disabled={isBusy}
-                  onLocaleChange={(locale) =>
-                    onUpdateSettings(
-                      createPlayerSettings({ ...settings, locale }),
-                    )
-                  }
-                />
-              </View>
+          </View>
 
-              <NativeSettingsRadioGroup
-                disabled={isBusy}
-                heading={PLAYER_SETTINGS_COPY.reducedMotionHeading}
-                options={REDUCED_MOTION_SETTING_OPTIONS}
-                selectedValue={settings.reducedMotion}
-                onValueChange={(reducedMotion) =>
-                  onUpdateSettings(
-                    createPlayerSettings({ ...settings, reducedMotion }),
-                  )
-                }
-              />
+          <NativeSettingsRadioGroup
+            disabled={isBusy}
+            heading={PLAYER_SETTINGS_COPY.reducedMotionHeading}
+            options={REDUCED_MOTION_SETTING_OPTIONS}
+            selectedValue={settings.reducedMotion}
+            onValueChange={(reducedMotion) =>
+              onUpdateSettings(
+                createPlayerSettings({ ...settings, reducedMotion }),
+              )
+            }
+          />
 
-              <NativeSettingsRadioGroup
-                disabled={isBusy}
-                heading={PLAYER_SETTINGS_COPY.controlHintsHeading}
-                options={CONTROL_HINT_SETTING_OPTIONS}
-                selectedValue={settings.controlHints}
-                onValueChange={(controlHints) =>
-                  onUpdateSettings(
-                    createPlayerSettings({ ...settings, controlHints }),
-                  )
-                }
-              />
+          <NativeSettingsRadioGroup
+            disabled={isBusy}
+            heading={PLAYER_SETTINGS_COPY.controlHintsHeading}
+            options={CONTROL_HINT_SETTING_OPTIONS}
+            selectedValue={settings.controlHints}
+            onValueChange={(controlHints) =>
+              onUpdateSettings(
+                createPlayerSettings({ ...settings, controlHints }),
+              )
+            }
+          />
 
-              <NativePlayerDataResetActions
-                customValueCount={customValueCount}
-                isBusy={isBusy}
-                playerDataResetKinds={SETTINGS_PLAYER_DATA_RESET_KINDS}
-                onRequestReset={onRequestReset}
-              />
-            </>
-          )}
+          <NativePlayerDataResetActions
+            customValueCount={customValueCount}
+            isBusy={isBusy}
+            playerDataResetKinds={SETTINGS_PLAYER_DATA_RESET_KINDS}
+            onRequestReset={onRequestReset}
+          />
         </View>
       </ScrollView>
+      <View className="shrink-0 flex-row flex-wrap gap-3 border-t-4 border-black p-3 pb-5 xl:px-8">
+        <Button
+          className="basis-readable-action min-w-0 flex-1"
+          disabled={isNavigationBlocked}
+          size="compact"
+          variant="outline"
+          onPress={onOpenMenu}
+        >
+          <Text>{PRODUCT_MENU_COPY.openAction}</Text>
+        </Button>
+        <Button
+          className="basis-readable-action min-w-0 flex-1"
+          disabled={isNavigationBlocked}
+          size="compact"
+          variant="secondary"
+          onPress={onClose}
+        >
+          <Text>{PLAYER_SETTINGS_COPY.closeAction}</Text>
+        </Button>
+      </View>
     </MapacheScreen>
   )
 }

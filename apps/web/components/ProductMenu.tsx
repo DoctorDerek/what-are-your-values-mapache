@@ -24,27 +24,15 @@ export default function ProductMenu({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         aria-describedby={undefined}
-        className="grid-rows-[auto_auto_minmax(0,1fr)]"
+        className="grid-rows-[minmax(0,auto)_minmax(0,1fr)_auto]"
       >
-        <header className="border-b-4 border-black px-5 py-5 xl:px-8 xl:py-7">
+        <header className="max-h-[25dvh] min-h-0 overflow-y-auto border-b-4 border-black px-[20px] py-[20px] xl:px-8 xl:py-7">
           <DialogTitle>{PRODUCT_MENU_COPY.title}</DialogTitle>
         </header>
 
-        <div className="border-b-4 border-black p-5 xl:p-8">
-          <Button
-            type="button"
-            size="lg"
-            className="w-full"
-            typographyClassName="text-xl xl:text-2xl"
-            onClick={() => onOpenChange(false)}
-          >
-            {contextActionLabel}
-          </Button>
-        </div>
-
         <nav
           aria-label={PRODUCT_MENU_COPY.title}
-          className="min-h-0 overflow-y-auto overscroll-contain p-5 xl:p-8"
+          className="min-h-0 overflow-y-auto overscroll-contain p-[20px] xl:p-8"
         >
           <ul className="grid gap-4">
             {PRODUCT_MENU_DESTINATIONS.map((destination) => (
@@ -65,6 +53,18 @@ export default function ProductMenu({
             ))}
           </ul>
         </nav>
+        <div className="border-t-4 border-black p-[12px] pb-[20px] xl:p-5">
+          <Button
+            type="button"
+            size="default"
+            wrap
+            className="w-full"
+            typographyClassName="text-xl xl:text-2xl"
+            onClick={() => onOpenChange(false)}
+          >
+            {contextActionLabel}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   )
