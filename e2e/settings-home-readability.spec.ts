@@ -3,9 +3,7 @@ import { test } from "./fixtures"
 
 test.use({ serviceWorkers: "block", reducedMotion: "reduce" })
 
-test("the shipped stylesheet uses only the xl breakpoint", async ({
-  page,
-}) => {
+test("the shipped stylesheet uses only the xl breakpoint", async ({ page }) => {
   await page.goto("/")
   const responsiveQueries = await page.evaluate(() => {
     const viewport = new Set<string>()
