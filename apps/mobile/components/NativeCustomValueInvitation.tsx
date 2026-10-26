@@ -270,36 +270,48 @@ export default function NativeCustomValueInvitation({
           accessibilityViewIsModal
           className="flex-1 justify-center bg-black/70 p-4"
         >
-          <ScrollView
-            className="max-h-full grow-0 border-4 border-black bg-white"
-            contentContainerClassName="gap-4 p-5"
-            keyboardShouldPersistTaps="handled"
-          >
-            <Text
-              accessibilityRole="header"
-              className="text-xl font-black text-black"
+          <View className="max-h-full border-4 border-black bg-white">
+            <ScrollView
+              className="shrink"
+              contentContainerClassName="gap-4 p-4"
+              keyboardShouldPersistTaps="handled"
             >
-              {leaveCopy.keepTitle}
-            </Text>
-            <Button
-              disabled={!authoring.canApply || authoring.isBusy}
-              onPress={authoring.saveAdditions}
-            >
-              <Text>{leaveCopy.saveReturn}</Text>
-            </Button>
-            <Button
-              variant="outline"
-              disabled={authoring.isBusy}
-              onPress={() =>
-                authoring.discardAndExit(authoring.leaveTarget ?? "home")
-              }
-            >
-              <Text>{leaveCopy.discard}</Text>
-            </Button>
-            <Button variant="secondary" onPress={authoring.keepEditing}>
-              <Text>{leaveCopy.keepEditing}</Text>
-            </Button>
-          </ScrollView>
+              <Text
+                accessibilityRole="header"
+                className="text-xl font-black text-black"
+              >
+                {leaveCopy.keepTitle}
+              </Text>
+              <Button
+                size="compact"
+                variant="outline"
+                disabled={authoring.isBusy}
+                onPress={() =>
+                  authoring.discardAndExit(authoring.leaveTarget ?? "home")
+                }
+              >
+                <Text>{leaveCopy.discard}</Text>
+              </Button>
+            </ScrollView>
+            <View className="shrink-0 flex-row flex-wrap gap-3 border-t-4 border-black p-3 pb-5">
+              <Button
+                size="compact"
+                className="basis-readable-action min-w-0 flex-1"
+                variant="secondary"
+                onPress={authoring.keepEditing}
+              >
+                <Text>{leaveCopy.keepEditing}</Text>
+              </Button>
+              <Button
+                size="compact"
+                className="basis-readable-action min-w-0 flex-1"
+                disabled={!authoring.canApply || authoring.isBusy}
+                onPress={authoring.saveAdditions}
+              >
+                <Text>{leaveCopy.saveReturn}</Text>
+              </Button>
+            </View>
+          </View>
         </View>
       </Modal>
     </>

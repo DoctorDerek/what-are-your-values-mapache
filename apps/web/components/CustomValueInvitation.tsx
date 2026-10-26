@@ -204,33 +204,46 @@ export default function CustomValueInvitation({
       >
         <DialogContent
           aria-describedby={undefined}
-          className="max-h-[90dvh] overflow-y-auto p-5"
+          className="grid-rows-[minmax(0,1fr)_auto]"
           onCloseAutoFocus={(event) => {
             event.preventDefault()
             document.getElementById("hub-custom-value-name")?.focus()
           }}
         >
-          <DialogTitle>{leaveCopy.keepTitle}</DialogTitle>
-          <Button
-            wrap
-            disabled={!authoring.canApply || authoring.isBusy}
-            onClick={authoring.saveAdditions}
-          >
-            {leaveCopy.saveReturn}
-          </Button>
-          <Button
-            wrap
-            variant="outline"
-            disabled={authoring.isBusy}
-            onClick={() =>
-              authoring.discardAndExit(authoring.leaveTarget ?? "home")
-            }
-          >
-            {leaveCopy.discard}
-          </Button>
-          <Button wrap variant="secondary" onClick={authoring.keepEditing}>
-            {leaveCopy.keepEditing}
-          </Button>
+          <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain p-4">
+            <DialogTitle>{leaveCopy.keepTitle}</DialogTitle>
+            <Button
+              wrap
+              variant="outline"
+              className="w-full"
+              disabled={authoring.isBusy}
+              onClick={() =>
+                authoring.discardAndExit(authoring.leaveTarget ?? "home")
+              }
+            >
+              {leaveCopy.discard}
+            </Button>
+          </div>
+          <footer className="flex shrink-0 flex-wrap gap-[12px] border-t-4 border-black p-[12px] pb-[20px]">
+            <Button
+              wrap
+              variant="secondary"
+              typographyClassName="text-base leading-tight xl:text-lg"
+              className="min-w-0 flex-1 basis-[8em]"
+              onClick={authoring.keepEditing}
+            >
+              {leaveCopy.keepEditing}
+            </Button>
+            <Button
+              wrap
+              typographyClassName="text-base leading-tight xl:text-lg"
+              className="min-w-0 flex-1 basis-[8em]"
+              disabled={!authoring.canApply || authoring.isBusy}
+              onClick={authoring.saveAdditions}
+            >
+              {leaveCopy.saveReturn}
+            </Button>
+          </footer>
         </DialogContent>
       </Dialog>
     </aside>
