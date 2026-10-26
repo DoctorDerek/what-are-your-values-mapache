@@ -1,33 +1,26 @@
 "use client"
 
 import { projectAllValues } from "@game/data/src/AllValuesProjection"
-import {
-  CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES,
-  CUSTOM_VALUE_NAME_MAX_GRAPHEMES,
-  validateCustomValueDraft,
-} from "@game/data/src/CustomValueValidation"
 import type { LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValueDisplayDefinition,
   getValueDisplayName,
+  type CustomValueDefinition,
   type CustomValueId,
   type ValueId,
 } from "@game/data/src/Value"
 import { getWrappableValueDisplayName } from "@game/data/src/ValueNameTypography"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import type { StaticImageData } from "next/image"
-import type { FormEvent } from "react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import AllValuesValueRow from "@/components/AllValuesValueRow"
-import CustomValueFieldFeedback from "@/components/CustomValueFieldFeedback"
+import CustomValueEditor from "@/components/CustomValueEditor"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import ValueLevelProgress from "@/components/ValueLevelProgress"
-import { useWebControllerActions } from "@/components/WebControlsProvider"
 
 export default function AllValues({
   rankedValues,
@@ -43,6 +36,7 @@ export default function AllValues({
   onUpdateCustomValue,
   onDeleteCustomValue,
   onNavigationBlockedChange,
+  backRequestId = 0,
 }: {
   readonly localization?: LocalizationCatalog
   rankedValues: readonly RankedValue[]
@@ -61,23 +55,17 @@ export default function AllValues({
   ) => void
   onDeleteCustomValue: (valueId: CustomValueId) => void
   onNavigationBlockedChange?: (isBlocked: boolean) => void
+  readonly backRequestId?: number
 }) {
   const localizedCopy = useLocaleCatalog(localizationOverride)
   const localization = localizedCopy
 
   const [searchQuery, setSearchQuery] = useState("")
-  const customValueActionRef = useRef<HTMLButtonElement | null>(null)
-  const [editingValueId, setEditingValueId] = useState<CustomValueId | null>(
-    null,
-  )
-  const [editName, setEditName] = useState("")
-  const [editDefinition, setEditDefinition] = useState("")
-  const [isEditNameTouched, setIsEditNameTouched] = useState(false)
-  const [isEditDefinitionTouched, setIsEditDefinitionTouched] = useState(false)
-  const [isConfirmingEdit, setIsConfirmingEdit] = useState(false)
-  const [deletingValueId, setDeletingValueId] = useState<CustomValueId | null>(
-    null,
-  )
+  const customValueActionRef = useRef<string | null>(null)
+  const [activeTask, setActiveTask] = useState<{
+    kind: "edit" | "delete"
+    value: CustomValueDefinition
+  } | null>(null)
   const [highlightedValueId] = useState<ValueId | null>(initialValueId ?? null)
 
   const { existingCustomValues, hasComparisons, visibleValues } = useMemo(
@@ -89,26 +77,14 @@ export default function AllValues({
       }),
     [rankedValues, searchQuery, localization],
   )
-  const editableCustomValue = rankedValues.find(
-    ({ definition }) => definition.id === editingValueId,
-  )?.definition
-  const editValidation = useMemo(
-    () =>
-      validateCustomValueDraft({
-        name: editName,
-        definition: editDefinition,
-        existingCustomValues,
-        excludedCustomValueId: editingValueId,
-      }),
-    [editDefinition, editName, editingValueId, existingCustomValues],
-  )
-  const canSubmitEdit =
-    editableCustomValue?.kind === "custom" &&
-    editValidation.isValid &&
-    (editValidation.name.value !== editableCustomValue.name ||
-      editValidation.definition.value !== editableCustomValue.definition)
-  const isNavigationBlocked =
-    isPersistencePending || editingValueId !== null || deletingValueId !== null
+  const isNavigationBlocked = isPersistencePending || activeTask !== null
+
+  useEffect(() => {
+    if (activeTask === null && customValueActionRef.current !== null) {
+      document.getElementById(customValueActionRef.current)?.focus()
+      customValueActionRef.current = null
+    }
+  }, [activeTask])
 
   useEffect(() => {
     onNavigationBlockedChange?.(isNavigationBlocked)
@@ -145,78 +121,10 @@ export default function AllValues({
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [isMenuOpen, isNavigationBlocked, onClose])
 
-  const startEdit = (
-    valueId: CustomValueId,
-    name: string,
-    definition: string,
-  ) => {
-    setEditingValueId(valueId)
-    setEditName(name)
-    setEditDefinition(definition)
-    setIsEditNameTouched(false)
-    setIsEditDefinitionTouched(false)
-    setIsConfirmingEdit(false)
-  }
-
-  const cancelEdit = () => {
-    setEditingValueId(null)
-    setEditName("")
-    setEditDefinition("")
-    setIsEditNameTouched(false)
-    setIsEditDefinitionTouched(false)
-    setIsConfirmingEdit(false)
-    customValueActionRef.current?.focus()
-  }
-
-  const cancelDelete = () => {
-    setDeletingValueId(null)
-    customValueActionRef.current?.focus()
-  }
-
-  useWebControllerActions(1, (command) => {
-    if (
-      isMenuOpen ||
-      !isNavigationBlocked ||
-      (command !== "back" && command !== "cancel")
-    )
-      return false
-    if (isPersistencePending) return true
-    if (deletingValueId !== null) cancelDelete()
-    else if (isConfirmingEdit) {
-      setIsConfirmingEdit(false)
-      document.getElementById(`custom-value-name-${editingValueId}`)?.focus()
-    } else cancelEdit()
-    return true
-  })
-
-  const handleUpdateCustomValue = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!canSubmitEdit || !editingValueId || isPersistencePending) {
-      return
-    }
-
-    setIsConfirmingEdit(true)
-  }
-
-  const confirmUpdateCustomValue = () => {
-    if (!canSubmitEdit || !editingValueId || isPersistencePending) {
-      return
-    }
-
-    const draft = Object.freeze({
-      valueId: editingValueId,
-      name: editValidation.name.value,
-      definition: editValidation.definition.value,
-    })
-    onUpdateCustomValue(draft.valueId, draft.name, draft.definition)
-  }
-
   const renderRows = (values: readonly RankedValue[]) =>
     values.map((rankedValue) => {
       const { definition, progress } = rankedValue
       const displayName = getValueDisplayName(definition, localization.values)
-      const isEditing = definition.id === editingValueId
-      const isDeleting = definition.id === deletingValueId
       const customValueId = definition.kind === "custom" ? definition.id : null
 
       return (
@@ -253,27 +161,24 @@ export default function AllValues({
               {definition.kind === "custom" ? (
                 <div className="flex flex-wrap gap-3">
                   <button
+                    id={`edit-${definition.id}`}
                     type="button"
                     disabled={isPersistencePending}
                     onClick={(event) => {
-                      customValueActionRef.current = event.currentTarget
-                      startEdit(
-                        definition.id,
-                        definition.name,
-                        definition.definition,
-                      )
+                      customValueActionRef.current = event.currentTarget.id
+                      setActiveTask({ kind: "edit", value: definition })
                     }}
                     className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-lg font-black text-white uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
                   >
                     {localizedCopy.interfaceCopy.screen.edit}
                   </button>
                   <button
+                    id={`delete-${definition.id}`}
                     type="button"
                     disabled={isPersistencePending}
                     onClick={(event) => {
-                      customValueActionRef.current = event.currentTarget
-                      setDeletingValueId(definition.id)
-                      setEditingValueId(null)
+                      customValueActionRef.current = event.currentTarget.id
+                      setActiveTask({ kind: "delete", value: definition })
                     }}
                     className="bg-mapache-vivid-secondary-red border-4 border-black px-3 py-2 text-lg font-black text-black uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
                   >
@@ -284,178 +189,40 @@ export default function AllValues({
             </>
           }
         >
-          {isDeleting && customValueId ? (
-            <div
-              role="alertdialog"
-              aria-label={localizedCopy.interfaceCopy.screen.removeValue(
-                displayName,
-              )}
-              className="bg-mapache-vivid-secondary-red/10 mt-5 border-t-4 border-black p-4"
-            >
-              <h4 className="text-2xl font-black uppercase">
-                {localizedCopy.interfaceCopy.screen.removeValue(displayName)}
-              </h4>
-              <p className="mt-3 text-lg leading-relaxed font-bold">
-                {localizedCopy.interfaceCopy.screen.customDeleteConsequences}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  disabled={isPersistencePending}
-                  onClick={cancelDelete}
-                  className="bg-mapache-vivid-secondary-purple border-4 border-black px-4 py-2 font-black text-white uppercase"
-                >
-                  {localizedCopy.interfaceCopy.screen.cancel}
-                </button>
-                <button
-                  type="button"
-                  disabled={isPersistencePending}
-                  onClick={() => {
-                    onDeleteCustomValue(customValueId)
-                  }}
-                  className="bg-mapache-vivid-secondary-red border-4 border-black px-4 py-2 font-black text-black uppercase"
-                >
-                  {isPersistencePending
-                    ? localizedCopy.interfaceCopy.screen.deleting
-                    : localizedCopy.interfaceCopy.screen.deleteValue}
-                </button>
-              </div>
-            </div>
-          ) : null}
-          {isEditing ? (
-            <form
-              onSubmit={handleUpdateCustomValue}
-              className="mt-5 border-t-4 border-black pt-4"
-            >
-              <label
-                htmlFor={`custom-value-name-${definition.id}`}
-                className="mb-3 block text-xl font-black uppercase"
-              >
-                {localizedCopy.interfaceCopy.screen.valueName}
-              </label>
-              <Input
-                id={`custom-value-name-${definition.id}`}
-                value={editName}
-                disabled={isPersistencePending}
-                onChange={(event) => setEditName(event.target.value)}
-                onBlur={() => setIsEditNameTouched(true)}
-                aria-invalid={
-                  isEditNameTouched &&
-                  editValidation.name.validationCode !== null
-                }
-                aria-describedby={`custom-value-name-feedback-${definition.id}`}
-                variant="emphasized"
-                className="mb-3"
-              />
-              <CustomValueFieldFeedback
-                id={`custom-value-name-feedback-${definition.id}`}
-                field="name"
-                validation={editValidation.name}
-                maximumGraphemeCount={CUSTOM_VALUE_NAME_MAX_GRAPHEMES}
-                showValidationMessage={
-                  isEditNameTouched ||
-                  editValidation.name.validationCode === "duplicate_name"
-                }
-              />
-              <label
-                htmlFor={`custom-value-definition-${definition.id}`}
-                className="mt-4 mb-3 block text-xl font-black uppercase"
-              >
-                {localizedCopy.interfaceCopy.screen.definition}
-              </label>
-              <Textarea
-                id={`custom-value-definition-${definition.id}`}
-                value={editDefinition}
-                disabled={isPersistencePending}
-                onChange={(event) => setEditDefinition(event.target.value)}
-                onBlur={() => setIsEditDefinitionTouched(true)}
-                aria-invalid={
-                  isEditDefinitionTouched &&
-                  editValidation.definition.validationCode !== null
-                }
-                aria-describedby={`custom-value-definition-feedback-${definition.id}`}
-                rows={4}
-                variant="emphasized"
-              />
-              <CustomValueFieldFeedback
-                id={`custom-value-definition-feedback-${definition.id}`}
-                field="definition"
-                validation={editValidation.definition}
-                maximumGraphemeCount={CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES}
-                showValidationMessage={isEditDefinitionTouched}
-              />
-              {isConfirmingEdit ? (
-                <div
-                  role="alertdialog"
-                  aria-label={localizedCopy.interfaceCopy.screen.updateValue(
-                    displayName,
-                  )}
-                  className="border-mapache-vivid-primary-orange bg-mapache-vivid-primary-orange/15 mb-4 border-4 p-4"
-                >
-                  <p className="text-lg leading-relaxed font-black">
-                    {
-                      localizedCopy.interfaceCopy.screen
-                        .customUpdateConsequences
-                    }
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      disabled={isPersistencePending}
-                      onClick={() => setIsConfirmingEdit(false)}
-                      className="bg-mapache-vivid-secondary-purple border-4 border-black px-4 py-2 font-black text-white uppercase"
-                    >
-                      {localizedCopy.interfaceCopy.screen.cancel}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isPersistencePending}
-                      onClick={confirmUpdateCustomValue}
-                      className="bg-mapache-vivid-primary-orange border-4 border-black px-4 py-2 font-black text-black uppercase"
-                    >
-                      {isPersistencePending
-                        ? localizedCopy.interfaceCopy.screen.saving
-                        : localizedCopy.interfaceCopy.screen.updateValueAction}
-                    </button>
-                  </div>
-                </div>
-              ) : null}
-              {!isConfirmingEdit ? (
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    disabled={!canSubmitEdit || isPersistencePending}
-                    className="bg-mapache-vivid-secondary-green border-4 border-black px-4 py-2 font-black uppercase disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {localizedCopy.interfaceCopy.screen.reviewUpdate}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isPersistencePending}
-                    onClick={cancelEdit}
-                    className="bg-mapache-vivid-secondary-red border-4 border-black px-4 py-2 font-black text-black uppercase"
-                  >
-                    {localizedCopy.interfaceCopy.screen.cancel}
-                  </button>
-                </div>
-              ) : null}
-            </form>
-          ) : (
-            <p className="mt-5 overflow-x-auto overflow-y-auto border-t-4 border-black pt-4 text-xl leading-relaxed font-bold [overflow-wrap:anywhere] break-words whitespace-pre-wrap">
-              “{getValueDisplayDefinition(definition, localization.values)}”
-            </p>
-          )}
+          <p className="mt-5 overflow-x-auto overflow-y-auto border-t-4 border-black pt-4 text-xl leading-relaxed font-bold [overflow-wrap:anywhere] break-words whitespace-pre-wrap">
+            “{getValueDisplayDefinition(definition, localization.values)}”
+          </p>
         </AllValuesValueRow>
       )
     })
 
+  if (activeTask !== null) {
+    return (
+      <CustomValueEditor
+        value={activeTask.value}
+        action={activeTask.kind}
+        backRequestId={backRequestId}
+        existingCustomValues={existingCustomValues}
+        localization={localization}
+        isPersistencePending={isPersistencePending}
+        isMenuOpen={isMenuOpen}
+        persistenceIssue={persistenceIssue}
+        onCancel={() => setActiveTask(null)}
+        onUpdate={(name, definition) =>
+          onUpdateCustomValue(activeTask.value.id, name, definition)
+        }
+        onDelete={() => onDeleteCustomValue(activeTask.value.id)}
+      />
+    )
+  }
+
   return (
     <MapacheScreen
       spacing="safe-area-only"
-      viewport="scrollable"
-      className="grid h-[100dvh] grid-rows-[auto_minmax(12rem,1fr)_auto] overflow-y-auto text-white"
+      viewport="fixed"
+      className="grid grid-rows-[auto_minmax(0,1fr)_auto] text-white"
     >
-      <header className="bg-mapache-vivid-dark border-b-4 border-black px-4 py-3 xl:px-8">
+      <header className="bg-mapache-vivid-dark max-h-[40dvh] overflow-y-auto border-b-4 border-black px-4 py-3 xl:px-8">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-mapache-vivid-primary-cyan text-2xl font-black break-words uppercase xl:text-4xl">

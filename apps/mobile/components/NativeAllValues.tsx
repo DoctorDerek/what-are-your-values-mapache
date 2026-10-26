@@ -7,7 +7,7 @@ import {
   type ValueId,
 } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react"
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -25,6 +25,7 @@ import { Text } from "@/components/ui/text"
 
 export default function NativeAllValues({
   initialValueId = null,
+  backRequestId = 0,
   isPersistencePending = false,
   onAddCustomValue,
   onClose,
@@ -37,6 +38,7 @@ export default function NativeAllValues({
 }: {
   readonly localization?: LocalizationCatalog
   readonly initialValueId?: ValueId | null
+  readonly backRequestId?: number
   readonly isPersistencePending?: boolean
   readonly onAddCustomValue: (name: string) => void
   readonly onClose: () => void
@@ -53,6 +55,7 @@ export default function NativeAllValues({
   const localizedCopy = useLocaleCatalog(localizationOverride)
   const localization = localizedCopy
 
+  const previousBackRequest = useRef(backRequestId)
   const listRef = useRef<FlatList<RankedValue>>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [editingValueId, setEditingValueId] = useState<CustomValueId | null>(
@@ -82,7 +85,7 @@ export default function NativeAllValues({
   }, [isNavigationBlocked, onNavigationBlockedChange])
 
   useEffect(() => {
-    if (!highlightedValueId) return
+    if (!highlightedValueId || editingValueId !== null || deletingValueId !== null) return
 
     const highlightedIndex = visibleValues.findIndex(
       ({ definition }) => definition.id === highlightedValueId,
@@ -93,13 +96,64 @@ export default function NativeAllValues({
         index: highlightedIndex,
         viewPosition: 0.25,
       })
-  }, [highlightedValueId, visibleValues])
+  }, [highlightedValueId, visibleValues, editingValueId, deletingValueId])
+
+  const handleDeleteBack = useEffectEvent(() => {
+    if (deletingValueId !== null && !isPersistencePending)
+      setDeletingValueId(null)
+  })
+  useEffect(() => {
+    if (previousBackRequest.current === backRequestId) return
+    previousBackRequest.current = backRequestId
+    handleDeleteBack()
+  }, [backRequestId])
 
   const openMatchingValue = (valueId: ValueId) => {
     setEditingValueId(null)
     setDeletingValueId(null)
     setSearchQuery("")
     setHighlightedValueId(valueId)
+  }
+
+  const activeDefinition = rankedValues.find(
+    ({ definition }) => definition.id === (editingValueId ?? deletingValueId),
+  )?.definition
+
+  if (activeDefinition?.kind === "custom") {
+    return (
+      <MapacheScreen>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="min-h-0 flex-1 p-4"
+        >
+          {editingValueId !== null ? (
+            <NativeCustomValueForm
+              excludedCustomValueId={activeDefinition.id}
+              existingCustomValues={existingCustomValues}
+              initialDefinition={activeDefinition.definition}
+              initialName={activeDefinition.name}
+              isPersistencePending={isPersistencePending}
+              persistenceIssue={persistenceIssue}
+              backRequestId={backRequestId}
+              onCancel={() => setEditingValueId(null)}
+              onOpenMatchingValue={openMatchingValue}
+              onSubmit={(name, definition) =>
+                onUpdateCustomValue(activeDefinition.id, name, definition)
+              }
+              rankedValues={rankedValues}
+            />
+          ) : (
+            <NativeCustomValueDeleteConfirmation
+              displayName={getValueDisplayName(activeDefinition)}
+              isPersistencePending={isPersistencePending}
+              persistenceIssue={persistenceIssue}
+              onCancel={() => setDeletingValueId(null)}
+              onConfirm={() => onDeleteCustomValue(activeDefinition.id)}
+            />
+          )}
+        </KeyboardAvoidingView>
+      </MapacheScreen>
+    )
   }
 
   return (
@@ -205,8 +259,6 @@ export default function NativeAllValues({
               (!priorItem || priorItem.rank <= 5)
             const customDefinition =
               item.definition.kind === "custom" ? item.definition : null
-            const isEditing = customDefinition?.id === editingValueId
-            const isDeleting = customDefinition?.id === deletingValueId
 
             return (
               <View className="gap-4">
@@ -245,29 +297,6 @@ export default function NativeAllValues({
                   rankedValue={item}
                   showRank={hasComparisons}
                 />
-                {isEditing && customDefinition ? (
-                  <NativeCustomValueForm
-                    excludedCustomValueId={customDefinition.id}
-                    existingCustomValues={existingCustomValues}
-                    initialDefinition={customDefinition.definition}
-                    initialName={customDefinition.name}
-                    isPersistencePending={isPersistencePending}
-                    onCancel={() => setEditingValueId(null)}
-                    onOpenMatchingValue={openMatchingValue}
-                    onSubmit={(name, definition) =>
-                      onUpdateCustomValue(customDefinition.id, name, definition)
-                    }
-                    rankedValues={rankedValues}
-                  />
-                ) : null}
-                {isDeleting && customDefinition ? (
-                  <NativeCustomValueDeleteConfirmation
-                    displayName={getValueDisplayName(customDefinition)}
-                    isPersistencePending={isPersistencePending}
-                    onCancel={() => setDeletingValueId(null)}
-                    onConfirm={() => onDeleteCustomValue(customDefinition.id)}
-                  />
-                ) : null}
               </View>
             )
           }}

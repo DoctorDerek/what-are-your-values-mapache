@@ -182,6 +182,7 @@ function NativeGameClientContent({
   )
   const [isAllValuesNavigationBlocked, setIsAllValuesNavigationBlocked] =
     useState(false)
+  const [allValuesBackRequestId, setAllValuesBackRequestId] = useState(0)
   useEffect(() => {
     const subscription = BackHandler.addEventListener(
       "hardwareBackPress",
@@ -202,7 +203,11 @@ function NativeGameClientContent({
           setCustomValueBackRequestId((id) => id + 1)
           return true
         }
-        if (isAllValuesNavigationBlocked || isReadingImportFile) return true
+        if (isAllValuesNavigationBlocked) {
+          setAllValuesBackRequestId((id) => id + 1)
+          return true
+        }
+        if (isReadingImportFile) return true
         const disposition = projectRootBackDisposition(state)
         if (disposition.kind === "event") send(disposition.event)
         return disposition.kind !== "root"
@@ -850,6 +855,7 @@ function NativeGameClientContent({
     return (
       <View className="flex-1">
         <NativeAllValues
+          backRequestId={allValuesBackRequestId}
           localization={getLocaleCatalog(playerData.settings.locale)}
           key={battleProfile.scheduler.deckRevision}
           initialValueId={pendingAllValuesValueId}
