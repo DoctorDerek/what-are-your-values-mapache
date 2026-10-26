@@ -1,6 +1,9 @@
 import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
-import type { LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
-import type { WayvmImportPreview } from "./WayvmImportPreview"
+import {
+  getLocaleCatalog,
+  type LocalizationCatalog,
+} from "@game/data/src/LocalizationCatalog"
+import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
 
 export function getWrappableImportAction(
   label: string,
@@ -21,7 +24,7 @@ export function presentWayvmImportPreview(
   const copy = localization.interfaceCopy
   const values = {
     backupCreated: dateTime(preview.exportedAt),
-    language: preview.locale,
+    language: getLocaleCatalog(preview.locale).metadata.languageName,
     totalComparisons: integer(preview.totalComparisons),
     includedValues: integer(
       preview.activeValueCount - preview.customValueCount,
