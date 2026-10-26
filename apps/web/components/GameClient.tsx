@@ -926,6 +926,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           browseAllValuesButtonRef={browseAllValuesButtonRef}
           rosterRef={preserveHubRosterScroll}
           dataNotice={state.context.portabilityNotice}
+          importConfirmation={state.context.importConfirmation}
           shouldReduceMotion={shouldReduceMotion}
           onBrowseAllValues={(focusTargetId) =>
             openAllValues({ focusTargetId })

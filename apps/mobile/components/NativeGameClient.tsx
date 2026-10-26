@@ -668,6 +668,7 @@ function NativeGameClientContent({
           rankedValues={rankedValues}
           runtimeClipCatalog={SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG}
           dataNotice={state.context.portabilityNotice}
+          importConfirmation={state.context.importConfirmation}
           shouldReduceMotion={shouldReduceMotion}
           onAddCustomValue={() => handleAddCustomValue()}
           onBrowseAllValues={() => openAllValues({})}
