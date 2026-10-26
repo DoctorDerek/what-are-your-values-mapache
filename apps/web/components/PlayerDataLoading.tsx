@@ -23,7 +23,7 @@ export default function PlayerDataLoading() {
     <MapacheScreen
       aria-label={playerDataRecoveryCopy.loading}
       aria-busy="true"
-      spacing="standard-xl"
+      spacing="standard"
       viewport="scrollable"
       className="flex flex-col items-center justify-center gap-6 text-center"
     >

@@ -50,7 +50,7 @@ export default function WebWriterConflict({
 
   return (
     <MapacheScreen
-      spacing="standard-xl"
+      spacing="standard"
       viewport="scrollable"
       className="flex flex-col items-center"
     >

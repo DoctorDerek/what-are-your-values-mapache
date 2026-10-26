@@ -64,7 +64,7 @@ export default function DressingRoom({
   const paletteId = getHeroes99PaletteId(category, draft)
   return (
     <MapacheScreen
-      spacing="standard-xl"
+      spacing="standard"
       viewport="fixed"
       className="grid grid-rows-[auto_auto_auto_minmax(7.5rem,1fr)] justify-items-center gap-2 overflow-y-auto xl:flex xl:flex-col xl:items-center xl:gap-6"
     >

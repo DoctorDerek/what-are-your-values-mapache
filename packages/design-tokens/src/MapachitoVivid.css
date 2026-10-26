@@ -1,4 +1,9 @@
 @theme {
+  --breakpoint-*: initial;
+  --breakpoint-xl: 80rem;
+  --font-home-title:
+    "WAYVM Condensed", Impact, "Avenir Next Condensed", "sans-serif-condensed",
+    sans-serif;
   --font-arrival-title:
     Impact, "WAYVM Condensed", Haettenschweiler, "Arial Narrow Bold",
     "Roboto Condensed", "Avenir Next Condensed", "sans-serif-condensed",
