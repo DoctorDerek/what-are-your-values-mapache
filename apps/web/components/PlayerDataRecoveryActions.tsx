@@ -1,6 +1,7 @@
 "use client"
 
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
+import type { ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 
 export const playerDataRecoveryActionIds = Object.freeze({
@@ -11,6 +12,7 @@ export const playerDataRecoveryActionIds = Object.freeze({
 } as const)
 
 type SharedRecoveryActions = {
+  readonly children?: ReactNode
   readonly isBusy: boolean
   readonly onTryAgain: () => void
 }
@@ -46,112 +48,145 @@ export default function PlayerDataRecoveryActions(
 
   if (props.mode === "unreadable-data") {
     return (
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        {props.hasLastKnownGoodSave ? (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div
+          className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-1 pr-3 pb-5"
+          data-controller-scroll
+          tabIndex={0}
+        >
+          {props.children}
+
           <Button
-            id={playerDataRecoveryActionIds.restoreLastKnownGoodSave}
+            id={playerDataRecoveryActionIds.importBackup}
             type="button"
-            size="lg"
+            variant="secondary"
+            size="default"
             disabled={props.isBusy}
-            onClick={props.onRestoreLastKnownGoodSave}
+            onClick={props.onImportBackup}
             wrap
             className="w-full"
           >
-            {actions.restoreLastKnownGoodSave}
+            {actions.importBackup}
           </Button>
-        ) : null}
-        <Button
-          id={playerDataRecoveryActionIds.importBackup}
-          type="button"
-          variant="secondary"
-          size="lg"
-          disabled={props.isBusy}
-          onClick={props.onImportBackup}
-          wrap
-          className="w-full"
-        >
-          {actions.importBackup}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="lg"
-          disabled={props.isBusy}
-          onClick={props.onExportUnreadableData}
-          wrap
-          className="w-full"
-        >
-          {actions.exportUnreadableData}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="lg"
-          disabled={props.isBusy}
-          onClick={props.onTryAgain}
-          wrap
-          className="w-full"
-        >
-          {actions.tryAgain}
-        </Button>
-        <Button
-          id={playerDataRecoveryActionIds.deleteAllData}
-          type="button"
-          variant="destructive"
-          size="lg"
-          disabled={props.isBusy}
-          onClick={props.onDeleteAllData}
-          wrap
-          className="w-full xl:col-span-2"
-        >
-          {actions.deleteAllData}
-        </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="default"
+            disabled={props.isBusy}
+            onClick={props.onExportUnreadableData}
+            wrap
+            className="w-full"
+          >
+            {actions.exportUnreadableData}
+          </Button>
+
+          <Button
+            id={playerDataRecoveryActionIds.deleteAllData}
+            type="button"
+            variant="destructive"
+            size="default"
+            disabled={props.isBusy}
+            onClick={props.onDeleteAllData}
+            wrap
+            className="w-full xl:col-span-2"
+          >
+            {actions.deleteAllData}
+          </Button>
+        </div>
+        <div className="grid shrink-0 grid-cols-1 gap-3 pt-3 pb-2 xl:grid-cols-2">
+          {props.hasLastKnownGoodSave ? (
+            <Button
+              id={playerDataRecoveryActionIds.restoreLastKnownGoodSave}
+              aria-label={actions.restoreLastKnownGoodSave}
+              type="button"
+              size="default"
+              disabled={props.isBusy}
+              onClick={props.onRestoreLastKnownGoodSave}
+              wrap
+              className="w-full"
+            >
+              {playerDataRecoveryCopy.unreadableData.restoreReviewAction}
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant="outline"
+            size="default"
+            disabled={props.isBusy}
+            onClick={props.onTryAgain}
+            wrap
+            className="w-full"
+          >
+            {actions.tryAgain}
+          </Button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-      {props.canExportCurrentData ? (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div
+        className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-1 pr-3 pb-5"
+        data-controller-scroll
+        tabIndex={0}
+      >
+        {props.children}
+        {props.canExportCurrentData && !props.hasPendingSave && (
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={props.isBusy}
+            onClick={props.onExportCurrentData}
+            wrap
+            className="w-full"
+          >
+            {actions.exportCurrentData}
+          </Button>
+        )}
+      </div>
+      <div className="grid shrink-0 grid-cols-1 gap-3 pt-3 pb-2 xl:grid-cols-2">
+        {props.canExportCurrentData && props.hasPendingSave ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="default"
+            disabled={props.isBusy}
+            onClick={props.onExportCurrentData}
+            wrap
+            className="w-full"
+          >
+            {props.hasPendingSave
+              ? playerDataRecoveryCopy.pendingSave.export
+              : actions.exportCurrentData}
+          </Button>
+        ) : null}
         <Button
           type="button"
-          variant="secondary"
-          size="lg"
+          size="default"
           disabled={props.isBusy}
-          onClick={props.onExportCurrentData}
+          onClick={props.onTryAgain}
           wrap
           className="w-full"
         >
           {props.hasPendingSave
-            ? playerDataRecoveryCopy.pendingSave.export
-            : actions.exportCurrentData}
+            ? playerDataRecoveryCopy.pendingSave.retry
+            : actions.tryAgain}
         </Button>
-      ) : null}
-      <Button
-        type="button"
-        size="lg"
-        disabled={props.isBusy}
-        onClick={props.onTryAgain}
-        wrap
-        className="w-full"
-      >
-        {props.hasPendingSave
-          ? playerDataRecoveryCopy.pendingSave.retry
-          : actions.tryAgain}
-      </Button>
-      {props.canReturnWithoutNewChanges ? (
-        <Button
-          type="button"
-          variant="outline"
-          size="lg"
-          disabled={props.isBusy}
-          onClick={props.onReturnWithoutNewChanges}
-          wrap
-          className="w-full xl:col-span-2"
-        >
-          {actions.returnWithoutNewChanges}
-        </Button>
-      ) : null}
+        {props.canReturnWithoutNewChanges ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="default"
+            disabled={props.isBusy}
+            onClick={props.onReturnWithoutNewChanges}
+            wrap
+            className="w-full xl:col-span-2"
+          >
+            {actions.returnWithoutNewChanges}
+          </Button>
+        ) : null}
+      </div>
     </div>
   )
 }

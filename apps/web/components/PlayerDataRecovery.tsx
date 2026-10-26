@@ -109,150 +109,165 @@ export default function PlayerDataRecovery(props: PlayerDataRecoveryProps) {
     previousResetReviewRef.current = currentResetReview
   }, [currentResetReview])
 
+  const feedback = (
+    <>
+      {props.activity ? (
+        <p
+          role="status"
+          className="bg-mapache-vivid-primary-cyan text-mapache-vivid-dark border-4 border-black p-4 text-xl font-black uppercase shadow-[6px_6px_0px_0px_#000000]"
+        >
+          {props.activity}
+        </p>
+      ) : null}
+      {props.notice ? (
+        <p
+          role="status"
+          className="bg-mapache-vivid-secondary-green text-mapache-vivid-dark border-4 border-black p-4 text-xl font-black shadow-[6px_6px_0px_0px_#000000]"
+        >
+          {props.notice}
+        </p>
+      ) : null}
+      {props.issue ? (
+        <p
+          ref={issueRef}
+          role="alert"
+          tabIndex={-1}
+          className="bg-mapache-vivid-primary-orange border-4 border-black p-4 text-xl font-black text-white shadow-[6px_6px_0px_0px_#000000] outline-none"
+        >
+          {props.issue}
+        </p>
+      ) : null}
+    </>
+  )
+  const content = (
+    <>
+      <h1
+        ref={headingRef}
+        tabIndex={-1}
+        className="text-mapache-vivid-primary-cyan text-4xl font-black drop-shadow-[5px_5px_0px_#000000] outline-none xl:text-6xl"
+      >
+        {props.mode === "storage-unavailable" && props.hasPendingSave ? (
+          <span aria-hidden="true">✖ </span>
+        ) : null}
+        {copy.title}
+      </h1>
+
+      <div className="flex flex-col gap-3 text-lg font-bold text-white xl:text-xl">
+        {(Array.isArray(copy.body) ? copy.body : [copy.body]).map(
+          (paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ),
+        )}
+      </div>
+
+      {props.mode === "unreadable-data" &&
+      !props.hasLastKnownGoodSave &&
+      !props.preview &&
+      !props.resetReview ? (
+        <p className="bg-mapache-vivid-secondary-gold text-mapache-vivid-black border-4 border-black p-4 text-lg font-black shadow-[6px_6px_0px_0px_#000000] xl:text-xl">
+          {playerDataRecoveryCopy.unreadableData.noKnownGoodSave}
+        </p>
+      ) : null}
+
+      {feedback}
+      {props.mode === "unreadable-data" && (
+        <input
+          ref={importInputRef}
+          type="file"
+          accept={WAYVM_IMPORT_FILE_ACCEPT}
+          disabled={isBusy}
+          aria-label={localizedCopy.interfaceCopy.screen.chooseRecoveryBackup}
+          className="sr-only"
+          onChange={(event) => {
+            const file = event.currentTarget.files?.[0]
+            event.currentTarget.value = ""
+            if (file) props.onImportFile(file)
+          }}
+        />
+      )}
+    </>
+  )
+
   return (
     <MapacheScreen
-      spacing="standard"
-      viewport="scrollable"
+      spacing="compact"
+      viewport="fixed"
       className="flex flex-col items-center"
     >
-      <div aria-busy={isBusy} className="flex w-full max-w-5xl flex-col gap-5">
-        <h1
-          ref={headingRef}
-          tabIndex={-1}
-          className="text-mapache-vivid-primary-cyan text-4xl font-black drop-shadow-[5px_5px_0px_#000000] outline-none xl:text-6xl"
-        >
-          {props.mode === "storage-unavailable" && props.hasPendingSave ? (
-            <span aria-hidden="true">✖ </span>
-          ) : null}
-          {copy.title}
-        </h1>
-
-        <div className="flex flex-col gap-3 text-lg font-bold text-white xl:text-xl">
-          {(Array.isArray(copy.body) ? copy.body : [copy.body]).map(
-            (paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ),
-          )}
-        </div>
-
-        {props.mode === "unreadable-data" &&
-        !props.hasLastKnownGoodSave &&
-        !props.preview &&
-        !props.resetReview ? (
-          <p className="bg-mapache-vivid-secondary-gold text-mapache-vivid-black border-4 border-black p-4 text-lg font-black shadow-[6px_6px_0px_0px_#000000] xl:text-xl">
-            {playerDataRecoveryCopy.unreadableData.noKnownGoodSave}
-          </p>
-        ) : null}
-
-        {props.activity ? (
-          <p
-            role="status"
-            className="bg-mapache-vivid-primary-cyan text-mapache-vivid-dark border-4 border-black p-4 text-xl font-black uppercase shadow-[6px_6px_0px_0px_#000000]"
-          >
-            {props.activity}
-          </p>
-        ) : null}
-        {props.notice ? (
-          <p
-            role="status"
-            className="bg-mapache-vivid-secondary-green text-mapache-vivid-dark border-4 border-black p-4 text-xl font-black shadow-[6px_6px_0px_0px_#000000]"
-          >
-            {props.notice}
-          </p>
-        ) : null}
-        {props.issue ? (
-          <p
-            ref={issueRef}
-            role="alert"
-            tabIndex={-1}
-            className="bg-mapache-vivid-primary-orange border-4 border-black p-4 text-xl font-black text-white shadow-[6px_6px_0px_0px_#000000] outline-none"
-          >
-            {props.issue}
-          </p>
-        ) : null}
-
+      <div
+        aria-busy={isBusy}
+        className="flex min-h-0 w-full max-w-5xl flex-1 flex-col"
+      >
         {props.mode === "unreadable-data" ? (
-          <>
-            <input
-              ref={importInputRef}
-              type="file"
-              accept={WAYVM_IMPORT_FILE_ACCEPT}
-              disabled={isBusy}
-              aria-label={
-                localizedCopy.interfaceCopy.screen.chooseRecoveryBackup
-              }
-              className="sr-only"
-              onChange={(event) => {
-                const file = event.currentTarget.files?.[0]
-                event.currentTarget.value = ""
-                if (file) props.onImportFile(file)
+          props.resetReview ? (
+            <PlayerDataResetReview
+              key={props.resetReview.confirmationId}
+              isBusy={isBusy}
+              review={props.resetReview}
+              onCancel={() => {
+                shouldRestoreDeleteFocusRef.current = true
+                props.onCancelReset()
               }}
-            />
-
-            {props.resetReview ? (
-              <PlayerDataResetReview
-                key={props.resetReview.confirmationId}
-                isBusy={isBusy}
-                review={props.resetReview}
-                onCancel={() => {
-                  shouldRestoreDeleteFocusRef.current = true
-                  props.onCancelReset()
-                }}
-                onConfirm={props.onConfirmReset}
-                onExport={props.onExportUnreadableData}
-              />
-            ) : props.preview ? (
-              <PlayerDataImportPreview
-                confirmLabel={
-                  props.pendingImportSource === "last-known-good"
-                    ? playerDataRecoveryCopy.unreadableData.restoreReviewAction
-                    : playerDataRecoveryCopy.unreadableData
-                        .selectedBackupReviewAction
-                }
-                isBusy={isBusy}
-                preview={props.preview}
-                title={
-                  props.pendingImportSource === "last-known-good"
-                    ? playerDataRecoveryCopy.unreadableData.restoreReviewTitle
-                    : playerDataRecoveryCopy.unreadableData
-                        .selectedBackupReviewTitle
-                }
-                warning={
-                  props.pendingImportSource === "last-known-good"
-                    ? playerDataRecoveryCopy.unreadableData.restoreConfirmation
-                    : playerDataRecoveryCopy.unreadableData
-                        .selectedBackupConfirmation
-                }
-                onCancel={() => {
-                  shouldRestorePreviewFocusRef.current = true
-                  props.onCancelImport()
-                }}
-                onConfirm={props.onConfirmImport}
-              />
-            ) : (
-              <PlayerDataRecoveryActions
-                mode="unreadable-data"
-                hasLastKnownGoodSave={props.hasLastKnownGoodSave}
-                isBusy={isBusy}
-                onDeleteAllData={() => {
-                  shouldRestoreDeleteFocusRef.current = false
-                  props.onDeleteAllData()
-                }}
-                onExportUnreadableData={props.onExportUnreadableData}
-                onImportBackup={() => {
-                  previewFocusTargetIdRef.current =
-                    playerDataRecoveryActionIds.importBackup
-                  importInputRef.current?.click()
-                }}
-                onRestoreLastKnownGoodSave={() => {
-                  previewFocusTargetIdRef.current =
-                    playerDataRecoveryActionIds.restoreLastKnownGoodSave
-                  props.onRestoreLastKnownGoodSave()
-                }}
-                onTryAgain={props.onTryAgain}
-              />
-            )}
-          </>
+              onConfirm={props.onConfirmReset}
+              onExport={props.onExportUnreadableData}
+            >
+              {feedback}
+            </PlayerDataResetReview>
+          ) : props.preview ? (
+            <PlayerDataImportPreview
+              confirmLabel={
+                props.pendingImportSource === "last-known-good"
+                  ? playerDataRecoveryCopy.unreadableData.restoreReviewAction
+                  : playerDataRecoveryCopy.unreadableData
+                      .selectedBackupReviewAction
+              }
+              isBusy={isBusy}
+              preview={props.preview}
+              title={
+                props.pendingImportSource === "last-known-good"
+                  ? playerDataRecoveryCopy.unreadableData.restoreReviewTitle
+                  : playerDataRecoveryCopy.unreadableData
+                      .selectedBackupReviewTitle
+              }
+              warning={
+                props.pendingImportSource === "last-known-good"
+                  ? playerDataRecoveryCopy.unreadableData.restoreConfirmation
+                  : playerDataRecoveryCopy.unreadableData
+                      .selectedBackupConfirmation
+              }
+              onCancel={() => {
+                shouldRestorePreviewFocusRef.current = true
+                props.onCancelImport()
+              }}
+              onConfirm={props.onConfirmImport}
+            >
+              {feedback}
+            </PlayerDataImportPreview>
+          ) : (
+            <PlayerDataRecoveryActions
+              mode="unreadable-data"
+              hasLastKnownGoodSave={props.hasLastKnownGoodSave}
+              isBusy={isBusy}
+              onDeleteAllData={() => {
+                shouldRestoreDeleteFocusRef.current = false
+                props.onDeleteAllData()
+              }}
+              onExportUnreadableData={props.onExportUnreadableData}
+              onImportBackup={() => {
+                previewFocusTargetIdRef.current =
+                  playerDataRecoveryActionIds.importBackup
+                importInputRef.current?.click()
+              }}
+              onRestoreLastKnownGoodSave={() => {
+                previewFocusTargetIdRef.current =
+                  playerDataRecoveryActionIds.restoreLastKnownGoodSave
+                props.onRestoreLastKnownGoodSave()
+              }}
+              onTryAgain={props.onTryAgain}
+            >
+              {content}
+            </PlayerDataRecoveryActions>
+          )
         ) : (
           <PlayerDataRecoveryActions
             mode="storage-unavailable"
@@ -263,7 +278,9 @@ export default function PlayerDataRecovery(props: PlayerDataRecoveryProps) {
             onExportCurrentData={props.onExportCurrentData}
             onReturnWithoutNewChanges={props.onReturnWithoutNewChanges}
             onTryAgain={props.onTryAgain}
-          />
+          >
+            {content}
+          </PlayerDataRecoveryActions>
         )}
       </div>
     </MapacheScreen>

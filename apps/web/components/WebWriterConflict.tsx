@@ -50,81 +50,93 @@ export default function WebWriterConflict({
 
   return (
     <MapacheScreen
-      spacing="standard"
-      viewport="scrollable"
+      spacing="compact"
+      viewport="fixed"
       className="flex flex-col items-center"
     >
       <div
         aria-busy={isExportPending}
-        className="flex w-full max-w-5xl flex-col gap-5"
+        className="flex min-h-0 w-full max-w-5xl flex-1 flex-col"
       >
-        <h1
-          ref={headingRef}
-          tabIndex={-1}
-          className="text-mapache-vivid-primary-cyan text-4xl font-black uppercase drop-shadow-[5px_5px_0px_#000000] outline-none xl:text-6xl"
+        <div
+          className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-1 pr-3 pb-5"
+          data-controller-scroll
+          tabIndex={0}
         >
-          {webWriterConflictCopy.title}
-        </h1>
-
-        <p className="text-mapache-vivid-dark border-4 border-black bg-white p-5 text-xl font-black shadow-[8px_8px_0px_0px_#000000] xl:p-8 xl:text-2xl">
-          {webWriterConflictCopy.message}
-        </p>
-
-        {isExportPending ? (
-          <p
-            role="status"
-            className="bg-mapache-vivid-primary-cyan text-mapache-vivid-dark border-4 border-black p-4 text-xl font-black uppercase shadow-[6px_6px_0px_0px_#000000]"
-          >
-            {webWriterConflictCopy.exportActivity}
-          </p>
-        ) : null}
-        {notice ? (
-          <p
-            role="status"
-            className="bg-mapache-vivid-secondary-green text-mapache-vivid-dark border-4 border-black p-4 text-xl font-black shadow-[6px_6px_0px_0px_#000000]"
-          >
-            {notice}
-          </p>
-        ) : null}
-        {issue ? (
-          <p
-            ref={issueRef}
-            role="alert"
+          <h1
+            ref={headingRef}
             tabIndex={-1}
-            className="bg-mapache-vivid-primary-orange border-4 border-black p-4 text-xl font-black text-white shadow-[6px_6px_0px_0px_#000000] outline-none"
+            className="text-mapache-vivid-primary-cyan text-4xl font-black uppercase drop-shadow-[5px_5px_0px_#000000] outline-none xl:text-6xl"
           >
-            {issue}
-          </p>
-        ) : null}
+            {webWriterConflictCopy.title}
+          </h1>
 
-        {areOptionsVisible ? (
-          <div
-            role="group"
-            aria-label={localizedCopy.interfaceCopy.screen.crossTabRecovery}
-            className="grid grid-cols-1 gap-4 xl:grid-cols-3"
-          >
-            <Button
-              ref={loadLatestButtonRef}
-              type="button"
-              size="lg"
-              disabled={isExportPending}
-              onClick={onLoadLatest}
+          <p className="text-mapache-vivid-dark border-4 border-black bg-white p-5 text-xl font-black shadow-[8px_8px_0px_0px_#000000] xl:p-8 xl:text-2xl">
+            {webWriterConflictCopy.message}
+          </p>
+
+          {isExportPending ? (
+            <p
+              role="status"
+              className="bg-mapache-vivid-primary-cyan text-mapache-vivid-dark border-4 border-black p-4 text-xl font-black uppercase shadow-[6px_6px_0px_0px_#000000]"
             >
-              {webWriterConflictCopy.loadLatestAction}
-            </Button>
+              {webWriterConflictCopy.exportActivity}
+            </p>
+          ) : null}
+          {notice ? (
+            <p
+              role="status"
+              className="bg-mapache-vivid-secondary-green text-mapache-vivid-dark border-4 border-black p-4 text-xl font-black shadow-[6px_6px_0px_0px_#000000]"
+            >
+              {notice}
+            </p>
+          ) : null}
+          {issue ? (
+            <p
+              ref={issueRef}
+              role="alert"
+              tabIndex={-1}
+              className="bg-mapache-vivid-primary-orange border-4 border-black p-4 text-xl font-black text-white shadow-[6px_6px_0px_0px_#000000] outline-none"
+            >
+              {issue}
+            </p>
+          ) : null}
+
+          {areOptionsVisible && (
             <Button
               type="button"
               variant="secondary"
-              size="lg"
+              size="default"
+              wrap
               disabled={isExportPending}
               onClick={onExportThisTab}
             >
               {webWriterConflictCopy.exportThisTabAction}
             </Button>
+          )}
+        </div>
+        {areOptionsVisible ? (
+          <div
+            role="group"
+            aria-label={localizedCopy.interfaceCopy.screen.crossTabRecovery}
+            className="grid shrink-0 grid-cols-1 gap-3 pt-3 pb-2 xl:grid-cols-2"
+          >
+            <Button
+              ref={loadLatestButtonRef}
+              type="button"
+              size="default"
+              wrap
+              disabled={isExportPending}
+              onClick={onLoadLatest}
+            >
+              {webWriterConflictCopy.loadLatestAction}
+            </Button>
+
             <Button
               type="button"
               variant="outline"
-              size="lg"
+              size="default"
+              wrap
               disabled={isExportPending}
               onClick={() => {
                 shouldFocusReviewOptionsRef.current = true
@@ -139,7 +151,8 @@ export default function WebWriterConflict({
             ref={reviewOptionsButtonRef}
             type="button"
             variant="outline"
-            size="lg"
+            size="default"
+            wrap
             onClick={() => {
               shouldFocusLoadLatestRef.current = true
               setAreOptionsVisible(true)
