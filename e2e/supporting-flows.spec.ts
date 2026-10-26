@@ -127,7 +127,9 @@ for (const locale of ["en", "es-MX"] as const) {
       await expect(page.getByText(custom.saved, { exact: true })).toBeVisible()
       await expect
         .poll(() =>
-          page.evaluate(() => Boolean(history.state?.wayvmSemanticBackBoundary)),
+          page.evaluate(() =>
+            Boolean(history.state?.wayvmSemanticBackBoundary),
+          ),
         )
         .toBe(false)
       await page.reload()
