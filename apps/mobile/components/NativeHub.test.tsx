@@ -321,7 +321,9 @@ describe("NativeHub", () => {
     expect(
       screen.getByRole("header", { name: "My Top Five Life Values" }),
     ).toBeOnTheScreen()
-    expect(screen.getByLabelText("Your imported data is ready.")).toBeOnTheScreen()
+    expect(
+      screen.getByLabelText("Your imported data is ready."),
+    ).toBeOnTheScreen()
     expect(screen.getByText("#1")).toBeOnTheScreen()
     expect(screen.queryByText("#6")).toBeNull()
     expect(

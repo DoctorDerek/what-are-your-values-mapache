@@ -8,27 +8,43 @@ test.use({
 })
 
 for (const scale of [100, 200]) {
-  test(`Spanish Results actions keep complete words and reachable exits at 320px/${scale}%`, async ({ page }, testInfo) => {
+  test(`Spanish Results actions keep complete words and reachable exits at 320px/${scale}%`, async ({
+    page,
+  }, testInfo) => {
     await page.emulateMedia({ reducedMotion: "reduce" })
     await page.setViewportSize({ width: 320, height: 568 })
     await page.goto("/que-valoras-en-la-vida")
     await page.getByRole("button", { name: "Empezar", exact: true }).click()
     await page.getByRole("button", { name: "Combatir", exact: true }).click()
-    await page.getByRole("button", { name: /^Elegir .* Nivel .* Opción/ }).first().click()
-    await expect(page.getByRole("button", { name: "Deshacer", exact: true })).toBeEnabled()
+    await page
+      .getByRole("button", { name: /^Elegir .* Nivel .* Opción/ })
+      .first()
+      .click()
+    await expect(
+      page.getByRole("button", { name: "Deshacer", exact: true }),
+    ).toBeEnabled()
     await page.getByRole("button", { name: "Detener", exact: true }).click()
     await page.addStyleTag({ content: `html { font-size: ${scale}%; }` })
-    const resume = page.getByRole("button", { name: "Seguir combatiendo", exact: true })
+    const resume = page.getByRole("button", {
+      name: "Seguir combatiendo",
+      exact: true,
+    })
     await resume.scrollIntoViewIfNeeded()
     await expect(resume).toBeInViewport({ ratio: 1 })
     const lines = await resume.evaluate(getRenderedTextLines)
-    expect(lines.some((line) => line.toLowerCase().includes("combatiendo"))).toBe(true)
+    expect(
+      lines.some((line) => line.toLowerCase().includes("combatiendo")),
+    ).toBe(true)
     const bounds = await resume.boundingBox()
     expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(320)
     expect(bounds!.y + bounds!.height + 6).toBeLessThanOrEqual(568)
-    await page.screenshot({ path: testInfo.outputPath(`results-spanish-${scale}.png`) })
+    await page.screenshot({
+      path: testInfo.outputPath(`results-spanish-${scale}.png`),
+    })
     await resume.click()
-    await expect(page.getByRole("button", { name: "Detener", exact: true })).toBeVisible()
+    await expect(
+      page.getByRole("button", { name: "Detener", exact: true }),
+    ).toBeVisible()
   })
 }
 

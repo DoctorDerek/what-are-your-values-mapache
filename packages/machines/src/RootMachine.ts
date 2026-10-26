@@ -1,13 +1,13 @@
 import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import {
+  IMPORT_CONFIRMATION_DURATION_MS,
+  type ImportConfirmation,
+} from "@game/data/src/ImportConfirmation"
+import {
   DEFAULT_LOCALE,
   type SupportedLocale,
 } from "@game/data/src/LocaleRegistry"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
-import {
-  IMPORT_CONFIRMATION_DURATION_MS,
-  type ImportConfirmation,
-} from "@game/data/src/ImportConfirmation"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { assign, forwardTo, setup } from "xstate"

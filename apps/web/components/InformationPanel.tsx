@@ -92,9 +92,7 @@ function InformationPanelFrame({
             variant="outline"
             size="icon"
             className={
-              isIntroduction
-                ? "absolute top-4 right-4"
-                : "ml-auto shrink-0"
+              isIntroduction ? "absolute top-4 right-4" : "ml-auto shrink-0"
             }
             onClick={onPrimaryAction}
           >

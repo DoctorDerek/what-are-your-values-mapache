@@ -3,13 +3,18 @@ import { test } from "./fixtures"
 
 test.use({ serviceWorkers: "block", reducedMotion: "reduce" })
 
-test("the shipped stylesheet uses only the xl viewport boundary", async ({ page }) => {
+test("the shipped stylesheet uses only the xl viewport boundary", async ({
+  page,
+}) => {
   await page.goto("/")
   const viewportQueries = await page.evaluate(() => {
     const queries = new Set<string>()
     function inspect(rules: CSSRuleList) {
       for (const rule of rules) {
-        if (rule instanceof CSSMediaRule && /width|height|orientation/.test(rule.conditionText))
+        if (
+          rule instanceof CSSMediaRule &&
+          /width|height|orientation/.test(rule.conditionText)
+        )
           queries.add(rule.conditionText)
         if (rule instanceof CSSGroupingRule) inspect(rule.cssRules)
       }
@@ -19,7 +24,9 @@ test("the shipped stylesheet uses only the xl viewport boundary", async ({ page 
   })
   expect(viewportQueries.length).toBeGreaterThan(0)
   for (const query of viewportQueries)
-    expect(query).toMatch(/^\((?:width (?:>=|<) |min-width: |max-width: )80rem\)$/)
+    expect(query).toMatch(
+      /^\((?:width (?:>=|<) |min-width: |max-width: )80rem\)$/,
+    )
 })
 
 const languages = [
@@ -97,10 +104,15 @@ async function expectReadableText(locator: Locator) {
 }
 
 for (const copy of languages) {
-  test(`${copy.locale} Home keeps its condensed title and controls usable across the single xl boundary`, async ({ page }) => {
+  test(`${copy.locale} Home keeps its condensed title and controls usable across the single xl boundary`, async ({
+    page,
+  }) => {
     await page.goto(copy.path)
     await page.getByRole("button", { name: copy.start, exact: true }).click()
-    const title = page.getByRole("main").getByRole("heading", { level: 1 }).first()
+    const title = page
+      .getByRole("main")
+      .getByRole("heading", { level: 1 })
+      .first()
     const menu = page.getByRole("button", { name: copy.menu, exact: true })
     for (const width of [320, 390, 768, 1279, 1280, 1440]) {
       await page.setViewportSize({ width, height: 900 })
@@ -112,7 +124,13 @@ for (const copy of languages) {
       expect(titleBounds!.x + titleBounds!.width).toBeLessThan(menuBounds!.x)
       const typography = await title.evaluate((element) => {
         const style = getComputedStyle(element)
-        return { family: style.fontFamily, size: parseFloat(style.fontSize), spacing: style.letterSpacing, height: element.getBoundingClientRect().height, line: parseFloat(style.lineHeight) }
+        return {
+          family: style.fontFamily,
+          size: parseFloat(style.fontSize),
+          spacing: style.letterSpacing,
+          height: element.getBoundingClientRect().height,
+          line: parseFloat(style.lineHeight),
+        }
       })
       expect(typography.family).toContain("WAYVM Condensed")
       expect(typography.spacing).toBe("normal")

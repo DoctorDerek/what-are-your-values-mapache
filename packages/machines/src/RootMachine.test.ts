@@ -2872,7 +2872,9 @@ describe("Root Machine", () => {
     expect(target.actor.getSnapshot().context.importConfirmation).not.toBeNull()
     clock.increment(1)
     expect(target.actor.getSnapshot().context.importConfirmation).toBeNull()
-    expect(target.actor.getSnapshot().context.playerData).toBe(acceptedPlayerData)
+    expect(target.actor.getSnapshot().context.playerData).toBe(
+      acceptedPlayerData,
+    )
     expect(await memoryStore.readAll()).toEqual(acceptedStorage)
     target.actor.stop()
   })

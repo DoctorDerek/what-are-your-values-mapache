@@ -2,11 +2,11 @@
 
 import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
+import type { ImportConfirmation } from "@game/data/src/ImportConfirmation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { ValueId } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
-import type { ImportConfirmation } from "@game/data/src/ImportConfirmation"
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import {
