@@ -154,33 +154,38 @@ describe("NativeAllValues", () => {
     expect(screen.queryByLabelText("Value name")).not.toBeOnTheScreen()
   })
 
-  it("blocks navigation through edit drafts and delete confirmations", async () => {
+  it("replaces browse navigation with the focused task and restores search on Cancel", async () => {
     const callbacks = createCallbacks()
     const user = userEvent.setup()
-    const activeDeck = createIngenuityDeck()
-    const rankedValues = createRankedValues(activeDeck).filter(
-      ({ definition }) => definition.id === activeDeck.customValues[0].id,
+    const deck = createIngenuityDeck()
+    const rankedValues = createRankedValues(deck).filter(
+      ({ definition }) => definition.id === deck.customValues[0].id,
     )
     await render(<NativeAllValues {...callbacks} rankedValues={rankedValues} />)
-
-    const add = screen.getByRole("button", { name: "Add value" })
-    const close = screen.getByRole("button", { name: "Back" })
-    const ingenuity = getLegacyCustomDetails()
-
-    await user.press(within(ingenuity).getByRole("button", { name: "Edit" }))
-    expect(add).toBeDisabled()
-    expect(close).toBeDisabled()
+    await user.type(screen.getByLabelText("Search All Values"), "Ingenuity")
+    await user.press(
+      within(getLegacyCustomDetails()).getByRole("button", { name: "Edit" }),
+    )
+    expect(
+      screen.queryByRole("button", { name: "Add value" }),
+    ).not.toBeOnTheScreen()
+    expect(screen.queryByLabelText("Search All Values")).not.toBeOnTheScreen()
+    expect(screen.queryByRole("button", { name: "Edit" })).not.toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Cancel" }))
-    expect(add).toBeEnabled()
-    expect(close).toBeEnabled()
-
-    await user.press(within(ingenuity).getByRole("button", { name: "Delete" }))
+    expect(screen.getByLabelText("Search All Values")).toHaveDisplayValue(
+      "Ingenuity",
+    )
+    expect(screen.getByRole("button", { name: "Back" })).toBeEnabled()
+    await user.press(
+      within(getLegacyCustomDetails()).getByRole("button", { name: "Delete" }),
+    )
     expect(screen.getByLabelText("Remove Ingenuity?")).toBeOnTheScreen()
-    expect(add).toBeDisabled()
-    expect(close).toBeDisabled()
+    expect(
+      screen.queryByRole("button", { name: "Add value" }),
+    ).not.toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Cancel" }))
-    expect(add).toBeEnabled()
-    expect(close).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Back" })).toBeEnabled()
+    expect(callbacks.onClose).not.toHaveBeenCalled()
   })
 
   it("keeps navigation inert while persistence is pending", async () => {

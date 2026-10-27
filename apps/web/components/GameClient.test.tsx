@@ -1,3 +1,5 @@
+import type { SupportedLocale } from "@game/data/src/LocaleRegistry"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import { playerDataPortabilityCopy } from "@game/data/src/PlayerDataPortabilityCopy"
 import { playerDataResetCopy } from "@game/data/src/PlayerDataResetCopy"
 import type { ProductMenuDestination } from "@game/data/src/ProductMenu"
@@ -175,9 +177,16 @@ async function createSerializedGameClientBackup({
   return serializeWayvmExport(wayvmExport)
 }
 
-async function createStoredGameClientProfile(schedulerSeed: string) {
+async function createStoredGameClientProfile(
+  schedulerSeed: string,
+  locale?: SupportedLocale,
+) {
   const createdAt = "2026-08-20T12:00:00.000Z"
-  const playerData = createInitialPlayerData({ schedulerSeed, createdAt })
+  const playerData = createInitialPlayerData({
+    schedulerSeed,
+    createdAt,
+    locale,
+  })
   const store = createInMemoryDurableStore()
   await initializeBattleProfileStore({
     store,
@@ -261,11 +270,44 @@ describe("GameClient Integration", () => {
     expect(
       screen.queryByRole("button", { name: "Start" }),
     ).not.toBeInTheDocument()
-    expect(durableStoreFailure.readCount).toBe(0)
+    expect(durableStoreFailure.readCount).toBe(1)
     expect(durableStoreFailure.writeCount).toBe(0)
 
     fireEvent.click(screen.getByRole("button", { name: "Load Latest" }))
     expect(reload).toHaveBeenCalledOnce()
+  })
+
+  it("opens a secondary tab in its saved Spanish language without starting or writing a game", async () => {
+    webExclusiveWriterLease.status = "read-only"
+    const storedProfile = await createStoredGameClientProfile(
+      "read-only-spanish",
+      "es-MX",
+    )
+    durableStoreFailure.initialEntries = storedProfile.entries
+    const copy = getLocaleCatalog("es-MX").interfaceCopy.writerConflict
+
+    render(<GameClient routeLocale="en" />)
+
+    const heading = await screen.findByRole("heading", { name: copy.title })
+    expect(heading.closest("[lang]")).toHaveAttribute("lang", "es-MX")
+    expect(
+      screen.queryByRole("button", { name: "Start" }),
+    ).not.toBeInTheDocument()
+    expect(durableStoreFailure.readCount).toBe(1)
+    expect(durableStoreFailure.writeCount).toBe(0)
+  })
+
+  it("keeps recovery available in the route language when a secondary tab cannot read storage", async () => {
+    webExclusiveWriterLease.status = "read-only"
+    durableStoreFailure.readEnabled = true
+    const copy = getLocaleCatalog("es-MX").interfaceCopy.writerConflict
+
+    render(<GameClient routeLocale="es-MX" />)
+
+    expect(
+      await screen.findByRole("heading", { name: copy.title }),
+    ).toBeVisible()
+    expect(durableStoreFailure.writeCount).toBe(0)
   })
 
   it("exports validated durable Player Data without mounting the writable game", async () => {
@@ -299,7 +341,7 @@ describe("GameClient Integration", () => {
       throw new Error("The read-only backup was not delivered")
     const wayvmExport = await decodeWayvmExport(await downloadedBlob.text())
     expect(wayvmExport.playerData).toEqual(storedProfile.playerData)
-    expect(durableStoreFailure.readCount).toBe(1)
+    expect(durableStoreFailure.readCount).toBe(2)
     expect(durableStoreFailure.writeCount).toBe(0)
     expect(
       screen.queryByRole("button", { name: "Start" }),
@@ -332,7 +374,7 @@ describe("GameClient Integration", () => {
       expect(await screen.findByRole("alert")).toHaveTextContent(
         playerDataPortabilityCopy.exportFailure,
       )
-      expect(durableStoreFailure.readCount).toBe(1)
+      expect(durableStoreFailure.readCount).toBe(2)
       expect(durableStoreFailure.writeCount).toBe(0)
     },
   )
@@ -349,7 +391,7 @@ describe("GameClient Integration", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       playerDataPortabilityCopy.exportFailure,
     )
-    expect(durableStoreFailure.readCount).toBe(1)
+    expect(durableStoreFailure.readCount).toBe(2)
     expect(durableStoreFailure.writeCount).toBe(0)
   })
 

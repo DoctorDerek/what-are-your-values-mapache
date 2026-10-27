@@ -4,7 +4,7 @@ import {
   type RootActor,
 } from "@game/machines/src/RuntimeRecovery"
 import { useMachine } from "@xstate/react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { BackHandler, ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeOperationMessages from "@/components/NativeOperationMessages"
@@ -24,48 +24,59 @@ export default function NativeRuntimeRecovery({
   const localizedCopy = useLocaleCatalog()
   const copy = localizedCopy.interfaceCopy.runtimeRecovery
 
-  return (
-    <MapacheScreen>
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="grow justify-center p-5 pb-10"
+  const content = (
+    <>
+      <Text
+        accessibilityRole="header"
+        className="text-mapache-vivid-primary-cyan text-3xl font-black"
       >
-        <View className="mx-auto w-full max-w-2xl gap-5 border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000]">
-          <Text
-            accessibilityRole="header"
-            className="text-mapache-vivid-primary-cyan text-3xl font-black"
+        {copy.title}
+      </Text>
+      <Text className="text-lg font-medium text-black">
+        {!gameActor
+          ? copy.startupDetail
+          : onReopen
+            ? copy.actorDetail
+            : copy.renderDetail}
+      </Text>
+    </>
+  )
+  return (
+    <MapacheScreen className="p-3 xl:p-6">
+      <View className="mx-auto min-h-0 w-full max-w-2xl flex-1 border-4 border-black bg-white p-3">
+        {gameActor ? (
+          <RecoveryActions
+            gameActor={gameActor}
+            onRetry={onRetry}
+            onReopen={onReopen}
           >
-            {copy.title}
-          </Text>
-          <Text className="text-lg font-medium text-black">
-            {!gameActor
-              ? copy.startupDetail
-              : onReopen
-                ? copy.actorDetail
-                : copy.renderDetail}
-          </Text>
-          {gameActor ? (
-            <RecoveryActions
-              gameActor={gameActor}
-              onRetry={onRetry}
-              onReopen={onReopen}
-            />
-          ) : (
-            <Button onPress={onRetry}>
+            {content}
+          </RecoveryActions>
+        ) : (
+          <>
+            <ScrollView
+              className="min-h-0 flex-1"
+              contentContainerClassName="gap-5 p-2"
+            >
+              {content}
+            </ScrollView>
+            <Button size="compact" className="mt-3" onPress={onRetry}>
               <Text>{copy.retry}</Text>
             </Button>
-          )}
-        </View>
-      </ScrollView>
+          </>
+        )}
+      </View>
     </MapacheScreen>
   )
 }
 
 function RecoveryActions({
+  children,
   gameActor,
   onRetry,
   onReopen,
 }: {
+  readonly children: ReactNode
   readonly gameActor: RootActor
   readonly onRetry?: () => void
   readonly onReopen?: () => void
@@ -90,34 +101,38 @@ function RecoveryActions({
   }, [])
 
   return (
-    <View className="gap-4" accessibilityState={{ busy: isExporting }}>
-      {onRetry && (
-        <Button disabled={isExporting} onPress={onRetry}>
-          <Text>{copy.retry}</Text>
+    <View className="min-h-0 flex-1" accessibilityState={{ busy: isExporting }}>
+      <ScrollView
+        className="min-h-0 flex-1"
+        contentContainerClassName="gap-4 p-2"
+      >
+        {children}
+        <Button
+          variant="outline"
+          disabled={isExporting || !gameActor.getSnapshot().context.playerData}
+          onPress={() =>
+            send({ type: "RECOVERY.EXPORT", backupKind: "player" })
+          }
+        >
+          <Text>{copy.exportPlayer}</Text>
         </Button>
-      )}
-      <Button
-        variant="outline"
-        disabled={isExporting || !gameActor.getSnapshot().context.playerData}
-        onPress={() => send({ type: "RECOVERY.EXPORT", backupKind: "player" })}
-      >
-        <Text>{copy.exportPlayer}</Text>
-      </Button>
-      <Button
-        variant="outline"
-        disabled={isExporting}
-        onPress={() => send({ type: "RECOVERY.EXPORT", backupKind: "stored" })}
-      >
-        <Text>{copy.exportStored}</Text>
-      </Button>
-      <NativeOperationMessages
-        activity={isExporting ? copy.exporting : null}
-        issue={state.matches("Failed") ? copy.exportFailed : null}
-        notice={state.matches("Exported") ? copy.exportReady : null}
-      />
-      {onReopen &&
-        (isConfirmingReopen ? (
-          <View className="gap-4 border-t-4 border-black pt-5">
+        <Button
+          variant="outline"
+          disabled={isExporting}
+          onPress={() =>
+            send({ type: "RECOVERY.EXPORT", backupKind: "stored" })
+          }
+        >
+          <Text>{copy.exportStored}</Text>
+        </Button>
+        <NativeOperationMessages
+          activity={isExporting ? copy.exporting : null}
+          issue={state.matches("Failed") ? copy.exportFailed : null}
+          notice={state.matches("Exported") ? copy.exportReady : null}
+        />
+
+        {isConfirmingReopen && (
+          <>
             <Text
               accessibilityRole="header"
               className="text-2xl font-black text-black"
@@ -125,25 +140,55 @@ function RecoveryActions({
               {copy.confirmTitle}
             </Text>
             <Text className="font-medium text-black">{copy.confirmDetail}</Text>
+          </>
+        )}
+      </ScrollView>
+      <View className="shrink-0 flex-row flex-wrap gap-3 border-t-4 border-black pt-3 pb-2">
+        {isConfirmingReopen ? (
+          <>
             <Button
+              size="compact"
+              className="basis-readable-action min-w-0 flex-1"
               variant="outline"
               onPress={() => setIsConfirmingReopen(false)}
             >
               <Text>{copy.cancel}</Text>
             </Button>
-            <Button disabled={isExporting} onPress={onReopen}>
+            <Button
+              size="compact"
+              className="basis-readable-action min-w-0 flex-1"
+              disabled={isExporting}
+              onPress={onReopen}
+            >
               <Text>{copy.confirm}</Text>
             </Button>
-          </View>
+          </>
         ) : (
-          <Button
-            variant="secondary"
-            disabled={isExporting}
-            onPress={() => setIsConfirmingReopen(true)}
-          >
-            <Text>{copy.reopen}</Text>
-          </Button>
-        ))}
+          <>
+            {onRetry && (
+              <Button
+                size="compact"
+                className="basis-readable-action min-w-0 flex-1"
+                disabled={isExporting}
+                onPress={onRetry}
+              >
+                <Text>{copy.retry}</Text>
+              </Button>
+            )}
+            {onReopen && (
+              <Button
+                size="compact"
+                className="basis-readable-action min-w-0 flex-1"
+                variant="secondary"
+                disabled={isExporting}
+                onPress={() => setIsConfirmingReopen(true)}
+              >
+                <Text>{copy.reopen}</Text>
+              </Button>
+            )}
+          </>
+        )}
+      </View>
     </View>
   )
 }

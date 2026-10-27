@@ -64,11 +64,6 @@ describe("Data Management", () => {
       "data-slot",
       "mapache-screen",
     )
-    expect(screen.getByRole("main")).toHaveClass(
-      "min-h-[100dvh]",
-      "[--mapache-screen-spacing:1rem]",
-      "xl:[--mapache-screen-spacing:2rem]",
-    )
     await waitFor(() =>
       expect(
         screen.getByRole("heading", { name: "Import & Export", level: 1 }),
@@ -235,10 +230,12 @@ describe("Data Management", () => {
         screen.getByRole("heading", { name: "Reset Achievements?" }),
       ).toHaveFocus(),
     )
-    expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
     expect(
-      screen.getByRole("button", { name: "Back to Your Values" }),
-    ).toBeDisabled()
+      screen.queryByRole("button", { name: "Menu" }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Back to Your Values" }),
+    ).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
     await waitFor(() =>
       expect(

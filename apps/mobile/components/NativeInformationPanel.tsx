@@ -38,7 +38,7 @@ function NativeInformationPanelFrame({
 }: NativeInformationPanelFrameProps) {
   const isIntroduction = presentation === "introduction"
   const isStandard = presentation === "standard"
-  const Header = isStandard ? ScrollView : View
+  const Header = ScrollView
   return (
     <MapacheScreen
       accessibilityLabel={modal ? title : undefined}
@@ -59,14 +59,16 @@ function NativeInformationPanelFrame({
             className={cx(
               "relative z-20 border-black",
               isIntroduction
-                ? "min-h-24 justify-center border-b-6 px-4 py-5 xl:min-h-32 xl:px-8 xl:py-6"
+                ? "max-h-[25%] shrink-0 grow-0 border-b-6"
                 : isStandard
                   ? "max-h-[40%] shrink-0 grow-0 border-b-4"
-                  : "border-b-4 px-4 py-5",
+                  : "max-h-[40%] shrink-0 grow-0 border-b-4",
             )}
-            {...(isStandard && {
-              contentContainerClassName: "p-4",
-            })}
+            contentContainerClassName={
+              isIntroduction
+                ? "justify-center px-4 py-5 xl:px-8 xl:py-6"
+                : "p-4"
+            }
           >
             {titleDecoration}
             <Text
@@ -154,7 +156,11 @@ function NativeInformationPanelFrame({
               </Button>
             </View>
           </View>
-          {afterActions}
+          {afterActions && (
+            <ScrollView className="relative z-20 max-h-[25%] shrink-0 grow-0">
+              {afterActions}
+            </ScrollView>
+          )}
         </View>
       </View>
     </MapacheScreen>

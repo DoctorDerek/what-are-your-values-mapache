@@ -195,7 +195,7 @@ describe("native Dressing Room", () => {
     })
     await fireEvent.press(screen.getByRole("button", { name: "Retry save" }))
     expect(
-      screen.getByRole("button", { name: "Saving appearance…" }),
+      screen.getByRole("button", { name: DRESSING_ROOM_COPY.saving }),
     ).toBeDisabled()
     expect(screen.getByRole("button", { name: "Randomize" })).toBeDisabled()
     await waitFor(() => expect(finish).toBeDefined())

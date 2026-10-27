@@ -1,5 +1,8 @@
 import { DEFAULT_HEROES99_APPEARANCE } from "@game/data/src/Heroes99Appearance"
-import { HEROES99_CHOICES } from "@game/data/src/Heroes99DressingRoom"
+import {
+  DRESSING_ROOM_COPY,
+  HEROES99_CHOICES,
+} from "@game/data/src/Heroes99DressingRoom"
 import { avatarMachine } from "@game/machines/src/AvatarMachine"
 import { inspectBattleProfileStore } from "@game/machines/src/BattleProfileHydration"
 import { initializeBattleProfileStore } from "@game/machines/src/BattleProfileStore"
@@ -186,7 +189,7 @@ describe("Dressing Room", () => {
     })
     fireEvent.click(screen.getByRole("button", { name: "Retry save" }))
     expect(
-      screen.getByRole("button", { name: "Saving appearance…" }),
+      screen.getByRole("button", { name: DRESSING_ROOM_COPY.saving }),
     ).toBeDisabled()
     expect(screen.getByRole("button", { name: "Randomize" })).toBeDisabled()
     await waitFor(() => expect(finish).toBeDefined())

@@ -142,145 +142,152 @@ export default function NativeHub({
           />
         )}
         {!isDraftActive && (
-          <ScrollView
-            className="w-full"
-            contentContainerClassName="items-center gap-4 pb-6 xl:gap-5"
-          >
-            <View className="border-player-card-frame bg-player-card-background relative w-full max-w-7xl flex-row flex-wrap overflow-hidden border-4">
-              <View
-                accessible
-                accessibilityRole="header"
-                accessibilityLabel={
-                  hasComparisons
-                    ? PERSONAL_HUB_COPY.rankedTitle
-                    : PERSONAL_HUB_COPY.unrankedTitle
-                }
-                className="min-w-0 flex-[1_1_10rem] self-center px-3 py-4 xl:w-full xl:flex-auto xl:flex-row xl:justify-center xl:gap-x-3"
-              >
-                {(hasComparisons
-                  ? PERSONAL_HUB_COPY.rankedTitleLines
-                  : [PERSONAL_HUB_COPY.unrankedTitle]
-                ).map((line) => (
-                  <Text
-                    key={line}
-                    className="text-player-card-ink text-2xl leading-tight font-black xl:text-5xl"
-                  >
-                    {line}
-                  </Text>
-                ))}
-              </View>
-              <View className="xl:bg-player-card-values w-[96px] max-w-full items-center justify-center py-2 pr-2 xl:w-1/3 xl:py-3 xl:pr-0">
-                <NativeHeroes99Hero
-                  appearance={appearance}
-                  shouldReduceMotion={shouldReduceMotion}
-                  sizeClassName="h-[112px] w-[80px] xl:h-96 xl:w-64"
-                />
-              </View>
-              <View className="bg-player-card-values w-full xl:w-2/3">
-                {topFive.map((value) => (
-                  <NativeHubValueRow
-                    key={value.definition.id}
-                    rankedValue={value}
-                    showRank={hasComparisons}
-                    shouldReduceMotion={shouldReduceMotion}
-                    runtimeClipCatalog={runtimeClipCatalog}
-                  />
-                ))}
-              </View>
-              {!hasComparisons && (
-                <Text className="bg-player-card-values text-player-card-muted w-full p-3 text-sm">
-                  {PERSONAL_HUB_COPY.unrankedNotice}
-                </Text>
-              )}
-              <ScrollView
-                pointerEvents="box-none"
-                className="absolute inset-x-0 bottom-0 z-50 max-h-full"
-                contentContainerClassName="p-2"
-              >
-                {notifications}
-              </ScrollView>
-            </View>
-            <View className="w-full max-w-7xl min-w-0 gap-4">
-              <View className="min-w-0 flex-row flex-wrap gap-4">
-                <Button
-                  className="basis-readable-action max-w-full min-w-0 shrink grow"
-                  variant="outline"
-                  size="compact"
-                  onPress={onAddCustomValue}
-                >
-                  <Text className="text-center text-base font-black text-black">
-                    {PERSONAL_HUB_COPY.add}
-                  </Text>
-                </Button>
-                <Button
-                  className="basis-readable-action max-w-full min-w-0 shrink grow-[1.35]"
-                  onPress={onStartBattle}
-                  accessibilityState={{ busy: isBattlePending }}
+          <>
+            <ScrollView
+              className="min-h-0 w-full flex-1"
+              contentContainerClassName="items-center gap-4 pb-6 xl:gap-5"
+            >
+              <View className="border-player-card-frame bg-player-card-background relative w-full max-w-7xl flex-row flex-wrap overflow-hidden border-4">
+                <View
+                  accessible
+                  accessibilityRole="header"
                   accessibilityLabel={
-                    isBattlePending
-                      ? presentationLoadingCopy.cancelBattlePreparation
-                      : PERSONAL_HUB_COPY.battle
+                    hasComparisons
+                      ? PERSONAL_HUB_COPY.rankedTitle
+                      : PERSONAL_HUB_COPY.unrankedTitle
                   }
+                  className="min-w-0 flex-[1_1_10rem] self-center px-3 py-4 xl:w-full xl:flex-auto xl:flex-row xl:justify-center xl:gap-x-3"
                 >
-                  <View className={cx(isBattlePending && "opacity-0")}>
-                    <Text className="text-center text-2xl font-black text-white">
-                      {PERSONAL_HUB_COPY.battle}
-                    </Text>
-                  </View>
-                  {isBattlePending && (
-                    <View
-                      pointerEvents="none"
-                      className="absolute inset-0 items-center justify-center"
+                  {(hasComparisons
+                    ? PERSONAL_HUB_COPY.rankedTitleLines
+                    : [PERSONAL_HUB_COPY.unrankedTitle]
+                  ).map((line) => (
+                    <Text
+                      key={line}
+                      className="text-player-card-ink text-2xl leading-tight font-black xl:text-5xl"
                     >
-                      <Text className="text-center text-lg font-black text-white">
-                        {presentationLoadingCopy.preparing}
-                      </Text>
-                    </View>
-                  )}
-                </Button>
+                      {line}
+                    </Text>
+                  ))}
+                </View>
+                <View className="xl:bg-player-card-values w-[96px] max-w-full items-center justify-center py-2 pr-2 xl:w-1/3 xl:py-3 xl:pr-0">
+                  <NativeHeroes99Hero
+                    appearance={appearance}
+                    shouldReduceMotion={shouldReduceMotion}
+                    sizeClassName="h-[112px] w-[80px] xl:h-96 xl:w-64"
+                  />
+                </View>
+                <View className="bg-player-card-values w-full xl:w-2/3">
+                  {topFive.map((value) => (
+                    <NativeHubValueRow
+                      key={value.definition.id}
+                      rankedValue={value}
+                      showRank={hasComparisons}
+                      shouldReduceMotion={shouldReduceMotion}
+                      runtimeClipCatalog={runtimeClipCatalog}
+                    />
+                  ))}
+                </View>
+                {!hasComparisons && (
+                  <Text className="bg-player-card-values text-player-card-muted w-full p-3 text-sm">
+                    {PERSONAL_HUB_COPY.unrankedNotice}
+                  </Text>
+                )}
+                <ScrollView
+                  pointerEvents="box-none"
+                  className="absolute inset-x-0 bottom-0 z-50 max-h-full"
+                  contentContainerClassName="p-2"
+                >
+                  {notifications}
+                </ScrollView>
               </View>
-              <View className="min-w-0 gap-4 xl:flex-row">
-                <View className="min-w-0 flex-row flex-wrap gap-4 xl:flex-[2]">
+            </ScrollView>
+            <ScrollView
+              className="max-h-[60%] w-full shrink-0 grow-0"
+              contentContainerClassName="items-center pb-3"
+            >
+              <View className="w-full max-w-7xl min-w-0 gap-4">
+                <View className="min-w-0 flex-row flex-wrap gap-4">
                   <Button
                     className="basis-readable-action max-w-full min-w-0 shrink grow"
-                    variant="secondary"
+                    variant="outline"
                     size="compact"
-                    onPress={onCustomize}
+                    onPress={onAddCustomValue}
                   >
-                    <Text
-                      android_hyphenationFrequency="normal"
-                      className="text-center text-base font-black text-black"
-                    >
-                      {DRESSING_ROOM_COPY.customize}
+                    <Text className="text-center text-base font-black text-black">
+                      {PERSONAL_HUB_COPY.add}
                     </Text>
                   </Button>
                   <Button
-                    className="basis-readable-action max-w-full min-w-0 shrink grow"
-                    variant="secondary"
-                    size="compact"
-                    onPress={onShare}
+                    className="basis-readable-action max-w-full min-w-0 shrink grow-[1.35]"
+                    onPress={onStartBattle}
+                    accessibilityState={{ busy: isBattlePending }}
+                    accessibilityLabel={
+                      isBattlePending
+                        ? presentationLoadingCopy.cancelBattlePreparation
+                        : PERSONAL_HUB_COPY.battle
+                    }
                   >
-                    <Text
-                      android_hyphenationFrequency="normal"
-                      className="text-center text-base font-black text-black"
+                    <View className={cx(isBattlePending && "opacity-0")}>
+                      <Text className="text-center text-2xl font-black text-white">
+                        {PERSONAL_HUB_COPY.battle}
+                      </Text>
+                    </View>
+                    {isBattlePending && (
+                      <View
+                        pointerEvents="none"
+                        className="absolute inset-0 items-center justify-center"
+                      >
+                        <Text className="text-center text-lg font-black text-white">
+                          {presentationLoadingCopy.preparing}
+                        </Text>
+                      </View>
+                    )}
+                  </Button>
+                </View>
+                <View className="min-w-0 gap-4 xl:flex-row">
+                  <View className="min-w-0 flex-row flex-wrap gap-4 xl:flex-[2]">
+                    <Button
+                      className="basis-readable-action max-w-full min-w-0 shrink grow"
+                      variant="secondary"
+                      size="compact"
+                      onPress={onCustomize}
                     >
-                      {VALUES_CARD_COPY.title}
+                      <Text
+                        android_hyphenationFrequency="normal"
+                        className="text-center text-base font-black text-black"
+                      >
+                        {DRESSING_ROOM_COPY.customize}
+                      </Text>
+                    </Button>
+                    <Button
+                      className="basis-readable-action max-w-full min-w-0 shrink grow"
+                      variant="secondary"
+                      size="compact"
+                      onPress={onShare}
+                    >
+                      <Text
+                        android_hyphenationFrequency="normal"
+                        className="text-center text-base font-black text-black"
+                      >
+                        {VALUES_CARD_COPY.title}
+                      </Text>
+                    </Button>
+                  </View>
+                  <Button
+                    className="min-w-0 xl:flex-1"
+                    variant="outline"
+                    size="compact"
+                    onPress={onBrowseAllValues}
+                  >
+                    <Text className="text-center text-base font-black text-black">
+                      {PERSONAL_HUB_COPY.browse}
                     </Text>
                   </Button>
                 </View>
-                <Button
-                  className="min-w-0 xl:flex-1"
-                  variant="outline"
-                  size="compact"
-                  onPress={onBrowseAllValues}
-                >
-                  <Text className="text-center text-base font-black text-black">
-                    {PERSONAL_HUB_COPY.browse}
-                  </Text>
-                </Button>
               </View>
-            </View>
-          </ScrollView>
+            </ScrollView>
+          </>
         )}
       </View>
     </MapacheScreen>

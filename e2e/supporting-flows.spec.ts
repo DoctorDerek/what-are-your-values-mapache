@@ -142,6 +142,66 @@ for (const locale of ["en", "es-MX"] as const) {
       await expect(
         page.getByRole("heading", { name: customName, exact: true }),
       ).toBeVisible()
+      const edit = page.getByRole("button", {
+        name: copy.screen.edit,
+        exact: true,
+      })
+      await edit.click()
+      const editName = page.getByLabel(copy.screen.valueName, { exact: true })
+      await expect(editName).toBeFocused()
+      await expect(search).toHaveCount(0)
+      await expect(edit).toHaveCount(0)
+      const revisedName = `${customName} II`
+      await editName.fill(revisedName)
+      await page.addStyleTag({ content: "html { font-size: 200%; }" })
+      await page.setViewportSize({ width, height: 440 })
+      const review = page.getByRole("button", {
+        name: copy.screen.reviewUpdate,
+        exact: true,
+      })
+      const cancelEdit = page.getByRole("button", {
+        name: copy.screen.cancel,
+        exact: true,
+      })
+      await scrollWithoutMovingControl(
+        page.getByRole("form").locator("[data-controller-scroll]"),
+        cancelEdit,
+      )
+      await expectReadableControl(review)
+      await expectNoHorizontalOverflow(page)
+      await page.screenshot({
+        path: testInfo.outputPath("focused-edit-reachable.png"),
+      })
+      await review.click()
+      await expect(
+        page.getByRole("heading", {
+          name: copy.screen.updateValue(revisedName),
+          exact: true,
+        }),
+      ).toBeFocused()
+      await page.evaluate(() => history.back())
+      await expect(editName).toHaveValue(revisedName)
+      await expect(editName).toBeFocused()
+      await page.addStyleTag({ content: "html { font-size: 100%; }" })
+      await page.setViewportSize({ width, height: 800 })
+      await cancelEdit.click()
+      await expect(search).toHaveValue(customName)
+      await expect(edit).toBeFocused()
+      const remove = page.getByRole("button", {
+        name: copy.screen.delete,
+        exact: true,
+      })
+      await remove.click()
+      await expect(
+        page.getByRole("heading", {
+          name: copy.screen.removeValue(customName),
+          exact: true,
+        }),
+      ).toBeFocused()
+      await page
+        .getByRole("button", { name: copy.screen.cancel, exact: true })
+        .click()
+      await expect(remove).toBeFocused()
       await back.click()
       await page
         .getByRole("button", { name: copy.menu.openAction, exact: true })

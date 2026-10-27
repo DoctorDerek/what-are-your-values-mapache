@@ -6,7 +6,7 @@ import {
   type RootActor,
 } from "@game/machines/src/RuntimeRecovery"
 import { useMachine } from "@xstate/react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import { downloadPlayerDataFile } from "@/lib/PlayerDataFiles"
@@ -29,33 +29,48 @@ export default function RuntimeRecovery({
     headingRef.current?.focus()
   }, [])
 
+  const content = (
+    <>
+      <h1
+        ref={headingRef}
+        tabIndex={-1}
+        className="text-mapache-vivid-primary-cyan text-3xl font-black outline-none xl:text-4xl"
+      >
+        {copy.title}
+      </h1>
+      <p className="text-lg font-medium text-black">
+        {!gameActor
+          ? copy.startupDetail
+          : onReopen
+            ? copy.actorDetail
+            : copy.renderDetail}
+      </p>
+    </>
+  )
   return (
-    <MapacheScreen className="flex items-center justify-center">
-      <section className="flex w-full max-w-2xl flex-col gap-5 border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] xl:p-8">
-        <h1
-          ref={headingRef}
-          tabIndex={-1}
-          className="text-mapache-vivid-primary-cyan text-3xl font-black outline-none xl:text-4xl"
-        >
-          {copy.title}
-        </h1>
-        <p className="text-lg font-medium text-black">
-          {!gameActor
-            ? copy.startupDetail
-            : onReopen
-              ? copy.actorDetail
-              : copy.renderDetail}
-        </p>
+    <MapacheScreen
+      viewport="fixed"
+      spacing="compact"
+      className="flex items-stretch justify-center"
+    >
+      <section className="flex min-h-0 w-full max-w-2xl flex-col border-4 border-black bg-white p-3 shadow-[8px_8px_0px_0px_#000000] xl:p-5">
         {gameActor ? (
           <RecoveryActions
             gameActor={gameActor}
             onRetry={onRetry}
             onReopen={onReopen}
-          />
+          >
+            {content}
+          </RecoveryActions>
         ) : (
-          <Button onClick={onRetry} wrap>
-            {copy.retry}
-          </Button>
+          <>
+            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-2">
+              {content}
+            </div>
+            <Button className="mt-3 shrink-0" onClick={onRetry} wrap>
+              {copy.retry}
+            </Button>
+          </>
         )}
       </section>
     </MapacheScreen>
@@ -63,10 +78,12 @@ export default function RuntimeRecovery({
 }
 
 function RecoveryActions({
+  children,
   gameActor,
   onRetry,
   onReopen,
 }: {
+  readonly children: ReactNode
   readonly gameActor: RootActor
   readonly onRetry?: () => void
   readonly onReopen?: () => void
@@ -92,43 +109,48 @@ function RecoveryActions({
   })
 
   return (
-    <div className="flex flex-col gap-4" aria-busy={isExporting}>
-      {onRetry && (
-        <Button disabled={isExporting} onClick={onRetry} wrap>
-          {copy.retry}
+    <div className="flex min-h-0 flex-1 flex-col" aria-busy={isExporting}>
+      <div
+        className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-2"
+        data-controller-scroll
+        tabIndex={0}
+      >
+        {children}
+        <Button
+          variant="outline"
+          disabled={isExporting || !gameActor.getSnapshot().context.playerData}
+          onClick={() =>
+            send({ type: "RECOVERY.EXPORT", backupKind: "player" })
+          }
+          wrap
+        >
+          {copy.exportPlayer}
         </Button>
-      )}
-      <Button
-        variant="outline"
-        disabled={isExporting || !gameActor.getSnapshot().context.playerData}
-        onClick={() => send({ type: "RECOVERY.EXPORT", backupKind: "player" })}
-        wrap
-      >
-        {copy.exportPlayer}
-      </Button>
-      <Button
-        variant="outline"
-        disabled={isExporting}
-        onClick={() => send({ type: "RECOVERY.EXPORT", backupKind: "stored" })}
-        wrap
-      >
-        {copy.exportStored}
-      </Button>
-      {state.matches("Failed") && (
-        <p role="alert" className="font-bold text-black">
-          {copy.exportFailed}
+        <Button
+          variant="outline"
+          disabled={isExporting}
+          onClick={() =>
+            send({ type: "RECOVERY.EXPORT", backupKind: "stored" })
+          }
+          wrap
+        >
+          {copy.exportStored}
+        </Button>
+        {state.matches("Failed") && (
+          <p role="alert" className="font-bold text-black">
+            {copy.exportFailed}
+          </p>
+        )}
+        <p role="status" className="min-h-7 font-medium text-black">
+          {isExporting
+            ? copy.exporting
+            : state.matches("Exported")
+              ? copy.exportReady
+              : ""}
         </p>
-      )}
-      <p role="status" className="min-h-7 font-medium text-black">
-        {isExporting
-          ? copy.exporting
-          : state.matches("Exported")
-            ? copy.exportReady
-            : ""}
-      </p>
-      {onReopen &&
-        (isConfirmingReopen ? (
-          <div className="flex flex-col gap-4 border-t-4 border-black pt-5">
+
+        {isConfirmingReopen && (
+          <>
             <h2
               ref={confirmationRef}
               tabIndex={-1}
@@ -137,27 +159,55 @@ function RecoveryActions({
               {copy.confirmTitle}
             </h2>
             <p className="font-medium text-black">{copy.confirmDetail}</p>
+          </>
+        )}
+      </div>
+      <footer className="flex shrink-0 flex-wrap gap-3 border-t-4 border-black pt-3 pb-2">
+        {isConfirmingReopen ? (
+          <>
             <Button
+              wrap
+              className="min-w-0 flex-1 basis-[8em]"
               variant="outline"
               onClick={() => setIsConfirmingReopen(false)}
-              wrap
             >
               {copy.cancel}
             </Button>
-            <Button disabled={isExporting} onClick={onReopen} wrap>
+            <Button
+              wrap
+              className="min-w-0 flex-1 basis-[8em]"
+              disabled={isExporting}
+              onClick={onReopen}
+            >
               {copy.confirm}
             </Button>
-          </div>
+          </>
         ) : (
-          <Button
-            variant="secondary"
-            disabled={isExporting}
-            onClick={() => setIsConfirmingReopen(true)}
-            wrap
-          >
-            {copy.reopen}
-          </Button>
-        ))}
+          <>
+            {onRetry && (
+              <Button
+                wrap
+                className="min-w-0 flex-1 basis-[8em]"
+                disabled={isExporting}
+                onClick={onRetry}
+              >
+                {copy.retry}
+              </Button>
+            )}
+            {onReopen && (
+              <Button
+                wrap
+                className="min-w-0 flex-1 basis-[8em]"
+                variant="secondary"
+                disabled={isExporting}
+                onClick={() => setIsConfirmingReopen(true)}
+              >
+                {copy.reopen}
+              </Button>
+            )}
+          </>
+        )}
+      </footer>
     </div>
   )
 }

@@ -23,11 +23,11 @@ const buttonVariants = cva(
         accent: "bg-mapache-vivid-secondary-purple text-white",
       },
       size: {
-        default: "min-h-11 border-4 px-5 py-3",
-        sm: "min-h-10 border-4 px-3 py-2",
-        lg: "min-h-14 border-4 px-6 py-4",
-        tall: "min-h-14 border-4 px-5 py-3",
-        featured: "min-h-16 border-4 px-5 py-3",
+        default: "min-h-11 border-4 px-[20px] py-[12px]",
+        sm: "min-h-10 border-4 px-[12px] py-[8px]",
+        lg: "min-h-14 border-4 px-[24px] py-[16px]",
+        tall: "min-h-14 border-4 px-[20px] py-[12px]",
+        featured: "min-h-16 border-4 px-[20px] py-[12px]",
         icon: "min-h-11 size-11 border-4 p-0",
         link: "min-h-11 border-0 p-0",
       },
@@ -37,6 +37,11 @@ const buttonVariants = cva(
       size: "default",
     },
     compoundVariants: [
+      {
+        variant: ["default", "destructive", "secondary", "battle", "accent"],
+        className:
+          "relative hover:after:absolute hover:after:inset-x-0 hover:after:top-full hover:after:h-[calc(0.25rem+4px)]",
+      },
       {
         variant: ["battle", "accent"],
         className:
@@ -91,7 +96,7 @@ function Button({
         variant !== "ghost" && variant !== "link" && "border-black",
         textCase,
         align === "start" ? "justify-start text-left" : "justify-center",
-        wrap ? "whitespace-normal" : "whitespace-nowrap",
+        wrap ? "max-w-full whitespace-normal" : "whitespace-nowrap",
         typographyClassName ?? buttonTypographyVariants({ size: resolvedSize }),
         className,
       )}

@@ -139,9 +139,11 @@ export const DRESSING_ROOM_COPY = Object.freeze({
   customize: "Customize my card",
   randomize: "Randomize",
   save: "Save appearance",
+  saveAction: "Save",
+  shareAction: "Share",
   cancel: "Cancel",
   back: "Back",
-  saving: "Saving appearance…",
+  saving: "Saving…",
   error: "Local save error",
   errorDetail:
     "Your appearance changes are still here, but have not been saved.",

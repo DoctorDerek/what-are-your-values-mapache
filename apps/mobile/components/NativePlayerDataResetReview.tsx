@@ -1,20 +1,19 @@
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
-import {
-  DELETE_ALL_DATA_ACKNOWLEDGMENT,
-  type PlayerDataResetReview,
-} from "@game/machines/src/PlayerDataReset"
-import { useState } from "react"
-import { Switch, View } from "react-native"
+import { type PlayerDataResetReview } from "@game/machines/src/PlayerDataReset"
+import { useState, type ReactNode } from "react"
+import { ScrollView, Switch, View } from "react-native"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 
 export default function NativePlayerDataResetReview({
+  children,
   isBusy,
   review,
   onCancel,
   onConfirm,
   onExport,
 }: {
+  readonly children?: ReactNode
   readonly isBusy: boolean
   readonly review: PlayerDataResetReview
   readonly onCancel: () => void
@@ -31,44 +30,64 @@ export default function NativePlayerDataResetReview({
     review.resetKind === "delete-all-data"
 
   return (
-    <View className="border-mapache-vivid-primary-orange gap-5 border-8 bg-white p-5 shadow-[8px_8px_0px_0px_#000000]">
-      <Text
-        variant="h2"
-        className="border-b-4 border-black pb-2 text-3xl font-black tracking-tight text-black uppercase"
+    <View className="border-mapache-vivid-primary-orange min-h-0 flex-1 border-8 bg-white shadow-[8px_8px_0px_0px_#000000]">
+      <ScrollView
+        className="min-h-0 flex-1"
+        contentContainerClassName="gap-5 p-4 xl:p-8"
+        keyboardShouldPersistTaps="handled"
       >
-        {copy.confirmationTitle}
-      </Text>
+        {children}
+        <Text
+          variant="h2"
+          className="border-b-4 border-black pb-2 text-3xl font-black tracking-tight text-black uppercase"
+        >
+          {copy.confirmationTitle}
+        </Text>
 
-      <View className="gap-4">
-        {copy.confirmationBody.map((paragraph) => (
-          <Text
-            key={paragraph}
-            className="text-lg leading-7 font-bold text-black"
-          >
-            {paragraph}
-          </Text>
-        ))}
-      </View>
-
-      {requiresCompleteErasureAcknowledgment ? (
-        <View className="bg-mapache-vivid-light flex-row items-center gap-4 border-4 border-black p-4">
-          <Switch
-            accessibilityLabel={DELETE_ALL_DATA_ACKNOWLEDGMENT}
-            disabled={isBusy}
-            onValueChange={setAcknowledgedCompleteErasure}
-            value={acknowledgedCompleteErasure}
-          />
-          <Text className="min-w-0 flex-1 text-lg leading-7 font-black text-black">
-            {DELETE_ALL_DATA_ACKNOWLEDGMENT}
-          </Text>
+        <View className="gap-4">
+          {copy.confirmationBody.map((paragraph) => (
+            <Text
+              key={paragraph}
+              className="text-lg leading-7 font-bold text-black"
+            >
+              {paragraph}
+            </Text>
+          ))}
         </View>
-      ) : null}
 
-      <View className="gap-4">
-        <Button disabled={isBusy} variant="secondary" onPress={onExport}>
+        {requiresCompleteErasureAcknowledgment ? (
+          <View className="bg-mapache-vivid-light flex-row items-center gap-4 border-4 border-black p-4">
+            <Switch
+              accessibilityLabel={
+                localizedCopy.interfaceCopy.screen.deleteAllDataAcknowledgment
+              }
+              disabled={isBusy}
+              onValueChange={setAcknowledgedCompleteErasure}
+              value={acknowledgedCompleteErasure}
+            />
+            <Text className="min-w-0 flex-1 text-lg leading-7 font-black text-black">
+              {localizedCopy.interfaceCopy.screen.deleteAllDataAcknowledgment}
+            </Text>
+          </View>
+        ) : null}
+
+        <Button
+          size="compact"
+          disabled={isBusy}
+          variant="secondary"
+          onPress={onExport}
+        >
           <Text>{localizedCopy.interfaceCopy.screen.exportData}</Text>
         </Button>
-        <Button disabled={isBusy} variant="outline" onPress={onCancel}>
+      </ScrollView>
+      <View className="shrink-0 flex-row flex-wrap gap-3 border-t-4 border-black p-3 pb-5 xl:p-4">
+        <Button
+          size="compact"
+          className="basis-readable-action min-w-0 flex-1"
+          disabled={isBusy}
+          variant="outline"
+          onPress={onCancel}
+        >
           <Text>{localizedCopy.interfaceCopy.screen.cancel}</Text>
         </Button>
         <Button
@@ -77,6 +96,8 @@ export default function NativePlayerDataResetReview({
             (requiresCompleteErasureAcknowledgment &&
               !acknowledgedCompleteErasure)
           }
+          size="compact"
+          className="basis-readable-action min-w-0 flex-1"
           variant="destructive"
           onPress={() => onConfirm(review)}
         >

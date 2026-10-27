@@ -311,10 +311,10 @@ export default function Results({
     <MapacheScreen
       viewport="fixed"
       spacing="compact"
-      className="overflow-x-hidden overflow-y-auto"
+      className="overflow-hidden"
     >
       <div className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-2">
-        <header className="flex flex-wrap items-center justify-between gap-2">
+        <header className="flex max-h-[25%] shrink-0 flex-wrap items-center justify-between gap-2 overflow-y-auto">
           <div className="flex min-w-0 grow basis-36 flex-wrap items-center gap-x-2">
             <h1 className="text-mapache-vivid-primary-cyan max-w-full text-2xl font-black [overflow-wrap:anywhere]">
               {RESULTS_COPY.heading}
@@ -349,7 +349,7 @@ export default function Results({
             changeLabel,
           )}
         </p>
-        <div className="relative isolate min-h-24 flex-1 overflow-hidden">
+        <div className="relative isolate min-h-0 flex-1 overflow-hidden">
           <div
             className="[container-type:size] relative isolate h-full overflow-y-auto overscroll-contain"
             onWheelCapture={settleRowPositions}
@@ -379,7 +379,7 @@ export default function Results({
           </div>
         </div>
         <section
-          className="border-2 border-black bg-white p-2 text-black shadow-[3px_3px_0_#000]"
+          className="max-h-[25%] shrink-0 overflow-y-auto border-2 border-black bg-white p-2 text-black shadow-[3px_3px_0_#000]"
           aria-label={localizedCopy.interfaceCopy.screen.profileProgress}
         >
           <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">

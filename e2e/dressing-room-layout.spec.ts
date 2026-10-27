@@ -57,7 +57,7 @@ for (const copy of locales) {
     await palette.click()
     for (const name of [copy.back, copy.save, copy.share]) {
       const action = page.getByRole("button", { name, exact: true })
-      await action.scrollIntoViewIfNeeded()
+      await expect(action).toBeInViewport({ ratio: 1 })
       await action.click({ trial: true })
       expect(
         await action.evaluate((element) => {
@@ -72,7 +72,7 @@ for (const copy of locales) {
             text.bottom <= target.bottom
           )
         }),
-        `${name} remains inside its own button at200% text`,
+        `${name} remains inside its own button at 200% text`,
       ).toBe(true)
     }
     expect(

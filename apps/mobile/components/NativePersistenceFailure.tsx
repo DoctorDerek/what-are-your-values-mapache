@@ -1,7 +1,7 @@
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { PlayerDataResetReview } from "@game/machines/src/PlayerDataReset"
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
-import { ScrollView, View } from "react-native"
+import { View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeOperationMessages from "@/components/NativeOperationMessages"
 import NativePlayerDataImportPreview from "@/components/NativePlayerDataImportPreview"
@@ -53,44 +53,6 @@ export default function NativePersistenceFailure(
   const playerDataRecoveryCopy = localizedCopy.interfaceCopy.recovery
 
   const isBusy = props.activity !== null
-  if (props.mode === "unreadable-data" && props.preview && !props.resetReview) {
-    const isKnownGood = props.pendingImportSource === "last-known-good"
-    return (
-      <MapacheScreen>
-        <View className="min-h-0 flex-1 gap-3 p-4">
-          <NativeOperationMessages
-            activity={props.activity}
-            issue={props.issue}
-            notice={props.notice}
-          />
-          <NativePlayerDataImportPreview
-            confirmLabel={
-              isKnownGood
-                ? playerDataRecoveryCopy.unreadableData.restoreReviewAction
-                : playerDataRecoveryCopy.unreadableData
-                    .selectedBackupReviewAction
-            }
-            isBusy={isBusy}
-            preview={props.preview}
-            title={
-              isKnownGood
-                ? playerDataRecoveryCopy.unreadableData.restoreReviewTitle
-                : playerDataRecoveryCopy.unreadableData
-                    .selectedBackupReviewTitle
-            }
-            warning={
-              isKnownGood
-                ? playerDataRecoveryCopy.unreadableData.restoreConfirmation
-                : playerDataRecoveryCopy.unreadableData
-                    .selectedBackupConfirmation
-            }
-            onCancel={props.onCancelImport}
-            onConfirm={props.onConfirmImport}
-          />
-        </View>
-      </MapacheScreen>
-    )
-  }
   const title =
     props.mode === "unreadable-data"
       ? playerDataRecoveryCopy.unreadableData.title
@@ -106,94 +68,121 @@ export default function NativePersistenceFailure(
             : playerDataRecoveryCopy.storageUnavailable.body,
         ]
 
-  return (
-    <MapacheScreen>
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="grow p-5 pb-10"
-        keyboardShouldPersistTaps="handled"
+  const feedback = (
+    <NativeOperationMessages
+      activity={props.activity}
+      issue={props.issue}
+      notice={props.notice}
+    />
+  )
+  const content = (
+    <>
+      <Text
+        accessibilityRole="header"
+        variant="h1"
+        className="text-mapache-vivid-secondary-red text-center text-4xl font-black tracking-tight"
       >
-        <View
-          accessibilityState={{ busy: isBusy }}
-          className="m-auto w-full max-w-3xl border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000]"
-        >
+        {props.mode === "storage-unavailable" && props.hasPendingSave ? (
+          <Text accessibilityElementsHidden>✖ </Text>
+        ) : null}
+        {title}
+      </Text>
+      <View className="mt-5 gap-4">
+        {body.map((paragraph) => (
           <Text
-            accessibilityRole="header"
-            variant="h1"
-            className="text-mapache-vivid-secondary-red text-center text-4xl font-black tracking-tight"
+            key={paragraph}
+            className="text-lg leading-7 font-medium text-black"
           >
-            {props.mode === "storage-unavailable" && props.hasPendingSave ? (
-              <Text accessibilityElementsHidden>✖ </Text>
-            ) : null}
-            {title}
+            {paragraph}
           </Text>
-          <View className="mt-5 gap-4">
-            {body.map((paragraph) => (
-              <Text
-                key={paragraph}
-                className="text-lg leading-7 font-medium text-black"
-              >
-                {paragraph}
-              </Text>
-            ))}
-          </View>
+        ))}
+      </View>
 
-          <View className="mt-6 gap-5">
-            <NativeOperationMessages
-              activity={props.activity}
-              issue={props.issue}
-              notice={props.notice}
-            />
-
-            {props.mode === "unreadable-data" ? (
-              props.resetReview ? (
-                <NativePlayerDataResetReview
-                  key={props.resetReview.confirmationId}
-                  isBusy={isBusy}
-                  review={props.resetReview}
-                  onCancel={props.onCancelReset}
-                  onConfirm={props.onConfirmReset}
-                  onExport={props.onExportUnreadableData}
-                />
-              ) : (
-                <>
-                  {!props.hasLastKnownGoodSave ? (
-                    <Text
-                      accessibilityRole="alert"
-                      className="bg-mapache-vivid-secondary-gold border-4 border-black p-4 text-lg leading-7 font-black text-black"
-                    >
-                      {playerDataRecoveryCopy.unreadableData.noKnownGoodSave}
-                    </Text>
-                  ) : null}
-                  <NativePlayerDataRecoveryActions
-                    mode="unreadable-data"
-                    hasLastKnownGoodSave={props.hasLastKnownGoodSave}
-                    isBusy={isBusy}
-                    onDeleteAllData={props.onDeleteAllData}
-                    onExportUnreadableData={props.onExportUnreadableData}
-                    onImportBackup={props.onImportBackup}
-                    onRestoreLastKnownGoodSave={
-                      props.onRestoreLastKnownGoodSave
-                    }
-                    onTryAgain={props.onTryAgain}
-                  />
-                </>
-              )
-            ) : (
-              <NativePlayerDataRecoveryActions
-                mode="storage-unavailable"
-                hasPendingSave={props.hasPendingSave}
-                canExportCurrentData={props.canExportCurrentData}
-                canReturnWithoutNewChanges={props.canReturnWithoutNewChanges}
-                isBusy={isBusy}
-                onExportCurrentData={props.onExportCurrentData}
-                onReturnWithoutNewChanges={props.onReturnWithoutNewChanges}
-                onTryAgain={props.onTryAgain}
-              />
-            )}
-          </View>
-        </View>
-      </ScrollView>
+      {feedback}
+      {props.mode === "unreadable-data" && !props.hasLastKnownGoodSave && (
+        <Text
+          accessibilityRole="alert"
+          className="bg-mapache-vivid-secondary-gold border-4 border-black p-4 text-lg font-black text-black"
+        >
+          {playerDataRecoveryCopy.unreadableData.noKnownGoodSave}
+        </Text>
+      )}
+    </>
+  )
+  return (
+    <MapacheScreen className="p-3 xl:p-6">
+      <View
+        accessibilityState={{ busy: isBusy }}
+        className="mx-auto min-h-0 w-full max-w-3xl flex-1 border-4 border-black bg-white p-3"
+      >
+        {props.mode === "unreadable-data" ? (
+          props.resetReview ? (
+            <NativePlayerDataResetReview
+              key={props.resetReview.confirmationId}
+              isBusy={isBusy}
+              review={props.resetReview}
+              onCancel={props.onCancelReset}
+              onConfirm={props.onConfirmReset}
+              onExport={props.onExportUnreadableData}
+            >
+              {feedback}
+            </NativePlayerDataResetReview>
+          ) : props.preview ? (
+            <NativePlayerDataImportPreview
+              confirmLabel={
+                props.pendingImportSource === "last-known-good"
+                  ? playerDataRecoveryCopy.unreadableData.restoreReviewAction
+                  : playerDataRecoveryCopy.unreadableData
+                      .selectedBackupReviewAction
+              }
+              isBusy={isBusy}
+              preview={props.preview}
+              title={
+                props.pendingImportSource === "last-known-good"
+                  ? playerDataRecoveryCopy.unreadableData.restoreReviewTitle
+                  : playerDataRecoveryCopy.unreadableData
+                      .selectedBackupReviewTitle
+              }
+              warning={
+                props.pendingImportSource === "last-known-good"
+                  ? playerDataRecoveryCopy.unreadableData.restoreConfirmation
+                  : playerDataRecoveryCopy.unreadableData
+                      .selectedBackupConfirmation
+              }
+              onCancel={props.onCancelImport}
+              onConfirm={props.onConfirmImport}
+            >
+              {feedback}
+            </NativePlayerDataImportPreview>
+          ) : (
+            <NativePlayerDataRecoveryActions
+              mode="unreadable-data"
+              hasLastKnownGoodSave={props.hasLastKnownGoodSave}
+              isBusy={isBusy}
+              onDeleteAllData={props.onDeleteAllData}
+              onExportUnreadableData={props.onExportUnreadableData}
+              onImportBackup={props.onImportBackup}
+              onRestoreLastKnownGoodSave={props.onRestoreLastKnownGoodSave}
+              onTryAgain={props.onTryAgain}
+            >
+              {content}
+            </NativePlayerDataRecoveryActions>
+          )
+        ) : (
+          <NativePlayerDataRecoveryActions
+            mode="storage-unavailable"
+            hasPendingSave={props.hasPendingSave}
+            canExportCurrentData={props.canExportCurrentData}
+            canReturnWithoutNewChanges={props.canReturnWithoutNewChanges}
+            isBusy={isBusy}
+            onExportCurrentData={props.onExportCurrentData}
+            onReturnWithoutNewChanges={props.onReturnWithoutNewChanges}
+            onTryAgain={props.onTryAgain}
+          >
+            {content}
+          </NativePlayerDataRecoveryActions>
+        )}
+      </View>
     </MapacheScreen>
   )
 }

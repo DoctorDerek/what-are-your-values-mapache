@@ -198,8 +198,8 @@ describe("NativeSettings", () => {
       screen.queryByRole("button", { name: "Delete All Custom Values" }),
     ).not.toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Reset Achievements" }))
-    expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Back" })).toBeDisabled()
+    expect(screen.queryByRole("button", { name: "Menu" })).not.toBeOnTheScreen()
+    expect(screen.queryByRole("button", { name: "Back" })).not.toBeOnTheScreen()
 
     await user.press(screen.getByRole("button", { name: "Export Data" }))
     expect(onExport).toHaveBeenCalledTimes(1)

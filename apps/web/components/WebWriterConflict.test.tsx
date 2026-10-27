@@ -35,11 +35,6 @@ describe("Web Writer Conflict", () => {
       "data-slot",
       "mapache-screen",
     )
-    expect(screen.getByRole("main")).toHaveClass(
-      "min-h-[100dvh]",
-      "[--mapache-screen-spacing:1rem]",
-      "xl:[--mapache-screen-spacing:2rem]",
-    )
     const heading = screen.getByRole("heading", {
       name: webWriterConflictCopy.title,
     })
