@@ -224,7 +224,7 @@ export default function NativeCustomValueForm({
       <View className="shrink-0 flex-row flex-wrap gap-3 border-t-4 border-black p-3 pb-5">
         <Button
           size="compact"
-          className="basis-readable-action min-w-0 shrink grow"
+          className="max-w-full basis-auto grow"
           disabled={isPersistencePending}
           variant="outline"
           onPress={editor.back}
@@ -237,7 +237,7 @@ export default function NativeCustomValueForm({
         </Button>
         <Button
           size="compact"
-          className="basis-readable-action min-w-0 shrink grow"
+          className="max-w-full basis-auto grow"
           disabled={!canSubmit}
           onPress={editor.submit}
         >
