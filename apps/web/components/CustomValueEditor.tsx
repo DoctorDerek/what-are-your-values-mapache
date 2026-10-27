@@ -206,14 +206,14 @@ export default function CustomValueEditor({
             </>
           )}
         </section>
-        <footer className="flex shrink-0 flex-wrap gap-3 border-t-4 border-black p-[16px] pb-[20px] [overflow-wrap:anywhere] hyphens-auto">
+        <footer className="flex shrink-0 flex-wrap gap-3 border-t-4 border-black p-[16px] pb-[20px] hyphens-manual">
           <Button
             type="button"
             size="sm"
             wrap
             variant="outline"
             typographyClassName="text-base leading-tight"
-            className="min-w-0 flex-[1_1_8em]"
+            className="min-w-0 basis-[min-content] grow wrap-break-word"
             disabled={isPersistencePending}
             onClick={handleBack}
           >
@@ -227,7 +227,7 @@ export default function CustomValueEditor({
             wrap
             variant={isDeleting ? "destructive" : "default"}
             typographyClassName="text-base leading-tight"
-            className="min-w-0 flex-[1_1_8em]"
+            className="min-w-0 basis-[min-content] grow wrap-break-word"
             disabled={isDeleting ? isPersistencePending : !editor.canSubmit}
           >
             {isPersistencePending
