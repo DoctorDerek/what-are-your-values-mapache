@@ -213,7 +213,7 @@ export default function CustomValueEditor({
             wrap
             variant="outline"
             typographyClassName="text-base leading-tight"
-            className="min-w-0 basis-[min-content] grow wrap-break-word"
+            className="min-w-0 grow basis-[min-content] wrap-break-word"
             disabled={isPersistencePending}
             onClick={handleBack}
           >
@@ -229,7 +229,7 @@ export default function CustomValueEditor({
             wrap
             variant={isDeleting ? "destructive" : "default"}
             typographyClassName="text-base leading-tight"
-            className="min-w-0 basis-[min-content] grow wrap-break-word"
+            className="min-w-0 grow basis-[min-content] wrap-break-word"
             disabled={isDeleting ? isPersistencePending : !editor.canSubmit}
           >
             <span className="min-w-0">

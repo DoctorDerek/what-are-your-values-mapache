@@ -78,51 +78,51 @@ export default function NativeHub({
   const { hasComparisons, topFive } = projectHubValues(rankedValues)
   const header = (
     <>
-        <View className="w-full max-w-7xl flex-row flex-wrap items-center justify-between gap-3">
-          <View className="relative min-w-0 flex-[1_1_10rem] justify-center">
-            <Text
-              accessibilityRole="header"
-              android_hyphenationFrequency="normal"
-              className={cx(
-                "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-home-title web:font-normal text-lg leading-tight font-black tracking-normal text-white xl:text-[32px]",
-                importConfirmation && "opacity-0",
-              )}
-            >
-              {introductionCopy.title}
-            </Text>
-            {importConfirmation && (
-              <View className="absolute inset-0 justify-center">
-                <Text
-                  accessibilityLiveRegion="polite"
-                  accessibilityLabel={importConfirmation.message}
-                  className="text-sm leading-tight font-bold text-white xl:text-2xl"
-                >
-                  <Text className="text-green-300">✓</Text>{" "}
-                  {importConfirmation.summary}
-                </Text>
-              </View>
-            )}
-          </View>
-          <Button
-            className="ml-auto"
-            size="compact"
-            variant="secondary"
-            disabled={customValueInvitation?.isSaving}
-            onPress={() =>
-              isDraftActive ? setMenuRequestId((id) => id + 1) : onOpenMenu()
-            }
-          >
-            <Text>{PRODUCT_MENU_COPY.openAction}</Text>
-          </Button>
-        </View>
-        {dataNotice && (
+      <View className="w-full max-w-7xl flex-row flex-wrap items-center justify-between gap-3">
+        <View className="relative min-w-0 flex-[1_1_10rem] justify-center">
           <Text
-            accessibilityLiveRegion="polite"
-            className="bg-mapache-vivid-secondary-green w-full max-w-7xl border-4 border-black p-4 font-bold text-white"
+            accessibilityRole="header"
+            android_hyphenationFrequency="normal"
+            className={cx(
+              "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-home-title web:font-normal text-lg leading-tight font-black tracking-normal text-white xl:text-[32px]",
+              importConfirmation && "opacity-0",
+            )}
           >
-            {dataNotice}
+            {introductionCopy.title}
           </Text>
-        )}
+          {importConfirmation && (
+            <View className="absolute inset-0 justify-center">
+              <Text
+                accessibilityLiveRegion="polite"
+                accessibilityLabel={importConfirmation.message}
+                className="text-sm leading-tight font-bold text-white xl:text-2xl"
+              >
+                <Text className="text-green-300">✓</Text>{" "}
+                {importConfirmation.summary}
+              </Text>
+            </View>
+          )}
+        </View>
+        <Button
+          className="ml-auto"
+          size="compact"
+          variant="secondary"
+          disabled={customValueInvitation?.isSaving}
+          onPress={() =>
+            isDraftActive ? setMenuRequestId((id) => id + 1) : onOpenMenu()
+          }
+        >
+          <Text>{PRODUCT_MENU_COPY.openAction}</Text>
+        </Button>
+      </View>
+      {dataNotice && (
+        <Text
+          accessibilityLiveRegion="polite"
+          className="bg-mapache-vivid-secondary-green w-full max-w-7xl border-4 border-black p-4 font-bold text-white"
+        >
+          {dataNotice}
+        </Text>
+      )}
     </>
   )
 
@@ -210,7 +210,7 @@ export default function NativeHub({
               </View>
             </ScrollView>
             <ScrollView
-              className="min-h-0 max-h-[60%] w-full shrink grow-0"
+              className="max-h-[60%] min-h-0 w-full shrink grow-0"
               contentContainerClassName="items-center pb-3"
             >
               <View className="w-full max-w-7xl min-w-0 gap-4">
