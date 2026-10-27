@@ -136,6 +136,53 @@ function getHubPresentation(name: string) {
 describe("Hub Component Integration", () => {
   afterEach(() => vi.restoreAllMocks())
 
+  it("keeps draft authoring separate and returns focus to the lower Home action", async () => {
+    const battleCycle = createInitialBattleCycle("hub-authoring-layout")
+    const onClosed = vi.fn()
+    const onOpenMenu = vi.fn()
+    render(
+      <Hub
+        {...animalPresentationProps}
+        rankedValues={rankValues(
+          battleCycle.activeDeck,
+          battleCycle.progressById,
+        )}
+        dataNotice={null}
+        onBrowseAllValues={vi.fn()}
+        onAddCustomValue={vi.fn()}
+        onOpenMenu={onOpenMenu}
+        onStartBattle={vi.fn()}
+        customValueInvitation={{
+          editorRequestId: 1,
+          deckRevision: 0,
+          isSaving: false,
+          saveIssue: null,
+          onApply: vi.fn(),
+          onExport: vi.fn(async () => {}),
+          onNavigationBlockedChange: vi.fn(),
+          onClosed,
+          onOpenMatchingValue: vi.fn(),
+        }}
+      />,
+    )
+    expect(screen.getAllByRole("button", { name: "Menu" })).toHaveLength(1)
+    expect(screen.getByLabelText("Value name")).toHaveFocus()
+    expect(
+      screen.queryByRole("navigation", { name: "Value actions" }),
+    ).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
+    expect(onClosed).toHaveBeenCalledOnce()
+    expect(screen.queryByLabelText("Value name")).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Add value" })).toHaveFocus(),
+    )
+    expect(
+      screen.getByRole("region", { name: "Included values" }),
+    ).toBeVisible()
+    fireEvent.click(screen.getByRole("button", { name: "Menu" }))
+    expect(onOpenMenu).toHaveBeenCalledOnce()
+  })
+
   it("retains the loaded animal while hover attention loads, then returns to calm", async () => {
     vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockReturnValue(
       false,

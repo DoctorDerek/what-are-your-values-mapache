@@ -5,6 +5,7 @@ import {
   type SeethingSwarmRuntimeCharacterClip,
   type SeethingSwarmRuntimeClipCatalog,
 } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import type { CustomValueAuthoringOptions } from "@game/data/src/useCustomValueAuthoring"
 import {
   createCustomValueId,
   getValueDisplayName,
@@ -172,6 +173,47 @@ function createHubCallbacks() {
 }
 
 describe("NativeHub", () => {
+  it("retains one working header while entering and leaving the separate draft editor", async () => {
+    const callbacks = createHubCallbacks()
+    const onClosed = jest.fn()
+    const onApply = jest.fn<CustomValueAuthoringOptions["onApply"]>()
+    await render(
+      <NativeHub
+        {...callbacks}
+        {...animalPresentationProps}
+        dataNotice={null}
+        rankedValues={createUnplayedRankedValues()}
+        customValueInvitation={{
+          editorRequestId: 1,
+          deckRevision: 0,
+          isSaving: false,
+          saveIssue: null,
+          onApply,
+          onExport: jest
+            .fn<CustomValueAuthoringOptions["onExport"]>()
+            .mockResolvedValue(undefined),
+          onNavigationBlockedChange: jest.fn(),
+          onClosed,
+          onOpenMatchingValue: jest.fn(),
+        }}
+      />,
+    )
+    expect(screen.getAllByRole("button", { name: "Menu" })).toHaveLength(1)
+    expect(screen.getByLabelText("Value name")).toHaveDisplayValue("")
+    expect(
+      screen.queryByRole("button", { name: "Battle" }),
+    ).not.toBeOnTheScreen()
+    await fireEvent.press(screen.getByRole("button", { name: "Back" }))
+    expect(onClosed).toHaveBeenCalledTimes(1)
+    expect(onApply).not.toHaveBeenCalled()
+    expect(screen.queryByLabelText("Value name")).not.toBeOnTheScreen()
+    expect(screen.getByText("Acceptance")).toBeOnTheScreen()
+    expect(screen.getByRole("button", { name: "Battle" })).toBeEnabled()
+    expect(screen.getAllByRole("button", { name: "Menu" })).toHaveLength(1)
+    await fireEvent.press(screen.getByRole("button", { name: "Menu" }))
+    expect(callbacks.onOpenMenu).toHaveBeenCalledTimes(1)
+  })
+
   it("keeps the native Home title, values, and actions in Mexican Spanish", async () => {
     const callbacks = createHubCallbacks()
     await render(
