@@ -1,13 +1,13 @@
+import { SHIPPED_LOCALES } from "@game/data/src/LocaleRegistry"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import { createSerwistRoute } from "@serwist/turbopack"
 
 const serviceWorkerFileName = "sw.js" as const
 const generatedServiceWorkerRoute = createSerwistRoute({
-  additionalPrecacheEntries: [
-    {
-      url: "/",
-      revision: process.env.VERCEL_GIT_COMMIT_SHA ?? "development",
-    },
-  ],
+  additionalPrecacheEntries: SHIPPED_LOCALES.map((locale) => ({
+    url: getLocaleCatalog(locale).metadata.webPath,
+    revision: process.env.VERCEL_GIT_COMMIT_SHA ?? "development",
+  })),
   swSrc: "app/sw.ts",
   useNativeEsbuild: true,
   esbuildOptions: {
