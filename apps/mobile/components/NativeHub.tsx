@@ -76,9 +76,8 @@ export default function NativeHub({
   )
 
   const { hasComparisons, topFive } = projectHubValues(rankedValues)
-  return (
-    <MapacheScreen>
-      <View className="min-h-0 flex-1 items-center gap-4 p-4 xl:gap-5 xl:p-6">
+  const header = (
+    <>
         <View className="w-full max-w-7xl flex-row flex-wrap items-center justify-between gap-3">
           <View className="relative min-w-0 flex-[1_1_10rem] justify-center">
             <Text
@@ -124,6 +123,13 @@ export default function NativeHub({
             {dataNotice}
           </Text>
         )}
+    </>
+  )
+
+  return (
+    <MapacheScreen>
+      <View className="min-h-0 flex-1 items-center gap-4 p-4 xl:gap-5 xl:p-6">
+        {isDraftActive && header}
         {customValueInvitation && (
           <NativeCustomValueInvitation
             {...customValueInvitation}
@@ -144,9 +150,10 @@ export default function NativeHub({
         {!isDraftActive && (
           <>
             <ScrollView
-              className="min-h-0 w-full flex-1"
+              className="min-h-[50%] w-full flex-1"
               contentContainerClassName="items-center gap-4 pb-6 xl:gap-5"
             >
+              {header}
               <View className="border-player-card-frame bg-player-card-background relative w-full max-w-7xl flex-row flex-wrap overflow-hidden border-4">
                 <View
                   accessible
@@ -203,7 +210,7 @@ export default function NativeHub({
               </View>
             </ScrollView>
             <ScrollView
-              className="max-h-[60%] w-full shrink-0 grow-0"
+              className="min-h-0 max-h-[60%] w-full shrink grow-0"
               contentContainerClassName="items-center pb-3"
             >
               <View className="w-full max-w-7xl min-w-0 gap-4">
