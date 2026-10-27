@@ -217,9 +217,11 @@ export default function CustomValueEditor({
             disabled={isPersistencePending}
             onClick={handleBack}
           >
-            {editor.isReviewing && !isDeleting
-              ? localization.interfaceCopy.dressingRoom.back
-              : copy.cancel}
+            <span className="min-w-0">
+              {editor.isReviewing && !isDeleting
+                ? localization.interfaceCopy.dressingRoom.back
+                : copy.cancel}
+            </span>
           </Button>
           <Button
             type="submit"
@@ -230,15 +232,17 @@ export default function CustomValueEditor({
             className="min-w-0 basis-[min-content] grow wrap-break-word"
             disabled={isDeleting ? isPersistencePending : !editor.canSubmit}
           >
-            {isPersistencePending
-              ? isDeleting
-                ? copy.deleting
-                : copy.saving
-              : isDeleting
-                ? copy.deleteValue
-                : editor.isReviewing
-                  ? copy.updateValueAction
-                  : copy.reviewUpdate}
+            <span className="min-w-0">
+              {isPersistencePending
+                ? isDeleting
+                  ? copy.deleting
+                  : copy.saving
+                : isDeleting
+                  ? copy.deleteValue
+                  : editor.isReviewing
+                    ? copy.updateValueAction
+                    : copy.reviewUpdate}
+            </span>
           </Button>
         </footer>
       </form>
