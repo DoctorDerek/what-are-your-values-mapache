@@ -200,7 +200,7 @@ export default function Hub({
           </div>
           <nav
             aria-label={PERSONAL_HUB_COPY.actions}
-            className="grid max-h-[60%] w-full max-w-7xl shrink-0 grid-cols-1 gap-[16px] overflow-y-auto overscroll-contain pr-2 pb-[12px] xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:gap-4 xl:pb-3 [&_button]:max-w-full [&_button]:min-w-0"
+            className="grid max-h-[60%] w-full max-w-7xl shrink-0 auto-rows-min grid-cols-1 gap-[16px] overflow-y-auto overscroll-contain pr-2 pb-[12px] xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:gap-4 xl:pb-3 [&_button]:max-w-full [&_button]:min-w-0"
           >
             <div className="flex min-w-0 flex-wrap gap-[16px] xl:col-span-2 xl:gap-4">
               <Button

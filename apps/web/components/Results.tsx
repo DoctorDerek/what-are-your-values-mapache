@@ -418,7 +418,7 @@ export default function Results({
           <Button
             size="sm"
             wrap
-            className="max-w-full min-w-0 flex-1 basis-[8em] px-[6px] text-center leading-tight break-normal wrap-normal"
+            className="max-w-full min-w-min flex-[1_1_0] px-[6px] text-center leading-tight break-normal wrap-normal"
             onClick={onSeeValues}
           >
             {RESULTS_COPY.seeValuesAction}
@@ -427,7 +427,7 @@ export default function Results({
             size="sm"
             variant="outline"
             wrap
-            className="max-w-full min-w-0 flex-1 basis-[8em] px-[6px] text-center leading-tight break-normal wrap-normal"
+            className="max-w-full min-w-min flex-[1_1_0] px-[6px] text-center leading-tight break-normal wrap-normal"
             onClick={onKeepBattling}
           >
             {RESULTS_COPY.keepBattlingAction}

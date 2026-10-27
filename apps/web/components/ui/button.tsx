@@ -38,6 +38,11 @@ const buttonVariants = cva(
     },
     compoundVariants: [
       {
+        variant: ["default", "destructive", "secondary", "battle", "accent"],
+        className:
+          "relative hover:after:absolute hover:after:inset-x-0 hover:after:top-full hover:after:h-[calc(0.25rem+4px)]",
+      },
+      {
         variant: ["battle", "accent"],
         className:
           "shadow-[6px_6px_0px_0px_#000000] hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_#000000] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none",
@@ -91,9 +96,7 @@ function Button({
         variant !== "ghost" && variant !== "link" && "border-black",
         textCase,
         align === "start" ? "justify-start text-left" : "justify-center",
-        wrap
-          ? "max-w-full whitespace-normal [overflow-wrap:anywhere] hyphens-auto"
-          : "whitespace-nowrap",
+        wrap ? "max-w-full whitespace-normal" : "whitespace-nowrap",
         typographyClassName ?? buttonTypographyVariants({ size: resolvedSize }),
         className,
       )}
