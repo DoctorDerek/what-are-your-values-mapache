@@ -88,7 +88,7 @@ export default function PlayerDataRecoveryActions(
             disabled={props.isBusy}
             onClick={props.onDeleteAllData}
             wrap
-            className="w-full xl:col-span-2"
+            className="w-full"
           >
             {actions.deleteAllData}
           </Button>
@@ -156,9 +156,7 @@ export default function PlayerDataRecoveryActions(
             wrap
             className="w-full"
           >
-            {props.hasPendingSave
-              ? playerDataRecoveryCopy.pendingSave.export
-              : actions.exportCurrentData}
+            {playerDataRecoveryCopy.pendingSave.export}
           </Button>
         ) : null}
         <Button

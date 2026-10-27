@@ -125,11 +125,7 @@ export default function NativePlayerDataRecoveryActions(
             variant="secondary"
             onPress={props.onExportCurrentData}
           >
-            <Text>
-              {props.hasPendingSave
-                ? playerDataRecoveryCopy.pendingSave.export
-                : actions.exportCurrentData}
-            </Text>
+            <Text>{playerDataRecoveryCopy.pendingSave.export}</Text>
           </Button>
         ) : null}
         <Button

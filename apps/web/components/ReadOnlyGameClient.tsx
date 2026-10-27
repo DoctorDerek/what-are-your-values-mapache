@@ -57,10 +57,7 @@ export default function ReadOnlyGameClient({
   if (locale === null) return <PlayerDataLoading />
   return (
     <LocaleProvider locale={locale}>
-      <div
-        lang={getLocaleCatalog(locale).metadata.languageTag}
-        data-game-surface="active"
-      >
+      <div lang={getLocaleCatalog(locale).metadata.languageTag}>
         <ReadOnlyRecovery durableStore={durableStore} />
       </div>
     </LocaleProvider>
