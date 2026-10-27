@@ -109,7 +109,20 @@ export default function Hub({
       viewport="fixed"
       className="flex h-[100dvh] min-w-0 flex-col items-center gap-[16px] xl:gap-4"
     >
-      <header className="flex max-h-[25%] w-full max-w-7xl shrink-0 flex-wrap items-center justify-between gap-[12px] overflow-y-auto text-white xl:flex-nowrap xl:gap-3">
+      <div
+        data-controller-scroll={isDraftNavigationBlocked ? undefined : true}
+        className={
+          isDraftNavigationBlocked
+            ? "contents"
+            : "flex min-h-[min(16rem,50%)] w-full max-w-7xl flex-[1_0_min(16rem,50%)] flex-col items-center gap-[16px] overflow-x-hidden overflow-y-auto overscroll-contain xl:gap-4"
+        }
+      >
+      <header
+        className={cx(
+          "flex w-full max-w-7xl shrink-0 flex-wrap items-center justify-between gap-[12px] text-white xl:flex-nowrap xl:gap-3",
+          isDraftNavigationBlocked && "max-h-[25%] overflow-y-auto",
+        )}
+      >
         <div className="@container grid min-w-0 flex-[1_1_10rem] items-center xl:flex-1">
           <h1
             className={cx(
@@ -184,8 +197,7 @@ export default function Hub({
         />
       )}
       {!isDraftNavigationBlocked && (
-        <>
-          <div className="relative isolate flex min-h-0 w-full max-w-7xl min-w-0 flex-1 flex-col overflow-hidden">
+          <div className="relative isolate flex min-h-min w-full max-w-7xl min-w-0 flex-[1_0_auto] flex-col">
             <PersonalValuesCard
               rosterRef={rosterRef}
               appearance={appearance}
@@ -198,9 +210,12 @@ export default function Hub({
               {notifications}
             </div>
           </div>
+      )}
+      </div>
+      {!isDraftNavigationBlocked && (
           <nav
             aria-label={PERSONAL_HUB_COPY.actions}
-            className="grid max-h-[60%] w-full max-w-7xl shrink-0 auto-rows-min grid-cols-1 gap-[16px] overflow-y-auto overscroll-contain pr-2 pb-[12px] xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:gap-4 xl:pb-3 [&_button]:max-w-full [&_button]:min-w-0"
+            className="grid max-h-[60%] min-h-0 w-full max-w-7xl shrink auto-rows-min grid-cols-1 gap-[16px] overflow-y-auto overscroll-contain pr-2 pb-[12px] xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:gap-4 xl:pb-3 [&_button]:max-w-full [&_button]:min-w-0"
           >
             <div className="flex min-w-0 flex-wrap gap-[16px] xl:col-span-2 xl:gap-4">
               <Button
@@ -285,7 +300,6 @@ export default function Hub({
               {PERSONAL_HUB_COPY.browse}
             </Button>
           </nav>
-        </>
       )}
     </MapacheScreen>
   )

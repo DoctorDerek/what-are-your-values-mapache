@@ -82,7 +82,7 @@ export default function PersonalValuesCard({
             : PERSONAL_HUB_COPY.unrankedList
         }
         tabIndex={0}
-        className="bg-player-card-values col-start-1 row-start-2 min-h-0 min-w-0 overflow-y-auto overscroll-contain [contain:size] focus-visible:outline-4 focus-visible:-outline-offset-4 xl:col-start-2"
+        className="bg-player-card-values col-start-1 row-start-2 min-h-0 min-w-0 overflow-y-auto [contain:size] focus-visible:outline-4 focus-visible:-outline-offset-4 xl:col-start-2"
       >
         <ol>{(hasComparisons ? topFive : visibleValues).map(renderValue)}</ol>
         {hasComparisons && remainingValues.length > 0 && (
