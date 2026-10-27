@@ -111,10 +111,11 @@ export default function Hub({
     >
       <div
         data-controller-scroll={isDraftNavigationBlocked ? undefined : true}
+        tabIndex={isDraftNavigationBlocked ? undefined : 0}
         className={
           isDraftNavigationBlocked
             ? "contents"
-            : "flex min-h-[min(16rem,50%)] w-full max-w-7xl flex-[1_0_min(16rem,50%)] flex-col items-center gap-[16px] overflow-x-hidden overflow-y-auto overscroll-contain xl:gap-4"
+            : "flex min-h-[min(16rem,50%)] w-full max-w-7xl flex-[1_0_min(16rem,50%)] flex-col items-center gap-[16px] overflow-x-hidden overflow-y-auto overscroll-contain focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white xl:gap-4"
         }
       >
         <header
