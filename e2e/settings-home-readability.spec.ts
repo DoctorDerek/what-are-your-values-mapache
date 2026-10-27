@@ -1,7 +1,10 @@
 import { expect, type Locator } from "@playwright/test"
 import { test } from "./fixtures"
 
-test.use({ serviceWorkers: "block", reducedMotion: "reduce" })
+test.use({
+  serviceWorkers: "block",
+  contextOptions: { reducedMotion: "reduce" },
+})
 
 test("the shipped stylesheet uses only the xl breakpoint", async ({ page }) => {
   await page.goto("/")
@@ -115,6 +118,7 @@ for (const copy of languages) {
       .getByRole("heading", { level: 1 })
       .first()
     const menu = page.getByRole("button", { name: copy.menu, exact: true })
+    await expect(menu).toBeVisible()
     for (const width of [320, 390, 768, 1279, 1280, 1440]) {
       await page.setViewportSize({ width, height: 900 })
       await page.evaluate(() => document.fonts.ready.then(() => undefined))
