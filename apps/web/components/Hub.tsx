@@ -230,7 +230,7 @@ export default function Hub({
                 textCase="normal-case"
                 typographyClassName="text-2xl xl:text-3xl"
                 wrap
-                className="relative flex-[1.35_1_8rem] max-xl:px-[12px] max-xl:py-[12px]"
+                className="relative flex-[1.35_1_8rem] max-xl:px-[8px] max-xl:py-[12px]"
               >
                 <span className={isBattlePending ? "invisible" : undefined}>
                   {PERSONAL_HUB_COPY.battle}
@@ -249,7 +249,7 @@ export default function Hub({
                 variant="secondary"
                 size="sm"
                 typographyClassName="text-base xl:text-lg"
-                className="flex-[1_1_7rem] max-xl:px-[8px] max-xl:py-[8px]"
+                className="flex-[1_1_7rem] max-xl:px-[6px] max-xl:py-[8px]"
                 wrap
                 disabled={isNavigationBlocked}
                 onClick={onCustomize}
