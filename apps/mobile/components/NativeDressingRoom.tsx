@@ -62,7 +62,11 @@ export default function NativeDressingRoom({
   const paletteId = getHeroes99PaletteId(category, draft)
   return (
     <MapacheScreen>
-      <ScrollView className="min-h-0 flex-1" contentContainerClassName="grow gap-2 pb-3" nestedScrollEnabled>
+      <ScrollView
+        className="min-h-0 flex-1"
+        contentContainerClassName="grow gap-2 pb-3"
+        nestedScrollEnabled
+      >
         <View className="px-3 pt-3">
           <Text
             accessibilityRole="header"
@@ -72,7 +76,10 @@ export default function NativeDressingRoom({
           </Text>
         </View>
         <View className="min-h-80 flex-1 gap-2 p-3 xl:flex-row xl:justify-center xl:gap-5">
-          <ScrollView className="max-h-[35%] min-h-0 shrink-0 grow-0 border-4 border-black bg-white xl:max-h-none xl:flex-1" contentContainerClassName="flex-row items-center justify-around gap-3 p-2 xl:flex-col xl:gap-4 xl:p-4">
+          <ScrollView
+            className="max-h-[35%] min-h-0 shrink-0 grow-0 border-4 border-black bg-white xl:max-h-none xl:flex-1"
+            contentContainerClassName="flex-row items-center justify-around gap-3 p-2 xl:flex-col xl:gap-4 xl:p-4"
+          >
             <NativeHeroes99Hero
               appearance={draft}
               shouldReduceMotion={shouldReduceMotion}
@@ -117,7 +124,11 @@ export default function NativeDressingRoom({
                 </Pressable>
               ))}
             </ScrollView>
-            <ScrollView className="min-h-0 flex-1" contentContainerClassName="gap-3 pb-2 xl:gap-4" nestedScrollEnabled>
+            <ScrollView
+              className="min-h-0 flex-1"
+              contentContainerClassName="gap-3 pb-2 xl:gap-4"
+              nestedScrollEnabled
+            >
               <View
                 accessibilityLabel={DRESSING_ROOM_COPY.choices(
                   choiceCopy.categories[category],
@@ -266,11 +277,15 @@ export default function NativeDressingRoom({
             className="min-w-0 flex-1"
             disabled={isSaving}
             accessibilityState={{ busy: isSaving }}
-            accessibilityLabel={isSaving ? DRESSING_ROOM_COPY.saving : DRESSING_ROOM_COPY.save}
+            accessibilityLabel={
+              isSaving ? DRESSING_ROOM_COPY.saving : DRESSING_ROOM_COPY.save
+            }
             onPress={() => actor.send({ type: "AVATAR.SAVE" })}
           >
             <Text>
-              {isSaving ? DRESSING_ROOM_COPY.saving : DRESSING_ROOM_COPY.saveAction}
+              {isSaving
+                ? DRESSING_ROOM_COPY.saving
+                : DRESSING_ROOM_COPY.saveAction}
             </Text>
           </Button>
         </View>

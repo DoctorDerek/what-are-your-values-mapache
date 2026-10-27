@@ -1,9 +1,9 @@
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
-import LocaleProvider from "@game/utils/src/LocaleContext"
 import {
   DELETE_ALL_DATA_ACKNOWLEDGMENT,
   type PlayerDataResetReview as PlayerDataResetReviewState,
 } from "@game/machines/src/PlayerDataReset"
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import PlayerDataResetReview from "./PlayerDataResetReview"
@@ -91,17 +91,32 @@ describe("Player Data Reset Review", () => {
   })
 
   it("requires the localized Spanish acknowledgment without changing the destructive confirmation contract", () => {
-    const review = { resetKind: "delete-all-data", confirmationId: "spanish-delete" } satisfies PlayerDataResetReviewState
+    const review = {
+      resetKind: "delete-all-data",
+      confirmationId: "spanish-delete",
+    } satisfies PlayerDataResetReviewState
     const onConfirm = vi.fn()
     const catalog = getLocaleCatalog("es-MX")
     render(
       <LocaleProvider locale="es-MX">
-        <PlayerDataResetReview review={review} isBusy={false} onCancel={vi.fn()} onConfirm={onConfirm} onExport={vi.fn()} />
+        <PlayerDataResetReview
+          review={review}
+          isBusy={false}
+          onCancel={vi.fn()}
+          onConfirm={onConfirm}
+          onExport={vi.fn()}
+        />
       </LocaleProvider>,
     )
-    const acknowledgment = screen.getByRole("checkbox", { name: catalog.interfaceCopy.screen.deleteAllDataAcknowledgment })
-    expect(screen.queryByRole("checkbox", { name: DELETE_ALL_DATA_ACKNOWLEDGMENT })).not.toBeInTheDocument()
-    const confirmation = screen.getByRole("button", { name: catalog.interfaceCopy.resets["delete-all-data"].actionLabel })
+    const acknowledgment = screen.getByRole("checkbox", {
+      name: catalog.interfaceCopy.screen.deleteAllDataAcknowledgment,
+    })
+    expect(
+      screen.queryByRole("checkbox", { name: DELETE_ALL_DATA_ACKNOWLEDGMENT }),
+    ).not.toBeInTheDocument()
+    const confirmation = screen.getByRole("button", {
+      name: catalog.interfaceCopy.resets["delete-all-data"].actionLabel,
+    })
     expect(confirmation).toBeDisabled()
     fireEvent.click(acknowledgment)
     expect(confirmation).toBeEnabled()

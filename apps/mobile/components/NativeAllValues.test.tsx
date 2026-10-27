@@ -158,19 +158,31 @@ describe("NativeAllValues", () => {
     const callbacks = createCallbacks()
     const user = userEvent.setup()
     const deck = createIngenuityDeck()
-    const rankedValues = createRankedValues(deck).filter(({ definition }) => definition.id === deck.customValues[0].id)
+    const rankedValues = createRankedValues(deck).filter(
+      ({ definition }) => definition.id === deck.customValues[0].id,
+    )
     await render(<NativeAllValues {...callbacks} rankedValues={rankedValues} />)
     await user.type(screen.getByLabelText("Search All Values"), "Ingenuity")
-    await user.press(within(getLegacyCustomDetails()).getByRole("button", { name: "Edit" }))
-    expect(screen.queryByRole("button", { name: "Add value" })).not.toBeOnTheScreen()
+    await user.press(
+      within(getLegacyCustomDetails()).getByRole("button", { name: "Edit" }),
+    )
+    expect(
+      screen.queryByRole("button", { name: "Add value" }),
+    ).not.toBeOnTheScreen()
     expect(screen.queryByLabelText("Search All Values")).not.toBeOnTheScreen()
     expect(screen.queryByRole("button", { name: "Edit" })).not.toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Cancel" }))
-    expect(screen.getByLabelText("Search All Values")).toHaveDisplayValue("Ingenuity")
+    expect(screen.getByLabelText("Search All Values")).toHaveDisplayValue(
+      "Ingenuity",
+    )
     expect(screen.getByRole("button", { name: "Back" })).toBeEnabled()
-    await user.press(within(getLegacyCustomDetails()).getByRole("button", { name: "Delete" }))
+    await user.press(
+      within(getLegacyCustomDetails()).getByRole("button", { name: "Delete" }),
+    )
     expect(screen.getByLabelText("Remove Ingenuity?")).toBeOnTheScreen()
-    expect(screen.queryByRole("button", { name: "Add value" })).not.toBeOnTheScreen()
+    expect(
+      screen.queryByRole("button", { name: "Add value" }),
+    ).not.toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Cancel" }))
     expect(screen.getByRole("button", { name: "Back" })).toBeEnabled()
     expect(callbacks.onClose).not.toHaveBeenCalled()

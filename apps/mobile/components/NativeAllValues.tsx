@@ -85,7 +85,12 @@ export default function NativeAllValues({
   }, [isNavigationBlocked, onNavigationBlockedChange])
 
   useEffect(() => {
-    if (!highlightedValueId || editingValueId !== null || deletingValueId !== null) return
+    if (
+      !highlightedValueId ||
+      editingValueId !== null ||
+      deletingValueId !== null
+    )
+      return
 
     const highlightedIndex = visibleValues.findIndex(
       ({ definition }) => definition.id === highlightedValueId,

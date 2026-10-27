@@ -259,70 +259,113 @@ describe("All Values Component Integration", () => {
     const activeDeck = createActiveDeckWithIngenuity()
     const onUpdateCustomValue = vi.fn()
     const onClose = vi.fn()
-    renderAllValues(createRankedValues(activeDeck), { onUpdateCustomValue, onClose })
-    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Ingenuity" } })
+    renderAllValues(createRankedValues(activeDeck), {
+      onUpdateCustomValue,
+      onClose,
+    })
+    fireEvent.change(screen.getByRole("searchbox"), {
+      target: { value: "Ingenuity" },
+    })
     const row = findLegacyCustomRow()
     if (!row) throw new Error("Expected custom value row")
     fireEvent.click(within(row).getByRole("button", { name: "Edit" }))
     expect(screen.getByLabelText("Value Name")).toHaveFocus()
     expect(screen.queryByRole("searchbox")).not.toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: "Add value" })).not.toBeInTheDocument()
-    fireEvent.change(screen.getByLabelText("Value Name"), { target: { value: " Curiosity Engine " } })
-    fireEvent.change(screen.getByLabelText("What This Value Means to Me"), { target: { value: "  A drive to explore how things connect. " } })
+    expect(
+      screen.queryByRole("button", { name: "Edit" }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Add value" }),
+    ).not.toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText("Value Name"), {
+      target: { value: " Curiosity Engine " },
+    })
+    fireEvent.change(screen.getByLabelText("What This Value Means to Me"), {
+      target: { value: "  A drive to explore how things connect. " },
+    })
     fireEvent.click(screen.getByRole("button", { name: "Review Update" }))
-    expect(screen.getByRole("heading", { name: "Update Curiosity Engine?" })).toHaveFocus()
+    expect(
+      screen.getByRole("heading", { name: "Update Curiosity Engine?" }),
+    ).toHaveFocus()
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument()
     expect(onUpdateCustomValue).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole("button", { name: "Back" }))
-    expect(screen.getByLabelText("Value Name")).toHaveValue(" Curiosity Engine ")
-    expect(screen.getByLabelText("What This Value Means to Me")).toHaveValue("  A drive to explore how things connect. ")
+    expect(screen.getByLabelText("Value Name")).toHaveValue(
+      " Curiosity Engine ",
+    )
+    expect(screen.getByLabelText("What This Value Means to Me")).toHaveValue(
+      "  A drive to explore how things connect. ",
+    )
     expect(screen.getByLabelText("Value Name")).toHaveFocus()
     fireEvent.click(screen.getByRole("button", { name: "Review Update" }))
     fireEvent.keyDown(window, { key: "Escape" })
-    expect(screen.getByLabelText("Value Name")).toHaveValue(" Curiosity Engine ")
+    expect(screen.getByLabelText("Value Name")).toHaveValue(
+      " Curiosity Engine ",
+    )
     expect(onClose).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole("button", { name: "Review Update" }))
     fireEvent.click(screen.getByRole("button", { name: "Update Value" }))
-    expect(onUpdateCustomValue).toHaveBeenCalledExactlyOnceWith(activeDeck.customValues[0].id, "Curiosity Engine", "A drive to explore how things connect.")
+    expect(onUpdateCustomValue).toHaveBeenCalledExactlyOnceWith(
+      activeDeck.customValues[0].id,
+      "Curiosity Engine",
+      "A drive to explore how things connect.",
+    )
   })
 
   it("cancels without saving and restores the filtered browse action and persisted fields", () => {
     const activeDeck = createActiveDeckWithIngenuity()
     const onUpdateCustomValue = vi.fn()
     renderAllValues(createRankedValues(activeDeck), { onUpdateCustomValue })
-    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Ingenuity" } })
+    fireEvent.change(screen.getByRole("searchbox"), {
+      target: { value: "Ingenuity" },
+    })
     const row = findLegacyCustomRow()
     if (!row) throw new Error("Expected custom value row")
     fireEvent.click(within(row).getByRole("button", { name: "Edit" }))
-    fireEvent.change(screen.getByLabelText("Value Name"), { target: { value: "Unsaved idea" } })
-    fireEvent.change(screen.getByLabelText("What This Value Means to Me"), { target: { value: "Purpose\u202e" } })
+    fireEvent.change(screen.getByLabelText("Value Name"), {
+      target: { value: "Unsaved idea" },
+    })
+    fireEvent.change(screen.getByLabelText("What This Value Means to Me"), {
+      target: { value: "Purpose\u202e" },
+    })
     fireEvent.blur(screen.getByLabelText("What This Value Means to Me"))
     expect(screen.getByRole("button", { name: "Review Update" })).toBeDisabled()
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
     expect(screen.getByRole("searchbox")).toHaveValue("Ingenuity")
     const returnedRow = findLegacyCustomRow()
     if (!returnedRow) throw new Error("Expected restored custom value row")
-    expect(within(returnedRow).getByRole("button", { name: "Edit" })).toHaveFocus()
+    expect(
+      within(returnedRow).getByRole("button", { name: "Edit" }),
+    ).toHaveFocus()
     fireEvent.click(within(returnedRow).getByRole("button", { name: "Edit" }))
     expect(screen.getByLabelText("Value Name")).toHaveValue("Ingenuity")
-    expect(screen.getByLabelText("What This Value Means to Me")).toHaveValue("Ability to solve problems creatively.")
+    expect(screen.getByLabelText("What This Value Means to Me")).toHaveValue(
+      "Ability to solve problems creatively.",
+    )
     expect(onUpdateCustomValue).not.toHaveBeenCalled()
   })
 
   it("revalidates a reviewed draft after returning to edit", () => {
     const onUpdateCustomValue = vi.fn()
-    renderAllValues(createRankedValues(createActiveDeckWithIngenuity()), { onUpdateCustomValue })
+    renderAllValues(createRankedValues(createActiveDeckWithIngenuity()), {
+      onUpdateCustomValue,
+    })
     const row = findLegacyCustomRow()
     if (!row) throw new Error("Expected custom value row")
     fireEvent.click(within(row).getByRole("button", { name: "Edit" }))
-    fireEvent.change(screen.getByLabelText("Value Name"), { target: { value: "Curiosity Engine" } })
+    fireEvent.change(screen.getByLabelText("Value Name"), {
+      target: { value: "Curiosity Engine" },
+    })
     fireEvent.click(screen.getByRole("button", { name: "Review Update" }))
     fireEvent.click(screen.getByRole("button", { name: "Back" }))
-    fireEvent.change(screen.getByLabelText("Value Name"), { target: { value: "" } })
+    fireEvent.change(screen.getByLabelText("Value Name"), {
+      target: { value: "" },
+    })
     fireEvent.submit(screen.getByRole("form"))
     expect(screen.getByRole("button", { name: "Review Update" })).toBeDisabled()
-    expect(screen.queryByRole("button", { name: "Update Value" })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Update Value" }),
+    ).not.toBeInTheDocument()
     expect(onUpdateCustomValue).not.toHaveBeenCalled()
   })
 
@@ -333,16 +376,22 @@ describe("All Values Component Integration", () => {
     const row = findLegacyCustomRow()
     if (!row) throw new Error("Expected custom value row")
     fireEvent.click(within(row).getByRole("button", { name: "Delete" }))
-    expect(screen.getByRole("heading", { name: "Remove Ingenuity?" })).toHaveFocus()
+    expect(
+      screen.getByRole("heading", { name: "Remove Ingenuity?" }),
+    ).toHaveFocus()
     expect(screen.queryByRole("searchbox")).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
     const returnedRow = findLegacyCustomRow()
     if (!returnedRow) throw new Error("Expected restored custom value row")
-    expect(within(returnedRow).getByRole("button", { name: "Delete" })).toHaveFocus()
+    expect(
+      within(returnedRow).getByRole("button", { name: "Delete" }),
+    ).toHaveFocus()
     expect(onDeleteCustomValue).not.toHaveBeenCalled()
     fireEvent.click(within(returnedRow).getByRole("button", { name: "Delete" }))
     fireEvent.click(screen.getByRole("button", { name: "Delete Value" }))
-    expect(onDeleteCustomValue).toHaveBeenCalledExactlyOnceWith(activeDeck.customValues[0].id)
+    expect(onDeleteCustomValue).toHaveBeenCalledExactlyOnceWith(
+      activeDeck.customValues[0].id,
+    )
   })
 
   it("disables editing into an existing value name", () => {

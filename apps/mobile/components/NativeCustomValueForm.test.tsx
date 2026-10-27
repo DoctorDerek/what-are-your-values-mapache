@@ -201,7 +201,9 @@ describe("NativeCustomValueForm", () => {
 
     expect(screen.queryByLabelText("Value Name")).not.toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Back" }))
-    expect(screen.getByLabelText("Value Name")).toHaveDisplayValue("Ingenuity Plus")
+    expect(screen.getByLabelText("Value Name")).toHaveDisplayValue(
+      "Ingenuity Plus",
+    )
     await user.type(screen.getByLabelText("Value Name"), " More")
 
     expect(
@@ -226,14 +228,27 @@ describe("NativeCustomValueForm", () => {
   it("uses native Back to leave review with the draft intact and ignores it during persistence", async () => {
     const props = createEditProps()
     await render(<NativeCustomValueForm {...props} backRequestId={0} />)
-    await fireEvent.changeText(screen.getByLabelText("Value Name"), "Curiosity Engine")
+    await fireEvent.changeText(
+      screen.getByLabelText("Value Name"),
+      "Curiosity Engine",
+    )
     await fireEvent.press(screen.getByRole("button", { name: "Review Update" }))
     expect(screen.queryByLabelText("Value Name")).not.toBeOnTheScreen()
-    await screen.rerender(<NativeCustomValueForm {...props} backRequestId={1} />)
-    expect(screen.getByLabelText("Value Name")).toHaveDisplayValue("Curiosity Engine")
+    await screen.rerender(
+      <NativeCustomValueForm {...props} backRequestId={1} />,
+    )
+    expect(screen.getByLabelText("Value Name")).toHaveDisplayValue(
+      "Curiosity Engine",
+    )
     expect(props.onCancel).not.toHaveBeenCalled()
     await fireEvent.press(screen.getByRole("button", { name: "Review Update" }))
-    await screen.rerender(<NativeCustomValueForm {...props} isPersistencePending backRequestId={2} />)
+    await screen.rerender(
+      <NativeCustomValueForm
+        {...props}
+        isPersistencePending
+        backRequestId={2}
+      />,
+    )
     expect(screen.queryByLabelText("Value Name")).not.toBeOnTheScreen()
     expect(props.onCancel).not.toHaveBeenCalled()
     expect(props.onSubmit).not.toHaveBeenCalled()

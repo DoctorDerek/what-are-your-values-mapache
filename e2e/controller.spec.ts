@@ -303,7 +303,9 @@ test("controller authors a value, scrolls the catalog and cancels edit and delet
     }),
   ).toBeVisible()
   await tapControllerButton(page, 1)
-  await expect(page.getByRole("heading", { name: "Update Craftsmanship?", exact: true })).toHaveCount(0)
+  await expect(
+    page.getByRole("heading", { name: "Update Craftsmanship?", exact: true }),
+  ).toHaveCount(0)
   await expect(
     page.getByRole("textbox", {
       name: "What This Value Means to Me",
@@ -326,7 +328,9 @@ test("controller authors a value, scrolls the catalog and cancels edit and delet
     }),
   ).toBeVisible()
   await tapControllerButton(page, 8)
-  await expect(page.getByRole("heading", { name: "Remove Craftsmanship?", exact: true })).toHaveCount(0)
+  await expect(
+    page.getByRole("heading", { name: "Remove Craftsmanship?", exact: true }),
+  ).toHaveCount(0)
   await expect(
     row.getByRole("button", { name: "Delete", exact: true }),
   ).toBeFocused()

@@ -230,7 +230,9 @@ describe("Data Management", () => {
         screen.getByRole("heading", { name: "Reset Achievements?" }),
       ).toHaveFocus(),
     )
-    expect(screen.queryByRole("button", { name: "Menu" })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Menu" }),
+    ).not.toBeInTheDocument()
     expect(
       screen.queryByRole("button", { name: "Back to Your Values" }),
     ).not.toBeInTheDocument()

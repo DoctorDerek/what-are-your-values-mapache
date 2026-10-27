@@ -1,5 +1,8 @@
 import { DEFAULT_HEROES99_APPEARANCE } from "@game/data/src/Heroes99Appearance"
-import { DRESSING_ROOM_COPY, HEROES99_CHOICES } from "@game/data/src/Heroes99DressingRoom"
+import {
+  DRESSING_ROOM_COPY,
+  HEROES99_CHOICES,
+} from "@game/data/src/Heroes99DressingRoom"
 import { avatarMachine } from "@game/machines/src/AvatarMachine"
 import { inspectBattleProfileStore } from "@game/machines/src/BattleProfileHydration"
 import { initializeBattleProfileStore } from "@game/machines/src/BattleProfileStore"

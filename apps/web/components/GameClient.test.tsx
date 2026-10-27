@@ -177,9 +177,16 @@ async function createSerializedGameClientBackup({
   return serializeWayvmExport(wayvmExport)
 }
 
-async function createStoredGameClientProfile(schedulerSeed: string, locale?: SupportedLocale) {
+async function createStoredGameClientProfile(
+  schedulerSeed: string,
+  locale?: SupportedLocale,
+) {
   const createdAt = "2026-08-20T12:00:00.000Z"
-  const playerData = createInitialPlayerData({ schedulerSeed, createdAt, locale })
+  const playerData = createInitialPlayerData({
+    schedulerSeed,
+    createdAt,
+    locale,
+  })
   const store = createInMemoryDurableStore()
   await initializeBattleProfileStore({
     store,
@@ -272,7 +279,10 @@ describe("GameClient Integration", () => {
 
   it("opens a secondary tab in its saved Spanish language without starting or writing a game", async () => {
     webExclusiveWriterLease.status = "read-only"
-    const storedProfile = await createStoredGameClientProfile("read-only-spanish", "es-MX")
+    const storedProfile = await createStoredGameClientProfile(
+      "read-only-spanish",
+      "es-MX",
+    )
     durableStoreFailure.initialEntries = storedProfile.entries
     const copy = getLocaleCatalog("es-MX").interfaceCopy.writerConflict
 
@@ -280,7 +290,9 @@ describe("GameClient Integration", () => {
 
     const heading = await screen.findByRole("heading", { name: copy.title })
     expect(heading.closest("[lang]")).toHaveAttribute("lang", "es-MX")
-    expect(screen.queryByRole("button", { name: "Start" })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Start" }),
+    ).not.toBeInTheDocument()
     expect(durableStoreFailure.readCount).toBe(1)
     expect(durableStoreFailure.writeCount).toBe(0)
   })
@@ -292,7 +304,9 @@ describe("GameClient Integration", () => {
 
     render(<GameClient routeLocale="es-MX" />)
 
-    expect(await screen.findByRole("heading", { name: copy.title })).toBeVisible()
+    expect(
+      await screen.findByRole("heading", { name: copy.title }),
+    ).toBeVisible()
     expect(durableStoreFailure.writeCount).toBe(0)
   })
 

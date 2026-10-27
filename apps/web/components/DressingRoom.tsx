@@ -68,9 +68,7 @@ export default function DressingRoom({
       viewport="fixed"
       className="flex flex-col items-center gap-2 xl:gap-6"
     >
-      <div
-        className="flex min-h-0 w-full max-w-7xl flex-1 flex-col gap-2 overflow-y-auto xl:gap-6"
-      >
+      <div className="flex min-h-0 w-full max-w-7xl flex-1 flex-col gap-2 overflow-y-auto xl:gap-6">
         <header className="w-full max-w-7xl shrink-0">
           <h1 className="text-mapache-vivid-primary-cyan text-2xl font-black xl:text-4xl">
             {DRESSING_ROOM_COPY.title}
@@ -119,7 +117,11 @@ export default function DressingRoom({
                 </button>
               ))}
             </div>
-            <div className="min-h-0 w-full min-w-0 flex-1 overflow-y-auto overscroll-contain p-1 xl:p-0" data-controller-scroll tabIndex={0}>
+            <div
+              className="min-h-0 w-full min-w-0 flex-1 overflow-y-auto overscroll-contain p-1 xl:p-0"
+              data-controller-scroll
+              tabIndex={0}
+            >
               <div
                 role="group"
                 aria-label={DRESSING_ROOM_COPY.choices(
@@ -248,7 +250,9 @@ export default function DressingRoom({
           typographyClassName="text-base leading-tight xl:text-lg"
           disabled={isSaving}
           aria-busy={isSaving}
-          aria-label={isSaving ? DRESSING_ROOM_COPY.saving : DRESSING_ROOM_COPY.save}
+          aria-label={
+            isSaving ? DRESSING_ROOM_COPY.saving : DRESSING_ROOM_COPY.save
+          }
           onClick={() => actor.send({ type: "AVATAR.SAVE" })}
         >
           {isSaving ? DRESSING_ROOM_COPY.saving : DRESSING_ROOM_COPY.saveAction}

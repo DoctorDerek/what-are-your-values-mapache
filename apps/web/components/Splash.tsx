@@ -96,7 +96,7 @@ export default function Splash({
               className="object-cover"
             />
           </div>
-          <div className="relative z-20 grid min-w-0 w-full justify-items-center text-xl leading-7 font-black text-white [overflow-wrap:anywhere]">
+          <div className="relative z-20 grid w-full min-w-0 justify-items-center text-xl leading-7 font-black [overflow-wrap:anywhere] text-white">
             <p>{firstArrival.gameCredit}</p>
             <p>{firstArrival.creatorCredit}</p>
             <a

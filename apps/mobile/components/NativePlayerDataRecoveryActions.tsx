@@ -82,7 +82,9 @@ export default function NativePlayerDataRecoveryActions(
               onPress={props.onRestoreLastKnownGoodSave}
               accessibilityLabel={actions.restoreLastKnownGoodSave}
             >
-              <Text>{playerDataRecoveryCopy.unreadableData.restoreReviewAction}</Text>
+              <Text>
+                {playerDataRecoveryCopy.unreadableData.restoreReviewAction}
+              </Text>
             </Button>
           ) : null}
           <Button

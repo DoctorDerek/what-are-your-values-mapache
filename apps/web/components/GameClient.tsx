@@ -245,8 +245,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         setAllValuesBackRequestId((id) => id + 1)
         return true
       }
-      if (isReadingImportFile || isReadingRecoveryImportFile)
-        return true
+      if (isReadingImportFile || isReadingRecoveryImportFile) return true
       if (backDisposition.kind === "event") send(backDisposition.event)
       return backDisposition.kind !== "root"
     },

@@ -32,7 +32,10 @@ export default function NativeProductMenu({
         accessibilityViewIsModal
         role="dialog"
       >
-        <ScrollView className="max-h-[25%] shrink-0 grow-0 border-b-4 border-black" contentContainerClassName="px-5 py-5 xl:px-8 xl:py-7">
+        <ScrollView
+          className="max-h-[25%] shrink-0 grow-0 border-b-4 border-black"
+          contentContainerClassName="px-5 py-5 xl:px-8 xl:py-7"
+        >
           <Text
             variant="h1"
             className="text-mapache-vivid-primary-cyan text-left text-5xl font-black tracking-tight uppercase"
