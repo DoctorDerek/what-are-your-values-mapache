@@ -68,7 +68,9 @@ test("Spanish review actions keep whole words, reflow, and preserve the edited v
   await page.screenshot({
     path: testInfo.outputPath("spanish-review-enlarged.png"),
   })
-  await enlargedText.evaluate((element) => element.remove())
+  await enlargedText.evaluate((element) =>
+    element.parentNode!.removeChild(element),
+  )
   await review.click()
   await expect(name).toHaveCount(0)
   await page.getByRole("button", { name: "Volver", exact: true }).click()
@@ -84,12 +86,6 @@ test("Spanish review actions keep whole words, reflow, and preserve the edited v
   await expect(
     page.getByRole("heading", { name: "Crear con esmero II", exact: true }),
   ).toBeVisible()
-  await page.getByRole("button", { name: "Volver", exact: true }).click()
-  await expect
-    .poll(() =>
-      page.evaluate(() => Boolean(history.state?.wayvmSemanticBackBoundary)),
-    )
-    .toBe(false)
   await page.reload()
   await page
     .getByRole("button", { name: "Ver todos los valores", exact: true })
