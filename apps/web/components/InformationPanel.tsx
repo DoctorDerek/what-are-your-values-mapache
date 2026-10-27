@@ -106,10 +106,10 @@ function InformationPanelFrame({
         data-controller-scroll
         tabIndex={0}
         className={cx(
-          "relative z-20 min-h-0 min-w-0 overflow-y-auto overscroll-contain",
+          "relative z-20 min-h-0 min-w-0 overflow-y-auto overscroll-contain [overflow-wrap:anywhere] hyphens-auto",
           isIntroduction
             ? "mx-auto w-full max-w-4xl [scrollbar-gutter:stable] px-5 py-5 text-left xl:px-10 xl:py-7"
-            : "flex-1 px-[20px] py-[16px] [overflow-wrap:anywhere] hyphens-auto xl:px-8",
+            : "flex-1 px-[20px] py-[16px] xl:px-8",
         )}
       >
         {children}
@@ -139,7 +139,7 @@ function InformationPanelFrame({
           )}
           typographyClassName={
             isIntroduction
-              ? "text-3xl leading-none"
+              ? "text-3xl leading-none [overflow-wrap:anywhere] hyphens-auto"
               : "text-xl leading-tight [overflow-wrap:anywhere]"
           }
         >

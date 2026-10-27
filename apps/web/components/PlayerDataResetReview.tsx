@@ -37,7 +37,7 @@ export default function PlayerDataResetReview({
   return (
     <section
       aria-labelledby="player-data-reset-review-heading"
-      className="border-mapache-vivid-primary-orange flex min-h-0 flex-1 flex-col overflow-hidden border-8 bg-white shadow-[10px_10px_0px_0px_#000000]"
+      className="border-mapache-vivid-primary-orange flex min-h-0 flex-1 flex-col overflow-hidden border-8 bg-white [overflow-wrap:anywhere] hyphens-auto shadow-[10px_10px_0px_0px_#000000]"
     >
       <div
         data-controller-scroll

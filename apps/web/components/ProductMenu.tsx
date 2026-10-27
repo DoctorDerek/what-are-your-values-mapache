@@ -24,7 +24,7 @@ export default function ProductMenu({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         aria-describedby={undefined}
-        className="grid-rows-[minmax(0,auto)_minmax(0,1fr)_auto]"
+        className="grid-rows-[minmax(0,auto)_minmax(0,1fr)_auto] [overflow-wrap:anywhere] hyphens-auto"
       >
         <header className="max-h-[25dvh] min-h-0 overflow-y-auto border-b-4 border-black px-[20px] py-[20px] xl:px-8 xl:py-7">
           <DialogTitle>{PRODUCT_MENU_COPY.title}</DialogTitle>
