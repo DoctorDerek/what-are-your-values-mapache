@@ -81,17 +81,24 @@ for (const copy of locales) {
     await page.screenshot({ path: testInfo.outputPath("enlarged-actions.png") })
     await page.getByRole("button", { name: copy.back, exact: true }).click()
     const confirmation = page.getByRole("dialog")
-    for (const text of [confirmation.getByRole("heading"), confirmation.getByRole("button", { name: copy.discard, exact: true })]) {
+    for (const text of [
+      confirmation.getByRole("heading"),
+      confirmation.getByRole("button", { name: copy.discard, exact: true }),
+    ]) {
       await text.scrollIntoViewIfNeeded()
-      expect(await text.evaluate(element => {
-        const bounds = element.getBoundingClientRect()
-        const range = document.createRange()
-        range.selectNodeContents(element)
-        const rendered = range.getBoundingClientRect()
-        return rendered.left >= bounds.left && rendered.right <= bounds.right
-      })).toBe(true)
+      expect(
+        await text.evaluate((element) => {
+          const bounds = element.getBoundingClientRect()
+          const range = document.createRange()
+          range.selectNodeContents(element)
+          const rendered = range.getBoundingClientRect()
+          return rendered.left >= bounds.left && rendered.right <= bounds.right
+        }),
+      ).toBe(true)
     }
-    await page.screenshot({ path: testInfo.outputPath("enlarged-confirmation.png") })
+    await page.screenshot({
+      path: testInfo.outputPath("enlarged-confirmation.png"),
+    })
     await page.getByRole("button", { name: copy.keep, exact: true }).click()
     await expect(palette).toHaveAttribute("aria-pressed", "true")
   })

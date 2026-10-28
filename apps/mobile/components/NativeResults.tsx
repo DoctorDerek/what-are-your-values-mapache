@@ -20,12 +20,7 @@ import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingS
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
 import usePresentationElapsedTime from "@game/utils/src/usePresentationElapsedTime"
 import { cx } from "classix"
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react"
+import { useEffect, useMemo, useState, type ReactNode } from "react"
 import { FlatList, Pressable, ScrollView, View } from "react-native"
 import Animated, {
   cancelAnimation,
@@ -231,7 +226,8 @@ export default function NativeResults({
     if (
       !isPresentationComplete &&
       displayedElapsedMs >= results.presentationDurationMs
-    ) onPresentationCompleted()
+    )
+      onPresentationCompleted()
   }, [
     displayedElapsedMs,
     isPresentationComplete,

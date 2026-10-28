@@ -172,7 +172,11 @@ for (const copy of [
       if (viewport.textScale === 2)
         await page.addStyleTag({ content: "html { font-size: 200%; }" })
       const saveLines = await save.evaluate(getRenderedTextLines)
-      expect(saveLines.some(line => line.toLowerCase().includes(copy.save.split(" ")[0].toLowerCase()))).toBe(true)
+      expect(
+        saveLines.some((line) =>
+          line.toLowerCase().includes(copy.save.split(" ")[0].toLowerCase()),
+        ),
+      ).toBe(true)
       const back = dialog.getByRole("button", { name: copy.back, exact: true })
       if (viewport.textScale === 1) {
         await expect(dialog.getByRole("img")).toBeInViewport({ ratio: 1 })

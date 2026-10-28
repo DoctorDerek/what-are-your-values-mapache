@@ -708,7 +708,8 @@ export const rootMachine = setup({
     },
     "RESULTS.PRESENTATION_COMPLETED": {
       guard: ({ context }) =>
-        context.resultsOpenedAt !== null && !context.resultsPresentationComplete,
+        context.resultsOpenedAt !== null &&
+        !context.resultsPresentationComplete,
       actions: assign({ resultsPresentationComplete: true }),
     },
   },

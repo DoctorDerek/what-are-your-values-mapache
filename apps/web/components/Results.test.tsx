@@ -13,15 +13,26 @@ import { useState, type ComponentProps } from "react"
 import { describe, expect, it, vi } from "vitest"
 import ResultsPresentation from "@/components/Results"
 
-function Results(props: Omit<ComponentProps<typeof ResultsPresentation>,
-  "areRowPositionsSettled" | "isPresentationComplete" | "onSettleRowPositions" | "onPresentationCompleted">) {
+function Results(
+  props: Omit<
+    ComponentProps<typeof ResultsPresentation>,
+    | "areRowPositionsSettled"
+    | "isPresentationComplete"
+    | "onSettleRowPositions"
+    | "onPresentationCompleted"
+  >,
+) {
   const [settled, setSettled] = useState(false)
   const [complete, setComplete] = useState(false)
-  return <ResultsPresentation {...props}
-    areRowPositionsSettled={settled}
-    isPresentationComplete={complete}
-    onSettleRowPositions={() => setSettled(true)}
-    onPresentationCompleted={() => setComplete(true)} />
+  return (
+    <ResultsPresentation
+      {...props}
+      areRowPositionsSettled={settled}
+      isPresentationComplete={complete}
+      onSettleRowPositions={() => setSettled(true)}
+      onPresentationCompleted={() => setComplete(true)}
+    />
+  )
 }
 
 function createResults() {
@@ -44,10 +55,15 @@ describe("Battle-exit Results presentation", () => {
       const results = createResults()
       const openedAt = new Date().toISOString()
       const props = {
-        results, openedAt,
-        runtimeClipCatalog: createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
-        shouldReduceMotion: false, isMenuOpen: false,
-        onOpenMenu: vi.fn(), onSeeValues: vi.fn(), onKeepBattling: vi.fn(),
+        results,
+        openedAt,
+        runtimeClipCatalog:
+          createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
+        shouldReduceMotion: false,
+        isMenuOpen: false,
+        onOpenMenu: vi.fn(),
+        onSeeValues: vi.fn(),
+        onKeepBattling: vi.fn(),
       }
       const first = render(<Results {...props} />)
       act(() => vi.advanceTimersByTime(results.presentationDurationMs + 100))
@@ -55,8 +71,12 @@ describe("Battle-exit Results presentation", () => {
       first.unmount()
       render(<Results {...props} />)
       expect(screen.getByRole("list").textContent).toBe(finalRoster)
-      expect(document.querySelector("[data-results-value]")).toHaveStyle({ "--results-travel": "1" })
-    } finally { vi.useRealTimers() }
+      expect(document.querySelector("[data-results-value]")).toHaveStyle({
+        "--results-travel": "1",
+      })
+    } finally {
+      vi.useRealTimers()
+    }
   })
   it.each(["en", "es-MX"] as const)(
     "reveals first-results medal images promptly with a stable %s summary",

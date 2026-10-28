@@ -244,7 +244,8 @@ export default function Results({
     if (
       !isPresentationComplete &&
       displayedElapsedMs >= results.presentationDurationMs
-    ) onPresentationCompleted()
+    )
+      onPresentationCompleted()
   }, [
     displayedElapsedMs,
     isPresentationComplete,

@@ -35,8 +35,9 @@ export default function NativeResultsValueCell({
 
   useEffect(() => {
     const timing = {
-      duration:
-        item.isMotionImmediate ? 0 : BATTLE_RESULTS_PRESENTATION_TICK_MS,
+      duration: item.isMotionImmediate
+        ? 0
+        : BATTLE_RESULTS_PRESENTATION_TICK_MS,
       easing: Easing.linear,
     }
     motion.set(withTiming(item.motion, timing))

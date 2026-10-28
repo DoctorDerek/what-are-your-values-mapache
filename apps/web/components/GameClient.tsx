@@ -927,8 +927,12 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           openedAt={state.context.resultsOpenedAt}
           areRowPositionsSettled={state.context.resultsPositionsSettled}
           isPresentationComplete={state.context.resultsPresentationComplete}
-          onSettleRowPositions={() => send({ type: "RESULTS.POSITIONS_SETTLED" })}
-          onPresentationCompleted={() => send({ type: "RESULTS.PRESENTATION_COMPLETED" })}
+          onSettleRowPositions={() =>
+            send({ type: "RESULTS.POSITIONS_SETTLED" })
+          }
+          onPresentationCompleted={() =>
+            send({ type: "RESULTS.PRESENTATION_COMPLETED" })
+          }
           results={results}
           runtimeClipCatalog={SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG}
           shouldReduceMotion={shouldReduceMotion}

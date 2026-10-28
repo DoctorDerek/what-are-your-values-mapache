@@ -16,21 +16,32 @@ import {
   screen,
   userEvent,
 } from "@testing-library/react-native"
-import { StyleSheet } from "react-native"
 import { useState, type ComponentProps } from "react"
+import { StyleSheet } from "react-native"
 import NativeResultsPresentation from "@/components/NativeResults"
 import { Text } from "@/components/ui/text"
 import { FLUENT_MEDAL_ARTWORK } from "@/lib/FluentMedalArtwork"
 
-function NativeResults(props: Omit<ComponentProps<typeof NativeResultsPresentation>,
-  "areRowPositionsSettled" | "isPresentationComplete" | "onSettleRowPositions" | "onPresentationCompleted">) {
+function NativeResults(
+  props: Omit<
+    ComponentProps<typeof NativeResultsPresentation>,
+    | "areRowPositionsSettled"
+    | "isPresentationComplete"
+    | "onSettleRowPositions"
+    | "onPresentationCompleted"
+  >,
+) {
   const [settled, setSettled] = useState(false)
   const [complete, setComplete] = useState(false)
-  return <NativeResultsPresentation {...props}
-    areRowPositionsSettled={settled}
-    isPresentationComplete={complete}
-    onSettleRowPositions={() => setSettled(true)}
-    onPresentationCompleted={() => setComplete(true)} />
+  return (
+    <NativeResultsPresentation
+      {...props}
+      areRowPositionsSettled={settled}
+      isPresentationComplete={complete}
+      onSettleRowPositions={() => setSettled(true)}
+      onPresentationCompleted={() => setComplete(true)}
+    />
+  )
 }
 
 function createResults() {
@@ -52,20 +63,28 @@ describe("Native Battle-exit Results", () => {
     try {
       const results = createResults()
       const props = {
-        results, openedAt: new Date().toISOString(),
-        runtimeClipCatalog: createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
+        results,
+        openedAt: new Date().toISOString(),
+        runtimeClipCatalog:
+          createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
         shouldReduceMotion: false,
-        onOpenMenu: jest.fn(), onSeeValues: jest.fn(), onKeepBattling: jest.fn(),
+        onOpenMenu: jest.fn(),
+        onSeeValues: jest.fn(),
+        onKeepBattling: jest.fn(),
       }
       const first = await render(<NativeResults {...props} />)
-      await act(async () => jest.advanceTimersByTime(results.presentationDurationMs + 100))
+      await act(async () =>
+        jest.advanceTimersByTime(results.presentationDurationMs + 100),
+      )
       expect(screen.getByText("Profile Level 3")).toBeOnTheScreen()
       await first.unmount()
       await render(<NativeResults {...props} />)
       expect(screen.getByText("Profile Level 3")).toBeOnTheScreen()
       expect(screen.getByText("#1")).toBeOnTheScreen()
       expect(screen.queryByText("Profile Level 1")).toBeNull()
-    } finally { jest.useRealTimers() }
+    } finally {
+      jest.useRealTimers()
+    }
   })
   it.each(["en", "es-MX"] as const)(
     "shows bundled final medals with localized %s summaries under Reduced Motion",
