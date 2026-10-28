@@ -23,7 +23,8 @@ export function projectBattleExitResultsMotion(
     : Math.min(elapsedMs / BATTLE_RESULTS_REORDER_MOTION_MS, 1)
   const isPromoted = exitRank < entryRank
   const hasMoved = entryRank !== exitRank
-  const lift = phase === 1 ? 0 : Math.sin(Math.PI * phase)
+  const arc = phase === 1 ? 0 : Math.sin(Math.PI * phase)
+  const lift = phase <= 0.5 ? arc : arc * arc
   const travel = projectResultsQuadraticEaseOut(phase)
 
   return Object.freeze({
