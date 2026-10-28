@@ -147,6 +147,30 @@ function createToggleableWriteFailureStore() {
 }
 
 describe("RootMachine native lifecycle persistence", () => {
+  it("retains Results presentation settlement through Settings and clears it for a new Battle visit", async () => {
+    const { actor } = await bootRootActor()
+    await commitOneBattle(actor)
+    actor.send({ type: "BATTLE.EXIT_REQUESTED" })
+    const before = actor.getSnapshot().context
+    actor.send({ type: "RESULTS.POSITIONS_SETTLED" })
+    actor.send({ type: "RESULTS.PRESENTATION_COMPLETED" })
+    actor.send({ type: "SETTINGS.OPEN_REQUESTED" })
+    actor.send({ type: "SETTINGS.CLOSE_REQUESTED" })
+    expect(actor.getSnapshot().matches("Results")).toBe(true)
+    expect(actor.getSnapshot().context).toMatchObject({
+      resultsOpenedAt: before.resultsOpenedAt,
+      resultsPositionsSettled: true,
+      resultsPresentationComplete: true,
+    })
+    expect(actor.getSnapshot().context.playerData).toBe(before.playerData)
+    actor.send({ type: "RESULTS.KEEP_BATTLING_REQUESTED" })
+    expect(actor.getSnapshot().context).toMatchObject({
+      resultsOpenedAt: null,
+      resultsPositionsSettled: false,
+      resultsPresentationComplete: false,
+    })
+    actor.stop()
+  })
   it("offers Results only after a committed change and resumes the exact next pair", async () => {
     const { actor } = await bootRootActor()
     actor.send({ type: "BATTLE.START_REQUESTED" })
