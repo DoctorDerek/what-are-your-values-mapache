@@ -115,6 +115,8 @@ type RootMachineContext = {
   battleEntryProfile: BattleProfile | null
   resultsExitProfile: BattleProfile | null
   resultsOpenedAt: string | null
+  resultsPositionsSettled: boolean
+  resultsPresentationComplete: boolean
   battleProfileStoreState: BattleProfileStoreState | null
   pendingBattleProfileCommit: BattleProfileCommit | null
   pendingBattleProfileCommittedAt: string | null
@@ -184,6 +186,8 @@ type RootMachineEvent =
   | { type: "BATTLE.EXIT_REQUESTED" }
   | { type: "RESULTS.CLOSE_REQUESTED" }
   | { type: "RESULTS.KEEP_BATTLING_REQUESTED" }
+  | { type: "RESULTS.POSITIONS_SETTLED" }
+  | { type: "RESULTS.PRESENTATION_COMPLETED" }
   | { type: "DATA_MANAGEMENT.OPEN_REQUESTED" }
   | { type: "DATA_MANAGEMENT.CLOSE_REQUESTED" }
   | { type: "DATA_MANAGEMENT.EXPORT_REQUESTED" }
@@ -502,6 +506,8 @@ export const rootMachine = setup({
       battleEntryProfile: null,
       resultsExitProfile: null,
       resultsOpenedAt: null,
+      resultsPositionsSettled: false,
+      resultsPresentationComplete: false,
     }),
   },
   guards: {
@@ -664,6 +670,8 @@ export const rootMachine = setup({
     battleEntryProfile: null,
     resultsExitProfile: null,
     resultsOpenedAt: null,
+    resultsPositionsSettled: false,
+    resultsPresentationComplete: false,
     battleProfileStoreState: null,
     pendingBattleProfileCommit: null,
     pendingBattleProfileCommittedAt: null,
@@ -692,6 +700,18 @@ export const rootMachine = setup({
     randomUuid: input.randomUuid,
     initialLocale: input.initialLocale ?? DEFAULT_LOCALE,
   }),
+  on: {
+    "RESULTS.POSITIONS_SETTLED": {
+      guard: ({ context }) =>
+        context.resultsOpenedAt !== null && !context.resultsPositionsSettled,
+      actions: assign({ resultsPositionsSettled: true }),
+    },
+    "RESULTS.PRESENTATION_COMPLETED": {
+      guard: ({ context }) =>
+        context.resultsOpenedAt !== null && !context.resultsPresentationComplete,
+      actions: assign({ resultsPresentationComplete: true }),
+    },
+  },
   states: {
     Hydrating: {
       on: {
@@ -1851,6 +1871,8 @@ export const rootMachine = setup({
                   resultsExitProfile: ({ context }) =>
                     requireBattleProfile(context),
                   resultsOpenedAt: ({ context }) => context.now(),
+                  resultsPositionsSettled: false,
+                  resultsPresentationComplete: false,
                 }),
               },
               { target: "#root.Hub", actions: "clearResultsContext" },
@@ -2016,6 +2038,8 @@ export const rootMachine = setup({
             battleEntryProfile: ({ context }) => requireBattleProfile(context),
             resultsExitProfile: null,
             resultsOpenedAt: null,
+            resultsPositionsSettled: false,
+            resultsPresentationComplete: false,
           }),
         },
         "APP.BACKGROUND_CHECKPOINT_REQUESTED": {
