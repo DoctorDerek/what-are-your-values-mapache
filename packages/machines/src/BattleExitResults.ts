@@ -57,6 +57,7 @@ export type BattleExitResultsFrameValue = {
   readonly levelBarPercentage: number
   readonly didCrossLevel: boolean
   readonly motion: BattleExitResultsMotion
+  readonly isMotionImmediate: boolean
 }
 
 function didValueProgressChange(
@@ -345,6 +346,7 @@ export function projectBattleExitResultsFrame(
       finalMedal,
       rankLabelPlaceholder: `#${results.values.length}`,
       stackingOrder: results.values.length + 1 - value.exitRank,
+      isMotionImmediate: areRowPositionsSettled,
       motion: projectBattleExitResultsMotion(
         value.entryRank,
         value.exitRank,

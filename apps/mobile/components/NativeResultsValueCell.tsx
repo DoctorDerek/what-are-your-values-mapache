@@ -36,14 +36,14 @@ export default function NativeResultsValueCell({
   useEffect(() => {
     const timing = {
       duration:
-        item.motion.travel === 1 ? 0 : BATTLE_RESULTS_PRESENTATION_TICK_MS,
+        item.isMotionImmediate ? 0 : BATTLE_RESULTS_PRESENTATION_TICK_MS,
       easing: Easing.linear,
     }
     motion.set(withTiming(item.motion, timing))
     return () => {
       cancelAnimation(motion)
     }
-  }, [item.motion, motion])
+  }, [item.isMotionImmediate, item.motion, motion])
 
   const layout = useMemo<LayoutAnimationFunction>(
     () => (values) => {
