@@ -76,54 +76,60 @@ export default function NativeHub({
   )
 
   const { hasComparisons, topFive } = projectHubValues(rankedValues)
+  const header = (
+    <>
+      <View className="w-full max-w-7xl flex-row flex-wrap items-center justify-between gap-3">
+        <View className="relative min-w-0 flex-[1_1_10rem] justify-center">
+          <Text
+            accessibilityRole="header"
+            android_hyphenationFrequency="normal"
+            className={cx(
+              "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-home-title web:font-normal text-lg leading-tight font-black tracking-normal text-white xl:text-[32px]",
+              importConfirmation && "opacity-0",
+            )}
+          >
+            {introductionCopy.title}
+          </Text>
+          {importConfirmation && (
+            <View className="absolute inset-0 justify-center">
+              <Text
+                accessibilityLiveRegion="polite"
+                accessibilityLabel={importConfirmation.message}
+                className="text-sm leading-tight font-bold text-white xl:text-2xl"
+              >
+                <Text className="text-green-300">✓</Text>{" "}
+                {importConfirmation.summary}
+              </Text>
+            </View>
+          )}
+        </View>
+        <Button
+          className="ml-auto"
+          size="compact"
+          variant="secondary"
+          disabled={customValueInvitation?.isSaving}
+          onPress={() =>
+            isDraftActive ? setMenuRequestId((id) => id + 1) : onOpenMenu()
+          }
+        >
+          <Text>{PRODUCT_MENU_COPY.openAction}</Text>
+        </Button>
+      </View>
+      {dataNotice && (
+        <Text
+          accessibilityLiveRegion="polite"
+          className="bg-mapache-vivid-secondary-green w-full max-w-7xl border-4 border-black p-4 font-bold text-white"
+        >
+          {dataNotice}
+        </Text>
+      )}
+    </>
+  )
+
   return (
     <MapacheScreen>
       <View className="min-h-0 flex-1 items-center gap-4 p-4 xl:gap-5 xl:p-6">
-        <View className="w-full max-w-7xl flex-row flex-wrap items-center justify-between gap-3">
-          <View className="relative min-w-0 flex-[1_1_10rem] justify-center">
-            <Text
-              accessibilityRole="header"
-              android_hyphenationFrequency="normal"
-              className={cx(
-                "ios:font-[AvenirNextCondensed-Heavy] android:font-[sans-serif-condensed] web:font-home-title web:font-normal text-lg leading-tight font-black tracking-normal text-white xl:text-[32px]",
-                importConfirmation && "opacity-0",
-              )}
-            >
-              {introductionCopy.title}
-            </Text>
-            {importConfirmation && (
-              <View className="absolute inset-0 justify-center">
-                <Text
-                  accessibilityLiveRegion="polite"
-                  accessibilityLabel={importConfirmation.message}
-                  className="text-sm leading-tight font-bold text-white xl:text-2xl"
-                >
-                  <Text className="text-green-300">✓</Text>{" "}
-                  {importConfirmation.summary}
-                </Text>
-              </View>
-            )}
-          </View>
-          <Button
-            className="ml-auto"
-            size="compact"
-            variant="secondary"
-            disabled={customValueInvitation?.isSaving}
-            onPress={() =>
-              isDraftActive ? setMenuRequestId((id) => id + 1) : onOpenMenu()
-            }
-          >
-            <Text>{PRODUCT_MENU_COPY.openAction}</Text>
-          </Button>
-        </View>
-        {dataNotice && (
-          <Text
-            accessibilityLiveRegion="polite"
-            className="bg-mapache-vivid-secondary-green w-full max-w-7xl border-4 border-black p-4 font-bold text-white"
-          >
-            {dataNotice}
-          </Text>
-        )}
+        {isDraftActive && header}
         {customValueInvitation && (
           <NativeCustomValueInvitation
             {...customValueInvitation}
@@ -144,9 +150,10 @@ export default function NativeHub({
         {!isDraftActive && (
           <>
             <ScrollView
-              className="min-h-0 w-full flex-1"
+              className="min-h-[50%] w-full flex-1"
               contentContainerClassName="items-center gap-4 pb-6 xl:gap-5"
             >
+              {header}
               <View className="border-player-card-frame bg-player-card-background relative w-full max-w-7xl flex-row flex-wrap overflow-hidden border-4">
                 <View
                   accessible
@@ -203,7 +210,7 @@ export default function NativeHub({
               </View>
             </ScrollView>
             <ScrollView
-              className="max-h-[60%] w-full shrink-0 grow-0"
+              className="max-h-[60%] min-h-0 w-full shrink grow-0"
               contentContainerClassName="items-center pb-3"
             >
               <View className="w-full max-w-7xl min-w-0 gap-4">

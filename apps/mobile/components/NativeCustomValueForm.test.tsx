@@ -7,6 +7,7 @@ import {
 } from "@game/data/src/Value"
 import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues } from "@game/data/src/ValueRanking"
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import { describe, expect, it, jest } from "@jest/globals"
 import {
   fireEvent,
@@ -52,6 +53,39 @@ function createEditProps() {
 }
 
 describe("NativeCustomValueForm", () => {
+  it("keeps Spanish review, Back, and save actions attached to the same draft", async () => {
+    const props = createEditProps()
+    await render(
+      <LocaleProvider locale="es-MX">
+        <NativeCustomValueForm {...props} />
+      </LocaleProvider>,
+    )
+    await fireEvent.changeText(
+      screen.getByLabelText("Nombre del valor"),
+      "Crear con esmero",
+    )
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Revisar actualización" }),
+    )
+    expect(screen.queryByLabelText("Nombre del valor")).not.toBeOnTheScreen()
+    expect(props.onSubmit).not.toHaveBeenCalled()
+    await fireEvent.press(screen.getByRole("button", { name: "Volver" }))
+    expect(screen.getByLabelText("Nombre del valor")).toHaveDisplayValue(
+      "Crear con esmero",
+    )
+    expect(props.onCancel).not.toHaveBeenCalled()
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Revisar actualización" }),
+    )
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Actualizar valor" }),
+    )
+    expect(props.onSubmit).toHaveBeenCalledWith(
+      "Crear con esmero",
+      ingenuity.definition,
+    )
+  })
+
   it("reveals required-field guidance only after each field is touched", async () => {
     const props = createEditProps()
     const user = userEvent.setup()

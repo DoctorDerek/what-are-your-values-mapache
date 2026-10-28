@@ -24,11 +24,15 @@ vi.mock("@serwist/turbopack", () => ({
 }))
 
 describe("service-worker route", () => {
-  it("generates the revisioned application shell during static export", () => {
+  it("generates each shipped locale’s revisioned application shell during static export", () => {
     expect(createSerwistRouteSpy).toHaveBeenCalledExactlyOnceWith({
       additionalPrecacheEntries: [
         {
           url: "/",
+          revision: process.env.VERCEL_GIT_COMMIT_SHA ?? "development",
+        },
+        {
+          url: "/que-valoras-en-la-vida",
           revision: process.env.VERCEL_GIT_COMMIT_SHA ?? "development",
         },
       ],
