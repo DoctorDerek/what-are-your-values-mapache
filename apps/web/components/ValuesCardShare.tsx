@@ -167,7 +167,7 @@ export default function ValuesCardShare({
               size="sm"
               wrap
               variant="outline"
-              className="min-w-0 flex-1"
+              className="min-w-0 flex-1 basis-[8em]"
               typographyClassName="text-base leading-tight"
               onClick={onClose}
             >
@@ -177,7 +177,7 @@ export default function ValuesCardShare({
               <Button
                 size="sm"
                 wrap
-                className="min-w-0 flex-1"
+                className="min-w-0 flex-1 basis-[8em]"
                 typographyClassName="text-base leading-tight"
                 onClick={() => send({ type: "CARD_SHARE.RETRY" })}
               >
@@ -187,7 +187,7 @@ export default function ValuesCardShare({
               <Button
                 size="sm"
                 wrap
-                className="min-w-0 flex-1"
+                className="min-w-0 flex-1 basis-[8em]"
                 typographyClassName="text-base leading-tight"
                 disabled={!artifact || isDelivering}
                 onClick={() =>
