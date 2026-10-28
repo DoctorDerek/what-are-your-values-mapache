@@ -16,10 +16,10 @@ import {
   RESULTS_SAVE_CONFIRMATION_FADE_MS,
 } from "@game/machines/src/ResultsSaveStatus"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
+import usePresentationElapsedTime from "@game/utils/src/usePresentationElapsedTime"
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import {
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -186,6 +186,10 @@ export default function Results({
   shouldReduceMotion,
   isMenuOpen,
   notifications,
+  areRowPositionsSettled,
+  isPresentationComplete,
+  onSettleRowPositions: settleRowPositions,
+  onPresentationCompleted,
   onOpenMenu,
   onSeeValues,
   onKeepBattling,
@@ -196,6 +200,10 @@ export default function Results({
   shouldReduceMotion: boolean
   isMenuOpen: boolean
   notifications?: ReactNode
+  areRowPositionsSettled: boolean
+  isPresentationComplete: boolean
+  onSettleRowPositions: () => void
+  onPresentationCompleted: () => void
   onOpenMenu: () => void
   onSeeValues: () => void
   onKeepBattling: () => void
@@ -223,42 +231,26 @@ export default function Results({
     )
     return () => window.clearTimeout(timeout)
   }, [openedAt])
-  const [presentationTime, setPresentationTime] = useState(() => ({
-    elapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
-    previousElapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
-  }))
-  const [areRowPositionsSettled, setAreRowPositionsSettled] = useState(false)
-  const settleRowPositions = useCallback(
-    () => setAreRowPositionsSettled(true),
-    [],
-  )
-  const isPresentationComplete =
-    presentationTime.elapsedMs >= results.presentationDurationMs
-  const displayedElapsedMs = shouldReduceMotion
-    ? results.presentationDurationMs
-    : presentationTime.elapsedMs
-  const displayedPreviousElapsedMs = shouldReduceMotion
-    ? results.presentationDurationMs
-    : presentationTime.previousElapsedMs
-
+  const {
+    elapsedMs: displayedElapsedMs,
+    previousElapsedMs: displayedPreviousElapsedMs,
+  } = usePresentationElapsedTime({
+    openedAt,
+    durationMs: results.presentationDurationMs,
+    tickMs: BATTLE_RESULTS_PRESENTATION_TICK_MS,
+    isComplete: shouldReduceMotion || isPresentationComplete,
+  })
   useEffect(() => {
-    if (shouldReduceMotion || isPresentationComplete) return
-    const startedAt = performance.now()
-    const timer = window.setInterval(() => {
-      const nextElapsedMs = Math.min(
-        results.presentationDurationMs,
-        performance.now() - startedAt,
-      )
-      setPresentationTime(({ elapsedMs }) => ({
-        elapsedMs: Math.max(elapsedMs, nextElapsedMs),
-        previousElapsedMs: elapsedMs,
-      }))
-    }, BATTLE_RESULTS_PRESENTATION_TICK_MS)
-    return () => window.clearInterval(timer)
+    if (
+      !isPresentationComplete &&
+      displayedElapsedMs >= results.presentationDurationMs
+    )
+      onPresentationCompleted()
   }, [
+    displayedElapsedMs,
     isPresentationComplete,
+    onPresentationCompleted,
     results.presentationDurationMs,
-    shouldReduceMotion,
   ])
 
   const frame = useMemo(
@@ -267,13 +259,14 @@ export default function Results({
         results,
         displayedElapsedMs,
         displayedPreviousElapsedMs,
-        areRowPositionsSettled,
+        areRowPositionsSettled || shouldReduceMotion,
       ),
     [
       results,
       displayedElapsedMs,
       displayedPreviousElapsedMs,
       areRowPositionsSettled,
+      shouldReduceMotion,
     ],
   )
   const finalProfileProgress = useMemo(

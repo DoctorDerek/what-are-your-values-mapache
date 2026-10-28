@@ -18,14 +18,9 @@ import {
 } from "@game/machines/src/ResultsSaveStatus"
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { getLevelProgressFromXP } from "@game/utils/src/LevelMath"
+import usePresentationElapsedTime from "@game/utils/src/usePresentationElapsedTime"
 import { cx } from "classix"
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react"
+import { useEffect, useMemo, useState, type ReactNode } from "react"
 import { FlatList, Pressable, ScrollView, View } from "react-native"
 import Animated, {
   cancelAnimation,
@@ -161,6 +156,10 @@ export default function NativeResults({
   runtimeClipCatalog,
   shouldReduceMotion,
   notifications,
+  areRowPositionsSettled,
+  isPresentationComplete,
+  onSettleRowPositions: settleRowPositions,
+  onPresentationCompleted,
   onOpenMenu,
   onSeeValues,
   onKeepBattling,
@@ -170,6 +169,10 @@ export default function NativeResults({
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
   shouldReduceMotion: boolean
   notifications?: ReactNode
+  areRowPositionsSettled: boolean
+  isPresentationComplete: boolean
+  onSettleRowPositions: () => void
+  onPresentationCompleted: () => void
   onOpenMenu: () => void
   onSeeValues: () => void
   onKeepBattling: () => void
@@ -210,42 +213,26 @@ export default function NativeResults({
       cancelAnimation(saveConfirmationOpacity)
     }
   }, [openedAt, saveConfirmationOpacity, shouldReduceMotion])
-  const [presentationTime, setPresentationTime] = useState(() => ({
-    elapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
-    previousElapsedMs: shouldReduceMotion ? results.presentationDurationMs : 0,
-  }))
-  const [areRowPositionsSettled, setAreRowPositionsSettled] = useState(false)
-  const settleRowPositions = useCallback(
-    () => setAreRowPositionsSettled(true),
-    [],
-  )
-  const isPresentationComplete =
-    presentationTime.elapsedMs >= results.presentationDurationMs
-  const displayedElapsedMs = shouldReduceMotion
-    ? results.presentationDurationMs
-    : presentationTime.elapsedMs
-  const displayedPreviousElapsedMs = shouldReduceMotion
-    ? results.presentationDurationMs
-    : presentationTime.previousElapsedMs
-
+  const {
+    elapsedMs: displayedElapsedMs,
+    previousElapsedMs: displayedPreviousElapsedMs,
+  } = usePresentationElapsedTime({
+    openedAt,
+    durationMs: results.presentationDurationMs,
+    tickMs: BATTLE_RESULTS_PRESENTATION_TICK_MS,
+    isComplete: shouldReduceMotion || isPresentationComplete,
+  })
   useEffect(() => {
-    if (shouldReduceMotion || isPresentationComplete) return
-    const startedAt = Date.now()
-    const timer = setInterval(() => {
-      const nextElapsedMs = Math.min(
-        results.presentationDurationMs,
-        Date.now() - startedAt,
-      )
-      setPresentationTime(({ elapsedMs }) => ({
-        elapsedMs: Math.max(elapsedMs, nextElapsedMs),
-        previousElapsedMs: elapsedMs,
-      }))
-    }, BATTLE_RESULTS_PRESENTATION_TICK_MS)
-    return () => clearInterval(timer)
+    if (
+      !isPresentationComplete &&
+      displayedElapsedMs >= results.presentationDurationMs
+    )
+      onPresentationCompleted()
   }, [
+    displayedElapsedMs,
     isPresentationComplete,
+    onPresentationCompleted,
     results.presentationDurationMs,
-    shouldReduceMotion,
   ])
 
   const frame = useMemo(
@@ -254,13 +241,14 @@ export default function NativeResults({
         results,
         displayedElapsedMs,
         displayedPreviousElapsedMs,
-        areRowPositionsSettled,
+        areRowPositionsSettled || shouldReduceMotion,
       ),
     [
       results,
       displayedElapsedMs,
       displayedPreviousElapsedMs,
       areRowPositionsSettled,
+      shouldReduceMotion,
     ],
   )
   const finalProfileProgress = useMemo(

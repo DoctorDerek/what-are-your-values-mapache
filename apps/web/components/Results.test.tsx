@@ -9,8 +9,31 @@ import {
 import { projectBattlePair } from "@game/machines/src/BattleScheduler"
 import LocaleProvider from "@game/utils/src/LocaleContext"
 import { act, fireEvent, render, screen, within } from "@testing-library/react"
+import { useState, type ComponentProps } from "react"
 import { describe, expect, it, vi } from "vitest"
-import Results from "./Results"
+import ResultsPresentation from "@/components/Results"
+
+function Results(
+  props: Omit<
+    ComponentProps<typeof ResultsPresentation>,
+    | "areRowPositionsSettled"
+    | "isPresentationComplete"
+    | "onSettleRowPositions"
+    | "onPresentationCompleted"
+  >,
+) {
+  const [settled, setSettled] = useState(false)
+  const [complete, setComplete] = useState(false)
+  return (
+    <ResultsPresentation
+      {...props}
+      areRowPositionsSettled={settled}
+      isPresentationComplete={complete}
+      onSettleRowPositions={() => setSettled(true)}
+      onPresentationCompleted={() => setComplete(true)}
+    />
+  )
+}
 
 function createResults() {
   const entry = createInitialBattleProfile("web-results-test-seed")
@@ -26,6 +49,35 @@ function createResults() {
 }
 
 describe("Battle-exit Results presentation", () => {
+  it("remounts the same completed visit at final ranks and XP without replay", () => {
+    vi.useFakeTimers()
+    try {
+      const results = createResults()
+      const openedAt = new Date().toISOString()
+      const props = {
+        results,
+        openedAt,
+        runtimeClipCatalog:
+          createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
+        shouldReduceMotion: false,
+        isMenuOpen: false,
+        onOpenMenu: vi.fn(),
+        onSeeValues: vi.fn(),
+        onKeepBattling: vi.fn(),
+      }
+      const first = render(<Results {...props} />)
+      act(() => vi.advanceTimersByTime(results.presentationDurationMs + 100))
+      const finalRoster = screen.getByRole("list").textContent
+      first.unmount()
+      render(<Results {...props} />)
+      expect(screen.getByRole("list").textContent).toBe(finalRoster)
+      expect(document.querySelector("[data-results-value]")).toHaveStyle({
+        "--results-travel": "1",
+      })
+    } finally {
+      vi.useRealTimers()
+    }
+  })
   it.each(["en", "es-MX"] as const)(
     "reveals first-results medal images promptly with a stable %s summary",
     (locale) => {

@@ -3,6 +3,7 @@ import { expect } from "@playwright/test"
 import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
 import sharp from "sharp"
 import { test } from "./fixtures"
+import { getRenderedTextLines } from "./visible-text-bounds"
 
 for (const locale of ["en", "es-MX"] as const) {
   test(`bundled Fluent medals preserve localized ranks and appear in saved cards in ${locale}`, async ({
@@ -170,6 +171,12 @@ for (const copy of [
       await expect(save).toBeEnabled({ timeout: 30_000 })
       if (viewport.textScale === 2)
         await page.addStyleTag({ content: "html { font-size: 200%; }" })
+      const saveLines = await save.evaluate(getRenderedTextLines)
+      expect(
+        saveLines.some((line) =>
+          line.toLowerCase().includes(copy.save.split(" ")[0].toLowerCase()),
+        ),
+      ).toBe(true)
       const back = dialog.getByRole("button", { name: copy.back, exact: true })
       if (viewport.textScale === 1) {
         await expect(dialog.getByRole("img")).toBeInViewport({ ratio: 1 })

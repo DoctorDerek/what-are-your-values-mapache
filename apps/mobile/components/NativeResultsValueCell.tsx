@@ -35,15 +35,16 @@ export default function NativeResultsValueCell({
 
   useEffect(() => {
     const timing = {
-      duration:
-        item.motion.travel === 1 ? 0 : BATTLE_RESULTS_PRESENTATION_TICK_MS,
+      duration: item.isMotionImmediate
+        ? 0
+        : BATTLE_RESULTS_PRESENTATION_TICK_MS,
       easing: Easing.linear,
     }
     motion.set(withTiming(item.motion, timing))
     return () => {
       cancelAnimation(motion)
     }
-  }, [item.motion, motion])
+  }, [item.isMotionImmediate, item.motion, motion])
 
   const layout = useMemo<LayoutAnimationFunction>(
     () => (values) => {
@@ -69,11 +70,13 @@ export default function NativeResultsValueCell({
     () => (values: EntryAnimationsValues) => {
       "worklet"
       initialOffset.set(
-        motion.get().travel > 0 && isPromoted
-          ? Math.min(
-              rankDistance * values.targetHeight,
-              values.windowHeight / 4,
-            )
+        motion.get().travel > 0 && motion.get().travel < 1
+          ? isPromoted
+            ? Math.min(
+                rankDistance * values.targetHeight,
+                values.windowHeight / 4,
+              )
+            : rankDistance * values.targetHeight
           : 0,
       )
       return { initialValues: { opacity: 1 }, animations: { opacity: 1 } }

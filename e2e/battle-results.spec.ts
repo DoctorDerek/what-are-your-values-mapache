@@ -68,12 +68,17 @@ test("Saved locally fades without moving the Results composition", async ({
   const before = await roster.boundingBox()
   await expect(confirmation).not.toBeVisible({ timeout: 7000 })
   expect(await roster.boundingBox()).toEqual(before)
+  const finalRows = await roster.innerText()
   await page.getByRole("button", { name: "Menu", exact: true }).click()
   await page.getByRole("button", { name: "Settings", exact: true }).click()
   await page.getByRole("button", { name: "Back", exact: true }).click()
   await expect(
     page.getByRole("heading", { name: "Results", exact: true }),
   ).toBeVisible()
+  expect(await roster.innerText()).toBe(finalRows)
+  await expect(
+    page.getByRole("region", { name: "Profile progress" }),
+  ).toContainText("Profile Level 3")
   await expect(
     page.getByRole("status").filter({ hasText: "Saved locally" }),
   ).toHaveCount(0)
