@@ -69,11 +69,13 @@ export default function NativeResultsValueCell({
     () => (values: EntryAnimationsValues) => {
       "worklet"
       initialOffset.set(
-        motion.get().travel > 0 && isPromoted
-          ? Math.min(
-              rankDistance * values.targetHeight,
-              values.windowHeight / 4,
-            )
+        motion.get().travel > 0 && motion.get().travel < 1
+          ? isPromoted
+            ? Math.min(
+                rankDistance * values.targetHeight,
+                values.windowHeight / 4,
+              )
+            : rankDistance * values.targetHeight
           : 0,
       )
       return { initialValues: { opacity: 1 }, animations: { opacity: 1 } }

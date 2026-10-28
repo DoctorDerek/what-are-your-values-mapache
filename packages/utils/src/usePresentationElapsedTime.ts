@@ -10,7 +10,7 @@ export default function usePresentationElapsedTime({
   durationMs: number
   tickMs: number
   isComplete: boolean
-}) {
+}): Readonly<{ elapsedMs: number; previousElapsedMs: number }> {
   const [startedAt] = useState(() =>
     openedAt === null ? Date.now() : Date.parse(openedAt),
   )
