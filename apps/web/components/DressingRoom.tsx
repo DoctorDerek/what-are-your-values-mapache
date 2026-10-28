@@ -286,13 +286,13 @@ export default function DressingRoom({
             data-controller-scroll
             tabIndex={0}
           >
-            <DialogTitle className="text-2xl font-black">
+            <DialogTitle className="text-2xl font-black [overflow-wrap:anywhere] hyphens-auto">
               {DRESSING_ROOM_COPY.keepTitle}
             </DialogTitle>
             <Button
               variant="outline"
               wrap
-              className="w-full"
+              className="w-full [overflow-wrap:anywhere] hyphens-auto"
               onClick={() => actor.send({ type: "AVATAR.CANCEL" })}
             >
               {DRESSING_ROOM_COPY.discard}
