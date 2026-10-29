@@ -290,7 +290,7 @@ test("sharing returns to the unchanged appearance draft without saving it", asyn
   await page.getByRole("button", { name: "Start", exact: true }).click()
   const preview = page.getByRole("dialog", { name: "Share my values card" })
   await page
-    .getByRole("button", { name: "Customize my card", exact: true })
+    .getByRole("button", { name: "Customize my values card", exact: true })
     .click()
   await page.getByRole("button", { name: "Skin 6", exact: true }).click()
   await page
@@ -306,7 +306,7 @@ test("sharing returns to the unchanged appearance draft without saving it", asyn
     .getByRole("button", { name: "Discard changes", exact: true })
     .click()
   await page
-    .getByRole("button", { name: "Customize my card", exact: true })
+    .getByRole("button", { name: "Customize my values card", exact: true })
     .click()
   await expect(
     page.getByRole("button", { name: "Skin 6", exact: true }),

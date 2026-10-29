@@ -74,7 +74,7 @@ const licensedRuntimeClipCatalog = Object.freeze({
           Object.freeze({
             kind: "character",
             animalId: id,
-            animationId: "idle",
+            animationId: id === "bat" ? "idle_upright" : "idle",
             relativePath: `${id}/idle.png`,
             frameWidth: 1,
             frameHeight: 1,
@@ -90,7 +90,7 @@ const licensedRuntimeClipCatalog = Object.freeze({
         ]),
         auxiliaryEffectClips: Object.freeze([]),
         referencePose: Object.freeze({
-          animationId: "idle",
+          animationId: id === "bat" ? "idle_upright" : "idle",
           frameIndex: 0,
           bounds: Object.freeze({ left: 0, top: 0, width: 1, height: 1 }),
           anchor: Object.freeze({ x: 0.5, y: 1 }),
@@ -234,9 +234,10 @@ describe("NativeHub", () => {
       ["Menú", callbacks.onOpenMenu],
       ["Agregar valor", callbacks.onAddCustomValue],
       ["Combatir", callbacks.onStartBattle],
-      ["Personalizar mi tarjeta", callbacks.onCustomize],
+      ["Personalizar mi tarjeta de valores", callbacks.onCustomize],
       ["Compartir mi tarjeta de valores", callbacks.onShare],
       ["Ver todos los valores", callbacks.onBrowseAllValues],
+      ["Logros", callbacks.onOpenAchievements],
     ] as const
     const buttons = screen.getAllByRole("button")
     expect(buttons).toHaveLength(expectedActions.length)
@@ -310,7 +311,7 @@ describe("NativeHub", () => {
     expect(calm?.frameDurationMs).toBe(160)
   })
 
-  it("previews five unranked values and exposes the explicit actions", async () => {
+  it("keeps the complete unranked roster available and exposes the explicit actions", async () => {
     const callbacks = createHubCallbacks()
     const user = userEvent.setup()
     await render(
@@ -331,13 +332,14 @@ describe("NativeHub", () => {
     ).toBeNull()
     expect(screen.getByText(/Not ranked yet/)).toBeOnTheScreen()
     expect(screen.queryByText("#1")).toBeNull()
-    for (const name of ["Acceptance", "Accuracy", "Achievement"])
-      expect(screen.getByText(name)).toBeOnTheScreen()
+    for (const { definition } of createUnplayedRankedValues())
+      expect(screen.getByText(getValueDisplayName(definition))).toBeOnTheScreen()
     for (const [label, callback] of [
       ["Browse All Values", callbacks.onBrowseAllValues],
+      ["Achievements", callbacks.onOpenAchievements],
       ["Add value", callbacks.onAddCustomValue],
       ["Menu", callbacks.onOpenMenu],
-      ["Customize my card", callbacks.onCustomize],
+      ["Customize my values card", callbacks.onCustomize],
       ["Share my values card", callbacks.onShare],
       ["Battle", callbacks.onStartBattle],
     ] as const) {
@@ -346,7 +348,7 @@ describe("NativeHub", () => {
     }
   })
 
-  it("shows the earned five values and backup feedback", async () => {
+  it("keeps the complete earned ranking after the Top Five and shows backup feedback", async () => {
     const rankedValues = createRankedValuesWithEvidence()
     await render(
       <NativeHub
@@ -367,10 +369,11 @@ describe("NativeHub", () => {
       screen.getByLabelText("Your imported data is ready."),
     ).toBeOnTheScreen()
     expect(screen.getByText("#1")).toBeOnTheScreen()
-    expect(screen.queryByText("#6")).toBeNull()
+    expect(screen.getByText("#6")).toBeOnTheScreen()
+    expect(screen.getByText("All Other Values")).toBeOnTheScreen()
     expect(
-      screen.queryByText(getValueDisplayName(rankedValues[5].definition)),
-    ).toBeNull()
+      screen.getByText(getValueDisplayName(rankedValues.at(-1)!.definition)),
+    ).toBeOnTheScreen()
   })
 
   it("retains readable values when animal delivery fails and respects Reduced Motion", async () => {
@@ -393,9 +396,7 @@ describe("NativeHub", () => {
         ),
       ),
     ).toEqual(
-      rankedValues
-        .slice(0, 5)
-        .map(({ definition }) => getMappedAnimalId(definition.id)),
+      Array.from(new Set(rankedValues.map(({ definition }) => getMappedAnimalId(definition.id)))),
     )
     expect(
       nativeAnimalRendererMock.mock.calls.every(

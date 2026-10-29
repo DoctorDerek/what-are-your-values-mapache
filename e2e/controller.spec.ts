@@ -417,7 +417,7 @@ test("controller changes settings, customizes a hero and saves a shareable PNG",
   await tapControllerButton(page, 8)
   await activateWithController(
     page,
-    page.getByRole("button", { name: "Customize my card", exact: true }),
+    page.getByRole("button", { name: "Customize my values card", exact: true }),
   )
   const skin = page.getByRole("button", { name: "Skin 2", exact: true })
   await activateWithController(page, skin)
