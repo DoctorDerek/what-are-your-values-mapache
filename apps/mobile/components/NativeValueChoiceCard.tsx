@@ -22,6 +22,7 @@ type NativeValueChoiceCardProps = {
   isEnabled: boolean
   isAnimating: boolean
   combatant?: (isAttended: boolean, reward?: ReactNode) => ReactNode
+  combatantHeight: number
   reward?: BattleRewardPresentation | null
   onActivate: (valueId: ValueId) => void
 }
@@ -36,6 +37,7 @@ function NativeValueChoiceCard(
     isEnabled,
     isAnimating,
     combatant,
+    combatantHeight,
     reward,
     onActivate,
   }: NativeValueChoiceCardProps,
@@ -74,8 +76,8 @@ function NativeValueChoiceCard(
           isFirst
             ? "bg-mapache-vivid-primary-cyan"
             : "bg-mapache-vivid-primary-raspberry",
-          combatant && "pb-44 xl:pb-68",
         )}
+        style={combatant && { paddingBottom: combatantHeight }}
         disabled={!isEnabled}
         onPress={handleActivate}
         onHoverIn={() => setIsHovered(true)}
@@ -150,19 +152,15 @@ function NativeValueChoiceCard(
           onPointerLeave={() => setIsHovered(false)}
           onPointerCancel={() => setIsHovered(false)}
           className={cx(
-            "absolute bottom-0 h-44 w-1/2 flex-col items-center justify-end border-black px-2 pb-2 xl:h-68 xl:border-x-4 xl:border-b-4 xl:px-4",
+            "absolute bottom-0 w-1/2 flex-col items-center justify-end border-black px-2 xl:border-x-4 xl:border-b-4 xl:px-4",
             isWinner ? "z-30" : "z-20",
             isFirst
               ? "bg-mapache-vivid-primary-cyan left-0"
               : "bg-mapache-vivid-primary-raspberry right-0",
           )}
+          style={{ height: combatantHeight }}
         >
           <View className="w-28 items-center xl:w-56">
-            <View
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-              className="h-6 w-full xl:h-10"
-            />
             {combatant(
               isEnabled && (isHovered || isFocused),
               reward ? (

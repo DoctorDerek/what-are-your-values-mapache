@@ -46,6 +46,7 @@ function NativeBattlePlayback({
   onResultComplete: () => void
   onRoleEntered: (animalId: ZooAnimalId, role: SeethingSwarmVariedRole) => void
   children: (combatants: {
+    height: number
     first: (isAttended: boolean, reward?: ReactNode) => ReactNode
     second: (isAttended: boolean, reward?: ReactNode) => ReactNode
   }) => ReactNode
@@ -255,7 +256,11 @@ function NativeBattlePlayback({
       onLayout={() => setLayoutRevision((revision) => revision + 1)}
       className="relative mx-3 mt-3 min-h-0 flex-1 flex-row"
     >
-      {children({ first: combatants[0], second: combatants[1] })}
+      {children({
+        first: combatants[0],
+        second: combatants[1],
+        height: stageGeometry.height,
+      })}
     </View>
   )
 }
@@ -282,6 +287,7 @@ export default function NativeSeethingSwarmBattleStage({
   shouldReduceMotion: boolean
   onResultComplete: () => void
   children: (combatants: {
+    height: number
     first: (isAttended: boolean, reward?: ReactNode) => ReactNode
     second: (isAttended: boolean, reward?: ReactNode) => ReactNode
   }) => ReactNode
