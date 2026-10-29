@@ -173,7 +173,7 @@ export default function Hub({
         className={
           isDraftNavigationBlocked
             ? "contents"
-            : "-mt-2 -mr-2 flex min-h-[min(16rem,50%)] w-[calc(100%+0.5rem)] max-w-[calc(80rem+0.5rem)] flex-[1_0_min(16rem,50%)] flex-col items-center gap-[16px] overflow-x-hidden overflow-y-auto overscroll-contain pt-2 pr-2 focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white xl:gap-4"
+            : "-mt-3 -mr-4 flex min-h-[min(16rem,50%)] w-[calc(100%+1rem)] max-w-[calc(80rem+1rem)] flex-[1_0_min(16rem,50%)] flex-col items-center gap-[16px] overflow-x-hidden overflow-y-auto overscroll-contain pt-3 pr-4 focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white xl:gap-4"
         }
       >
         {!isDraftNavigationBlocked && header}
@@ -300,7 +300,7 @@ export default function Hub({
               variant="outline"
               size="sm"
               typographyClassName="text-base xl:text-lg"
-              className="flex-[1.4_1_5rem] max-xl:px-3 max-xl:py-2"
+              className="flex-[1.4_1_5rem] hyphens-auto max-xl:px-[min(0.75rem,2%)] max-xl:py-2"
               wrap
               onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
             >
@@ -313,7 +313,7 @@ export default function Hub({
               variant="outline"
               size="sm"
               typographyClassName="text-base xl:text-lg"
-              className="flex-[1_1_auto] max-xl:px-3 max-xl:py-2"
+              className="flex-[1_1_auto] hyphens-auto max-xl:px-[min(0.75rem,2%)] max-xl:py-2"
               wrap
               onClick={(event) => onOpenAchievements(event.currentTarget.id)}
             >

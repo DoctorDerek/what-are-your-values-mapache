@@ -178,7 +178,7 @@ export default function NativeHub({
                         ? PERSONAL_HUB_COPY.rankedTitle
                         : PERSONAL_HUB_COPY.unrankedTitle
                     }
-                    className="min-w-0 flex-[1_1_10rem] self-center px-3 py-4 xl:w-full xl:flex-auto xl:flex-row xl:justify-center xl:gap-x-3"
+                    className="min-w-0 flex-[1_1_10rem] self-center px-3 py-[min(1rem,max(0.25rem,calc(100vh-37rem)))] xl:w-full xl:flex-auto xl:flex-row xl:justify-center xl:gap-x-3 xl:py-4"
                   >
                     {(hasComparisons
                       ? PERSONAL_HUB_COPY.rankedTitleLines
@@ -316,7 +316,10 @@ export default function NativeHub({
                       size="compact"
                       onPress={onBrowseAllValues}
                     >
-                      <Text className="text-center text-base font-black text-black">
+                      <Text
+                        android_hyphenationFrequency="normal"
+                        className="text-center text-base font-black text-black"
+                      >
                         {PERSONAL_HUB_COPY.browse}
                       </Text>
                     </Button>
@@ -326,7 +329,10 @@ export default function NativeHub({
                       size="compact"
                       onPress={onOpenAchievements}
                     >
-                      <Text className="text-center text-base font-black text-black">
+                      <Text
+                        android_hyphenationFrequency="normal"
+                        className="text-center text-base font-black text-black"
+                      >
                         {localizedCopy.interfaceCopy.screen.achievements}
                       </Text>
                     </Button>
