@@ -269,6 +269,7 @@ export default function DataManagement({
           size="navigation"
           disabled={isNavigationBlocked}
           onClick={onOpenMenu}
+          controllerAction="menu"
           wrap
           className="min-w-0 flex-[1_0_max-content]"
         >

@@ -1,5 +1,4 @@
 import type { ControllerCommand } from "@game/data/src/ControllerControls"
-import { PRODUCT_MENU_COPY } from "@game/data/src/ProductMenu"
 
 const CONTROLLER_FOCUS_TARGETS =
   "button, a[href], input, select, textarea, summary, [role=region][tabindex], [data-controller-scroll]"
@@ -37,8 +36,7 @@ export function activateWebControllerMenu() {
   const menu = getControllerFocusTargets().find(
     (element) =>
       element instanceof HTMLButtonElement &&
-      (element.getAttribute("aria-label") ?? element.textContent?.trim()) ===
-        PRODUCT_MENU_COPY.openAction,
+      element.dataset.controllerAction === "menu",
   )
   menu?.click()
 }

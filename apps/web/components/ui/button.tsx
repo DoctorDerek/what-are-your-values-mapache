@@ -1,3 +1,4 @@
+import type { ControllerCommand } from "@game/data/src/ControllerControls"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cx } from "classix"
 import { Slot } from "radix-ui"
@@ -76,6 +77,7 @@ function Button({
   asChild = false,
   align = "center",
   wrap = false,
+  controllerAction,
   typographyClassName,
   textCase = variant === "link" ? "normal-case" : "uppercase",
   ...props
@@ -84,6 +86,7 @@ function Button({
     asChild?: boolean
     align?: "center" | "start"
     wrap?: boolean
+    controllerAction?: Extract<ControllerCommand, "menu">
     typographyClassName?: string
     textCase?: "normal-case" | "uppercase"
   }) {
@@ -95,6 +98,7 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
+      data-controller-action={controllerAction}
       className={cx(
         buttonVariants({ variant, size: resolvedSize }),
         variant !== "ghost" && variant !== "link" && "border-black",

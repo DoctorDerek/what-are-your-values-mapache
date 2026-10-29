@@ -330,7 +330,12 @@ export default function Results({
               {localizedCopy.interfaceCopy.screen.savedLocally}
             </span>
           </div>
-          <Button size="sm" variant="secondary" onClick={onOpenMenu}>
+          <Button
+            size="sm"
+            variant="secondary"
+            controllerAction="menu"
+            onClick={onOpenMenu}
+          >
             {PRODUCT_MENU_COPY.openAction}
           </Button>
         </header>
