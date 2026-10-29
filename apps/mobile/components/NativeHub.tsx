@@ -75,7 +75,17 @@ export default function NativeHub({
     [onNavigationBlockedChange],
   )
 
-  const { hasComparisons, topFive } = projectHubValues(rankedValues)
+  const { hasComparisons, visibleValues, topFive, remainingValues } =
+    projectHubValues(rankedValues)
+  const renderValue = (value: RankedValue) => (
+    <NativeHubValueRow
+      key={value.definition.id}
+      rankedValue={value}
+      showRank={hasComparisons}
+      shouldReduceMotion={shouldReduceMotion}
+      runtimeClipCatalog={runtimeClipCatalog}
+    />
+  )
   const header = (
     <>
       <View className="w-full max-w-7xl flex-row flex-wrap items-center justify-between gap-3">
@@ -151,10 +161,11 @@ export default function NativeHub({
           <>
             <ScrollView
               className="min-h-[50%] w-full flex-1"
-              contentContainerClassName="items-center gap-4 pb-6 xl:gap-5"
+              contentContainerClassName="grow items-center gap-4 xl:gap-5"
             >
               {header}
-              <View className="border-player-card-frame bg-player-card-background relative w-full max-w-7xl flex-row flex-wrap overflow-hidden border-4">
+              <View className="border-player-card-frame bg-player-card-background relative min-h-48 w-full max-w-7xl flex-1 overflow-hidden border-4 xl:flex-row xl:flex-wrap">
+                <View className="flex-row flex-wrap items-center xl:contents">
                 <View
                   accessible
                   accessibilityRole="header"
@@ -184,22 +195,33 @@ export default function NativeHub({
                     sizeClassName="h-[112px] w-[80px] xl:h-96 xl:w-64"
                   />
                 </View>
-                <View className="bg-player-card-values w-full xl:w-2/3">
-                  {topFive.map((value) => (
-                    <NativeHubValueRow
-                      key={value.definition.id}
-                      rankedValue={value}
-                      showRank={hasComparisons}
-                      shouldReduceMotion={shouldReduceMotion}
-                      runtimeClipCatalog={runtimeClipCatalog}
-                    />
-                  ))}
                 </View>
+                <ScrollView
+                  nestedScrollEnabled
+                  bounces={false}
+                  overScrollMode="never"
+                  accessibilityLabel={
+                    hasComparisons
+                      ? PERSONAL_HUB_COPY.rankedList
+                      : PERSONAL_HUB_COPY.unrankedList
+                  }
+                  className="bg-player-card-values min-h-12 w-full flex-1 xl:w-2/3 xl:flex-auto"
+                >
+                  {(hasComparisons ? topFive : visibleValues).map(renderValue)}
+                  {hasComparisons && remainingValues.length > 0 && (
+                    <>
+                      <Text className="border-player-card-frame bg-player-card-rank text-player-card-ink border-y-2 px-3 py-2 font-bold">
+                        {PERSONAL_HUB_COPY.remainingValues}
+                      </Text>
+                      {remainingValues.map(renderValue)}
+                    </>
+                  )}
                 {!hasComparisons && (
                   <Text className="bg-player-card-values text-player-card-muted w-full p-3 text-sm">
                     {PERSONAL_HUB_COPY.unrankedNotice}
                   </Text>
                 )}
+                </ScrollView>
                 <ScrollView
                   pointerEvents="box-none"
                   className="absolute inset-x-0 bottom-0 z-50 max-h-full"
