@@ -162,8 +162,10 @@ export default function NativeHub({
         {!isDraftActive && (
           <>
             <ScrollView
-              className="min-h-[50%] w-full flex-1"
-              contentContainerClassName="grow items-center gap-4 xl:gap-5"
+              bounces={false}
+              overScrollMode="never"
+              className="-mt-2 min-h-[50%] w-full flex-1"
+              contentContainerClassName="grow items-center gap-4 pt-2 xl:gap-5"
             >
               {header}
               <View className="border-player-card-frame bg-player-card-background relative min-h-48 w-full max-w-7xl flex-1 overflow-hidden border-4 xl:flex-row xl:flex-wrap">
@@ -189,6 +191,11 @@ export default function NativeHub({
                       {line}
                     </Text>
                   ))}
+                  {!hasComparisons && (
+                    <Text className="text-player-card-muted mt-2 text-sm">
+                      {PERSONAL_HUB_COPY.unrankedNotice}
+                    </Text>
+                  )}
                 </View>
                 <View className="xl:bg-player-card-values w-[96px] max-w-full items-center justify-center py-2 pr-2 xl:w-1/3 xl:py-3 xl:pr-0">
                   <NativeHeroes99Hero
@@ -218,11 +225,6 @@ export default function NativeHub({
                       {remainingValues.map(renderValue)}
                     </>
                   )}
-                {!hasComparisons && (
-                  <Text className="bg-player-card-values text-player-card-muted w-full p-3 text-sm">
-                    {PERSONAL_HUB_COPY.unrankedNotice}
-                  </Text>
-                )}
                 </ScrollView>
                 <ScrollView
                   pointerEvents="box-none"
@@ -234,6 +236,8 @@ export default function NativeHub({
               </View>
             </ScrollView>
             <ScrollView
+              bounces={false}
+              overScrollMode="never"
               className="max-h-[60%] min-h-0 w-full shrink grow-0"
               contentContainerClassName="items-center pr-2 pb-3"
             >
@@ -307,7 +311,7 @@ export default function NativeHub({
                   </View>
                   <View className="min-w-0 flex-row flex-wrap gap-4 xl:flex-1">
                   <Button
-                    className="min-w-0 flex-[1.4_1_8rem]"
+                    className="min-w-0 flex-[1.4_1_5rem]"
                     variant="outline"
                     size="compact"
                     onPress={onBrowseAllValues}
@@ -317,7 +321,7 @@ export default function NativeHub({
                     </Text>
                   </Button>
                   <Button
-                    className="min-w-0 flex-[1_1_6rem]"
+                    className="min-w-0 flex-auto"
                     variant="outline"
                     size="compact"
                     onPress={onOpenAchievements}
