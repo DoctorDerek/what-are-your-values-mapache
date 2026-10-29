@@ -107,10 +107,10 @@ for (const locale of ["en", "es-MX"] as const) {
       expect(await menu.boundingBox()).toEqual(originalMenu)
 
       const clippingBounds = await composition.boundingBox()
-      expect(originalMenu!.x + originalMenu!.width + 8).toBeLessThanOrEqual(
+      expect(originalMenu!.x + originalMenu!.width + 14).toBeLessThanOrEqual(
         clippingBounds!.x + clippingBounds!.width + 1,
       )
-      expect(originalMenu!.y - 8).toBeGreaterThanOrEqual(clippingBounds!.y - 1)
+      expect(originalMenu!.y - 12).toBeGreaterThanOrEqual(clippingBounds!.y - 1)
       await menu.focus()
       await expect(menu).toBeFocused()
       await page.screenshot({
@@ -120,6 +120,19 @@ for (const locale of ["en", "es-MX"] as const) {
       await page.screenshot({
         path: testInfo.outputPath("home-menu-hover.png"),
       })
+      await page.mouse.down()
+      await expect
+        .poll(async () => (await menu.boundingBox())!.x - originalMenu!.x)
+        .toBeCloseTo(6, 1)
+      const pressedMenu = await menu.boundingBox()
+      expect(pressedMenu!.x + pressedMenu!.width + 8).toBeLessThanOrEqual(
+        clippingBounds!.x + clippingBounds!.width + 1,
+      )
+      await page.screenshot({
+        path: testInfo.outputPath("home-menu-pressed.png"),
+      })
+      await heading.hover()
+      await page.mouse.up()
 
       const browse = page.getByRole("button", {
         name: catalog.hub.browse,
@@ -150,6 +163,54 @@ for (const locale of ["en", "es-MX"] as const) {
         })
         .click()
       await expect(achievements).toBeFocused()
+      expect(await documentPosition()).toEqual({ top: 0, extra: 0 })
+
+      await page
+        .getByRole("button", { name: catalog.hub.battle, exact: true })
+        .click()
+      await page
+        .getByRole("button", {
+          name: locale === "en" ? /^Choose / : /^Elegir /,
+        })
+        .first()
+        .click()
+      await page
+        .getByRole("button", {
+          name: catalog.interfaceCopy.controlActions.stop,
+          exact: true,
+        })
+        .click()
+      await page
+        .getByRole("button", {
+          name: catalog.interfaceCopy.results.seeValuesAction,
+          exact: true,
+        })
+        .click()
+      await expect(
+        page.getByRole("heading", {
+          name: catalog.hub.rankedTitle,
+          exact: true,
+        }),
+      ).toBeVisible()
+      for (const dismiss of await page
+        .getByRole("button", { name: /^(Dismiss achievement|Cerrar logro):/ })
+        .all())
+        await dismiss.click()
+      const rankedHeading = await heading.boundingBox()
+      await heading.hover()
+      await wheelAtPointer(page, 400)
+      expect(await composition.evaluate((element) => element.scrollTop)).toBe(0)
+      expect(await heading.boundingBox()).toEqual(rankedHeading)
+      const rankedRoster = page.getByRole("region", {
+        name: catalog.hub.rankedList,
+        exact: true,
+      })
+      await rankedRoster.hover()
+      await wheelAtPointer(page, 400)
+      await expect
+        .poll(() => rankedRoster.evaluate((element) => element.scrollTop))
+        .toBeGreaterThan(0)
+      expect(await heading.boundingBox()).toEqual(rankedHeading)
       expect(await documentPosition()).toEqual({ top: 0, extra: 0 })
     })
   }
