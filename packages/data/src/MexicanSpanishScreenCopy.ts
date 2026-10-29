@@ -1,7 +1,6 @@
 import type { InterfaceCopy } from "./EnglishInterfaceCopy"
 
 export const MEXICAN_SPANISH_SCREEN_COPY: InterfaceCopy["screen"] = {
-  backToValues: "Volver a tus valores",
   selected: "Seleccionado",
   cancel: "Cancelar",
   close: "Cerrar",
