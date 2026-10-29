@@ -63,7 +63,11 @@ async function renderDataManagement(
     ...overrides,
   } satisfies Parameters<typeof NativeDataManagement>[0]
 
-  await render(<LocaleProvider locale={locale}><NativeDataManagement {...props} /></LocaleProvider>)
+  await render(
+    <LocaleProvider locale={locale}>
+      <NativeDataManagement {...props} />
+    </LocaleProvider>,
+  )
   return { callbacks, props }
 }
 
@@ -114,27 +118,40 @@ describe("NativeDataManagement", () => {
     expect(callbacks.onConfirmImport).toHaveBeenCalledTimes(1)
     expect(callbacks.onCancelImport).toHaveBeenCalledTimes(1)
   })
-  it.each(["en", "es-MX"] as const)("routes action-led backup sections and navigation in %s", async (locale) => {
-    const { callbacks } = await renderDataManagement({}, locale)
-    const copy = getLocaleCatalog(locale).interfaceCopy
-    const user = userEvent.setup()
-    const menu = screen.getByRole("button", { name: copy.menu.openAction })
-    const close = screen.getByRole("button", { name: copy.controlActions.back })
-    expect(menu).toBeEnabled()
-    expect(close).toBeEnabled()
-    expect(screen.getByText(copy.portability.exportDescription)).toBeOnTheScreen()
-    expect(screen.getAllByText(copy.portability.exportAction)).toHaveLength(1)
+  it.each(["en", "es-MX"] as const)(
+    "routes action-led backup sections and navigation in %s",
+    async (locale) => {
+      const { callbacks } = await renderDataManagement({}, locale)
+      const copy = getLocaleCatalog(locale).interfaceCopy
+      const user = userEvent.setup()
+      const menu = screen.getByRole("button", { name: copy.menu.openAction })
+      const close = screen.getByRole("button", {
+        name: copy.controlActions.back,
+      })
+      expect(menu).toBeEnabled()
+      expect(close).toBeEnabled()
+      expect(
+        screen.getByText(copy.portability.exportDescription),
+      ).toBeOnTheScreen()
+      expect(screen.getAllByText(copy.portability.exportAction)).toHaveLength(1)
 
-    await user.press(screen.getByRole("button", { name: copy.portability.exportAction }))
-    await user.press(screen.getByRole("button", { name: copy.portability.chooseBackupAction }))
-    await user.press(menu)
-    await user.press(close)
+      await user.press(
+        screen.getByRole("button", { name: copy.portability.exportAction }),
+      )
+      await user.press(
+        screen.getByRole("button", {
+          name: copy.portability.chooseBackupAction,
+        }),
+      )
+      await user.press(menu)
+      await user.press(close)
 
-    expect(callbacks.onExport).toHaveBeenCalledTimes(1)
-    expect(callbacks.onChooseBackup).toHaveBeenCalledTimes(1)
-    expect(callbacks.onOpenMenu).toHaveBeenCalledTimes(1)
-    expect(callbacks.onClose).toHaveBeenCalledTimes(1)
-  })
+      expect(callbacks.onExport).toHaveBeenCalledTimes(1)
+      expect(callbacks.onChooseBackup).toHaveBeenCalledTimes(1)
+      expect(callbacks.onOpenMenu).toHaveBeenCalledTimes(1)
+      expect(callbacks.onClose).toHaveBeenCalledTimes(1)
+    },
+  )
 
   it("blocks navigation during export work", async () => {
     const { callbacks } = await renderDataManagement({
@@ -154,9 +171,7 @@ describe("NativeDataManagement", () => {
     const { callbacks } = await renderDataManagement({ preview })
     const user = userEvent.setup()
     expect(screen.queryByRole("button", { name: "Menu" })).not.toBeOnTheScreen()
-    expect(
-      screen.queryByRole("button", { name: "Back" }),
-    ).not.toBeOnTheScreen()
+    expect(screen.queryByRole("button", { name: "Back" })).not.toBeOnTheScreen()
 
     await user.press(screen.getByRole("button", { name: "Import & Replace" }))
     await user.press(screen.getByRole("button", { name: "Cancel" }))
@@ -169,9 +184,7 @@ describe("NativeDataManagement", () => {
     const { callbacks } = await renderDataManagement({ resetReview })
     const user = userEvent.setup()
     expect(screen.queryByRole("button", { name: "Menu" })).not.toBeOnTheScreen()
-    expect(
-      screen.queryByRole("button", { name: "Back" }),
-    ).not.toBeOnTheScreen()
+    expect(screen.queryByRole("button", { name: "Back" })).not.toBeOnTheScreen()
 
     const exportAction = screen.getByRole("button", { name: "Export Data" })
     expect(exportAction).toBeEnabled()

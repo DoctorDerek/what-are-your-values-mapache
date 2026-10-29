@@ -105,29 +105,51 @@ test.beforeEach(async ({ page }) => {
 })
 
 for (const locale of ["en", "es-MX"] as const) {
-  test(`Menu command reaches Home, Settings, Import & Export and Results in ${locale}`, async ({ page }) => {
+  test(`Menu command reaches Home, Settings, Import & Export and Results in ${locale}`, async ({
+    page,
+  }) => {
     const catalog = getLocaleCatalog(locale)
     const copy = catalog.interfaceCopy
-    const action = (name: string) => page.getByRole("button", { name, exact: true })
-    const menu = page.getByRole("dialog", { name: copy.menu.title, exact: true })
+    const action = (name: string) =>
+      page.getByRole("button", { name, exact: true })
+    const menu = page.getByRole("dialog", {
+      name: copy.menu.title,
+      exact: true,
+    })
     await page.goto(catalog.metadata.webPath)
     await action(catalog.introduction.startAction).click()
     await expect(action(catalog.hub.battle)).toBeEnabled()
     await tapControllerButton(page, 9)
     await expect(menu).toBeVisible()
-    await menu.getByRole("button", { name: copy.settings.title, exact: true }).click()
-    await expect(page.getByRole("heading", { name: copy.settings.title, exact: true })).toBeVisible()
+    await menu
+      .getByRole("button", { name: copy.settings.title, exact: true })
+      .click()
+    await expect(
+      page.getByRole("heading", { name: copy.settings.title, exact: true }),
+    ).toBeVisible()
     await tapControllerButton(page, 9)
     await expect(menu).toBeVisible()
-    await menu.getByRole("button", { name: copy.portability.screenTitle, exact: true }).click()
-    await expect(page.getByRole("heading", { name: copy.portability.screenTitle, exact: true })).toBeVisible()
+    await menu
+      .getByRole("button", { name: copy.portability.screenTitle, exact: true })
+      .click()
+    await expect(
+      page.getByRole("heading", {
+        name: copy.portability.screenTitle,
+        exact: true,
+      }),
+    ).toBeVisible()
     await tapControllerButton(page, 9)
     await expect(menu).toBeVisible()
     await tapControllerButton(page, 1)
     await expect(menu).toHaveCount(0)
     await action(copy.controlActions.back).click()
     await action(catalog.hub.battle).click()
-    await expect(page.getByRole("region", { name: copy.screen.battleChoices, exact: true }).getByRole("button").first()).toBeEnabled()
+    await expect(
+      page
+        .getByRole("region", { name: copy.screen.battleChoices, exact: true })
+        .getByRole("button")
+        .first(),
+    ).toBeEnabled()
     await tapControllerButton(page, 4)
     await expect(action(copy.controlActions.undo)).toBeEnabled()
     await tapControllerButton(page, 8)

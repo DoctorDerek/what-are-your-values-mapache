@@ -417,7 +417,9 @@ describe("scoped controller input", () => {
     rerender(
       <WebControlsProvider>
         <main data-slot="mapache-screen">
-          <Button controllerAction="menu" onClick={openMenu}>Menu</Button>
+          <Button controllerAction="menu" onClick={openMenu}>
+            Menu
+          </Button>
           <div role="alertdialog" aria-label="Confirm change">
             <button onClick={confirm}>Cancel</button>
           </div>
@@ -434,7 +436,9 @@ describe("scoped controller input", () => {
     rerender(
       <WebControlsProvider>
         <main data-slot="mapache-screen">
-          <Button controllerAction="menu" onClick={openMenu}>Menu</Button>
+          <Button controllerAction="menu" onClick={openMenu}>
+            Menu
+          </Button>
         </main>
       </WebControlsProvider>,
     )
@@ -442,26 +446,49 @@ describe("scoped controller input", () => {
     expect(openMenu).toHaveBeenCalledTimes(1)
   })
 
-  it.each(["Menu", "Menú"])("activates the semantic Menu action regardless of its %s label", (label) => {
-    const openMenu = vi.fn()
-    const unrelatedAction = vi.fn()
-    render(
-      <main data-slot="mapache-screen">
-        <Button onClick={unrelatedAction}>Menu</Button>
-        <Button controllerAction="menu" onClick={openMenu}>{label}</Button>
-      </main>,
-    )
-    act(activateWebControllerMenu)
-    expect(openMenu).toHaveBeenCalledOnce()
-    expect(unrelatedAction).not.toHaveBeenCalled()
-  })
+  it.each(["Menu", "Menú"])(
+    "activates the semantic Menu action regardless of its %s label",
+    (label) => {
+      const openMenu = vi.fn()
+      const unrelatedAction = vi.fn()
+      render(
+        <main data-slot="mapache-screen">
+          <Button onClick={unrelatedAction}>Menu</Button>
+          <Button controllerAction="menu" onClick={openMenu}>
+            {label}
+          </Button>
+        </main>,
+      )
+      act(activateWebControllerMenu)
+      expect(openMenu).toHaveBeenCalledOnce()
+      expect(unrelatedAction).not.toHaveBeenCalled()
+    },
+  )
 
-  it.each(["disabled", "aria-disabled", "hidden", "aria-hidden", "inert", "not-visible"])("does not activate a %s Menu action", (unavailableState) => {
+  it.each([
+    "disabled",
+    "aria-disabled",
+    "hidden",
+    "aria-hidden",
+    "inert",
+    "not-visible",
+  ])("does not activate a %s Menu action", (unavailableState) => {
     const openMenu = vi.fn()
     render(
       <main data-slot="mapache-screen">
-        <div hidden={unavailableState === "hidden"} aria-hidden={unavailableState === "aria-hidden"} inert={unavailableState === "inert"}>
-          <Button controllerAction="menu" disabled={unavailableState === "disabled"} aria-disabled={unavailableState === "aria-disabled"} onClick={openMenu}>Menú</Button>
+        <div
+          hidden={unavailableState === "hidden"}
+          aria-hidden={unavailableState === "aria-hidden"}
+          inert={unavailableState === "inert"}
+        >
+          <Button
+            controllerAction="menu"
+            disabled={unavailableState === "disabled"}
+            aria-disabled={unavailableState === "aria-disabled"}
+            onClick={openMenu}
+          >
+            Menú
+          </Button>
         </div>
       </main>,
     )
