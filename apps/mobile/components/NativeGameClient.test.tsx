@@ -401,7 +401,7 @@ describe("NativeGameClient Menu navigation", () => {
     await openMenuDestination(user, "Import & Export")
     expect(await screen.findByText("Import & Export")).toBeOnTheScreen()
     await user.press(
-      screen.getByRole("button", { name: "Back to Your Values" }),
+      screen.getByRole("button", { name: "Back" }),
     )
 
     await user.press(screen.getByRole("button", { name: "Browse All Values" }))
@@ -895,7 +895,7 @@ describe("NativeGameClient file operations and destructive actions", () => {
     )
     expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
     expect(
-      screen.getByRole("button", { name: "Back to Your Values" }),
+      screen.getByRole("button", { name: "Back" }),
     ).toBeDisabled()
   })
 

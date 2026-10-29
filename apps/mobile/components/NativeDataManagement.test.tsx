@@ -48,6 +48,7 @@ function createCallbacks() {
 
 async function renderDataManagement(
   overrides: Partial<Parameters<typeof NativeDataManagement>[0]> = {},
+  locale: "en" | "es-MX" = "en",
 ) {
   const callbacks = createCallbacks()
   const props = {
@@ -62,7 +63,7 @@ async function renderDataManagement(
     ...overrides,
   } satisfies Parameters<typeof NativeDataManagement>[0]
 
-  await render(<NativeDataManagement {...props} />)
+  await render(<LocaleProvider locale={locale}><NativeDataManagement {...props} /></LocaleProvider>)
   return { callbacks, props }
 }
 
@@ -72,7 +73,7 @@ async function expectNavigationIsInert({
 }: ReturnType<typeof createCallbacks>) {
   const user = userEvent.setup()
   const menu = screen.getByRole("button", { name: "Menu" })
-  const close = screen.getByRole("button", { name: "Back to Your Values" })
+  const close = screen.getByRole("button", { name: "Back" })
   expect(menu).toBeDisabled()
   expect(close).toBeDisabled()
 
@@ -113,17 +114,24 @@ describe("NativeDataManagement", () => {
     expect(callbacks.onConfirmImport).toHaveBeenCalledTimes(1)
     expect(callbacks.onCancelImport).toHaveBeenCalledTimes(1)
   })
-  it("routes Menu and Hub navigation when no player-data work is pending", async () => {
-    const { callbacks } = await renderDataManagement()
+  it.each(["en", "es-MX"] as const)("routes action-led backup sections and navigation in %s", async (locale) => {
+    const { callbacks } = await renderDataManagement({}, locale)
+    const copy = getLocaleCatalog(locale).interfaceCopy
     const user = userEvent.setup()
-    const menu = screen.getByRole("button", { name: "Menu" })
-    const close = screen.getByRole("button", { name: "Back to Your Values" })
+    const menu = screen.getByRole("button", { name: copy.menu.openAction })
+    const close = screen.getByRole("button", { name: copy.controlActions.back })
     expect(menu).toBeEnabled()
     expect(close).toBeEnabled()
+    expect(screen.getByText(copy.portability.exportDescription)).toBeOnTheScreen()
+    expect(screen.getAllByText(copy.portability.exportAction)).toHaveLength(1)
 
+    await user.press(screen.getByRole("button", { name: copy.portability.exportAction }))
+    await user.press(screen.getByRole("button", { name: copy.portability.chooseBackupAction }))
     await user.press(menu)
     await user.press(close)
 
+    expect(callbacks.onExport).toHaveBeenCalledTimes(1)
+    expect(callbacks.onChooseBackup).toHaveBeenCalledTimes(1)
     expect(callbacks.onOpenMenu).toHaveBeenCalledTimes(1)
     expect(callbacks.onClose).toHaveBeenCalledTimes(1)
   })
@@ -147,7 +155,7 @@ describe("NativeDataManagement", () => {
     const user = userEvent.setup()
     expect(screen.queryByRole("button", { name: "Menu" })).not.toBeOnTheScreen()
     expect(
-      screen.queryByRole("button", { name: "Back to Your Values" }),
+      screen.queryByRole("button", { name: "Back" }),
     ).not.toBeOnTheScreen()
 
     await user.press(screen.getByRole("button", { name: "Import & Replace" }))
@@ -162,7 +170,7 @@ describe("NativeDataManagement", () => {
     const user = userEvent.setup()
     expect(screen.queryByRole("button", { name: "Menu" })).not.toBeOnTheScreen()
     expect(
-      screen.queryByRole("button", { name: "Back to Your Values" }),
+      screen.queryByRole("button", { name: "Back" }),
     ).not.toBeOnTheScreen()
 
     const exportAction = screen.getByRole("button", { name: "Export Data" })
