@@ -20,6 +20,8 @@ const buttonVariants = cva(
         default: "min-h-14 border-4 px-5 py-3",
         compact: "min-h-12 border-4 px-4 py-2",
         large: "min-h-16 border-4 px-6 py-4",
+        arrival:
+          "min-h-13 border-4 px-6 py-[min(16px,max(8px,calc(100vh-430px)))]",
         section: "min-h-14 border-4 px-[4px] py-[16px]",
         navigation: "min-h-[44px] border-4 px-[8px] py-[8px]",
         battle: "min-h-12 border-4 px-2 py-2 xl:px-4",
@@ -40,6 +42,7 @@ const buttonTextVariants = cva("text-center font-black text-black uppercase", {
       default: "text-xl",
       compact: "text-base",
       large: "text-2xl",
+      arrival: "text-2xl",
       section: "text-2xl",
       navigation: "text-base",
       battle: "text-sm xl:text-base",
