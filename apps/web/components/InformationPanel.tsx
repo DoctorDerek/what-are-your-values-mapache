@@ -120,7 +120,7 @@ function InformationPanelFrame({
         className={cx(
           "relative z-20 border-black",
           isIntroduction
-            ? "flex max-h-[35%] min-w-0 shrink-0 flex-wrap content-start items-center justify-center gap-[12px] scroll-py-[12px] overflow-y-auto border-t-6 px-[24px] pt-[clamp(8px,calc(100dvh-430px),16px)] pb-[clamp(12px,calc(100dvh-430px),20px)] xl:flex-col xl:flex-nowrap [&>*]:max-w-xl [&>*]:flex-[1_1_16.25rem] [&>*]:scroll-my-[12px] xl:[&>*]:w-full xl:[&>*]:flex-auto"
+            ? "flex max-h-[35%] min-w-0 shrink-0 scroll-py-[12px] flex-wrap content-start items-center justify-center gap-[12px] overflow-y-auto border-t-6 px-[24px] pt-[clamp(8px,calc(100dvh-430px),16px)] pb-[clamp(12px,calc(100dvh-430px),20px)] xl:flex-col xl:flex-nowrap [&>*]:max-w-xl [&>*]:flex-[1_1_16.25rem] [&>*]:scroll-my-[12px] xl:[&>*]:w-full xl:[&>*]:flex-auto"
             : isReference
               ? "min-w-0 border-t-4 bg-white px-[16px] pt-[12px] pb-[20px]"
               : "min-w-0 shrink-0 border-t-4 bg-white px-[16px] pt-[12px] pr-[20px] pb-[20px]",

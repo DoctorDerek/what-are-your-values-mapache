@@ -133,20 +133,27 @@ for (const locale of ["en", "es-MX"] as const) {
     })
     await expect(start).toBeVisible()
     await page.addStyleTag({ content: "html { font-size: 200%; }" })
-    const header = page.getByRole("heading", {
-      name: copy.introduction.title,
-      exact: true,
-    }).locator("..")
+    const header = page
+      .getByRole("heading", {
+        name: copy.introduction.title,
+        exact: true,
+      })
+      .locator("..")
     const body = page.getByTestId("information-panel-body")
     for (const region of [header, body]) {
       expect((await region.boundingBox())!.height).toBeGreaterThan(100)
       await region.focus()
       await region.press("Home")
-      await expect.poll(() => region.evaluate(node => node.scrollTop)).toBe(0)
+      await expect.poll(() => region.evaluate((node) => node.scrollTop)).toBe(0)
       await region.press("End")
-      await expect.poll(() => region.evaluate(node =>
-        node.scrollTop >= node.scrollHeight - node.clientHeight - 1,
-      )).toBe(true)
+      await expect
+        .poll(() =>
+          region.evaluate(
+            (node) =>
+              node.scrollTop >= node.scrollHeight - node.clientHeight - 1,
+          ),
+        )
+        .toBe(true)
     }
     const language = page.getByRole("combobox")
     await language.focus()
@@ -164,10 +171,12 @@ for (const locale of ["en", "es-MX"] as const) {
       path: testInfo.outputPath("first-arrival-enlarged-reachable.png"),
     })
     await start.click()
-    await expect(page.getByRole("button", {
-      name: copy.hub.battle,
-      exact: true,
-    })).toBeVisible()
+    await expect(
+      page.getByRole("button", {
+        name: copy.hub.battle,
+        exact: true,
+      }),
+    ).toBeVisible()
   })
 }
 
