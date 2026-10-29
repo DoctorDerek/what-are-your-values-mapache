@@ -29,8 +29,15 @@ for (const scale of [100, 200]) {
       name: "Seguir combatiendo",
       exact: true,
     })
-    await resume.scrollIntoViewIfNeeded()
     await expect(resume).toBeInViewport({ ratio: 1 })
+    const roster = page.getByRole("list", {
+      name: "Resultados de tus valores",
+      exact: true,
+    })
+    const rosterViewport = roster.locator("..")
+    expect((await rosterViewport.boundingBox())!.height).toBeGreaterThanOrEqual(
+      160,
+    )
     const lines = await resume.evaluate(getRenderedTextLines)
     expect(
       lines.some((line) => line.toLowerCase().includes("combatiendo")),
