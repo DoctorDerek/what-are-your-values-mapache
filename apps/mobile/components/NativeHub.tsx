@@ -88,7 +88,7 @@ export default function NativeHub({
   )
   const header = (
     <>
-      <View className="w-full max-w-7xl flex-row flex-wrap items-center justify-between gap-3">
+      <View className="w-full max-w-7xl flex-row flex-wrap items-center justify-between gap-3 pr-2">
         <View className="relative min-w-0 flex-[1_1_10rem] justify-center">
           <Text
             accessibilityRole="header"
@@ -233,7 +233,7 @@ export default function NativeHub({
             </ScrollView>
             <ScrollView
               className="max-h-[60%] min-h-0 w-full shrink grow-0"
-              contentContainerClassName="items-center pb-3"
+              contentContainerClassName="items-center pr-2 pb-3"
             >
               <View className="w-full max-w-7xl min-w-0 gap-4">
                 <View className="min-w-0 flex-row flex-wrap gap-4">

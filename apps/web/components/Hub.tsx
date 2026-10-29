@@ -105,7 +105,7 @@ export default function Hub({
 
   const header = (
     <>
-      <header className="flex w-full max-w-7xl shrink-0 flex-wrap items-center justify-between gap-[12px] text-white xl:flex-nowrap xl:gap-3">
+      <header className="flex w-full max-w-7xl shrink-0 flex-wrap items-center justify-between gap-3 pr-2 text-white xl:flex-nowrap">
         <div className="@container grid min-w-0 flex-[1_1_10rem] items-center xl:flex-1">
           <h1
             className={cx(
