@@ -28,6 +28,7 @@ export default function NativeHub({
   shouldReduceMotion,
   onAddCustomValue,
   onBrowseAllValues,
+  onOpenAchievements,
   onOpenMenu,
   onStartBattle,
   onCustomize,
@@ -51,6 +52,7 @@ export default function NativeHub({
   shouldReduceMotion: boolean
   onAddCustomValue: () => void
   onBrowseAllValues: () => void
+  onOpenAchievements: () => void
   onOpenMenu: () => void
   onStartBattle: () => void
   onCustomize: () => void
@@ -303,8 +305,9 @@ export default function NativeHub({
                       </Text>
                     </Button>
                   </View>
+                  <View className="min-w-0 flex-row flex-wrap gap-4 xl:flex-1">
                   <Button
-                    className="min-w-0 xl:flex-1"
+                    className="min-w-0 flex-[1.4_1_8rem]"
                     variant="outline"
                     size="compact"
                     onPress={onBrowseAllValues}
@@ -313,6 +316,17 @@ export default function NativeHub({
                       {PERSONAL_HUB_COPY.browse}
                     </Text>
                   </Button>
+                  <Button
+                    className="min-w-0 flex-[1_1_6rem]"
+                    variant="outline"
+                    size="compact"
+                    onPress={onOpenAchievements}
+                  >
+                    <Text className="text-center text-base font-black text-black">
+                      {localizedCopy.interfaceCopy.screen.achievements}
+                    </Text>
+                  </Button>
+                  </View>
                 </View>
               </View>
             </ScrollView>

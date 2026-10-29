@@ -37,6 +37,7 @@ export default function Hub({
   notifications,
   shouldReduceMotion,
   onBrowseAllValues,
+  onOpenAchievements,
   onAddCustomValue,
   onOpenMenu,
   onStartBattle,
@@ -67,6 +68,7 @@ export default function Hub({
   notifications?: ReactNode
   shouldReduceMotion: boolean
   onBrowseAllValues: (focusTargetId: string) => void
+  onOpenAchievements: (focusTargetId: string) => void
   onAddCustomValue: (focusTargetId: string) => void
   onOpenMenu: () => void
   onStartBattle: () => void
@@ -289,6 +291,7 @@ export default function Hub({
               {VALUES_CARD_COPY.title}
             </Button>
           </div>
+          <div className="flex min-w-0 flex-wrap gap-4">
           <Button
             disabled={isNavigationBlocked}
             ref={browseAllValuesButtonRef}
@@ -297,12 +300,26 @@ export default function Hub({
             variant="outline"
             size="sm"
             typographyClassName="text-base xl:text-lg"
-            className="max-xl:px-[12px] max-xl:py-[8px]"
+            className="flex-[1.4_1_8rem] max-xl:px-3 max-xl:py-2"
             wrap
             onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
           >
             {PERSONAL_HUB_COPY.browse}
           </Button>
+          <Button
+            disabled={isNavigationBlocked}
+            id="hub-achievements-button"
+            textCase="normal-case"
+            variant="outline"
+            size="sm"
+            typographyClassName="text-base xl:text-lg"
+            className="flex-[1_1_6rem] max-xl:px-3 max-xl:py-2"
+            wrap
+            onClick={(event) => onOpenAchievements(event.currentTarget.id)}
+          >
+            {localizedCopy.interfaceCopy.screen.achievements}
+          </Button>
+          </div>
         </nav>
       )}
     </MapacheScreen>

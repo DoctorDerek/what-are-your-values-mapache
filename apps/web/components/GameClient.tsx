@@ -873,6 +873,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           onBrowseAllValues={(focusTargetId) =>
             openAllValues({ focusTargetId })
           }
+          onOpenAchievements={openAchievements}
           onAddCustomValue={() => handleAddCustomValue()}
           onOpenMenu={handleProductMenuOpen}
           isBattlePending={isBattleRequested}
