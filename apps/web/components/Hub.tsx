@@ -201,7 +201,7 @@ export default function Hub({
           />
         )}
         {!isDraftNavigationBlocked && (
-          <div className="relative isolate flex min-h-min w-full max-w-7xl min-w-0 flex-[1_0_auto] flex-col">
+          <div className="relative isolate flex min-h-min w-full max-w-7xl min-w-0 flex-1 flex-col">
             <PersonalValuesCard
               rosterRef={rosterRef}
               appearance={appearance}
