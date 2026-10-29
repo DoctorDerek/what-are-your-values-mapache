@@ -202,7 +202,7 @@ export function ReopenedInformationPanel({
       <DialogContent
         aria-describedby={undefined}
         variant="panel"
-        className="grid-cols-1 grid-rows-1"
+        className="grid h-[calc(100dvh-2rem)] max-w-4xl grid-cols-1 grid-rows-1"
         onCloseAutoFocus={onCloseAutoFocus}
       >
         <InformationPanelFrame {...frameProps} dialogTitle />

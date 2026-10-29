@@ -51,10 +51,9 @@ function DialogContent({
         data-slot="dialog-content"
         data-controller-dialog={controllerDialogId}
         className={cx(
-          "fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden text-black outline-none",
-          variant === "panel"
-            ? "h-[calc(100dvh-32px)] max-w-4xl border-0 bg-transparent p-0 shadow-none xl:max-w-4xl"
-            : "max-w-2xl border-4 border-black bg-white shadow-[12px_12px_0px_0px_#000000] xl:max-w-3xl",
+          "fixed top-1/2 left-1/2 z-50 max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-hidden text-black outline-none",
+          variant === "framed" &&
+            "grid max-w-2xl border-4 border-black bg-white shadow-[12px_12px_0px_0px_#000000] xl:max-w-3xl",
           className,
           controller &&
             "[&_:focus]:outline-4 [&_:focus]:outline-offset-2 [&_:focus]:outline-black",

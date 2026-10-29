@@ -51,8 +51,8 @@ export default function ValuesCardShare({
         variant="panel"
         aria-describedby={undefined}
         onCloseAutoFocus={onCloseAutoFocus}
+        className="bg-mapache-vivid-dark flex min-h-0 max-w-[45rem] flex-col gap-2 border-4 border-black p-2 text-center xl:gap-4 xl:p-6"
       >
-        <div className="bg-mapache-vivid-dark flex max-h-full min-h-0 w-full max-w-[45rem] flex-col gap-2 self-center justify-self-center overflow-hidden border-4 border-black p-2 text-center xl:gap-4 xl:p-6">
           <div
             data-controller-scroll
             tabIndex={0}
@@ -213,7 +213,6 @@ export default function ValuesCardShare({
               </Button>
             )}
           </footer>
-        </div>
       </DialogContent>
     </Dialog>
   )
