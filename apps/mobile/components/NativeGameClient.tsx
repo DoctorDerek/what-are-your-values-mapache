@@ -677,6 +677,9 @@ function NativeGameClientContent({
           shouldReduceMotion={shouldReduceMotion}
           onAddCustomValue={() => handleAddCustomValue()}
           onBrowseAllValues={() => openAllValues({})}
+          onOpenAchievements={() =>
+            send({ type: "ACHIEVEMENTS.OPEN_REQUESTED" })
+          }
           onOpenMenu={() => setIsProductMenuOpen(true)}
           isBattlePending={isBattleRequested}
           onStartBattle={handleStartBattle}

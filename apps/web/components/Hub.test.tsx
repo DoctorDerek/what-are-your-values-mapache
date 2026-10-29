@@ -43,6 +43,7 @@ const animalPresentationProps = Object.freeze({
   appearance: DEFAULT_HEROES99_APPEARANCE,
   onCustomize: vi.fn(),
   onShare: vi.fn(),
+  onOpenAchievements: vi.fn(),
   runtimeClipCatalog: createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
   shouldReduceMotion: false,
 })
@@ -399,9 +400,7 @@ describe("Hub Component Integration", () => {
     ).toBeVisible()
     expect(screen.getByRole("button", { name: "Add value" })).toBeVisible()
     expect(screen.getByRole("button", { name: "Menu" })).toBeVisible()
-    expect(
-      screen.queryByRole("button", { name: "Achievements" }),
-    ).not.toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Achievements" })).toBeVisible()
     expect(
       screen.queryByRole("button", { name: "Import & Export" }),
     ).not.toBeInTheDocument()
@@ -416,9 +415,10 @@ describe("Hub Component Integration", () => {
     ).toEqual([
       "Add value",
       "Battle",
-      "Customize my card",
+      "Customize my values card",
       "Share my values card",
       "Browse All Values",
+      "Achievements",
     ])
     fireEvent.click(
       screen.getByRole("button", { name: "Share my values card" }),
@@ -611,7 +611,10 @@ describe("Hub Component Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
     fireEvent.click(screen.getByRole("button", { name: "Add value" }))
     fireEvent.click(screen.getByRole("button", { name: "Menu" }))
-    fireEvent.click(screen.getByRole("button", { name: "Customize my card" }))
+    fireEvent.click(screen.getByRole("button", { name: "Achievements" }))
+    fireEvent.click(
+      screen.getByRole("button", { name: "Customize my values card" }),
+    )
     fireEvent.click(getHubPresentation("Acceptance"))
 
     expect(onBrowseAllValues).toHaveBeenCalledWith(
@@ -619,6 +622,9 @@ describe("Hub Component Integration", () => {
     )
     expect(onAddCustomValue).toHaveBeenCalledWith("hub-add-custom-value-button")
     expect(onOpenMenu).toHaveBeenCalledOnce()
+    expect(animalPresentationProps.onOpenAchievements).toHaveBeenCalledWith(
+      "hub-achievements-button",
+    )
     expect(animalPresentationProps.onCustomize).toHaveBeenCalledOnce()
     expect(
       screen.queryByRole("button", { name: /^Open .* in All Values$/ }),

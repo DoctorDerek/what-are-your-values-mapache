@@ -28,6 +28,7 @@ export default function NativeHub({
   shouldReduceMotion,
   onAddCustomValue,
   onBrowseAllValues,
+  onOpenAchievements,
   onOpenMenu,
   onStartBattle,
   onCustomize,
@@ -51,6 +52,7 @@ export default function NativeHub({
   shouldReduceMotion: boolean
   onAddCustomValue: () => void
   onBrowseAllValues: () => void
+  onOpenAchievements: () => void
   onOpenMenu: () => void
   onStartBattle: () => void
   onCustomize: () => void
@@ -75,10 +77,20 @@ export default function NativeHub({
     [onNavigationBlockedChange],
   )
 
-  const { hasComparisons, topFive } = projectHubValues(rankedValues)
+  const { hasComparisons, visibleValues, topFive, remainingValues } =
+    projectHubValues(rankedValues)
+  const renderValue = (value: RankedValue) => (
+    <NativeHubValueRow
+      key={value.definition.id}
+      rankedValue={value}
+      showRank={hasComparisons}
+      shouldReduceMotion={shouldReduceMotion}
+      runtimeClipCatalog={runtimeClipCatalog}
+    />
+  )
   const header = (
     <>
-      <View className="w-full max-w-7xl flex-row flex-wrap items-center justify-between gap-3">
+      <View className="w-full max-w-7xl flex-row flex-wrap items-center justify-between gap-3 pr-2">
         <View className="relative min-w-0 flex-[1_1_10rem] justify-center">
           <Text
             accessibilityRole="header"
@@ -150,56 +162,70 @@ export default function NativeHub({
         {!isDraftActive && (
           <>
             <ScrollView
-              className="min-h-[50%] w-full flex-1"
-              contentContainerClassName="items-center gap-4 pb-6 xl:gap-5"
+              bounces={false}
+              overScrollMode="never"
+              className="-mt-2 min-h-[50%] w-full flex-1"
+              contentContainerClassName="grow items-center gap-4 pt-2 xl:gap-5"
             >
               {header}
-              <View className="border-player-card-frame bg-player-card-background relative w-full max-w-7xl flex-row flex-wrap overflow-hidden border-4">
-                <View
-                  accessible
-                  accessibilityRole="header"
+              <View className="border-player-card-frame bg-player-card-background relative min-h-48 w-full max-w-7xl flex-1 overflow-hidden border-4 xl:flex-row xl:flex-wrap">
+                <View className="flex-row flex-wrap items-center xl:contents">
+                  <View
+                    accessible
+                    accessibilityRole="header"
+                    accessibilityLabel={
+                      hasComparisons
+                        ? PERSONAL_HUB_COPY.rankedTitle
+                        : PERSONAL_HUB_COPY.unrankedTitle
+                    }
+                    className="min-w-0 flex-[1_1_10rem] self-center px-3 py-[min(1rem,max(0.25rem,calc(100vh-37rem)))] xl:w-full xl:flex-auto xl:flex-row xl:justify-center xl:gap-x-3 xl:py-4"
+                  >
+                    {(hasComparisons
+                      ? PERSONAL_HUB_COPY.rankedTitleLines
+                      : [PERSONAL_HUB_COPY.unrankedTitle]
+                    ).map((line) => (
+                      <Text
+                        key={line}
+                        className="text-player-card-ink text-2xl leading-tight font-black xl:text-5xl"
+                      >
+                        {line}
+                      </Text>
+                    ))}
+                    {!hasComparisons && (
+                      <Text className="text-player-card-muted mt-2 text-sm">
+                        {PERSONAL_HUB_COPY.unrankedNotice}
+                      </Text>
+                    )}
+                  </View>
+                  <View className="xl:bg-player-card-values w-[96px] max-w-full items-center justify-center py-2 pr-2 xl:w-1/3 xl:py-3 xl:pr-0">
+                    <NativeHeroes99Hero
+                      appearance={appearance}
+                      shouldReduceMotion={shouldReduceMotion}
+                      sizeClassName="h-[112px] w-[80px] xl:h-96 xl:w-64"
+                    />
+                  </View>
+                </View>
+                <ScrollView
+                  nestedScrollEnabled
+                  bounces={false}
+                  overScrollMode="never"
                   accessibilityLabel={
                     hasComparisons
-                      ? PERSONAL_HUB_COPY.rankedTitle
-                      : PERSONAL_HUB_COPY.unrankedTitle
+                      ? PERSONAL_HUB_COPY.rankedList
+                      : PERSONAL_HUB_COPY.unrankedList
                   }
-                  className="min-w-0 flex-[1_1_10rem] self-center px-3 py-4 xl:w-full xl:flex-auto xl:flex-row xl:justify-center xl:gap-x-3"
+                  className="bg-player-card-values min-h-12 w-full flex-1 xl:w-2/3 xl:flex-auto"
                 >
-                  {(hasComparisons
-                    ? PERSONAL_HUB_COPY.rankedTitleLines
-                    : [PERSONAL_HUB_COPY.unrankedTitle]
-                  ).map((line) => (
-                    <Text
-                      key={line}
-                      className="text-player-card-ink text-2xl leading-tight font-black xl:text-5xl"
-                    >
-                      {line}
-                    </Text>
-                  ))}
-                </View>
-                <View className="xl:bg-player-card-values w-[96px] max-w-full items-center justify-center py-2 pr-2 xl:w-1/3 xl:py-3 xl:pr-0">
-                  <NativeHeroes99Hero
-                    appearance={appearance}
-                    shouldReduceMotion={shouldReduceMotion}
-                    sizeClassName="h-[112px] w-[80px] xl:h-96 xl:w-64"
-                  />
-                </View>
-                <View className="bg-player-card-values w-full xl:w-2/3">
-                  {topFive.map((value) => (
-                    <NativeHubValueRow
-                      key={value.definition.id}
-                      rankedValue={value}
-                      showRank={hasComparisons}
-                      shouldReduceMotion={shouldReduceMotion}
-                      runtimeClipCatalog={runtimeClipCatalog}
-                    />
-                  ))}
-                </View>
-                {!hasComparisons && (
-                  <Text className="bg-player-card-values text-player-card-muted w-full p-3 text-sm">
-                    {PERSONAL_HUB_COPY.unrankedNotice}
-                  </Text>
-                )}
+                  {(hasComparisons ? topFive : visibleValues).map(renderValue)}
+                  {hasComparisons && remainingValues.length > 0 && (
+                    <>
+                      <Text className="border-player-card-frame bg-player-card-rank text-player-card-ink border-y-2 px-3 py-2 font-bold">
+                        {PERSONAL_HUB_COPY.remainingValues}
+                      </Text>
+                      {remainingValues.map(renderValue)}
+                    </>
+                  )}
+                </ScrollView>
                 <ScrollView
                   pointerEvents="box-none"
                   className="absolute inset-x-0 bottom-0 z-50 max-h-full"
@@ -210,8 +236,10 @@ export default function NativeHub({
               </View>
             </ScrollView>
             <ScrollView
+              bounces={false}
+              overScrollMode="never"
               className="max-h-[60%] min-h-0 w-full shrink grow-0"
-              contentContainerClassName="items-center pb-3"
+              contentContainerClassName="items-center pr-2 pb-3"
             >
               <View className="w-full max-w-7xl min-w-0 gap-4">
                 <View className="min-w-0 flex-row flex-wrap gap-4">
@@ -281,16 +309,34 @@ export default function NativeHub({
                       </Text>
                     </Button>
                   </View>
-                  <Button
-                    className="min-w-0 xl:flex-1"
-                    variant="outline"
-                    size="compact"
-                    onPress={onBrowseAllValues}
-                  >
-                    <Text className="text-center text-base font-black text-black">
-                      {PERSONAL_HUB_COPY.browse}
-                    </Text>
-                  </Button>
+                  <View className="min-w-0 flex-row flex-wrap gap-4 xl:flex-1">
+                    <Button
+                      className="min-w-0 flex-[1.4_1_5rem]"
+                      variant="outline"
+                      size="compact"
+                      onPress={onBrowseAllValues}
+                    >
+                      <Text
+                        android_hyphenationFrequency="normal"
+                        className="text-center text-base font-black text-black"
+                      >
+                        {PERSONAL_HUB_COPY.browse}
+                      </Text>
+                    </Button>
+                    <Button
+                      className="min-w-0 flex-auto"
+                      variant="outline"
+                      size="compact"
+                      onPress={onOpenAchievements}
+                    >
+                      <Text
+                        android_hyphenationFrequency="normal"
+                        className="text-center text-base font-black text-black"
+                      >
+                        {localizedCopy.interfaceCopy.screen.achievements}
+                      </Text>
+                    </Button>
+                  </View>
                 </View>
               </View>
             </ScrollView>

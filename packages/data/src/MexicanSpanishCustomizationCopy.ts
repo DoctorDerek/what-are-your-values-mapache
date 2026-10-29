@@ -52,7 +52,7 @@ export const MEXICAN_SPANISH_CUSTOMIZATION_COPY: Pick<
     choices: (category) => `Opciones de ${category.toLocaleLowerCase("es-MX")}`,
     palette: (category) => `Paleta de ${category.toLocaleLowerCase("es-MX")}`,
     title: "Vestidor",
-    customize: "Personalizar mi tarjeta",
+    customize: "Personalizar mi tarjeta de valores",
     randomize: "Al azar",
     save: "Guardar apariencia",
     saveAction: "Guardar",

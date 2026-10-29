@@ -49,9 +49,10 @@ const languages = [
     actions: [
       "Add value",
       "Battle",
-      "Customize my card",
+      "Customize my values card",
       "Share my values card",
       "Browse All Values",
+      "Achievements",
     ],
   },
   {
@@ -69,9 +70,10 @@ const languages = [
     actions: [
       "Agregar valor",
       "Combatir",
-      "Personalizar mi tarjeta",
+      "Personalizar mi tarjeta de valores",
       "Compartir mi tarjeta de valores",
       "Ver todos los valores",
+      "Logros",
     ],
   },
 ] as const

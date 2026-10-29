@@ -105,7 +105,7 @@ test("Dressing Room choices and unsaved-change confirmation meet accessibility r
 }) => {
   await startAtHub(page)
   await page
-    .getByRole("button", { name: "Customize my card", exact: true })
+    .getByRole("button", { name: "Customize my values card", exact: true })
     .click()
   await expect(
     page.getByRole("heading", { name: "Dressing Room", exact: true }),

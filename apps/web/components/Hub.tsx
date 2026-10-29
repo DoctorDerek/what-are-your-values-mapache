@@ -37,6 +37,7 @@ export default function Hub({
   notifications,
   shouldReduceMotion,
   onBrowseAllValues,
+  onOpenAchievements,
   onAddCustomValue,
   onOpenMenu,
   onStartBattle,
@@ -67,6 +68,7 @@ export default function Hub({
   notifications?: ReactNode
   shouldReduceMotion: boolean
   onBrowseAllValues: (focusTargetId: string) => void
+  onOpenAchievements: (focusTargetId: string) => void
   onAddCustomValue: (focusTargetId: string) => void
   onOpenMenu: () => void
   onStartBattle: () => void
@@ -105,7 +107,7 @@ export default function Hub({
 
   const header = (
     <>
-      <header className="flex w-full max-w-7xl shrink-0 flex-wrap items-center justify-between gap-[12px] text-white xl:flex-nowrap xl:gap-3">
+      <header className="flex w-full max-w-7xl shrink-0 flex-wrap items-center justify-between gap-3 text-white xl:flex-nowrap">
         <div className="@container grid min-w-0 flex-[1_1_10rem] items-center xl:flex-1">
           <h1
             className={cx(
@@ -171,7 +173,7 @@ export default function Hub({
         className={
           isDraftNavigationBlocked
             ? "contents"
-            : "flex min-h-[min(16rem,50%)] w-full max-w-7xl flex-[1_0_min(16rem,50%)] flex-col items-center gap-[16px] overflow-x-hidden overflow-y-auto overscroll-contain focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white xl:gap-4"
+            : "-mt-(--mapache-screen-spacing) -mr-(--mapache-screen-spacing) flex min-h-(--hub-composition-minimum) w-[calc(100%+var(--mapache-screen-spacing))] max-w-[calc(80rem+var(--mapache-screen-spacing))] flex-[1_0_var(--hub-composition-minimum)] flex-col items-center gap-[16px] overflow-x-hidden overflow-y-auto overscroll-contain pt-(--mapache-screen-spacing) pr-(--mapache-screen-spacing) [--hub-composition-minimum:min(calc(16rem+var(--mapache-screen-spacing)),calc(50%+var(--mapache-screen-spacing)))] focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white xl:gap-4"
         }
       >
         {!isDraftNavigationBlocked && header}
@@ -201,7 +203,7 @@ export default function Hub({
           />
         )}
         {!isDraftNavigationBlocked && (
-          <div className="relative isolate flex min-h-min w-full max-w-7xl min-w-0 flex-[1_0_auto] flex-col">
+          <div className="relative isolate flex min-h-min w-full max-w-7xl min-w-0 flex-1 flex-col">
             <PersonalValuesCard
               rosterRef={rosterRef}
               appearance={appearance}
@@ -289,20 +291,35 @@ export default function Hub({
               {VALUES_CARD_COPY.title}
             </Button>
           </div>
-          <Button
-            disabled={isNavigationBlocked}
-            ref={browseAllValuesButtonRef}
-            id="hub-browse-all-values-button"
-            textCase="normal-case"
-            variant="outline"
-            size="sm"
-            typographyClassName="text-base xl:text-lg"
-            className="max-xl:px-[12px] max-xl:py-[8px]"
-            wrap
-            onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
-          >
-            {PERSONAL_HUB_COPY.browse}
-          </Button>
+          <div className="flex min-w-0 flex-wrap gap-4">
+            <Button
+              disabled={isNavigationBlocked}
+              ref={browseAllValuesButtonRef}
+              id="hub-browse-all-values-button"
+              textCase="normal-case"
+              variant="outline"
+              size="sm"
+              typographyClassName="text-base xl:text-lg"
+              className="flex-[1.4_1_5rem] hyphens-auto max-xl:px-[min(0.75rem,2%)] max-xl:py-2"
+              wrap
+              onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
+            >
+              {PERSONAL_HUB_COPY.browse}
+            </Button>
+            <Button
+              disabled={isNavigationBlocked}
+              id="hub-achievements-button"
+              textCase="normal-case"
+              variant="outline"
+              size="sm"
+              typographyClassName="text-base xl:text-lg"
+              className="flex-[1_1_auto] hyphens-auto max-xl:px-[min(0.75rem,2%)] max-xl:py-2"
+              wrap
+              onClick={(event) => onOpenAchievements(event.currentTarget.id)}
+            >
+              {localizedCopy.interfaceCopy.screen.achievements}
+            </Button>
+          </div>
         </nav>
       )}
     </MapacheScreen>

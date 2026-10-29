@@ -21,7 +21,7 @@ test("a player previews every appearance category and retains only saved choices
   await page.goto("/")
   await page.getByRole("button", { name: "Start", exact: true }).click()
   await page
-    .getByRole("button", { name: "Customize my card", exact: true })
+    .getByRole("button", { name: "Customize my values card", exact: true })
     .click()
   await expect(
     page.getByRole("heading", { name: "Dressing Room", exact: true }),
@@ -69,7 +69,7 @@ test("a player previews every appearance category and retains only saved choices
   await returnedToHome
   await page.reload()
   await page
-    .getByRole("button", { name: "Customize my card", exact: true })
+    .getByRole("button", { name: "Customize my values card", exact: true })
     .click()
   await expect(
     page.getByRole("button", { name: "Skin 6", exact: true }),
@@ -80,7 +80,7 @@ test("a player previews every appearance category and retains only saved choices
     .getByRole("button", { name: "Discard changes", exact: true })
     .click()
   await page
-    .getByRole("button", { name: "Customize my card", exact: true })
+    .getByRole("button", { name: "Customize my values card", exact: true })
     .click()
   await expect(
     page.getByRole("button", { name: "Skin 6", exact: true }),

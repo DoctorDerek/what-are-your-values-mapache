@@ -136,7 +136,7 @@ export const DRESSING_ROOM_COPY = Object.freeze({
   choices: (category: string) => `${category} choices`,
   palette: (category: string) => `${category} palette`,
   title: "Dressing Room",
-  customize: "Customize my card",
+  customize: "Customize my values card",
   randomize: "Randomize",
   save: "Save appearance",
   saveAction: "Save",

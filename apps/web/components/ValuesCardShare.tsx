@@ -51,169 +51,168 @@ export default function ValuesCardShare({
         variant="panel"
         aria-describedby={undefined}
         onCloseAutoFocus={onCloseAutoFocus}
+        className="bg-mapache-vivid-dark flex min-h-0 max-w-[45rem] flex-col gap-2 border-4 border-black p-2 text-center xl:gap-4 xl:p-6"
       >
-        <div className="bg-mapache-vivid-dark flex max-h-full min-h-0 w-full max-w-[45rem] flex-col gap-2 self-center justify-self-center overflow-hidden border-4 border-black p-2 text-center xl:gap-4 xl:p-6">
+        <div
+          data-controller-scroll
+          tabIndex={0}
+          className="flex min-h-0 flex-col gap-2 overflow-y-auto overscroll-contain p-1 xl:gap-4"
+        >
+          <header>
+            <DialogTitle className="text-mapache-vivid-primary-cyan text-xl leading-tight font-black xl:text-3xl">
+              {copy.title}
+            </DialogTitle>
+          </header>
           <div
-            data-controller-scroll
-            tabIndex={0}
-            className="flex min-h-0 flex-col gap-2 overflow-y-auto overscroll-contain p-1 xl:gap-4"
+            role="group"
+            aria-label={copy.format}
+            className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,7rem),1fr))] gap-2 xl:w-80 xl:self-center"
           >
-            <header>
-              <DialogTitle className="text-mapache-vivid-primary-cyan text-xl leading-tight font-black xl:text-3xl">
-                {copy.title}
-              </DialogTitle>
-            </header>
-            <div
-              role="group"
-              aria-label={copy.format}
-              className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,7rem),1fr))] gap-2 xl:w-80 xl:self-center"
-            >
-              {(["gif", "png"] as const).map((option) => (
-                <Button
-                  key={option}
-                  size="sm"
-                  wrap
-                  textCase="normal-case"
-                  className="relative min-w-0"
-                  variant={format === option ? "secondary" : "outline"}
-                  aria-label={`${copy[option].name} · ${copy[option].description}`}
-                  aria-pressed={format === option}
-                  disabled={isDelivering}
-                  onClick={() =>
-                    send({ type: "CARD_SHARE.FORMAT", format: option })
-                  }
-                >
-                  {format === option && (
-                    <span aria-hidden="true" className="absolute top-2 left-2">
-                      ✓
-                    </span>
-                  )}
-                  <span className="grid min-w-0 gap-0.5 px-3">
-                    <span>{copy[option].name}</span>
-                    <span className="text-sm">{copy[option].description}</span>
-                  </span>
-                </Button>
-              ))}
-            </div>
-            <div className="bg-player-card-background aspect-video w-full shrink-0">
-              {artifact ? (
-                <Image
-                  unoptimized
-                  src={
-                    shouldReduceMotion
-                      ? artifact.stillPreviewUri
-                      : artifact.previewUri
-                  }
-                  width={VALUES_CARD_SIZE.width}
-                  height={VALUES_CARD_SIZE.height}
-                  alt={localizedCopy.interfaceCopy.screen.cardPreview(
-                    model.title,
-                    model.values.map((value) => value.name),
-                  )}
-                  className="h-auto w-full"
-                />
-              ) : (
-                <div
-                  role="status"
-                  className="text-player-card-ink grid h-full place-items-center p-4 text-center font-bold"
-                >
-                  {state.matches("Preparing") ? copy.preparing : copy.failure}
-                </div>
-              )}
-            </div>
-            <label className="flex min-h-11 cursor-pointer items-center gap-2 text-left font-bold text-white">
-              <input
-                type="checkbox"
-                checked={includeHero}
+            {(["gif", "png"] as const).map((option) => (
+              <Button
+                key={option}
+                size="sm"
+                wrap
+                textCase="normal-case"
+                className="relative min-w-0"
+                variant={format === option ? "secondary" : "outline"}
+                aria-label={`${copy[option].name} · ${copy[option].description}`}
+                aria-pressed={format === option}
                 disabled={isDelivering}
-                className="size-6 accent-cyan-400"
-                onChange={(event) =>
-                  send({
-                    type: "CARD_SHARE.HERO",
-                    includeHero: event.target.checked,
-                  })
+                onClick={() =>
+                  send({ type: "CARD_SHARE.FORMAT", format: option })
                 }
-              />
-              {copy.includeHero}
-            </label>
-            {error && (
-              <div
-                role="alert"
-                className="border-4 border-black bg-white p-3 text-left text-black"
               >
-                <p className="font-bold">
-                  {artifact ? copy.deliveryFailure : copy.failure}
-                </p>
-                <details className="mt-2">
-                  <summary className="cursor-pointer">{copy.details}</summary>
-                  <p className="break-words">{error}</p>
-                </details>
+                {format === option && (
+                  <span aria-hidden="true" className="absolute top-2 left-2">
+                    ✓
+                  </span>
+                )}
+                <span className="grid min-w-0 gap-0.5 px-3">
+                  <span>{copy[option].name}</span>
+                  <span className="text-sm">{copy[option].description}</span>
+                </span>
+              </Button>
+            ))}
+          </div>
+          <div className="bg-player-card-background aspect-video w-full shrink-0">
+            {artifact ? (
+              <Image
+                unoptimized
+                src={
+                  shouldReduceMotion
+                    ? artifact.stillPreviewUri
+                    : artifact.previewUri
+                }
+                width={VALUES_CARD_SIZE.width}
+                height={VALUES_CARD_SIZE.height}
+                alt={localizedCopy.interfaceCopy.screen.cardPreview(
+                  model.title,
+                  model.values.map((value) => value.name),
+                )}
+                className="h-auto w-full"
+              />
+            ) : (
+              <div
+                role="status"
+                className="text-player-card-ink grid h-full place-items-center p-4 text-center font-bold"
+              >
+                {state.matches("Preparing") ? copy.preparing : copy.failure}
               </div>
             )}
-            {artifact && !artifact.canShare && (
-              <p className="text-sm text-white">{copy.unsupportedShare}</p>
-            )}
-            <p
-              role="status"
-              className="text-sm font-medium text-white empty:sr-only"
-            >
-              {isDelivering
-                ? copy.delivering
-                : getValuesCardDeliveryMessage(outcome, copy)}
-            </p>
           </div>
-          <footer className="flex shrink-0 flex-wrap gap-2 [overflow-wrap:anywhere] hyphens-auto">
+          <label className="flex min-h-11 cursor-pointer items-center gap-2 text-left font-bold text-white">
+            <input
+              type="checkbox"
+              checked={includeHero}
+              disabled={isDelivering}
+              className="size-6 accent-cyan-400"
+              onChange={(event) =>
+                send({
+                  type: "CARD_SHARE.HERO",
+                  includeHero: event.target.checked,
+                })
+              }
+            />
+            {copy.includeHero}
+          </label>
+          {error && (
+            <div
+              role="alert"
+              className="border-4 border-black bg-white p-3 text-left text-black"
+            >
+              <p className="font-bold">
+                {artifact ? copy.deliveryFailure : copy.failure}
+              </p>
+              <details className="mt-2">
+                <summary className="cursor-pointer">{copy.details}</summary>
+                <p className="break-words">{error}</p>
+              </details>
+            </div>
+          )}
+          {artifact && !artifact.canShare && (
+            <p className="text-sm text-white">{copy.unsupportedShare}</p>
+          )}
+          <p
+            role="status"
+            className="text-sm font-medium text-white empty:sr-only"
+          >
+            {isDelivering
+              ? copy.delivering
+              : getValuesCardDeliveryMessage(outcome, copy)}
+          </p>
+        </div>
+        <footer className="flex shrink-0 flex-wrap gap-2 [overflow-wrap:anywhere] hyphens-auto">
+          <Button
+            size="sm"
+            wrap
+            variant="outline"
+            className="min-w-0 flex-1 basis-[8em]"
+            typographyClassName="text-base leading-tight"
+            onClick={onClose}
+          >
+            {copy.back}
+          </Button>
+          {state.matches("Failed") ? (
             <Button
               size="sm"
               wrap
-              variant="outline"
               className="min-w-0 flex-1 basis-[8em]"
               typographyClassName="text-base leading-tight"
-              onClick={onClose}
+              onClick={() => send({ type: "CARD_SHARE.RETRY" })}
             >
-              {copy.back}
+              {copy.retry}
             </Button>
-            {state.matches("Failed") ? (
-              <Button
-                size="sm"
-                wrap
-                className="min-w-0 flex-1 basis-[8em]"
-                typographyClassName="text-base leading-tight"
-                onClick={() => send({ type: "CARD_SHARE.RETRY" })}
-              >
-                {copy.retry}
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                wrap
-                className="min-w-0 flex-1 basis-[8em]"
-                typographyClassName="text-base leading-tight"
-                disabled={!artifact || isDelivering}
-                onClick={() =>
-                  send({ type: "CARD_SHARE.DELIVER", delivery: "save" })
-                }
-              >
-                {copy.save(format)}
-              </Button>
-            )}
-            {!state.matches("Failed") && (
-              <Button
-                size="sm"
-                wrap
-                className="min-w-0 basis-full"
-                typographyClassName="text-base leading-tight"
-                variant="secondary"
-                disabled={!artifact?.canShare || isDelivering}
-                onClick={() =>
-                  send({ type: "CARD_SHARE.DELIVER", delivery: "share" })
-                }
-              >
-                {copy.share(format)}
-              </Button>
-            )}
-          </footer>
-        </div>
+          ) : (
+            <Button
+              size="sm"
+              wrap
+              className="min-w-0 flex-1 basis-[8em]"
+              typographyClassName="text-base leading-tight"
+              disabled={!artifact || isDelivering}
+              onClick={() =>
+                send({ type: "CARD_SHARE.DELIVER", delivery: "save" })
+              }
+            >
+              {copy.save(format)}
+            </Button>
+          )}
+          {!state.matches("Failed") && (
+            <Button
+              size="sm"
+              wrap
+              className="min-w-0 basis-full"
+              typographyClassName="text-base leading-tight"
+              variant="secondary"
+              disabled={!artifact?.canShare || isDelivering}
+              onClick={() =>
+                send({ type: "CARD_SHARE.DELIVER", delivery: "share" })
+              }
+            >
+              {copy.share(format)}
+            </Button>
+          )}
+        </footer>
       </DialogContent>
     </Dialog>
   )
