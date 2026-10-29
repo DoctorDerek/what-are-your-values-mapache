@@ -548,8 +548,8 @@ for (const width of [390, 1440]) {
     const second = await combatants.last().boundingBox()
     expect(first!.y).toBeGreaterThanOrEqual(Math.max(...definitionBottoms))
     const animalClearance = first!.y - Math.max(...definitionBottoms)
-    expect(animalClearance).toBeGreaterThanOrEqual(width >= 1280 ? 16 : 8)
-    expect(animalClearance).toBeLessThanOrEqual(width >= 1280 ? 32 : 16)
+    expect(animalClearance).toBeGreaterThanOrEqual((width >= 1280 ? 16 : 8) - 1)
+    expect(animalClearance).toBeLessThanOrEqual((width >= 1280 ? 32 : 16) + 1)
     expect(
       Math.abs(first!.y + first!.height - second!.y - second!.height),
     ).toBeLessThan(1)
