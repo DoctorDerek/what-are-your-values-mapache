@@ -96,11 +96,15 @@ for (const viewport of [
       const textJoin = await captureOutlineEdge(textOutline, "end")
       const animalJoin = await captureOutlineEdge(animalOutline, "start")
       expect(
-        textJoin.isWhiteAt(text.width / 2, textJoinY),
+        [0.2, 0.35, 0.5, 0.65, 0.8].every((fraction) =>
+          textJoin.isWhiteAt(text.width * fraction, textJoinY),
+        ),
         "no internal text seam",
       ).toBe(false)
       expect(
-        animalJoin.isWhiteAt(animal.width / 2, animalJoinY),
+        [0.2, 0.35, 0.5, 0.65, 0.8].every((fraction) =>
+          animalJoin.isWhiteAt(animal.width * fraction, animalJoinY),
+        ),
         "no internal animal seam",
       ).toBe(false)
       await battle.getByRole("button", { name: "Menu", exact: true }).focus()
