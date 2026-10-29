@@ -292,33 +292,33 @@ export default function Hub({
             </Button>
           </div>
           <div className="flex min-w-0 flex-wrap gap-4">
-          <Button
-            disabled={isNavigationBlocked}
-            ref={browseAllValuesButtonRef}
-            id="hub-browse-all-values-button"
-            textCase="normal-case"
-            variant="outline"
-            size="sm"
-            typographyClassName="text-base xl:text-lg"
-            className="flex-[1.4_1_5rem] max-xl:px-3 max-xl:py-2"
-            wrap
-            onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
-          >
-            {PERSONAL_HUB_COPY.browse}
-          </Button>
-          <Button
-            disabled={isNavigationBlocked}
-            id="hub-achievements-button"
-            textCase="normal-case"
-            variant="outline"
-            size="sm"
-            typographyClassName="text-base xl:text-lg"
-            className="flex-[1_1_auto] max-xl:px-3 max-xl:py-2"
-            wrap
-            onClick={(event) => onOpenAchievements(event.currentTarget.id)}
-          >
-            {localizedCopy.interfaceCopy.screen.achievements}
-          </Button>
+            <Button
+              disabled={isNavigationBlocked}
+              ref={browseAllValuesButtonRef}
+              id="hub-browse-all-values-button"
+              textCase="normal-case"
+              variant="outline"
+              size="sm"
+              typographyClassName="text-base xl:text-lg"
+              className="flex-[1.4_1_5rem] max-xl:px-3 max-xl:py-2"
+              wrap
+              onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
+            >
+              {PERSONAL_HUB_COPY.browse}
+            </Button>
+            <Button
+              disabled={isNavigationBlocked}
+              id="hub-achievements-button"
+              textCase="normal-case"
+              variant="outline"
+              size="sm"
+              typographyClassName="text-base xl:text-lg"
+              className="flex-[1_1_auto] max-xl:px-3 max-xl:py-2"
+              wrap
+              onClick={(event) => onOpenAchievements(event.currentTarget.id)}
+            >
+              {localizedCopy.interfaceCopy.screen.achievements}
+            </Button>
           </div>
         </nav>
       )}

@@ -170,40 +170,40 @@ export default function NativeHub({
               {header}
               <View className="border-player-card-frame bg-player-card-background relative min-h-48 w-full max-w-7xl flex-1 overflow-hidden border-4 xl:flex-row xl:flex-wrap">
                 <View className="flex-row flex-wrap items-center xl:contents">
-                <View
-                  accessible
-                  accessibilityRole="header"
-                  accessibilityLabel={
-                    hasComparisons
-                      ? PERSONAL_HUB_COPY.rankedTitle
-                      : PERSONAL_HUB_COPY.unrankedTitle
-                  }
-                  className="min-w-0 flex-[1_1_10rem] self-center px-3 py-4 xl:w-full xl:flex-auto xl:flex-row xl:justify-center xl:gap-x-3"
-                >
-                  {(hasComparisons
-                    ? PERSONAL_HUB_COPY.rankedTitleLines
-                    : [PERSONAL_HUB_COPY.unrankedTitle]
-                  ).map((line) => (
-                    <Text
-                      key={line}
-                      className="text-player-card-ink text-2xl leading-tight font-black xl:text-5xl"
-                    >
-                      {line}
-                    </Text>
-                  ))}
-                  {!hasComparisons && (
-                    <Text className="text-player-card-muted mt-2 text-sm">
-                      {PERSONAL_HUB_COPY.unrankedNotice}
-                    </Text>
-                  )}
-                </View>
-                <View className="xl:bg-player-card-values w-[96px] max-w-full items-center justify-center py-2 pr-2 xl:w-1/3 xl:py-3 xl:pr-0">
-                  <NativeHeroes99Hero
-                    appearance={appearance}
-                    shouldReduceMotion={shouldReduceMotion}
-                    sizeClassName="h-[112px] w-[80px] xl:h-96 xl:w-64"
-                  />
-                </View>
+                  <View
+                    accessible
+                    accessibilityRole="header"
+                    accessibilityLabel={
+                      hasComparisons
+                        ? PERSONAL_HUB_COPY.rankedTitle
+                        : PERSONAL_HUB_COPY.unrankedTitle
+                    }
+                    className="min-w-0 flex-[1_1_10rem] self-center px-3 py-4 xl:w-full xl:flex-auto xl:flex-row xl:justify-center xl:gap-x-3"
+                  >
+                    {(hasComparisons
+                      ? PERSONAL_HUB_COPY.rankedTitleLines
+                      : [PERSONAL_HUB_COPY.unrankedTitle]
+                    ).map((line) => (
+                      <Text
+                        key={line}
+                        className="text-player-card-ink text-2xl leading-tight font-black xl:text-5xl"
+                      >
+                        {line}
+                      </Text>
+                    ))}
+                    {!hasComparisons && (
+                      <Text className="text-player-card-muted mt-2 text-sm">
+                        {PERSONAL_HUB_COPY.unrankedNotice}
+                      </Text>
+                    )}
+                  </View>
+                  <View className="xl:bg-player-card-values w-[96px] max-w-full items-center justify-center py-2 pr-2 xl:w-1/3 xl:py-3 xl:pr-0">
+                    <NativeHeroes99Hero
+                      appearance={appearance}
+                      shouldReduceMotion={shouldReduceMotion}
+                      sizeClassName="h-[112px] w-[80px] xl:h-96 xl:w-64"
+                    />
+                  </View>
                 </View>
                 <ScrollView
                   nestedScrollEnabled
@@ -310,26 +310,26 @@ export default function NativeHub({
                     </Button>
                   </View>
                   <View className="min-w-0 flex-row flex-wrap gap-4 xl:flex-1">
-                  <Button
-                    className="min-w-0 flex-[1.4_1_5rem]"
-                    variant="outline"
-                    size="compact"
-                    onPress={onBrowseAllValues}
-                  >
-                    <Text className="text-center text-base font-black text-black">
-                      {PERSONAL_HUB_COPY.browse}
-                    </Text>
-                  </Button>
-                  <Button
-                    className="min-w-0 flex-auto"
-                    variant="outline"
-                    size="compact"
-                    onPress={onOpenAchievements}
-                  >
-                    <Text className="text-center text-base font-black text-black">
-                      {localizedCopy.interfaceCopy.screen.achievements}
-                    </Text>
-                  </Button>
+                    <Button
+                      className="min-w-0 flex-[1.4_1_5rem]"
+                      variant="outline"
+                      size="compact"
+                      onPress={onBrowseAllValues}
+                    >
+                      <Text className="text-center text-base font-black text-black">
+                        {PERSONAL_HUB_COPY.browse}
+                      </Text>
+                    </Button>
+                    <Button
+                      className="min-w-0 flex-auto"
+                      variant="outline"
+                      size="compact"
+                      onPress={onOpenAchievements}
+                    >
+                      <Text className="text-center text-base font-black text-black">
+                        {localizedCopy.interfaceCopy.screen.achievements}
+                      </Text>
+                    </Button>
                   </View>
                 </View>
               </View>

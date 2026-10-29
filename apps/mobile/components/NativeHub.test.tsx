@@ -333,7 +333,9 @@ describe("NativeHub", () => {
     expect(screen.getByText(/Not ranked yet/)).toBeOnTheScreen()
     expect(screen.queryByText("#1")).toBeNull()
     for (const { definition } of createUnplayedRankedValues())
-      expect(screen.getByText(getValueDisplayName(definition))).toBeOnTheScreen()
+      expect(
+        screen.getByText(getValueDisplayName(definition)),
+      ).toBeOnTheScreen()
     for (const [label, callback] of [
       ["Browse All Values", callbacks.onBrowseAllValues],
       ["Achievements", callbacks.onOpenAchievements],
@@ -396,7 +398,13 @@ describe("NativeHub", () => {
         ),
       ),
     ).toEqual(
-      Array.from(new Set(rankedValues.map(({ definition }) => getMappedAnimalId(definition.id)))),
+      Array.from(
+        new Set(
+          rankedValues.map(({ definition }) =>
+            getMappedAnimalId(definition.id),
+          ),
+        ),
+      ),
     )
     expect(
       nativeAnimalRendererMock.mock.calls.every(

@@ -400,9 +400,7 @@ describe("Hub Component Integration", () => {
     ).toBeVisible()
     expect(screen.getByRole("button", { name: "Add value" })).toBeVisible()
     expect(screen.getByRole("button", { name: "Menu" })).toBeVisible()
-    expect(
-      screen.getByRole("button", { name: "Achievements" }),
-    ).toBeVisible()
+    expect(screen.getByRole("button", { name: "Achievements" })).toBeVisible()
     expect(
       screen.queryByRole("button", { name: "Import & Export" }),
     ).not.toBeInTheDocument()
@@ -614,7 +612,9 @@ describe("Hub Component Integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Add value" }))
     fireEvent.click(screen.getByRole("button", { name: "Menu" }))
     fireEvent.click(screen.getByRole("button", { name: "Achievements" }))
-    fireEvent.click(screen.getByRole("button", { name: "Customize my values card" }))
+    fireEvent.click(
+      screen.getByRole("button", { name: "Customize my values card" }),
+    )
     fireEvent.click(getHubPresentation("Acceptance"))
 
     expect(onBrowseAllValues).toHaveBeenCalledWith(
