@@ -179,7 +179,7 @@ export default function CustomValueInvitation({
             </div>
           </div>
         </div>
-        <footer className="max-h-1/2 shrink-0 overflow-y-auto border-4 border-black bg-white p-[12px] pb-[20px] xl:px-5">
+        <footer className="max-h-1/2 shrink-0 scroll-py-[12px] overflow-y-auto border-4 border-black bg-white p-[12px] pb-[20px] xl:px-5 [&_button]:scroll-my-[12px]">
           {options.isSaving && <p role="status">{copy.saving}</p>}
           {(saveIssue || authoring.exportIssue) && (
             <p role="alert" className="mb-3 font-bold">
