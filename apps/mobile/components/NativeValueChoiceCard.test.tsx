@@ -49,6 +49,7 @@ describe("NativeValueChoiceCard", () => {
         isEnabled
         isAnimating={false}
         onActivate={onActivate}
+        combatantHeight={112}
         combatant={(isAttended) => (
           <Text>{isAttended ? "Animal alert" : "Animal resting"}</Text>
         )}
@@ -128,6 +129,7 @@ describe("NativeValueChoiceCard", () => {
           isEnabled={false}
           isAnimating
           onActivate={onActivate}
+          combatantHeight={112}
           reward={{
             valueId: selfAcceptance.id,
             label: "+4 XP · Level 3",
@@ -187,6 +189,7 @@ describe("NativeValueChoiceCard", () => {
         isEnabled: true,
         isAnimating: false,
         onActivate,
+        combatantHeight: 112,
         combatant: () => <Text>Animal</Text>,
       } satisfies ComponentProps<typeof NativeValueChoiceCard>
       const { unmount, rerender } = await render(

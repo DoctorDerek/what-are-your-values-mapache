@@ -706,7 +706,7 @@ for (const { width, height } of [
       const choice = card.getByRole("button", { name: /^Choose / })
       await choice.scrollIntoViewIfNeeded()
       await expect(choice.getByRole("heading")).toBeInViewport()
-      await expect(choice.locator("p")).toBeInViewport()
+      await expect(choice.locator("..").locator("p")).toBeInViewport()
       await expect(card.getByRole("region")).toHaveCount(0)
       const valueId = await card.getAttribute("data-value-card")
       const animal = stage.locator(

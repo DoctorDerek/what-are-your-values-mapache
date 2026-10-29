@@ -76,7 +76,9 @@ for (const viewport of battleViewports) {
         scrollTop: region.scrollTop,
         scrollHeight: region.scrollHeight,
         clientHeight: region.clientHeight,
-        definitions: [...element.querySelectorAll("button p")].map(rect),
+        definitions: [...element.querySelectorAll("[data-value-card] p")].map(
+          rect,
+        ),
         animals: [...element.querySelectorAll("[data-combatant-side]")].map(
           rect,
         ),
@@ -132,6 +134,7 @@ for (const viewport of battleViewports) {
     const definitionBottom = Math.max(
       ...geometry.definitions.map(({ bottom }) => bottom),
     )
+    expect(geometry.definitions).toHaveLength(2)
     for (const animal of geometry.animals) {
       expect(animal.top - definitionBottom).toBeGreaterThanOrEqual(
         viewport.width >= 1280 ? 15 : 7,
