@@ -6,6 +6,7 @@ test.use({ serviceWorkers: "block" })
 for (const viewport of [
   { width: 320, height: 568 },
   { width: 390, height: 844 },
+  { width: 844, height: 390 },
   { width: 1440, height: 900 },
 ]) {
   test(`first arrival uses full-width bands and reachable language and Start controls at ${viewport.width}px`, async ({
@@ -56,15 +57,23 @@ for (const viewport of [
       name: "DoctorDerek.com",
       exact: true,
     })
+    await expect(link).toBeInViewport({ ratio: 1 })
     const linkBounds = await link.boundingBox()
-    expect(startBounds!.y).toBeGreaterThan(
-      languageBounds!.y + languageBounds!.height,
-    )
+    if (viewport.width === 844) {
+      expect(startBounds!.x).toBeGreaterThan(
+        languageBounds!.x + languageBounds!.width,
+      )
+      expect((await body.boundingBox())!.height).toBeGreaterThanOrEqual(100)
+    } else {
+      expect(startBounds!.y).toBeGreaterThan(
+        languageBounds!.y + languageBounds!.height,
+      )
+      expect(startBounds!.x + startBounds!.width / 2).toBeCloseTo(
+        viewport.width / 2,
+        1,
+      )
+    }
     expect(linkBounds!.y).toBeGreaterThan(startBounds!.y + startBounds!.height)
-    expect(startBounds!.x + startBounds!.width / 2).toBeCloseTo(
-      viewport.width / 2,
-      1,
-    )
     expect(startBounds!.width).toBeLessThanOrEqual(576)
     await body.evaluate((element) => {
       element.scrollTop = element.scrollHeight
@@ -98,6 +107,7 @@ for (const viewport of [
     await expect(
       page.getByRole("button", { name: "Empezar", exact: true }),
     ).toBeInViewport({ ratio: 1 })
+    await expect(link).toBeInViewport({ ratio: 1 })
     await page.screenshot({
       path: testInfo.outputPath("first-arrival-spanish.png"),
     })
