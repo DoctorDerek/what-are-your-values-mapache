@@ -86,7 +86,7 @@ export default function Splash({
         />
       }
       afterActions={
-        <div className="relative grid min-h-37 shrink-0 place-items-center border-t-6 border-black bg-black px-4 py-4">
+        <div className="relative grid min-h-[clamp(104px,calc(100dvh-440px),148px)] shrink-0 place-items-center border-t-6 border-black bg-black px-4 py-[clamp(8px,calc(100dvh-430px),16px)]">
           <div className="absolute inset-0 mx-auto max-w-80">
             <Image
               src={FIRST_ARRIVAL_PRESENTATION.posterUrl}

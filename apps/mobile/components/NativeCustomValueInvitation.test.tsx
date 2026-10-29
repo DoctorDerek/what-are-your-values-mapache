@@ -6,6 +6,7 @@ import { rankValues } from "@game/data/src/ValueRanking"
 import LocaleProvider from "@game/utils/src/LocaleContext"
 import { describe, expect, it, jest } from "@jest/globals"
 import { fireEvent, render, screen } from "@testing-library/react-native"
+import { Text } from "react-native"
 import NativeCustomValueInvitation from "@/components/NativeCustomValueInvitation"
 
 function options() {
@@ -34,7 +35,28 @@ async function fill(name: string, definition: string) {
 describe("native inline custom-value authoring", () => {
   it("opens blank and keeps the instructional example non-interactive", async () => {
     const props = options()
-    await render(<NativeCustomValueInvitation {...props} saveIssue={null} />)
+    const { container } = await render(
+      <NativeCustomValueInvitation
+        {...props}
+        saveIssue={null}
+        header={<Text>Editor context</Text>}
+      />,
+    )
+    const [formScroll] = container.queryAll(
+      (node) =>
+        node.props.keyboardShouldPersistTaps === "handled" &&
+        node.queryAll(
+          (child) => child.props.accessibilityLabel === "Value name",
+        ).length > 0,
+    )
+    expect(formScroll).toBeDefined()
+    expect(
+      formScroll.queryAll((node) => node.props.children === "Editor context")
+        .length,
+    ).toBeGreaterThan(0)
+    expect(
+      formScroll.queryAll((node) => node.props.children === "Save"),
+    ).toHaveLength(0)
     expect(screen.getByLabelText("Value name")).toHaveDisplayValue("")
     expect(
       screen.getByText(CUSTOM_VALUE_INVITATION_COPY.example),

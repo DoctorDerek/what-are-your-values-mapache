@@ -214,13 +214,15 @@ for (const viewport of [
           return { left, right, top, bottom, width }
         }
         return cards.map((card) => ({
-          card: measure(card.querySelector("button")!),
+          card: measure(card.querySelector("label")!),
           animal: measure(card.querySelector("[data-combatant-side]")!),
         }))
       })
     const [first, second] = cardGeometry
     if (!first || !second) throw new Error("Both value cards must be present")
     await expect(stage.locator("[data-combatant-side]")).toHaveCount(2)
+    for (const animal of await stage.locator("[data-combatant-side]").all())
+      await expect(animal).toBeInViewport({ ratio: 1 })
     expect(
       Math.abs(first.animal.bottom - second.animal.bottom),
     ).toBeLessThanOrEqual(1)
@@ -431,18 +433,25 @@ for (const viewport of [
       await expect(
         battle.getByText((await heading.textContent())!, { exact: true }),
       ).toHaveCount(1)
-      const definition = choice.locator("p")
+      const definition = choice.locator("..").locator("p")
       await expectCompleteBattleTextReachable(definition)
-      expect(
-        await definition.evaluate((element) => ({
-          overflows: element.scrollHeight > element.clientHeight + 1,
-          hasInnerScrollbox: [
-            ...element.closest("button")!.parentElement!.querySelectorAll("*"),
-          ].some((child) =>
-            ["auto", "scroll"].includes(getComputedStyle(child).overflowY),
+      const originalChoice = await choice.getAttribute("aria-label")
+      await definition.focus()
+      await definition.press("Home")
+      await expect
+        .poll(() => definition.evaluate((node) => node.scrollTop))
+        .toBe(0)
+      await definition.press("End")
+      await expect
+        .poll(() =>
+          definition.evaluate(
+            (node) =>
+              node.scrollTop >= node.scrollHeight - node.clientHeight - 1,
           ),
-        })),
-      ).toEqual({ overflows: false, hasInnerScrollbox: false })
+        )
+        .toBe(true)
+      await expect(choice).toHaveAccessibleName(originalChoice!)
+      await expect(undoAction).toBeDisabled()
       const level = choice.getByText(/^Level \d+$/)
       await expect(level).toBeVisible()
       await expectCompleteBattleTextReachable(level)

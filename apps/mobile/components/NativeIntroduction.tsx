@@ -84,7 +84,7 @@ export default function NativeIntroduction({
         />
       }
       afterActions={
-        <View className="relative min-h-37 shrink-0 items-center justify-center border-t-6 border-black bg-black px-4 py-4">
+        <View className="relative min-h-[min(148px,max(104px,calc(100vh-440px)))] shrink-0 items-center justify-center border-t-6 border-black bg-black px-4 py-[min(16px,max(8px,calc(100vh-430px)))]">
           <View className="absolute inset-0 mx-auto w-full max-w-80">
             <Image
               source={require("@game/data/assets/mapachito/ice-cream.png")}

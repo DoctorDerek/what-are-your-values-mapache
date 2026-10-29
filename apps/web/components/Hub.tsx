@@ -103,6 +103,62 @@ export default function Hub({
     wasDraftActive.current = isDraftNavigationBlocked
   }, [isDraftNavigationBlocked])
 
+  const header = (
+    <>
+      <header className="flex w-full max-w-7xl shrink-0 flex-wrap items-center justify-between gap-[12px] text-white xl:flex-nowrap xl:gap-3">
+        <div className="@container grid min-w-0 flex-[1_1_10rem] items-center xl:flex-1">
+          <h1
+            className={cx(
+              "font-home-title col-start-1 row-start-1 text-[clamp(0.85rem,6.9cqw,2rem)] leading-[1.2] font-normal tracking-normal text-balance",
+              importConfirmation && "opacity-0",
+            )}
+          >
+            {introductionCopy.title}
+          </h1>
+          <p
+            role="status"
+            aria-hidden={!importConfirmation}
+            className={cx(
+              "col-start-1 row-start-1 text-sm leading-tight font-bold xl:text-2xl",
+              !importConfirmation && "opacity-0",
+            )}
+          >
+            <span aria-hidden="true">
+              <span className="text-green-300">✓</span>{" "}
+              {importConfirmation?.summary ??
+                localizedCopy.interfaceCopy.portability.importSuccessSummary}
+            </span>
+            <span className="sr-only">{importConfirmation?.message}</span>
+          </p>
+        </div>
+        <Button
+          id={HUB_MENU_BUTTON_ID}
+          controllerAction="menu"
+          variant="secondary"
+          size="sm"
+          textCase="normal-case"
+          onClick={() =>
+            isDraftNavigationBlocked
+              ? setMenuRequestId((id) => id + 1)
+              : onOpenMenu()
+          }
+          disabled={customValueInvitation?.isSaving}
+          className="ml-auto max-xl:px-[12px] max-xl:py-[8px]"
+        >
+          {PRODUCT_MENU_COPY.openAction}
+        </Button>
+      </header>
+      {dataNotice && (
+        <p
+          role="status"
+          className="bg-mapache-vivid-secondary-green w-full max-w-7xl shrink-0 border-4 border-black p-4 font-bold text-white"
+        >
+          {dataNotice}
+        </p>
+      )}
+    </>
+  )
+
   return (
     <MapacheScreen
       spacing={isDraftNavigationBlocked ? "authoring" : "readable-xl"}
@@ -118,64 +174,10 @@ export default function Hub({
             : "flex min-h-[min(16rem,50%)] w-full max-w-7xl flex-[1_0_min(16rem,50%)] flex-col items-center gap-[16px] overflow-x-hidden overflow-y-auto overscroll-contain focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white xl:gap-4"
         }
       >
-        <header
-          className={cx(
-            "flex w-full max-w-7xl shrink-0 flex-wrap items-center justify-between gap-[12px] text-white xl:flex-nowrap xl:gap-3",
-            isDraftNavigationBlocked && "max-h-[25%] overflow-y-auto",
-          )}
-        >
-          <div className="@container grid min-w-0 flex-[1_1_10rem] items-center xl:flex-1">
-            <h1
-              className={cx(
-                "font-home-title col-start-1 row-start-1 text-[clamp(0.85rem,6.9cqw,2rem)] leading-[1.2] font-normal tracking-normal text-balance",
-                importConfirmation && "opacity-0",
-              )}
-            >
-              {introductionCopy.title}
-            </h1>
-            <p
-              role="status"
-              aria-hidden={!importConfirmation}
-              className={cx(
-                "col-start-1 row-start-1 text-sm leading-tight font-bold xl:text-2xl",
-                !importConfirmation && "opacity-0",
-              )}
-            >
-              <span aria-hidden="true">
-                <span className="text-green-300">✓</span>{" "}
-                {importConfirmation?.summary ??
-                  localizedCopy.interfaceCopy.portability.importSuccessSummary}
-              </span>
-              <span className="sr-only">{importConfirmation?.message}</span>
-            </p>
-          </div>
-          <Button
-            id={HUB_MENU_BUTTON_ID}
-            controllerAction="menu"
-            variant="secondary"
-            size="sm"
-            textCase="normal-case"
-            onClick={() =>
-              isDraftNavigationBlocked
-                ? setMenuRequestId((id) => id + 1)
-                : onOpenMenu()
-            }
-            disabled={customValueInvitation?.isSaving}
-            className="ml-auto max-xl:px-[12px] max-xl:py-[8px]"
-          >
-            {PRODUCT_MENU_COPY.openAction}
-          </Button>
-        </header>
-        {dataNotice && (
-          <p
-            role="status"
-            className="bg-mapache-vivid-secondary-green w-full max-w-7xl shrink-0 border-4 border-black p-4 font-bold text-white"
-          >
-            {dataNotice}
-          </p>
-        )}
+        {!isDraftNavigationBlocked && header}
         {customValueInvitation && (
           <CustomValueInvitation
+            header={header}
             rankedValues={rankedValues}
             deckRevision={customValueInvitation.deckRevision}
             editorRequestId={customValueInvitation.editorRequestId}

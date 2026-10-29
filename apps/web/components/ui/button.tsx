@@ -27,6 +27,8 @@ const buttonVariants = cva(
         default: "min-h-11 border-4 px-[20px] py-[12px]",
         sm: "min-h-10 border-4 px-[12px] py-[8px]",
         lg: "min-h-14 border-4 px-[24px] py-[16px]",
+        arrival:
+          "min-h-13 border-4 px-[24px] py-[clamp(8px,calc(100dvh-430px),16px)]",
         section: "min-h-14 border-4 px-[4px] py-[16px]",
         navigation: "min-h-[44px] border-4 px-[8px] py-[8px]",
         tall: "min-h-14 border-4 px-[20px] py-[12px]",
@@ -60,6 +62,7 @@ const buttonTypographyVariants = cva("", {
       default: "text-lg",
       sm: "text-base",
       lg: "text-2xl",
+      arrival: "text-2xl",
       section: "text-2xl",
       navigation: "text-base",
       tall: "text-lg",

@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test"
+import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
 import { test } from "./fixtures"
 
 test.use({ serviceWorkers: "block" })
@@ -6,6 +7,7 @@ test.use({ serviceWorkers: "block" })
 for (const viewport of [
   { width: 320, height: 568 },
   { width: 390, height: 844 },
+  { width: 844, height: 390 },
   { width: 1440, height: 900 },
 ]) {
   test(`first arrival uses full-width bands and reachable language and Start controls at ${viewport.width}px`, async ({
@@ -56,15 +58,23 @@ for (const viewport of [
       name: "DoctorDerek.com",
       exact: true,
     })
+    await expect(link).toBeInViewport({ ratio: 1 })
     const linkBounds = await link.boundingBox()
-    expect(startBounds!.y).toBeGreaterThan(
-      languageBounds!.y + languageBounds!.height,
-    )
+    if (viewport.width === 844) {
+      expect(startBounds!.x).toBeGreaterThan(
+        languageBounds!.x + languageBounds!.width,
+      )
+      expect((await body.boundingBox())!.height).toBeGreaterThanOrEqual(100)
+    } else {
+      expect(startBounds!.y).toBeGreaterThan(
+        languageBounds!.y + languageBounds!.height,
+      )
+      expect(startBounds!.x + startBounds!.width / 2).toBeCloseTo(
+        viewport.width / 2,
+        1,
+      )
+    }
     expect(linkBounds!.y).toBeGreaterThan(startBounds!.y + startBounds!.height)
-    expect(startBounds!.x + startBounds!.width / 2).toBeCloseTo(
-      viewport.width / 2,
-      1,
-    )
     expect(startBounds!.width).toBeLessThanOrEqual(576)
     await body.evaluate((element) => {
       element.scrollTop = element.scrollHeight
@@ -98,12 +108,74 @@ for (const viewport of [
     await expect(
       page.getByRole("button", { name: "Empezar", exact: true }),
     ).toBeInViewport({ ratio: 1 })
+    await expect(link).toBeInViewport({ ratio: 1 })
     await page.screenshot({
       path: testInfo.outputPath("first-arrival-spanish.png"),
     })
     await page.getByRole("button", { name: "Empezar", exact: true }).click()
     await expect(
       page.getByRole("button", { name: "Combatir", exact: true }),
+    ).toBeVisible()
+  })
+}
+
+for (const locale of ["en", "es-MX"] as const) {
+  test(`${locale} first arrival keeps every reading band and Start reachable with enlarged text`, async ({
+    page,
+  }, testInfo) => {
+    const copy = getLocaleCatalog(locale)
+    await page.setViewportSize({ width: 320, height: 568 })
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await page.goto(copy.metadata.webPath)
+    const start = page.getByRole("button", {
+      name: copy.introduction.startAction,
+      exact: true,
+    })
+    await expect(start).toBeVisible()
+    await page.addStyleTag({ content: "html { font-size: 200%; }" })
+    const header = page
+      .getByRole("heading", {
+        name: copy.introduction.title,
+        exact: true,
+      })
+      .locator("..")
+    const body = page.getByTestId("information-panel-body")
+    for (const region of [header, body]) {
+      expect((await region.boundingBox())!.height).toBeGreaterThan(100)
+      await region.focus()
+      await region.press("Home")
+      await expect.poll(() => region.evaluate((node) => node.scrollTop)).toBe(0)
+      await region.press("End")
+      await expect
+        .poll(() =>
+          region.evaluate(
+            (node) =>
+              node.scrollTop >= node.scrollHeight - node.clientHeight - 1,
+          ),
+        )
+        .toBe(true)
+    }
+    const language = page.getByRole("combobox")
+    await language.focus()
+    await expect(language).toBeInViewport({ ratio: 1 })
+    await page.keyboard.press("Tab")
+    await expect(start).toBeFocused()
+    await expect(start).toBeInViewport({ ratio: 1 })
+    const creator = page.getByRole("link", {
+      name: "DoctorDerek.com",
+      exact: true,
+    })
+    await creator.focus()
+    await expect(creator).toBeInViewport({ ratio: 1 })
+    await page.screenshot({
+      path: testInfo.outputPath("first-arrival-enlarged-reachable.png"),
+    })
+    await start.click()
+    await expect(
+      page.getByRole("button", {
+        name: copy.hub.battle,
+        exact: true,
+      }),
     ).toBeVisible()
   })
 }

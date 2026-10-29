@@ -307,108 +307,118 @@ export default function Results({
       className="overflow-hidden"
     >
       <div className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-2">
-        <header className="flex max-h-[25%] shrink-0 flex-wrap items-center justify-between gap-2 overflow-y-auto">
-          <div className="flex min-w-0 grow basis-36 flex-wrap items-center gap-x-2">
-            <h1 className="text-mapache-vivid-primary-cyan max-w-full text-2xl font-black [overflow-wrap:anywhere]">
-              {RESULTS_COPY.heading}
-            </h1>
-            <span
-              role="status"
-              aria-hidden={!isSaveConfirmationVisible}
-              className="pointer-events-none text-sm font-semibold text-white transition-opacity motion-reduce:transition-none"
-              style={{
-                opacity: isSaveConfirmationVisible ? 1 : 0,
-                transitionDuration: `${shouldReduceMotion ? 0 : RESULTS_SAVE_CONFIRMATION_FADE_MS}ms`,
-              }}
-            >
-              <span
-                aria-hidden="true"
-                className="text-mapache-vivid-secondary-green"
+        <div
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+          data-controller-scroll
+          tabIndex={0}
+          onScroll={settleRowPositions}
+        >
+          <div className="flex min-h-full flex-col gap-2">
+            <header className="flex shrink-0 flex-wrap items-center justify-between gap-2">
+              <div className="flex min-w-0 grow basis-36 flex-wrap items-center gap-x-2">
+                <h1 className="text-mapache-vivid-primary-cyan max-w-full text-2xl font-black [overflow-wrap:anywhere]">
+                  {RESULTS_COPY.heading}
+                </h1>
+                <span
+                  role="status"
+                  aria-hidden={!isSaveConfirmationVisible}
+                  className="pointer-events-none text-sm font-semibold text-white transition-opacity motion-reduce:transition-none"
+                  style={{
+                    opacity: isSaveConfirmationVisible ? 1 : 0,
+                    transitionDuration: `${shouldReduceMotion ? 0 : RESULTS_SAVE_CONFIRMATION_FADE_MS}ms`,
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="text-mapache-vivid-secondary-green"
+                  >
+                    ✓{" "}
+                  </span>
+                  {localizedCopy.interfaceCopy.screen.savedLocally}
+                </span>
+              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                controllerAction="menu"
+                onClick={onOpenMenu}
               >
-                ✓{" "}
-              </span>
-              {localizedCopy.interfaceCopy.screen.savedLocally}
-            </span>
-          </div>
-          <Button
-            size="sm"
-            variant="secondary"
-            controllerAction="menu"
-            onClick={onOpenMenu}
-          >
-            {PRODUCT_MENU_COPY.openAction}
-          </Button>
-        </header>
-        <p className="sr-only" aria-live="polite">
-          {localizedCopy.interfaceCopy.screen.resultSummary(
-            changeSummary,
-            integer(results.exitProfileXp),
-            integer(finalProfileProgress.level),
-            changeLabel,
-          )}
-        </p>
-        <div className="relative isolate min-h-0 flex-1 overflow-hidden">
-          <div
-            className="[container-type:size] relative isolate h-full overflow-y-auto overscroll-contain"
-            onWheelCapture={settleRowPositions}
-            onScroll={settleRowPositions}
-            onFocusCapture={settleRowPositions}
-            onKeyDownCapture={settleRowPositions}
-          >
-            <ol
-              aria-label={RESULTS_COPY.rosterLabel}
-              className="mx-[6%] my-2 grid auto-rows-fr grid-cols-1 gap-y-1"
+                {PRODUCT_MENU_COPY.openAction}
+              </Button>
+            </header>
+            <p className="sr-only" aria-live="polite">
+              {localizedCopy.interfaceCopy.screen.resultSummary(
+                changeSummary,
+                integer(results.exitProfileXp),
+                integer(finalProfileProgress.level),
+                changeLabel,
+              )}
+            </p>
+            <div className="relative isolate min-h-[10rem] flex-[1_0_10rem] overflow-hidden">
+              <div
+                className="[container-type:size] relative isolate h-full overflow-y-auto overscroll-contain"
+                tabIndex={0}
+                onWheelCapture={settleRowPositions}
+                onScroll={settleRowPositions}
+                onFocusCapture={settleRowPositions}
+                onKeyDownCapture={settleRowPositions}
+              >
+                <ol
+                  aria-label={RESULTS_COPY.rosterLabel}
+                  className="mx-[6%] my-2 grid auto-rows-fr grid-cols-1 gap-y-1"
+                >
+                  {frame.values.map((frameValue) => (
+                    <ResultsValueRow
+                      key={frameValue.value.definition.id}
+                      frameValue={frameValue}
+                      runtimeClipCatalog={runtimeClipCatalog}
+                      shouldReduceMotion={shouldReduceMotion}
+                      areRowPositionsSettled={
+                        areRowPositionsSettled || shouldReduceMotion
+                      }
+                    />
+                  ))}
+                </ol>
+              </div>
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-full overflow-y-auto overscroll-contain p-2">
+                {notifications}
+              </div>
+            </div>
+            <section
+              className="shrink-0 border-2 border-black bg-white p-2 text-black shadow-[3px_3px_0_#000]"
+              aria-label={localizedCopy.interfaceCopy.screen.profileProgress}
             >
-              {frame.values.map((frameValue) => (
-                <ResultsValueRow
-                  key={frameValue.value.definition.id}
-                  frameValue={frameValue}
-                  runtimeClipCatalog={runtimeClipCatalog}
-                  shouldReduceMotion={shouldReduceMotion}
-                  areRowPositionsSettled={
-                    areRowPositionsSettled || shouldReduceMotion
-                  }
-                />
-              ))}
-            </ol>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-full overflow-y-auto overscroll-contain p-2">
-            {notifications}
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                <span className="text-lg font-black">
+                  {RESULTS_COPY.profileLevel(integer(profileProgress.level))}
+                </span>
+                <span className="text-sm font-semibold">
+                  {RESULTS_COPY.profileXp(integer(frame.profileXp))} ·{" "}
+                  <strong className="text-mapache-vivid-primary-raspberry">
+                    {changeLabel}
+                  </strong>
+                </span>
+              </div>
+              <Progress
+                value={frame.profileLevelBarPercentage}
+                className="bg-card mt-1 h-3 border border-black"
+                indicatorClassName={cx(
+                  "bg-mapache-vivid-primary-raspberry",
+                  frame.profileDidCrossLevel
+                    ? "transition-none"
+                    : "transition-transform duration-75",
+                )}
+                aria-label={localizedCopy.interfaceCopy.screen.profileXpTowardLevel(
+                  integer(profileProgress.level + 1n),
+                )}
+                aria-valuetext={localizedCopy.interfaceCopy.screen.xpFraction(
+                  integer(profileProgress.earnedXpTowardNextLevel),
+                  integer(profileProgress.requiredXpForNextLevel),
+                )}
+              />
+            </section>
           </div>
         </div>
-        <section
-          className="max-h-[25%] shrink-0 overflow-y-auto border-2 border-black bg-white p-2 text-black shadow-[3px_3px_0_#000]"
-          aria-label={localizedCopy.interfaceCopy.screen.profileProgress}
-        >
-          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-            <span className="text-lg font-black">
-              {RESULTS_COPY.profileLevel(integer(profileProgress.level))}
-            </span>
-            <span className="text-sm font-semibold">
-              {RESULTS_COPY.profileXp(integer(frame.profileXp))} ·{" "}
-              <strong className="text-mapache-vivid-primary-raspberry">
-                {changeLabel}
-              </strong>
-            </span>
-          </div>
-          <Progress
-            value={frame.profileLevelBarPercentage}
-            className="bg-card mt-1 h-3 border border-black"
-            indicatorClassName={cx(
-              "bg-mapache-vivid-primary-raspberry",
-              frame.profileDidCrossLevel
-                ? "transition-none"
-                : "transition-transform duration-75",
-            )}
-            aria-label={localizedCopy.interfaceCopy.screen.profileXpTowardLevel(
-              integer(profileProgress.level + 1n),
-            )}
-            aria-valuetext={localizedCopy.interfaceCopy.screen.xpFraction(
-              integer(profileProgress.earnedXpTowardNextLevel),
-              integer(profileProgress.requiredXpForNextLevel),
-            )}
-          />
-        </section>
         <nav
           className="flex shrink-0 flex-wrap gap-2 pb-[8px]"
           aria-label={localizedCopy.interfaceCopy.screen.resultsActions}

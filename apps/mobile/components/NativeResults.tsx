@@ -280,45 +280,46 @@ export default function NativeResults({
     ? RESULTS_COPY.rankingChangedSummary
     : RESULTS_COPY.progressChangedSummary
 
+  const header = (
+    <View className="flex-row flex-wrap items-center justify-between gap-2 pb-2">
+      <View className="min-w-0 flex-1 flex-row flex-wrap items-center gap-x-2">
+        <Text
+          accessibilityRole="header"
+          className="text-mapache-vivid-primary-cyan text-2xl font-black"
+        >
+          {RESULTS_COPY.heading}
+        </Text>
+        <Animated.View
+          style={saveConfirmationStyle}
+          pointerEvents="none"
+          accessibilityElementsHidden={!isSaveConfirmationVisible}
+          importantForAccessibility={
+            isSaveConfirmationVisible ? "auto" : "no-hide-descendants"
+          }
+        >
+          <Text
+            accessibilityLiveRegion="polite"
+            className="text-sm font-semibold text-white"
+          >
+            <Text className="text-mapache-vivid-secondary-green text-base">
+              ✓{" "}
+            </Text>
+            {localizedCopy.interfaceCopy.screen.savedLocally}
+          </Text>
+        </Animated.View>
+      </View>
+      <Button size="compact" variant="secondary" onPress={onOpenMenu}>
+        <Text>{PRODUCT_MENU_COPY.openAction}</Text>
+      </Button>
+    </View>
+  )
+
   return (
     <MapacheScreen className="p-3">
-      <ScrollView
-        className="max-h-[25%] shrink-0 grow-0"
-        contentContainerClassName="flex-row flex-wrap items-center justify-between gap-2 pb-2"
-      >
-        <View className="min-w-0 flex-1 flex-row flex-wrap items-center gap-x-2">
-          <Text
-            accessibilityRole="header"
-            className="text-mapache-vivid-primary-cyan text-2xl font-black"
-          >
-            {RESULTS_COPY.heading}
-          </Text>
-          <Animated.View
-            style={saveConfirmationStyle}
-            pointerEvents="none"
-            accessibilityElementsHidden={!isSaveConfirmationVisible}
-            importantForAccessibility={
-              isSaveConfirmationVisible ? "auto" : "no-hide-descendants"
-            }
-          >
-            <Text
-              accessibilityLiveRegion="polite"
-              className="text-sm font-semibold text-white"
-            >
-              <Text className="text-mapache-vivid-secondary-green text-base">
-                ✓{" "}
-              </Text>
-              {localizedCopy.interfaceCopy.screen.savedLocally}
-            </Text>
-          </Animated.View>
-        </View>
-        <Button size="compact" variant="secondary" onPress={onOpenMenu}>
-          <Text>{PRODUCT_MENU_COPY.openAction}</Text>
-        </Button>
-      </ScrollView>
       <View className="relative min-h-0 flex-1 overflow-hidden">
         <FlatList
           className="min-h-0 flex-1"
+          ListHeaderComponent={header}
           data={positionedValues}
           CellRendererComponent={NativeResultsValueCell}
           keyExtractor={({ value }) => value.definition.id}
@@ -370,7 +371,10 @@ export default function NativeResults({
           </View>
         </View>
       </ScrollView>
-      <View className="shrink-0 flex-row flex-wrap gap-2 pt-2 pb-2">
+      <ScrollView
+        className="max-h-[40%] shrink-0 grow-0"
+        contentContainerClassName="flex-row flex-wrap gap-2 pt-2 pb-2"
+      >
         <Button
           size="compact"
           className="basis-readable-action min-w-0 flex-1"
@@ -388,7 +392,7 @@ export default function NativeResults({
         >
           <Text>{RESULTS_COPY.keepBattlingAction}</Text>
         </Button>
-      </View>
+      </ScrollView>
     </MapacheScreen>
   )
 }

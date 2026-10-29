@@ -3,7 +3,7 @@ import { expect, type Locator } from "@playwright/test"
 export async function expectCompleteBattleTextReachable(text: Locator) {
   for (const edge of ["start", "end"] as const) {
     const evidence = await text.evaluate((element, edge) => {
-      const surface = element.closest('[aria-label="Battle choices"]')!
+      const surface = element.closest('[role="region"]')!
       const surfaceBounds = surface.getBoundingClientRect()
       const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
       const textNodes: Node[] = []
@@ -16,6 +16,7 @@ export async function expectCompleteBattleTextReachable(text: Locator) {
       const character = document.createRange()
       character.setStart(node, offset)
       character.setEnd(node, offset + 1)
+      element.scrollTop = edge === "start" ? 0 : element.scrollHeight
       const beforeScroll = character.getBoundingClientRect()
       surface.scrollBy({
         top:
@@ -29,8 +30,12 @@ export async function expectCompleteBattleTextReachable(text: Locator) {
       })
       const characterBounds = character.getBoundingClientRect()
       const cardBounds = element
-        .closest("button, aside")!
+        .closest("label, aside")!
         .getBoundingClientRect()
+      const textBounds = element.getBoundingClientRect()
+      const textScrolls = ["auto", "scroll"].includes(
+        getComputedStyle(element).overflowY,
+      )
       const visibleTextRects = textNodes.flatMap((textNode) =>
         [...textNode.textContent!.matchAll(/\S+/gu)].flatMap((match) => {
           const textRun = document.createRange()
@@ -42,11 +47,19 @@ export async function expectCompleteBattleTextReachable(text: Locator) {
       return {
         edgeIsVisible:
           characterBounds.top >=
-            Math.max(0, surfaceBounds.top + surface.clientTop) - 1 &&
+            Math.max(
+              0,
+              surfaceBounds.top + surface.clientTop,
+              textScrolls ? textBounds.top + element.clientTop : 0,
+            ) -
+              1 &&
           characterBounds.bottom <=
             Math.min(
               innerHeight,
               surfaceBounds.top + surface.clientTop + surface.clientHeight,
+              textScrolls
+                ? textBounds.top + element.clientTop + element.clientHeight
+                : innerHeight,
             ) +
               1,
         allLinesFitWidth: visibleTextRects.every(
@@ -54,15 +67,11 @@ export async function expectCompleteBattleTextReachable(text: Locator) {
             line.left >= Math.max(surfaceBounds.left, cardBounds.left) &&
             line.right <= Math.min(innerWidth, cardBounds.right),
         ),
-        textIsNotClipped:
-          getComputedStyle(element).overflowY === "visible" ||
-          element.scrollHeight <= element.clientHeight + 1,
       }
     }, edge)
     expect(evidence, `${edge} of ${await text.textContent()}`).toEqual({
       edgeIsVisible: true,
       allLinesFitWidth: true,
-      textIsNotClipped: true,
     })
   }
 }

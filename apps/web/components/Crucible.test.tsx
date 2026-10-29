@@ -25,8 +25,8 @@ import {
 } from "@testing-library/react"
 import { Profiler, type ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import Crucible from "@/components/Crucible"
 import WebControlsProvider from "@/components/WebControlsProvider"
-import Crucible from "./Crucible"
 
 function render(ui: ReactNode, options?: RenderOptions) {
   return renderComponent(ui, { wrapper: WebControlsProvider, ...options })
@@ -161,7 +161,7 @@ describe("Crucible Component Integration", () => {
               .queryAllByRole("button", {
                 name: VALUE_CHOICE_ACCESSIBLE_NAME_PATTERN,
               })
-              .map((choice) => choice.textContent),
+              .map((choice) => choice.parentElement?.textContent ?? null),
           )
         }}
       >
@@ -682,7 +682,7 @@ describe("Crucible Component Integration", () => {
     expect(onWinnerSelected).toHaveBeenCalledTimes(1)
   })
 
-  it("shows the definition inside the one-tap value choice", async () => {
+  it("keeps the independently scrollable definition associated with its one-tap choice", async () => {
     const onWinnerSelected = vi.fn()
     const { battleCycle, battle } = createBattleProps("definition-battle-seed")
     const [valueId] = battle.pair
@@ -718,7 +718,11 @@ describe("Crucible Component Integration", () => {
     expect(choice).toHaveAccessibleDescription(
       `“${getValueDisplayDefinition(definition)}”`,
     )
-    expect(choice).toContainElement(definitionCopy)
+    expect(choice.parentElement).toContainElement(definitionCopy)
+    expect(definitionCopy).toHaveAttribute("tabindex", "0")
+    fireEvent.keyDown(definitionCopy, { key: " " })
+    fireEvent.keyDown(definitionCopy, { key: "ArrowDown" })
+    expect(onWinnerSelected).not.toHaveBeenCalled()
     expect(document.querySelector("details")).not.toBeInTheDocument()
     expect(screen.queryByText(/^Definition of /)).not.toBeInTheDocument()
     fireEvent.click(definitionCopy)
@@ -893,7 +897,7 @@ describe("Crucible Component Integration", () => {
       )
 
       expect(choice).toContainElement(heading)
-      expect(choice).toContainElement(definitionCopy)
+      expect(battleChoices).toContainElement(definitionCopy)
       expect(battleSurface).toContainElement(choice)
       expect(choice).toHaveAccessibleDescription(definitionCopy.textContent!)
       expect(heading).toBeVisible()

@@ -240,11 +240,11 @@ test("a returning player keeps Undo and Redo across reloads", async ({
   const firstChoiceName = await getChoiceValueName(firstChoice)
 
   await expect(firstChoice).toHaveAccessibleDescription(/^“.+”$/)
-  await expect(firstChoice.locator("p")).toBeVisible()
+  await expect(firstChoice.locator("..").locator("p")).toBeVisible()
   await expect(page.locator("details")).toHaveCount(0)
   await expect(page.getByRole("button", { name: /^Choose / })).toHaveCount(2)
 
-  await firstChoice.click()
+  await firstChoice.locator("..").locator("p").click()
   await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled()
   await page.getByRole("button", { name: "Undo" }).click()
   await expect(page.getByRole("button", { name: "Redo" })).toBeEnabled()

@@ -24,13 +24,7 @@ import { getLevelFromXP } from "@game/utils/src/LevelMath"
 import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { useActorRef } from "@xstate/react"
 import type { StaticImageData } from "next/image"
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type KeyboardEvent as ReactKeyboardEvent,
-} from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import AchievementBanner from "@/components/AchievementBanner"
 import BattleActionBar from "@/components/BattleActionBar"
 import ControllerPrompt from "@/components/ControllerPrompt"
@@ -42,21 +36,12 @@ import {
   useWebControllerActions,
   useWebControls,
 } from "@/components/WebControlsProvider"
+import { handleBattleReadingKeyDown } from "@/lib/BattleReadingInput"
 
 type BattleAccessibilityAnnouncement = Readonly<{
   sequence: number
   message: string
 }>
-
-function handleBattleSurfaceKeyDown(event: ReactKeyboardEvent<HTMLElement>) {
-  if (
-    event.target === event.currentTarget &&
-    (event.key === " " ||
-      event.key === "Enter" ||
-      event.key.startsWith("Arrow"))
-  )
-    event.stopPropagation()
-}
 
 export default function Crucible({
   animationSpeed,
@@ -420,7 +405,7 @@ export default function Crucible({
       tabIndex={0}
       spacing="safe-area-only"
       viewport="fixed"
-      onKeyDown={handleBattleSurfaceKeyDown}
+      onKeyDown={handleBattleReadingKeyDown}
       className="relative flex touch-manipulation flex-col border-4 border-transparent outline-none select-none focus-visible:border-white"
     >
       <p
@@ -440,7 +425,7 @@ export default function Crucible({
         role="region"
         aria-label={localizedCopy.interfaceCopy.screen.battleChoices}
         tabIndex={0}
-        onKeyDown={handleBattleSurfaceKeyDown}
+        onKeyDown={handleBattleReadingKeyDown}
         className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white"
       >
         <SeethingSwarmBattleStage

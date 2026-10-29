@@ -93,7 +93,7 @@ export default function BattleActionBar({
   return (
     <nav
       aria-label={localizedCopy.interfaceCopy.screen.battleActions}
-      className="pointer-events-auto relative z-50 mx-auto flex max-h-[60dvh] w-full max-w-3xl shrink-0 flex-col gap-2 overflow-y-auto overscroll-contain px-2 pt-3 pb-6 xl:gap-4 xl:px-6"
+      className="pointer-events-auto relative z-50 mx-auto flex max-h-[60dvh] w-full max-w-3xl shrink-0 flex-col gap-[clamp(4px,calc(100dvh-440px),0.5rem)] overflow-y-auto overscroll-contain px-2 pt-[clamp(4px,calc(100dvh-440px),0.75rem)] pb-[clamp(12px,calc(100dvh-440px),1.5rem)] xl:gap-4 xl:px-6"
     >
       <div className="flex w-full flex-wrap gap-2 xl:gap-4">
         <button

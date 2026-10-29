@@ -244,6 +244,7 @@ export default function NativeCrucible({
                 isEnabled={isInteractive}
                 isAnimating={isAnimating}
                 combatant={combatants.first}
+                combatantHeight={combatants.height}
                 reward={reward?.valueId === firstValueId ? reward : null}
                 onActivate={handleSelect}
               />
@@ -257,6 +258,7 @@ export default function NativeCrucible({
                 isEnabled={isInteractive}
                 isAnimating={isAnimating}
                 combatant={combatants.second}
+                combatantHeight={combatants.height}
                 reward={reward?.valueId === secondValueId ? reward : null}
                 onActivate={handleSelect}
               />

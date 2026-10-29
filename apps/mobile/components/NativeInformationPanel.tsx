@@ -59,14 +59,14 @@ function NativeInformationPanelFrame({
             className={cx(
               "relative z-20 border-black",
               isIntroduction
-                ? "max-h-[25%] shrink-0 grow-0 border-b-6"
+                ? "max-h-[40%] min-h-[min(96px,20vh)] shrink grow-0 border-b-6"
                 : isStandard
                   ? "max-h-[40%] shrink-0 grow-0 border-b-4"
                   : "max-h-[40%] shrink-0 grow-0 border-b-4",
             )}
             contentContainerClassName={
               isIntroduction
-                ? "justify-center px-4 py-5 xl:px-8 xl:py-6"
+                ? "justify-center px-4 py-[min(20px,max(4px,calc(100vh-430px)))] xl:px-8 xl:py-6"
                 : "p-4"
             }
           >
@@ -106,35 +106,50 @@ function NativeInformationPanelFrame({
 
           <ScrollView
             className={cx(
-              "relative z-20 min-h-0 flex-1",
-              isIntroduction && "mx-auto w-full max-w-4xl",
+              "relative z-20 flex-1",
+              isIntroduction
+                ? "mx-auto min-h-[min(160px,25vh)] w-full max-w-4xl"
+                : "min-h-0",
             )}
             contentContainerClassName={
               isIntroduction
-                ? "gap-4 px-5 py-5 xl:px-10 xl:py-7"
+                ? "gap-4 px-5 py-[min(20px,max(8px,calc(100vh-430px)))] xl:px-10 xl:py-7"
                 : "gap-4 px-4 py-4"
             }
           >
             {children}
           </ScrollView>
 
-          <View
+          <ScrollView
             className={cx(
-              "relative z-20 border-black",
+              "relative z-20 shrink-0 grow-0 border-black",
               isIntroduction
-                ? "border-t-6"
-                : "shrink-0 border-t-4 px-4 pt-3 pb-5",
+                ? "max-h-[35%] border-t-6"
+                : "max-h-[45%] border-t-4 px-4 pt-3 pb-5",
             )}
           >
             <View
               className={cx(
                 isIntroduction &&
-                  "mx-auto w-full max-w-xl gap-3 px-6 pt-4 pb-5",
+                  "mx-auto w-full flex-row flex-wrap items-center justify-center gap-3 px-6 pt-[min(16px,max(8px,calc(100vh-430px)))] pb-[min(20px,max(12px,calc(100vh-430px)))] xl:max-w-xl xl:flex-col",
               )}
             >
-              {beforePrimaryAction}
+              {beforePrimaryAction && (
+                <View
+                  className={cx(
+                    isIntroduction &&
+                      "basis-readable-setting max-w-xl min-w-0 shrink grow xl:w-full xl:basis-auto",
+                  )}
+                >
+                  {beforePrimaryAction}
+                </View>
+              )}
               <Button
-                size={isIntroduction ? "large" : "compact"}
+                className={cx(
+                  isIntroduction &&
+                    "basis-readable-setting max-w-xl min-w-0 shrink grow xl:w-full xl:basis-auto",
+                )}
+                size={isIntroduction ? "arrival" : "compact"}
                 onPress={onPrimaryAction}
                 disabled={isPrimaryActionPending}
                 accessibilityState={{
@@ -155,9 +170,9 @@ function NativeInformationPanelFrame({
                 </Text>
               </Button>
             </View>
-          </View>
+          </ScrollView>
           {afterActions && (
-            <ScrollView className="relative z-20 max-h-[25%] shrink-0 grow-0">
+            <ScrollView className="relative z-20 max-h-[40%] min-h-[min(128px,20vh)] shrink grow-0">
               {afterActions}
             </ScrollView>
           )}

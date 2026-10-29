@@ -55,6 +55,13 @@ describe("animal card attention", () => {
     expect(choice.textContent).not.toMatch(/[\u00ad\u200b]/u)
     fireEvent.click(choice)
     expect(onActivate).toHaveBeenCalledExactlyOnceWith(value.id)
+    const definition = screen.getByText(`“${value.sourceDefinition}”`)
+    expect(definition).toHaveAttribute("tabindex", "0")
+    expect(choice).not.toContainElement(definition)
+    fireEvent.keyDown(definition, { key: "End" })
+    expect(onActivate).toHaveBeenCalledTimes(1)
+    fireEvent.click(definition)
+    expect(onActivate).toHaveBeenCalledTimes(2)
   })
   it("combines pointer and actual focus without selecting or repeating attention", () => {
     const value = CANONICAL_VALUES[0]

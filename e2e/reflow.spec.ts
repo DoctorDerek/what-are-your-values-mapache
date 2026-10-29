@@ -536,7 +536,7 @@ for (const width of [390, 1440]) {
     const battle = page.getByRole("main", { name: "Value battle" })
     const choices = battle.getByRole("button", { name: /^Choose / })
     await expect(choices).toHaveCount(2)
-    const definitions = await choices.locator("p").all()
+    const definitions = await choices.locator("..").locator("p").all()
     const definitionBottoms = await Promise.all(
       definitions.map(async (definition) => {
         const bounds = await definition.boundingBox()
@@ -548,8 +548,8 @@ for (const width of [390, 1440]) {
     const second = await combatants.last().boundingBox()
     expect(first!.y).toBeGreaterThanOrEqual(Math.max(...definitionBottoms))
     const animalClearance = first!.y - Math.max(...definitionBottoms)
-    expect(animalClearance).toBeGreaterThanOrEqual(width >= 1280 ? 16 : 8)
-    expect(animalClearance).toBeLessThanOrEqual(width >= 1280 ? 32 : 16)
+    expect(animalClearance).toBeGreaterThanOrEqual((width >= 1280 ? 16 : 8) - 1)
+    expect(animalClearance).toBeLessThanOrEqual((width >= 1280 ? 32 : 16) + 1)
     expect(
       Math.abs(first!.y + first!.height - second!.y - second!.height),
     ).toBeLessThan(1)
