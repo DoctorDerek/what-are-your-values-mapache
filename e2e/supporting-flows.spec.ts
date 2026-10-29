@@ -117,7 +117,14 @@ for (const locale of ["en", "es-MX"] as const) {
       await page.addStyleTag({ content: "html { font-size: 200%; }" })
       await page.setViewportSize({ width, height: 400 })
       await definition.fill(customDefinition)
-      await save.scrollIntoViewIfNeeded()
+      for (
+        let tab = 0;
+        tab < 8 &&
+        !(await save.evaluate((node) => node === document.activeElement));
+        tab++
+      )
+        await page.keyboard.press("Tab")
+      await expect(save).toBeFocused()
       await expectReadableControl(save)
       await expectNoHorizontalOverflow(page)
       await page.screenshot({
