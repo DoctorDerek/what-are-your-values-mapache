@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test"
+import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
 import { test } from "./fixtures"
 
 test.use({ viewport: { width: 320, height: 720 } })
@@ -337,7 +338,7 @@ for (const width of [320, 390, 1280]) {
         titleGeometry.lineHeight + 1,
       )
       expect(titleGeometry.scrollWidth).toBeLessThanOrEqual(titleGeometry.width)
-      await fontOverride?.evaluate((element) => element.remove())
+      await fontOverride?.evaluate((element) => element.parentNode?.removeChild(element))
     }
     const addBounds = await actions
       .getByRole("button", { name: "Add value", exact: true })
@@ -691,3 +692,48 @@ test("Achievements and Import Export reflow without document overflow", async ({
   ).toBeVisible()
   await expectNoDocumentHorizontalOverflow(page, "Import & Export")
 })
+
+for (const locale of ["en", "es-MX"] as const) {
+  for (const width of [320, 1440]) {
+    test(`Import & Export keeps complete actions readable and navigation reachable at ${width}px in ${locale}`, async ({ page }, testInfo) => {
+      const catalog = getLocaleCatalog(locale)
+      const copy = catalog.interfaceCopy
+      const action = (name: string) => page.getByRole("button", { name, exact: true })
+      await page.setViewportSize({ width, height: width === 320 ? 568 : 900 })
+      await page.goto(catalog.metadata.webPath)
+      await action(catalog.introduction.startAction).click()
+      await action(copy.menu.openAction).click()
+      await action(copy.portability.screenTitle).click()
+      if (width === 320) await page.addStyleTag({ content: "html { font-size: 200%; }" })
+      await page.evaluate(() => document.fonts.ready)
+      const reading = page.getByRole("region", { name: copy.portability.screenTitle, exact: true })
+      const back = action(copy.controlActions.back)
+      const menu = action(copy.menu.openAction)
+      await expect(back).toBeInViewport({ ratio: 1 })
+      await expect(menu).toBeInViewport({ ratio: 1 })
+      const navigationBounds = await back.boundingBox()
+      for (const name of [copy.portability.exportAction, copy.portability.chooseBackupAction]) {
+        const control = action(name)
+        await control.scrollIntoViewIfNeeded()
+        await page.mouse.move(0, 0)
+        await expect(control).toBeInViewport({ ratio: 1 })
+        const controlSize = await control.evaluate((element) => ({
+          width: element.clientWidth,
+          contentWidth: element.scrollWidth,
+          height: element.getBoundingClientRect().height,
+        }))
+        expect(controlSize.contentWidth).toBeLessThanOrEqual(controlSize.width)
+        expect(await reading.evaluate((element) => element.clientHeight)).toBeGreaterThan(controlSize.height)
+        expect(await back.boundingBox()).toEqual(navigationBounds)
+      }
+      await reading.evaluate((element) => { element.scrollTop = element.scrollHeight })
+      await expect(back).toBeInViewport({ ratio: 1 })
+      expect(await back.boundingBox()).toEqual(navigationBounds)
+      await expectNoDocumentHorizontalOverflow(page, "Import & Export")
+      await action(copy.portability.exportAction).scrollIntoViewIfNeeded()
+      await page.screenshot({ path: testInfo.outputPath("data-action-led-reflow.png") })
+      await back.click()
+      await expect(action(catalog.hub.battle)).toBeVisible()
+    })
+  }
+}
