@@ -315,7 +315,7 @@ export default function SeethingSwarmBattleStage({
 
   return (
     <div
-      className="relative grid min-h-0 min-w-0 flex-1 grid-cols-2 grid-rows-[clamp(4px,calc(100dvh-440px),1.5rem)_max-content_clamp(4px,calc(100dvh-430px),0.5rem)_minmax(3rem,max-content)_clamp(4px,calc(100dvh-440px),1rem)_max-content_clamp(4px,calc(100dvh-440px),3rem)_1fr] [--battle-combatant-size:var(--battle-tile-size)] [--battle-visible-size:var(--battle-visible-height)] xl:grid-rows-[minmax(1.5rem,1fr)_max-content_1.5rem_minmax(3rem,max-content)_minmax(1rem,2rem)_max-content_minmax(2rem,3rem)_1fr]"
+      className="relative grid min-h-0 min-w-0 flex-1 grid-cols-2 grid-rows-[clamp(4px,calc(100dvh-440px),1.5rem)_max-content_clamp(4px,calc(100dvh-430px),0.5rem)_minmax(3rem,max-content)_clamp(4px,calc(100dvh-440px),1rem)_max-content_clamp(4px,calc(100dvh-440px),3rem)_1fr] [--battle-combatant-size:var(--battle-tile-size)] [--battle-definition-font-size:clamp(1rem,2.8vw,1.5rem)] [--battle-visible-size:var(--battle-visible-height)] xl:grid-rows-[minmax(1.5rem,1fr)_max-content_1.5rem_minmax(calc(3rem+var(--battle-definition-font-size)*var(--leading-relaxed)+4px),max-content)_minmax(1rem,2rem)_max-content_minmax(2rem,3rem)_1fr] xl:[--battle-definition-font-size:clamp(1.25rem,2vw,1.875rem)]"
       data-battle-stage-mode={choreography.mode}
       data-battle-stage-state={winnerId ? "resolving" : "awaiting-input"}
       data-choreography-identity={choreography.choreographyIdentity}

@@ -163,7 +163,7 @@ export const ValueChoiceCard = forwardRef<
           tabIndex={0}
           data-controller-scroll
           onKeyDown={handleBattleReadingKeyDown}
-          className="row-start-4 mx-auto max-h-full min-h-0 w-full max-w-2xl self-start overflow-y-auto overscroll-contain border-2 border-white/20 bg-black/40 px-[min(0.75rem,3%)] py-[clamp(4px,calc(100dvh-430px),0.5rem)] text-[clamp(1rem,2.8vw,1.5rem)] leading-snug font-bold [overflow-wrap:anywhere] break-words hyphens-auto whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white xl:p-6 xl:text-[clamp(1.25rem,2vw,1.875rem)] xl:leading-relaxed"
+          className="row-start-4 mx-auto max-h-full min-h-0 w-full max-w-2xl self-start overflow-y-auto overscroll-contain border-2 border-white/20 bg-black/40 px-[min(0.75rem,3%)] py-[clamp(4px,calc(100dvh-430px),0.5rem)] text-(length:--battle-definition-font-size) leading-snug font-bold [overflow-wrap:anywhere] break-words hyphens-auto whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white xl:p-6 xl:leading-relaxed"
         >
           “{getValueDisplayDefinition(value, localizedCopy.values)}”
         </p>
