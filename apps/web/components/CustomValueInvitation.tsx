@@ -7,7 +7,7 @@ import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { getValueDisplayName } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { findRankedValueNameMatches } from "@game/data/src/ValueSearch"
-import { useEffect } from "react"
+import { useEffect, type ReactNode } from "react"
 import CustomValueDraftEditor from "@/components/CustomValueDraftEditor"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
@@ -16,10 +16,12 @@ import { useWebControllerActions } from "@/components/WebControlsProvider"
 export default function CustomValueInvitation({
   saveIssue,
   rankedValues = [],
+  header,
   ...options
 }: CustomValueAuthoringOptions & {
   saveIssue: string | null
   rankedValues?: readonly RankedValue[]
+  header?: ReactNode
 }) {
   const localization = useLocaleCatalog()
   const copy = localization.interfaceCopy.customValues
@@ -45,129 +47,139 @@ export default function CustomValueInvitation({
   return (
     <aside
       aria-label={localization.interfaceCopy.screen.addOwnValues}
-      className="text-mapache-vivid-dark flex min-h-[16rem] w-full max-w-7xl min-w-0 flex-1 flex-col border-4 border-black bg-white [&_button]:max-w-full"
+      className="text-mapache-vivid-dark flex min-h-0 w-full max-w-7xl min-w-0 flex-1 flex-col [&_button]:max-w-full"
     >
       <fieldset
         disabled={authoring.isBusy}
         className="flex min-h-0 min-w-0 flex-1 flex-col"
       >
         <div
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 xl:p-5"
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
           data-controller-scroll
         >
-          <CustomValueDraftEditor
-            draft={authoring.editorDraft}
-            validation={authoring.editorValidation}
-            onChange={authoring.setEditorDraft}
-            onSubmit={authoring.saveAdditions}
-          />
-          {matchingValues.length > 0 && (
-            <section
-              className="mt-3 space-y-2"
-              aria-label={localization.interfaceCopy.screen.matchingValues}
-            >
-              {matchingValues.map(({ definition }) => (
-                <Button
-                  key={definition.id}
-                  variant="link"
-                  wrap
-                  onClick={() =>
-                    authoring.requestExit({ valueId: definition.id })
-                  }
+          <div className="flex min-h-full flex-col gap-[16px]">
+            {header}
+            <div className="flex-1 border-4 border-b-0 border-black bg-white p-3 xl:p-5">
+              <CustomValueDraftEditor
+                draft={authoring.editorDraft}
+                validation={authoring.editorValidation}
+                onChange={authoring.setEditorDraft}
+                onSubmit={authoring.saveAdditions}
+              />
+              {matchingValues.length > 0 && (
+                <section
+                  className="mt-3 space-y-2"
+                  aria-label={localization.interfaceCopy.screen.matchingValues}
                 >
-                  {localization.interfaceCopy.screen.openValue(
-                    getValueDisplayName(definition, localization.values),
-                  )}
-                </Button>
-              ))}
-            </section>
-          )}
-          {authoring.drafts.length > 0 && (
-            <section
-              className="mt-4 space-y-3 border-t-2 border-black pt-3"
-              aria-labelledby="custom-drafts-heading"
-            >
-              <h2 id="custom-drafts-heading" className="font-bold">
-                {copy.drafts}
-              </h2>
-              <ul className="divide-y divide-black/20">
-                {authoring.drafts.map((draft) => (
-                  <li key={draft.key} className="py-2">
-                    <h3 className="font-bold wrap-anywhere">{draft.name}</h3>
-                    <p className="wrap-anywhere">{draft.definition}</p>
-                    <div className="flex flex-wrap gap-3">
-                      <Button
-                        variant="link"
-                        wrap
-                        disabled={authoring.hasUnfinishedDraft}
-                        aria-label={localization.interfaceCopy.screen.editValue(
-                          draft.name,
-                        )}
-                        onClick={() => authoring.editDraft(draft)}
-                      >
-                        {copy.edit}
-                      </Button>
-                      <Button
-                        variant="link"
-                        wrap
-                        disabled={authoring.editingKey === draft.key}
-                        aria-label={localization.interfaceCopy.screen.removeDraft(
-                          draft.name,
-                        )}
-                        onClick={() => authoring.removeDraft(draft.key)}
-                      >
-                        {copy.remove}
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-          <section
-            className="mt-4 space-y-3 border-t-2 border-black pt-3"
-            aria-label={localization.interfaceCopy.screen.saveCustomValues}
-          >
-            <p className="text-sm">{copy.consequences}</p>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                size="sm"
-                variant="outline"
-                wrap
-                disabled={!authoring.editorValidation.isValid}
-                onClick={() => {
-                  authoring.queueDraft()
-                  document.getElementById("hub-custom-value-name")?.focus()
-                }}
+                  {matchingValues.map(({ definition }) => (
+                    <Button
+                      key={definition.id}
+                      variant="link"
+                      wrap
+                      onClick={() =>
+                        authoring.requestExit({ valueId: definition.id })
+                      }
+                    >
+                      {localization.interfaceCopy.screen.openValue(
+                        getValueDisplayName(definition, localization.values),
+                      )}
+                    </Button>
+                  ))}
+                </section>
+              )}
+              {authoring.drafts.length > 0 && (
+                <section
+                  className="mt-4 space-y-3 border-t-2 border-black pt-3"
+                  aria-labelledby="custom-drafts-heading"
+                >
+                  <h2 id="custom-drafts-heading" className="font-bold">
+                    {copy.drafts}
+                  </h2>
+                  <ul className="divide-y divide-black/20">
+                    {authoring.drafts.map((draft) => (
+                      <li key={draft.key} className="py-2">
+                        <h3 className="font-bold wrap-anywhere">
+                          {draft.name}
+                        </h3>
+                        <p className="wrap-anywhere">{draft.definition}</p>
+                        <div className="flex flex-wrap gap-3">
+                          <Button
+                            variant="link"
+                            wrap
+                            disabled={authoring.hasUnfinishedDraft}
+                            aria-label={localization.interfaceCopy.screen.editValue(
+                              draft.name,
+                            )}
+                            onClick={() => authoring.editDraft(draft)}
+                          >
+                            {copy.edit}
+                          </Button>
+                          <Button
+                            variant="link"
+                            wrap
+                            disabled={authoring.editingKey === draft.key}
+                            aria-label={localization.interfaceCopy.screen.removeDraft(
+                              draft.name,
+                            )}
+                            onClick={() => authoring.removeDraft(draft.key)}
+                          >
+                            {copy.remove}
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+              <section
+                className="mt-4 space-y-3 border-t-2 border-black pt-3"
+                aria-label={localization.interfaceCopy.screen.saveCustomValues}
               >
-                {copy.another}
-              </Button>
-              <Button variant="link" wrap onClick={authoring.exportData}>
-                {authoring.isExporting ? copy.exporting : copy.export}
-              </Button>
-              {authoring.hasUnfinishedDraft && authoring.drafts.length > 0 && (
-                <Button
-                  variant="link"
-                  wrap
-                  onClick={authoring.discardUnfinished}
-                >
-                  {copy.discardUnfinished}
-                </Button>
-              )}
-              {authoring.hasChanges && (
-                <Button
-                  variant="link"
-                  wrap
-                  onClick={() => authoring.requestExit()}
-                >
-                  {leaveCopy.discard}
-                </Button>
-              )}
+                <p className="text-sm">{copy.consequences}</p>
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    wrap
+                    disabled={!authoring.editorValidation.isValid}
+                    onClick={() => {
+                      authoring.queueDraft()
+                      document.getElementById("hub-custom-value-name")?.focus()
+                    }}
+                  >
+                    {copy.another}
+                  </Button>
+                  <Button variant="link" wrap onClick={authoring.exportData}>
+                    {authoring.isExporting ? copy.exporting : copy.export}
+                  </Button>
+                  {authoring.hasUnfinishedDraft &&
+                    authoring.drafts.length > 0 && (
+                      <Button
+                        variant="link"
+                        wrap
+                        onClick={authoring.discardUnfinished}
+                      >
+                        {copy.discardUnfinished}
+                      </Button>
+                    )}
+                  {authoring.hasChanges && (
+                    <Button
+                      variant="link"
+                      wrap
+                      onClick={() => authoring.requestExit()}
+                    >
+                      {leaveCopy.discard}
+                    </Button>
+                  )}
+                </div>
+                {authoring.hasChanges && (
+                  <p className="text-sm">{copy.unsaved}</p>
+                )}
+              </section>
             </div>
-            {authoring.hasChanges && <p className="text-sm">{copy.unsaved}</p>}
-          </section>
+          </div>
         </div>
-        <footer className="max-h-1/2 shrink-0 overflow-y-auto border-t-4 border-black p-[12px] pb-[20px] xl:px-5">
+        <footer className="max-h-1/2 shrink-0 overflow-y-auto border-4 border-black bg-white p-[12px] pb-[20px] xl:px-5">
           {options.isSaving && <p role="status">{copy.saving}</p>}
           {(saveIssue || authoring.exportIssue) && (
             <p role="alert" className="mb-3 font-bold">
