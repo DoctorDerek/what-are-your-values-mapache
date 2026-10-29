@@ -400,9 +400,7 @@ describe("NativeGameClient Menu navigation", () => {
 
     await openMenuDestination(user, "Import & Export")
     expect(await screen.findByText("Import & Export")).toBeOnTheScreen()
-    await user.press(
-      screen.getByRole("button", { name: "Back to Your Values" }),
-    )
+    await user.press(screen.getByRole("button", { name: "Back" }))
 
     await user.press(screen.getByRole("button", { name: "Browse All Values" }))
     expect(await screen.findByText("All Values")).toBeOnTheScreen()
@@ -894,9 +892,7 @@ describe("NativeGameClient file operations and destructive actions", () => {
       "polite",
     )
     expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
-    expect(
-      screen.getByRole("button", { name: "Back to Your Values" }),
-    ).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Back" })).toBeDisabled()
   })
 
   it("routes unreadable-save import and diagnostic export through recovery", async () => {

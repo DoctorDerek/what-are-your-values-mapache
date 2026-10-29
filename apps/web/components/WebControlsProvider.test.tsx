@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react"
 import { useState } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
+import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import WebControlsProvider, {
   useWebControllerActions,
@@ -405,9 +406,9 @@ describe("scoped controller input", () => {
     const { rerender } = render(
       <WebControlsProvider>
         <main data-slot="mapache-screen">
-          <button disabled onClick={openMenu}>
+          <Button controllerAction="menu" disabled onClick={openMenu}>
             Menu
-          </button>
+          </Button>
         </main>
       </WebControlsProvider>,
     )
@@ -416,7 +417,9 @@ describe("scoped controller input", () => {
     rerender(
       <WebControlsProvider>
         <main data-slot="mapache-screen">
-          <button onClick={openMenu}>Menu</button>
+          <Button controllerAction="menu" onClick={openMenu}>
+            Menu
+          </Button>
           <div role="alertdialog" aria-label="Confirm change">
             <button onClick={confirm}>Cancel</button>
           </div>
@@ -433,11 +436,66 @@ describe("scoped controller input", () => {
     rerender(
       <WebControlsProvider>
         <main data-slot="mapache-screen">
-          <button onClick={openMenu}>Menu</button>
+          <Button controllerAction="menu" onClick={openMenu}>
+            Menu
+          </Button>
         </main>
       </WebControlsProvider>,
     )
     act(activateWebControllerMenu)
     expect(openMenu).toHaveBeenCalledTimes(1)
+  })
+
+  it.each(["Menu", "Menú"])(
+    "activates the semantic Menu action regardless of its %s label",
+    (label) => {
+      const openMenu = vi.fn()
+      const unrelatedAction = vi.fn()
+      render(
+        <main data-slot="mapache-screen">
+          <Button onClick={unrelatedAction}>Menu</Button>
+          <Button controllerAction="menu" onClick={openMenu}>
+            {label}
+          </Button>
+        </main>,
+      )
+      act(activateWebControllerMenu)
+      expect(openMenu).toHaveBeenCalledOnce()
+      expect(unrelatedAction).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each([
+    "disabled",
+    "aria-disabled",
+    "hidden",
+    "aria-hidden",
+    "inert",
+    "not-visible",
+  ])("does not activate a %s Menu action", (unavailableState) => {
+    const openMenu = vi.fn()
+    render(
+      <main data-slot="mapache-screen">
+        <div
+          hidden={unavailableState === "hidden"}
+          aria-hidden={unavailableState === "aria-hidden"}
+          inert={unavailableState === "inert"}
+        >
+          <Button
+            controllerAction="menu"
+            disabled={unavailableState === "disabled"}
+            aria-disabled={unavailableState === "aria-disabled"}
+            onClick={openMenu}
+          >
+            Menú
+          </Button>
+        </div>
+      </main>,
+    )
+    if (unavailableState === "not-visible") {
+      vi.spyOn(Element.prototype, "checkVisibility").mockReturnValue(false)
+    }
+    act(activateWebControllerMenu)
+    expect(openMenu).not.toHaveBeenCalled()
   })
 })

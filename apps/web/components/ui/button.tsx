@@ -1,3 +1,4 @@
+import type { ControllerCommand } from "@game/data/src/ControllerControls"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cx } from "classix"
 import { Slot } from "radix-ui"
@@ -26,6 +27,8 @@ const buttonVariants = cva(
         default: "min-h-11 border-4 px-[20px] py-[12px]",
         sm: "min-h-10 border-4 px-[12px] py-[8px]",
         lg: "min-h-14 border-4 px-[24px] py-[16px]",
+        section: "min-h-14 border-4 px-[4px] py-[16px]",
+        navigation: "min-h-[44px] border-4 px-[8px] py-[8px]",
         tall: "min-h-14 border-4 px-[20px] py-[12px]",
         featured: "min-h-16 border-4 px-[20px] py-[12px]",
         icon: "min-h-11 size-11 border-4 p-0",
@@ -57,6 +60,8 @@ const buttonTypographyVariants = cva("", {
       default: "text-lg",
       sm: "text-base",
       lg: "text-2xl",
+      section: "text-2xl",
+      navigation: "text-base",
       tall: "text-lg",
       featured: "text-3xl",
       icon: "text-3xl leading-none",
@@ -72,6 +77,7 @@ function Button({
   asChild = false,
   align = "center",
   wrap = false,
+  controllerAction,
   typographyClassName,
   textCase = variant === "link" ? "normal-case" : "uppercase",
   ...props
@@ -80,6 +86,7 @@ function Button({
     asChild?: boolean
     align?: "center" | "start"
     wrap?: boolean
+    controllerAction?: Extract<ControllerCommand, "menu">
     typographyClassName?: string
     textCase?: "normal-case" | "uppercase"
   }) {
@@ -91,6 +98,7 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
+      data-controller-action={controllerAction}
       className={cx(
         buttonVariants({ variant, size: resolvedSize }),
         variant !== "ghost" && variant !== "link" && "border-black",

@@ -151,6 +151,7 @@ export default function Hub({
           </div>
           <Button
             id={HUB_MENU_BUTTON_ID}
+            controllerAction="menu"
             variant="secondary"
             size="sm"
             textCase="normal-case"

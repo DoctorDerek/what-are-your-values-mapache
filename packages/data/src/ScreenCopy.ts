@@ -1,5 +1,4 @@
 export const SCREEN_COPY = Object.freeze({
-  backToValues: "Back to Your Values",
   selected: "Selected",
   cancel: "Cancel",
   close: "Close",

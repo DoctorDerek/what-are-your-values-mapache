@@ -332,6 +332,7 @@ export default function Settings({
           variant="secondary"
           disabled={isNavigationBlocked}
           onClick={onOpenMenu}
+          controllerAction="menu"
           wrap
           typographyClassName="text-base xl:text-lg"
           className="min-w-0 flex-1 max-xl:px-[8px] max-xl:py-[12px]"
