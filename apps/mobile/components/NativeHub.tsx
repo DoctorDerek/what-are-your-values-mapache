@@ -129,10 +129,10 @@ export default function NativeHub({
   return (
     <MapacheScreen>
       <View className="min-h-0 flex-1 items-center gap-4 p-4 xl:gap-5 xl:p-6">
-        {isDraftActive && header}
         {customValueInvitation && (
           <NativeCustomValueInvitation
             {...customValueInvitation}
+            header={header}
             rankedValues={rankedValues}
             menuRequestId={menuRequestId}
             existingCustomValues={rankedValues.flatMap(({ definition }) =>
