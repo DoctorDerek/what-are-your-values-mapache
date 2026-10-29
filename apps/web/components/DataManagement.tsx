@@ -175,57 +175,51 @@ export default function DataManagement({
       viewport="fixed"
       className="flex flex-col items-center"
     >
-      <div className="flex w-full max-w-5xl flex-wrap items-center justify-between gap-4">
+      <div
+        role="region"
+        aria-labelledby="data-management-heading"
+        aria-busy={isBusy}
+        tabIndex={0}
+        className="min-h-0 w-full max-w-5xl flex-1 space-y-[20px] overflow-y-auto overscroll-contain pr-[4px] pb-[12px] wrap-anywhere hyphens-auto [hyphenate-limit-chars:8_3_3] [&_button]:whitespace-normal"
+      >
         <h1
+          id="data-management-heading"
           ref={headingRef}
           tabIndex={-1}
           className="text-mapache-vivid-primary-cyan text-2xl font-black wrap-anywhere uppercase drop-shadow-[3px_3px_0px_#000000] outline-none xl:text-4xl"
         >
           {playerDataPortabilityCopy.screenTitle}
         </h1>
-      </div>
-
-      <div
-        aria-busy={isBusy}
-        className="mt-5 min-h-0 w-full max-w-5xl flex-1 space-y-5 overflow-y-auto overscroll-contain p-1 pr-3 pb-5 [&_button]:max-w-full [&_button]:whitespace-normal"
-      >
         {operationMessages}
 
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        <div className="grid grid-cols-1 gap-[20px] xl:grid-cols-2">
           <section
-            aria-labelledby="export-data-heading"
-            className="flex flex-col border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] xl:p-8"
+            aria-labelledby="export-data-action"
+            className="flex min-w-0 flex-col border-4 border-black bg-white shadow-[6px_6px_0px_0px_#000000]"
           >
-            <h2
-              id="export-data-heading"
-              className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-3xl font-black uppercase xl:text-4xl"
-            >
-              {playerDataPortabilityCopy.exportTitle}
-            </h2>
             <Button
+              id="export-data-action"
+              aria-describedby="export-data-description"
               type="button"
-              size="lg"
+              size="section"
               disabled={isBusy}
               onClick={onExport}
-              className="w-full"
+              className="-mx-[4px] -mt-[4px] w-[calc(100%+8px)]"
             >
               {playerDataPortabilityCopy.exportAction}
             </Button>
-            <p className="text-mapache-vivid-dark pt-4 font-bold">
+            <p
+              id="export-data-description"
+              className="text-mapache-vivid-dark p-[20px] font-bold"
+            >
               {playerDataPortabilityCopy.exportDescription}
             </p>
           </section>
 
           <section
-            aria-labelledby="import-data-heading"
-            className="flex flex-col border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] xl:p-8"
+            aria-label={playerDataPortabilityCopy.importTitle}
+            className="flex min-w-0 flex-col border-4 border-black bg-white shadow-[6px_6px_0px_0px_#000000]"
           >
-            <h2
-              id="import-data-heading"
-              className="text-mapache-vivid-dark border-b-4 border-black pb-4 text-3xl font-black uppercase xl:text-4xl"
-            >
-              {playerDataPortabilityCopy.importTitle}
-            </h2>
             <input
               ref={importInputRef}
               type="file"
@@ -242,15 +236,19 @@ export default function DataManagement({
             <Button
               ref={chooseBackupButtonRef}
               type="button"
+              aria-describedby="import-data-description"
               variant="secondary"
-              size="lg"
+              size="section"
               disabled={isBusy}
               onClick={() => importInputRef.current?.click()}
-              className="w-full"
+              className="-mx-[4px] -mt-[4px] w-[calc(100%+8px)]"
             >
               {playerDataPortabilityCopy.chooseBackupAction}
             </Button>
-            <p className="text-mapache-vivid-dark pt-4 font-bold">
+            <p
+              id="import-data-description"
+              className="text-mapache-vivid-dark p-[20px] font-bold"
+            >
               {playerDataPortabilityCopy.importDescription}
             </p>
           </section>
@@ -264,26 +262,28 @@ export default function DataManagement({
           onRequestReset={handleRequestReset}
         />
       </div>
-      <div className="flex w-full max-w-5xl shrink-0 flex-wrap gap-3 pt-3 pb-2">
+      <div className="flex w-full max-w-5xl shrink-0 flex-wrap gap-[12px] pt-[12px] pb-[8px]">
         <Button
           type="button"
           variant="secondary"
+          size="navigation"
           disabled={isNavigationBlocked}
           onClick={onOpenMenu}
           wrap
-          className="min-w-0 flex-1 basis-[8em]"
+          className="min-w-0 flex-[1_0_max-content]"
         >
           {PRODUCT_MENU_COPY.openAction}
         </Button>
         <Button
           type="button"
           variant="outline"
+          size="navigation"
           disabled={isNavigationBlocked}
           onClick={onClose}
           wrap
-          className="min-w-0 flex-1 basis-[8em]"
+          className="min-w-0 flex-[1_0_max-content]"
         >
-          {localizedCopy.interfaceCopy.screen.backToValues}
+          {localizedCopy.interfaceCopy.controlActions.back}
         </Button>
       </div>
     </MapacheScreen>
