@@ -59,7 +59,7 @@ function NativeInformationPanelFrame({
             className={cx(
               "relative z-20 border-black",
               isIntroduction
-                ? "max-h-[25%] shrink grow-0 border-b-6"
+                ? "max-h-[40%] min-h-[min(96px,20vh)] shrink grow-0 border-b-6"
                 : isStandard
                   ? "max-h-[40%] shrink-0 grow-0 border-b-4"
                   : "max-h-[40%] shrink-0 grow-0 border-b-4",
@@ -122,10 +122,10 @@ function NativeInformationPanelFrame({
 
           <ScrollView
             className={cx(
-              "relative z-20 max-h-[45%] shrink-0 grow-0 border-black",
+              "relative z-20 shrink-0 grow-0 border-black",
               isIntroduction
-                ? "border-t-6"
-                : "shrink-0 border-t-4 px-4 pt-3 pb-5",
+                ? "max-h-[35%] border-t-6"
+                : "max-h-[45%] border-t-4 px-4 pt-3 pb-5",
             )}
           >
             <View
@@ -172,7 +172,7 @@ function NativeInformationPanelFrame({
             </View>
           </ScrollView>
           {afterActions && (
-            <ScrollView className="relative z-20 max-h-[40%] shrink grow-0">
+            <ScrollView className="relative z-20 max-h-[40%] min-h-[min(128px,20vh)] shrink grow-0">
               {afterActions}
             </ScrollView>
           )}

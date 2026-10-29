@@ -60,7 +60,7 @@ function InformationPanelFrame({
         !isIntroduction &&
           "max-w-4xl overflow-hidden border-4 border-black shadow-[12px_12px_0px_0px_#000000]",
         isIntroduction
-          ? "grid h-full grid-rows-[minmax(0,auto)_minmax(min(10rem,25dvh),1fr)_auto_minmax(0,auto)]"
+          ? "flex h-full flex-col"
           : isReference
             ? "grid grid-rows-[auto_minmax(0,1fr)_auto]"
             : "flex flex-col",
@@ -68,10 +68,11 @@ function InformationPanelFrame({
     >
       {decoration}
       <header
+        tabIndex={isIntroduction ? 0 : undefined}
         className={cx(
           "relative z-20 border-black",
           isIntroduction
-            ? "flex min-h-0 items-center justify-center overflow-y-auto border-b-6 px-4 py-[clamp(4px,calc(100dvh-430px),1.25rem)] xl:px-8 xl:py-6"
+            ? "flex max-h-[40%] min-h-[min(6rem,20dvh)] shrink items-center-safe justify-center overflow-y-auto border-b-6 px-4 py-[clamp(4px,calc(100dvh-430px),20px)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-black xl:px-8 xl:py-[24px]"
             : isReference
               ? "flex min-w-0 flex-wrap items-start gap-3 border-b-4 px-[16px] py-[20px]"
               : "flex max-h-[40%] min-w-0 shrink-0 flex-wrap items-start gap-3 overflow-auto overscroll-contain border-b-4 p-[16px]",
@@ -106,10 +107,10 @@ function InformationPanelFrame({
         data-controller-scroll
         tabIndex={0}
         className={cx(
-          "relative z-20 min-h-0 min-w-0 overflow-y-auto overscroll-contain [overflow-wrap:anywhere] hyphens-auto",
+          "relative z-20 min-w-0 overflow-y-auto overscroll-contain [overflow-wrap:anywhere] hyphens-auto",
           isIntroduction
-            ? "mx-auto w-full max-w-4xl [scrollbar-gutter:stable] px-5 py-[min(1.25rem,3dvh)] text-left xl:px-10 xl:py-7"
-            : "flex-1 px-[20px] py-[16px] xl:px-8",
+            ? "mx-auto min-h-[min(10rem,25dvh)] w-full max-w-4xl flex-1 [scrollbar-gutter:stable] px-5 py-[min(1.25rem,3dvh)] text-left xl:px-10 xl:py-7"
+            : "min-h-0 flex-1 px-[20px] py-[16px] xl:px-8",
         )}
       >
         {children}
@@ -119,7 +120,7 @@ function InformationPanelFrame({
         className={cx(
           "relative z-20 border-black",
           isIntroduction
-            ? "flex min-w-0 flex-wrap items-center justify-center gap-[12px] border-t-6 px-[24px] pt-[clamp(8px,calc(100dvh-430px),16px)] pb-[clamp(12px,calc(100dvh-430px),20px)] xl:flex-col [&>*]:max-w-xl [&>*]:flex-[1_1_16.25rem] xl:[&>*]:w-full xl:[&>*]:flex-auto"
+            ? "flex max-h-[35%] min-w-0 shrink-0 flex-wrap content-start items-center justify-center gap-[12px] scroll-py-[12px] overflow-y-auto border-t-6 px-[24px] pt-[clamp(8px,calc(100dvh-430px),16px)] pb-[clamp(12px,calc(100dvh-430px),20px)] xl:flex-col xl:flex-nowrap [&>*]:max-w-xl [&>*]:flex-[1_1_16.25rem] [&>*]:scroll-my-[12px] xl:[&>*]:w-full xl:[&>*]:flex-auto"
             : isReference
               ? "min-w-0 border-t-4 bg-white px-[16px] pt-[12px] pb-[20px]"
               : "min-w-0 shrink-0 border-t-4 bg-white px-[16px] pt-[12px] pr-[20px] pb-[20px]",
@@ -131,6 +132,15 @@ function InformationPanelFrame({
           size={isIntroduction ? "arrival" : isReference ? "sm" : "default"}
           wrap
           onClick={onPrimaryAction}
+          onFocus={
+            isIntroduction
+              ? (event) =>
+                  event.currentTarget.scrollIntoView({
+                    block: "nearest",
+                    inline: "nearest",
+                  })
+              : undefined
+          }
           disabled={isPrimaryActionPending}
           aria-busy={isPrimaryActionPending}
           className={cx(
@@ -147,7 +157,14 @@ function InformationPanelFrame({
         </Button>
       </footer>
       {afterActions && (
-        <div className="relative z-20 min-h-0 overflow-y-auto">
+        <div
+          className={cx(
+            "relative z-20 overflow-y-auto",
+            isIntroduction
+              ? "max-h-[40%] min-h-[min(8rem,20dvh)] shrink"
+              : "min-h-0",
+          )}
+        >
           {afterActions}
         </div>
       )}
