@@ -1628,7 +1628,7 @@ describe("GameClient Integration", () => {
     expect(click).toHaveBeenCalledOnce()
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:game-client-backup")
 
-    fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     expect(
       await screen.findByRole("heading", {
         name: /^My (?:Top Five Life )?Values$/,
@@ -1753,7 +1753,7 @@ describe("GameClient Integration", () => {
     expect(issue).toHaveFocus()
     expect(screen.getByRole("button", { name: "Choose Backup" })).toBeEnabled()
 
-    fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     expect(await screen.findAllByRole("listitem")).toHaveLength(103)
   })
 
@@ -1840,7 +1840,7 @@ describe("GameClient Integration", () => {
       screen.getByRole("button", { name: "Delete All Custom Values" }),
     ).toBeDisabled()
 
-    fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     expect(await screen.findAllByRole("listitem")).toHaveLength(103)
     expect(
       screen.queryByText("Craftsmanship", { selector: "span" }),
@@ -1886,7 +1886,7 @@ describe("GameClient Integration", () => {
       ),
     ).toBeVisible()
 
-    fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
     expect(await screen.findByText("Not ranked yet")).toBeVisible()
     expect(
       screen.queryByRole("heading", { name: "My Top Five Life Values" }),

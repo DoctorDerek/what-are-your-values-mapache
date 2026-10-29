@@ -1,11 +1,13 @@
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import { playerDataResetCopy } from "@game/data/src/PlayerDataResetCopy"
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import type { PlayerDataResetReview as PlayerDataResetReviewState } from "@game/machines/src/PlayerDataReset"
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
 import { WAYVM_IMPORT_FILE_ACCEPT } from "@/lib/PlayerDataFiles"
-import DataManagement from "./DataManagement"
+import DataManagement from "@/components/DataManagement"
 
 const preview = Object.freeze({
   exportedAt: "2026-08-06T12:34:56.000Z",
@@ -29,6 +31,7 @@ const preview = Object.freeze({
 
 function renderDataManagement(
   overrides: Partial<Parameters<typeof DataManagement>[0]> = {},
+  locale: "en" | "es-MX" = "en",
 ) {
   const props = {
     activity: null,
@@ -49,7 +52,7 @@ function renderDataManagement(
     ...overrides,
   } satisfies Parameters<typeof DataManagement>[0]
 
-  render(<DataManagement {...props} />)
+  render(<LocaleProvider locale={locale}><DataManagement {...props} /></LocaleProvider>)
   return props
 }
 
@@ -78,11 +81,10 @@ describe("Data Management", () => {
     expect(
       screen.getByText(/show you a preview before replacing data/),
     ).toBeVisible()
-    const portabilityPanels = screen
-      .getByRole("heading", { name: "Export Data", level: 2 })
-      .closest("section")?.parentElement
-    expect(portabilityPanels).toHaveClass("grid-cols-1", "xl:grid-cols-2")
-    expect(portabilityPanels).not.toHaveClass("lg:grid-cols-2")
+    const exportSection = screen.getByRole("region", { name: "Export Data" })
+    expect(within(exportSection).getByRole("button", { name: "Export Data" }))
+      .toHaveAccessibleDescription(/Exporting does not upload your data to us/)
+    expect(screen.queryByRole("heading", { name: "Export Data" })).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole("button", { name: "Export Data" }))
     const importInput = screen.getByLabelText("Choose WAYVM JSON backup")
@@ -90,7 +92,7 @@ describe("Data Management", () => {
     expect(importInput).toHaveAttribute("accept", WAYVM_IMPORT_FILE_ACCEPT)
     fireEvent.click(screen.getByRole("button", { name: "Choose Backup" }))
     fireEvent.change(importInput, { target: { files: [file] } })
-    fireEvent.click(screen.getByRole("button", { name: "Back to Your Values" }))
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
 
     expect(props.onExport).toHaveBeenCalledOnce()
     expect(inputClick).toHaveBeenCalledOnce()
@@ -102,6 +104,20 @@ describe("Data Management", () => {
     expect(
       screen.getByRole("button", { name: "Delete All Custom Values" }),
     ).toBeDisabled()
+  })
+
+  it.each(["en", "es-MX"] as const)("uses localized action-led sections and navigation in %s", (locale) => {
+    const props = renderDataManagement({}, locale)
+    const copy = getLocaleCatalog(locale).interfaceCopy
+    expect(screen.getByRole("region", { name: copy.portability.screenTitle })).toContainElement(
+      screen.getByRole("heading", { name: copy.portability.screenTitle }),
+    )
+    fireEvent.click(screen.getByRole("button", { name: copy.portability.exportAction }))
+    fireEvent.click(screen.getByRole("button", { name: copy.menu.openAction }))
+    fireEvent.click(screen.getByRole("button", { name: copy.controlActions.back }))
+    expect(props.onExport).toHaveBeenCalledOnce()
+    expect(props.onOpenMenu).toHaveBeenCalledOnce()
+    expect(props.onClose).toHaveBeenCalledOnce()
   })
 
   it("returns focus to backup selection after cancelling a reviewed import", async () => {
@@ -160,7 +176,7 @@ describe("Data Management", () => {
     expect(screen.getByRole("button", { name: "Export Data" })).toBeDisabled()
     expect(screen.getByRole("button", { name: "Choose Backup" })).toBeDisabled()
     expect(
-      screen.getByRole("button", { name: "Back to Your Values" }),
+      screen.getByRole("button", { name: "Back" }),
     ).toBeDisabled()
     expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled()
   })
@@ -173,7 +189,7 @@ describe("Data Management", () => {
       screen.queryByRole("button", { name: "Menu" }),
     ).not.toBeInTheDocument()
     expect(
-      screen.queryByRole("button", { name: "Back to Your Values" }),
+      screen.queryByRole("button", { name: "Back" }),
     ).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole("button", { name: "Import & Replace" }))
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
@@ -234,7 +250,7 @@ describe("Data Management", () => {
       screen.queryByRole("button", { name: "Menu" }),
     ).not.toBeInTheDocument()
     expect(
-      screen.queryByRole("button", { name: "Back to Your Values" }),
+      screen.queryByRole("button", { name: "Back" }),
     ).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
     await waitFor(() =>
