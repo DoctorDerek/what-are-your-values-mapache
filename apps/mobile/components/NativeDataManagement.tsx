@@ -96,60 +96,57 @@ export default function NativeDataManagement({
     )
 
   return (
-    <MapacheScreen>
-      <View className="gap-4 border-b-4 border-black p-4">
-        <Text
-          variant="h1"
-          className="text-mapache-vivid-primary-cyan text-left text-2xl font-black tracking-tight uppercase xl:text-4xl"
-        >
-          {playerDataPortabilityCopy.screenTitle}
-        </Text>
-      </View>
-
+    <MapacheScreen className="p-4 xl:p-6">
       <ScrollView
-        className="flex-1"
-        contentContainerClassName="gap-5 p-5 pb-10"
+        className="min-h-0 flex-1"
+        contentContainerClassName="pb-3 pr-1"
         keyboardShouldPersistTaps="handled"
       >
-        <View accessibilityState={{ busy: isBusy }} className="gap-5">
+        <View
+          accessibilityState={{ busy: isBusy }}
+          className="w-full max-w-5xl gap-5 self-center"
+        >
+          <Text
+            variant="h1"
+            className="text-mapache-vivid-primary-cyan text-left text-2xl font-black uppercase xl:text-4xl"
+          >
+            {playerDataPortabilityCopy.screenTitle}
+          </Text>
           <NativeOperationMessages
             activity={activity}
             issue={issue}
             notice={notice}
           />
 
-          <View className="gap-4 border-4 border-black bg-white p-5 shadow-[6px_6px_0px_0px_#000000]">
-            <Text
-              accessibilityRole="header"
-              className="border-b-4 border-black pb-3 text-3xl font-black text-black uppercase"
-            >
-              {playerDataPortabilityCopy.exportTitle}
-            </Text>
-            <Button disabled={isBusy} onPress={onExport}>
-              <Text>{playerDataPortabilityCopy.exportAction}</Text>
-            </Button>
-            <Text className="font-bold text-black">
-              {playerDataPortabilityCopy.exportDescription}
-            </Text>
-          </View>
+          <View className="gap-5 xl:flex-row">
+            <View className="min-w-0 border-4 border-black bg-white shadow-[6px_6px_0px_0px_#000000] xl:flex-1">
+              <Button
+                size="section"
+                disabled={isBusy}
+                onPress={onExport}
+                className="-mx-[4px] -mt-[4px]"
+              >
+                <Text>{playerDataPortabilityCopy.exportAction}</Text>
+              </Button>
+              <Text className="p-5 font-bold text-black">
+                {playerDataPortabilityCopy.exportDescription}
+              </Text>
+            </View>
 
-          <View className="gap-4 border-4 border-black bg-white p-5 shadow-[6px_6px_0px_0px_#000000]">
-            <Text
-              accessibilityRole="header"
-              className="border-b-4 border-black pb-3 text-3xl font-black text-black uppercase"
-            >
-              {playerDataPortabilityCopy.importTitle}
-            </Text>
-            <Button
-              disabled={isBusy}
-              variant="secondary"
-              onPress={onChooseBackup}
-            >
-              <Text>{playerDataPortabilityCopy.chooseBackupAction}</Text>
-            </Button>
-            <Text className="font-bold text-black">
-              {playerDataPortabilityCopy.importDescription}
-            </Text>
+            <View className="min-w-0 border-4 border-black bg-white shadow-[6px_6px_0px_0px_#000000] xl:flex-1">
+              <Button
+                disabled={isBusy}
+                variant="secondary"
+                size="section"
+                onPress={onChooseBackup}
+                className="-mx-[4px] -mt-[4px]"
+              >
+                <Text>{playerDataPortabilityCopy.chooseBackupAction}</Text>
+              </Button>
+              <Text className="p-5 font-bold text-black">
+                {playerDataPortabilityCopy.importDescription}
+              </Text>
+            </View>
           </View>
 
           <Text className="font-bold text-white">
@@ -163,24 +160,24 @@ export default function NativeDataManagement({
         </View>
       </ScrollView>
 
-      <View className="shrink-0 flex-row flex-wrap gap-3 border-t-4 border-black p-3 pb-5">
+      <View className="w-full max-w-5xl shrink-0 flex-row flex-wrap gap-3 self-center pt-3 pb-2">
         <Button
-          size="compact"
-          className="basis-readable-action min-w-0 flex-1"
+          size="navigation"
+          className="max-w-full grow"
           disabled={isNavigationBlocked}
-          variant="outline"
+          variant="secondary"
           onPress={onOpenMenu}
         >
           <Text>{PRODUCT_MENU_COPY.openAction}</Text>
         </Button>
         <Button
-          size="compact"
-          className="basis-readable-action min-w-0 flex-1"
+          size="navigation"
+          className="max-w-full grow"
           disabled={isNavigationBlocked}
-          variant="secondary"
+          variant="outline"
           onPress={onClose}
         >
-          <Text>{localizedCopy.interfaceCopy.screen.backToValues}</Text>
+          <Text>{localizedCopy.interfaceCopy.controlActions.back}</Text>
         </Button>
       </View>
     </MapacheScreen>
