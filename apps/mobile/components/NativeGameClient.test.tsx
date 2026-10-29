@@ -178,68 +178,80 @@ describe("NativeGameClient Menu navigation", () => {
     unmount()
     expect(remove).toHaveBeenCalled()
   })
-  it("prepares animals before Battle and cancels a cold intent when the Menu opens", async () => {
-    const animals = ZOO_ANIMALS.map((animal, index) => ({
-      animalId: animal.id,
-      characterClips: [
-        {
-          kind: "character" as const,
-          animalId: animal.id,
+  it.each(["Menu", "Achievements"])(
+    "prepares animals before Battle and cancels a cold intent when %s opens",
+    async (destination) => {
+      const animals = ZOO_ANIMALS.map((animal, index) => ({
+        animalId: animal.id,
+        characterClips: [
+          {
+            kind: "character" as const,
+            animalId: animal.id,
+            animationId: animal.id === "bat" ? "idle_upright" : "idle",
+            relativePath: `${animal.id}/idle.png`,
+            frameWidth: 32,
+            frameHeight: 32,
+            frameCount: 4,
+            visibleBounds: { left: 0, top: 0, width: 32, height: 32 },
+            asset: index + 1,
+          },
+        ],
+        auxiliaryEffectClips: [],
+        referencePose: Object.freeze({
           animationId: animal.id === "bat" ? "idle_upright" : "idle",
-          relativePath: `${animal.id}/idle.png`,
-          frameWidth: 32,
-          frameHeight: 32,
-          frameCount: 4,
-          visibleBounds: { left: 0, top: 0, width: 32, height: 32 },
-          asset: index + 1,
-        },
-      ],
-      auxiliaryEffectClips: [],
-      referencePose: Object.freeze({
-        animationId: animal.id === "bat" ? "idle_upright" : "idle",
-        frameIndex: 0,
-        bounds: Object.freeze({ left: 0, top: 0, width: 32, height: 32 }),
-        anchor: Object.freeze({ x: 16, y: 32 }),
-      }),
-    }))
-    runtimeCatalogModule.SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG = {
-      mode: "licensed",
-      evidenceSnapshotId: "native-intent-test",
-      animals,
-      characterClipCount: animals.length,
-      auxiliaryEffectClipCount: 0,
-    }
-    await render(<NativeGameClient />)
-    await fireEvent.press(await screen.findByRole("button", { name: "Start" }))
-    expect(
-      screen.getAllByTestId(/^prepared-animal-/, {
+          frameIndex: 0,
+          bounds: Object.freeze({ left: 0, top: 0, width: 32, height: 32 }),
+          anchor: Object.freeze({ x: 16, y: 32 }),
+        }),
+      }))
+      runtimeCatalogModule.SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG = {
+        mode: "licensed",
+        evidenceSnapshotId: "native-intent-test",
+        animals,
+        characterClipCount: animals.length,
+        auxiliaryEffectClipCount: 0,
+      }
+      await render(<NativeGameClient />)
+      await fireEvent.press(
+        await screen.findByRole("button", { name: "Start" }),
+      )
+      expect(
+        screen.getAllByTestId(/^prepared-animal-/, {
+          includeHiddenElements: true,
+        }).length,
+      ).toBeGreaterThan(0)
+      await fireEvent.press(
+        await screen.findByRole("button", { name: "Battle" }),
+      )
+      expect(
+        screen.getByRole("button", {
+          name: "Preparing battle. Press to cancel.",
+        }),
+      ).toBeBusy()
+      await fireEvent.press(screen.getByRole("button", { name: destination }))
+      await fireEvent.press(
+        await screen.findByRole("button", {
+          name: destination === "Menu" ? "Close Menu" : "Back",
+        }),
+      )
+      expect(screen.getByRole("button", { name: "Battle" })).not.toBeBusy()
+      await fireEvent.press(screen.getByRole("button", { name: "Battle" }))
+      await fireEvent.press(
+        screen.getByRole("button", {
+          name: "Preparing battle. Press to cancel.",
+        }),
+      )
+      expect(screen.getByRole("button", { name: "Battle" })).not.toBeBusy()
+      await fireEvent.press(screen.getByRole("button", { name: "Battle" }))
+      for (const prepared of screen.getAllByTestId(/^prepared-animal-/, {
         includeHiddenElements: true,
-      }).length,
-    ).toBeGreaterThan(0)
-    await fireEvent.press(await screen.findByRole("button", { name: "Battle" }))
-    expect(
-      screen.getByRole("button", {
-        name: "Preparing battle. Press to cancel.",
-      }),
-    ).toBeBusy()
-    await fireEvent.press(screen.getByRole("button", { name: "Menu" }))
-    await fireEvent.press(screen.getByRole("button", { name: "Close Menu" }))
-    await fireEvent.press(screen.getByRole("button", { name: "Battle" }))
-    await fireEvent.press(
-      screen.getByRole("button", {
-        name: "Preparing battle. Press to cancel.",
-      }),
-    )
-    expect(screen.getByRole("button", { name: "Battle" })).not.toBeBusy()
-    await fireEvent.press(screen.getByRole("button", { name: "Battle" }))
-    for (const prepared of screen.getAllByTestId(/^prepared-animal-/, {
-      includeHiddenElements: true,
-    }))
-      await fireEvent(prepared, "load")
-    expect(
-      await screen.findAllByRole("button", { name: /^Choose / }),
-    ).toHaveLength(2)
-  })
+      }))
+        await fireEvent(prepared, "load")
+      expect(
+        await screen.findAllByRole("button", { name: /^Choose / }),
+      ).toHaveLength(2)
+    },
+  )
 
   it("retains the introduction during initial persistence instead of showing another loading surface", async () => {
     const store = createInMemoryDurableStore()
