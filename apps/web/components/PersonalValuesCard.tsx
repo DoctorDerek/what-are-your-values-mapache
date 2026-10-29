@@ -43,7 +43,7 @@ export default function PersonalValuesCard({
     <section
       inert={inert}
       aria-labelledby="your-values-heading"
-      className="border-player-card-frame bg-player-card-background grid min-h-min w-full max-w-7xl min-w-0 flex-1 grid-cols-1 grid-rows-[auto_minmax(3rem,1fr)] overflow-hidden border-4 inert:opacity-50 xl:grid-cols-[minmax(12rem,1fr)_minmax(0,3fr)]"
+      className="border-player-card-frame bg-player-card-background grid min-h-min w-full max-w-7xl min-w-0 flex-1 grid-cols-1 grid-rows-[auto_minmax(max(3rem,calc(13rem-160px)),1fr)] overflow-hidden border-4 inert:opacity-50 xl:grid-cols-[minmax(12rem,1fr)_minmax(0,3fr)]"
     >
       <div className="flex flex-wrap items-center xl:contents">
         <div className="min-w-0 flex-[1_1_10rem] self-center px-3 py-[clamp(0.25rem,calc(100dvh-37rem),1rem)] xl:col-span-2 xl:row-start-1 xl:px-3 xl:py-4 xl:text-center">
