@@ -60,7 +60,7 @@ function InformationPanelFrame({
         !isIntroduction &&
           "max-w-4xl overflow-hidden border-4 border-black shadow-[12px_12px_0px_0px_#000000]",
         isIntroduction
-          ? "grid h-full grid-rows-[minmax(0,auto)_minmax(min(10rem,30dvh),1fr)_auto_minmax(0,auto)]"
+          ? "grid h-full grid-rows-[minmax(0,auto)_minmax(min(10rem,25dvh),1fr)_auto_minmax(0,auto)]"
           : isReference
             ? "grid grid-rows-[auto_minmax(0,1fr)_auto]"
             : "flex flex-col",

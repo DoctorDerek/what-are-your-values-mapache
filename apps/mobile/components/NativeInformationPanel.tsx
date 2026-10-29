@@ -108,7 +108,7 @@ function NativeInformationPanelFrame({
             className={cx(
               "relative z-20 flex-1",
               isIntroduction
-                ? "mx-auto min-h-[min(160px,30vh)] w-full max-w-4xl"
+                ? "mx-auto min-h-[min(160px,25vh)] w-full max-w-4xl"
                 : "min-h-0",
             )}
             contentContainerClassName={
