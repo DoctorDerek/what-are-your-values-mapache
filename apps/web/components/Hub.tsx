@@ -173,7 +173,7 @@ export default function Hub({
         className={
           isDraftNavigationBlocked
             ? "contents"
-            : "-mt-3 -mr-4 flex min-h-[min(16rem,50%)] w-[calc(100%+1rem)] max-w-[calc(80rem+1rem)] flex-[1_0_min(16rem,50%)] flex-col items-center gap-[16px] overflow-x-hidden overflow-y-auto overscroll-contain pt-3 pr-4 focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white xl:gap-4"
+            : "-mt-(--mapache-screen-spacing) -mr-(--mapache-screen-spacing) flex min-h-(--hub-composition-minimum) w-[calc(100%+var(--mapache-screen-spacing))] max-w-[calc(80rem+var(--mapache-screen-spacing))] flex-[1_0_var(--hub-composition-minimum)] flex-col items-center gap-[16px] overflow-x-hidden overflow-y-auto overscroll-contain pt-(--mapache-screen-spacing) pr-(--mapache-screen-spacing) [--hub-composition-minimum:min(calc(16rem+var(--mapache-screen-spacing)),calc(50%+var(--mapache-screen-spacing)))] focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white xl:gap-4"
         }
       >
         {!isDraftNavigationBlocked && header}
