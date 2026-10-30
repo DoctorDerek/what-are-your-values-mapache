@@ -20,7 +20,6 @@ import CustomValueEditor from "@/components/CustomValueEditor"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import ValueLevelProgress from "@/components/ValueLevelProgress"
 
 export default function AllValues({
   rankedValues,
@@ -123,7 +122,7 @@ export default function AllValues({
 
   const renderRows = (values: readonly RankedValue[]) =>
     values.map((rankedValue) => {
-      const { definition, progress } = rankedValue
+      const { definition } = rankedValue
       const displayName = getValueDisplayName(definition, localization.values)
       const customValueId = definition.kind === "custom" ? definition.id : null
 
@@ -144,7 +143,7 @@ export default function AllValues({
                     ? localization.metadata.languageTag
                     : undefined
                 }
-                className="min-w-[min(100%,16rem)] flex-1 text-3xl font-black break-words hyphens-auto uppercase [hyphenate-limit-chars:6_3_3] xl:text-4xl"
+                className="min-w-0 flex-[1_1_16rem] text-3xl font-black break-words hyphens-auto uppercase [hyphenate-limit-chars:6_3_3] xl:text-4xl"
               >
                 {getWrappableValueDisplayName(
                   definition,
@@ -157,8 +156,9 @@ export default function AllValues({
                   {localizedCopy.interfaceCopy.screen.yours}
                 </span>
               ) : null}
-              <ValueLevelProgress totalXp={progress.totalXp} />
-              {definition.kind === "custom" ? (
+            </>
+          }
+          actions={definition.kind === "custom" ? (
                 <div className="flex flex-wrap gap-3">
                   <button
                     id={`edit-${definition.id}`}
@@ -185,8 +185,7 @@ export default function AllValues({
                     {localizedCopy.interfaceCopy.screen.delete}
                   </button>
                 </div>
-              ) : null}
-            </>
+              ) : null
           }
         >
           <p className="mt-5 overflow-x-auto overflow-y-auto border-t-4 border-black pt-4 text-xl leading-relaxed font-bold [overflow-wrap:anywhere] break-words whitespace-pre-wrap">
