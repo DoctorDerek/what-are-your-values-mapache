@@ -248,11 +248,11 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
       },
       {
         kind: "resource",
-        title: "Bruce Lee Foundation: Jeet Kune Do",
+        title: "Bruce Lee: Jeet Kune Do",
         description:
           "Explora el énfasis de Bruce Lee en la sencillez, la franqueza, la libertad, la expresión personal honesta y el aprendizaje a partir de la experiencia.",
-        actionLabel: "Visitar Bruce Lee Foundation",
-        url: "https://bruceleefoundation.org/jeetkunedo/",
+        actionLabel: "Visitar BruceLee.com",
+        url: "https://brucelee.com/jeet-kune-do",
       },
       {
         kind: "resource",
@@ -383,7 +383,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
         kind: "section",
         heading: "Código fuente",
         paragraphs: [
-          "El código de la aplicación puede estar disponible bajo la licencia de código abierto que se indica. El arte comercial, las fuentes, la música y otros recursos de terceros conservan sus propias licencias y no se conceden mediante la licencia del código.",
+          "El arte comercial, las fuentes, la música y otros recursos de terceros conservan sus propias licencias y no se conceden mediante la licencia del código.",
         ],
       },
       {
