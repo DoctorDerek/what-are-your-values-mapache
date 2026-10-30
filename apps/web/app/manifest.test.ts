@@ -26,7 +26,7 @@ describe("web application manifest", () => {
       name: "What Are Your Values, Mapache?",
       short_name: "WAYVM",
       description:
-        "A high-speed autobattler designed to help you find your values in life.",
+        "A free game designed to help you find your values in life. Choose which of two values matters more to you right now, and watch cute animals duel in a high-speed autobattler.",
       start_url: "/",
       scope: "/",
       display: "standalone",

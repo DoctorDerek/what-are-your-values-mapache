@@ -23,7 +23,7 @@ test.describe("static English editorial document", () => {
     })
     const noScriptCopy = gameFallback.locator("noscript p")
     await expect(noScriptCopy).toHaveText([
-      "A high-speed autobattler designed to help you find your values in life.",
+      "A free game designed to help you find your values in life. Choose which of two values matters more to you right now, and watch cute animals duel in a high-speed autobattler.",
       "The interactive game requires JavaScript.",
     ])
     for (const paragraph of await noScriptCopy.all())

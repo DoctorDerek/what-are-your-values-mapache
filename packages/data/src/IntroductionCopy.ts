@@ -1,7 +1,7 @@
 export const introductionCopy = Object.freeze({
   title: "What Are Your Values, Mapache?",
   tagline:
-    "A high-speed autobattler designed to help you find your values in life.",
+    "A free game designed to help you find your values in life. Choose which of two values matters more to you right now, and watch cute animals duel in a high-speed autobattler.",
   body: Object.freeze([
     "Knowing your own values can help you find meaning in life, make difficult choices, and know yourself better.",
     "Compare 103 included values in quick one-on-one battles. If something important is missing, add private Custom Values with names and definitions you choose.",
