@@ -86,7 +86,7 @@ export const HOW_IT_WORKS_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "section",
-      heading: "Start With 103 Values—or Add Your Own",
+      heading: "Start With 103 Values or Add Your Own",
       paragraphs: Object.freeze([
         "The game includes 103 built-in values: 100 from the public-domain 2011 Personal Values Card Sort, plus Ingenuity, Destiny, and Pets. No list can include every value that may matter to every person, so you can add as many private Custom Values as are useful to you, with your own names and definitions.",
       ]),
@@ -108,14 +108,14 @@ export const HOW_IT_WORKS_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "section",
-      heading: "See Your Top Five—and Every Value",
+      heading: "See Your Top Five and Every Value",
       paragraphs: Object.freeze([
         "Your Top Five gives you a short summary of what matters most. Browse All Values for your complete ranking and definitions. Definitions are also visible during Battle.",
       ]),
     }),
     Object.freeze({
       kind: "section",
-      heading: "Play for as Long—or as Little—as You Want",
+      heading: "Play for as Long or as Little as You Want",
       paragraphs: Object.freeze([
         "The game eventually presents every possible pair in a balanced order. With the 103 included values, a complete cycle contains 5,253 unique comparisons. Adding Custom Values increases that total, but you never have to complete a cycle in one sitting. Stop anywhere and continue later.",
       ]),
@@ -131,7 +131,7 @@ export const HOW_IT_WORKS_INFORMATION_PANEL = Object.freeze({
       kind: "section",
       heading: "Undo Mistakes",
       paragraphs: Object.freeze([
-        "One tap or click makes a choice. If you choose the wrong card by accident—or simply reconsider—use Undo. Redo restores an undone choice until you make a new choice.",
+        "One tap or click makes a choice. If you choose the wrong card by accident or simply reconsider, use Undo. Redo restores an undone choice until you make a new choice.",
       ]),
     }),
     Object.freeze({
@@ -237,7 +237,7 @@ export const WHY_I_MADE_THIS_GAME_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "paragraph",
-      text: "I rebuilt this game so other people could have the same opportunity—privately, freely, and without being told what they should value.",
+      text: "I rebuilt this game so other people could have the same opportunity: privately, freely, and without being told what they should value.",
     }),
     Object.freeze({
       kind: "paragraph",
@@ -245,7 +245,7 @@ export const WHY_I_MADE_THIS_GAME_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "signature",
-      text: "—Dr. Derek Austin",
+      text: "Dr. Derek Austin",
     }),
   ]),
 } as const satisfies InformationPanelDefinition)
@@ -286,7 +286,7 @@ export const FREE_RESOURCES_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "resource",
-      title: "Personal Values Card Sort — 2011 Update",
+      title: "Personal Values Card Sort: 2011 Update",
       description:
         "Read the public-domain source for the original 100 values and definitions, the three-to-five-pile procedure, the final five-to-ten ranking, and the three blank “Other Value” cards adapted by What Are Your Values, Mapache?",
       actionLabel: "Open the Personal Values Card Sort",

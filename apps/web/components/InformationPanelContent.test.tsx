@@ -51,7 +51,7 @@ describe("InformationPanelContent", () => {
         informationPanel={WHY_I_MADE_THIS_GAME_INFORMATION_PANEL}
       />,
     )
-    expect(screen.getByText("—Dr. Derek Austin")).toHaveClass("text-right")
+    expect(screen.getByText("Dr. Derek Austin")).toHaveClass("text-right")
   })
 
   it("renders exactly seven explicit isolated external resource actions", () => {

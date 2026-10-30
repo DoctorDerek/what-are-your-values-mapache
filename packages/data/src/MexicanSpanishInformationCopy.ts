@@ -184,7 +184,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
         kind: "paragraph",
         text: "El juego no puede decirte cuáles deberían ser tus valores y no hay un resultado moralmente correcto. Solo te da una forma más clara de notar lo que más te importa.",
       },
-      { kind: "signature", text: "—Dr. Derek Austin" },
+      { kind: "signature", text: "Dr. Derek Austin" },
     ],
   },
   "free-resources": {
@@ -224,7 +224,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
       },
       {
         kind: "resource",
-        title: "Personal Values Card Sort — actualización de 2011",
+        title: "Personal Values Card Sort: actualización de 2011",
         description:
           "Consulta la fuente de dominio público de los 100 valores originales y sus definiciones, el procedimiento de tres a cinco grupos, la clasificación final de cinco a diez valores y las tres tarjetas en blanco de “Otro valor” que ¿Cuáles son tus valores, Mapache? adapta.",
         actionLabel: "Abrir Personal Values Card Sort",

@@ -89,7 +89,7 @@ pnpm --filter @game/web start
 
 Recovery is not catalog acceptance. `LocalizationCatalogQuality.test.ts` checks every raw shipped catalog and requires zero recovery diagnostics. Shared fault-injection tests cover missing fields, malformed sections, blank copy, duplicate IDs, throwing formatters, and damaged English. Web and native integration tests remove the entire English catalog while exercising usable controls; the web session test also records a battle and reopens the saved profile.
 
-`LOCALIZATION_CATALOG_RESOLUTIONS` exposes startup diagnostics. `resolveLocalizedFormatter` returns diagnostics for a particular formatter invocation, and `createLocaleFormatters` accepts an optional scoped diagnostic callback. Diagnostics contain only locale, key, reason, and fallback category—not copy, player data, or exception contents. They are not uploaded, logged globally, or shown as repeated player toasts. Formatter probes are representative, not proof of every possible input or translation meaning; locale review and in-context QA remain necessary.
+`LOCALIZATION_CATALOG_RESOLUTIONS` exposes startup diagnostics. `resolveLocalizedFormatter` returns diagnostics for a particular formatter invocation, and `createLocaleFormatters` accepts an optional scoped diagnostic callback. Diagnostics contain only locale, key, reason, and fallback category, not copy, player data, or exception contents. They are not uploaded, logged globally, or shown as repeated player toasts. Formatter probes are representative, not proof of every possible input or translation meaning; locale review and in-context QA remain necessary.
 
 ## Medal artwork
 

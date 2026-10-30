@@ -1213,7 +1213,7 @@ describe("GameClient Integration", () => {
       await screen.findByRole("dialog", { name: "How It Works" }),
     ).toBeVisible()
     expect(
-      screen.getByText("Start With 103 Values—or Add Your Own"),
+      screen.getByText("Start With 103 Values or Add Your Own"),
     ).toBeVisible()
     fireEvent.click(screen.getByRole("button", { name: "Close" }))
 
