@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test"
 import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
 import { test } from "./fixtures"
+import { getRenderedTextLines } from "./visible-text-bounds"
 
 test.use({ serviceWorkers: "block", reducedMotion: "reduce" })
 
@@ -87,6 +88,21 @@ for (const locale of ["en", "es-MX"] as const) {
             exact: true,
           }),
         ).toBeInViewport({ ratio: 1 })
+        const titleLines = await page
+          .getByRole("heading", {
+            name: copy.interfaceCopy.screen.allValues,
+            exact: true,
+          })
+          .evaluate(getRenderedTextLines)
+        const titleWords = copy.interfaceCopy.screen.allValues
+          .toLocaleLowerCase()
+          .split(/\s+/u)
+        expect(
+          titleWords.every((word) =>
+            titleLines.some((line) => line.toLocaleLowerCase().includes(word)),
+          ),
+        ).toBe(true)
+        await row.getByRole("heading").scrollIntoViewIfNeeded()
         await page.screenshot({
           path: testInfo.outputPath(`${locale}-${width}-${scale}x-values.png`),
         })

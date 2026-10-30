@@ -226,7 +226,7 @@ export default function AllValues({
     >
       <header className="bg-mapache-vivid-dark max-h-[40dvh] overflow-y-auto border-b-4 border-black px-4 py-3 xl:px-8">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4">
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-[1_1_12rem]">
             <h1 className="text-mapache-vivid-primary-cyan text-2xl font-black break-words uppercase xl:text-4xl">
               {localizedCopy.interfaceCopy.screen.allValues}
             </h1>
