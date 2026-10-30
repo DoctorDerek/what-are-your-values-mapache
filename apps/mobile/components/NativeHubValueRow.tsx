@@ -93,14 +93,16 @@ export default function NativeHubValueRow({
           )}
       </Pressable>
       <View className="min-w-0 flex-1">
-        <Text className="text-player-card-ink text-lg font-black xl:text-3xl">
-          {getValueDisplayName(definition, localizedCopy.values)}
-        </Text>
+        <View className="flex-row flex-wrap items-baseline gap-x-3 gap-y-1">
+          <Text className="text-player-card-ink shrink text-lg font-black xl:text-3xl">
+            {getValueDisplayName(definition, localizedCopy.values)}
+          </Text>
+          <Text className="text-player-card-muted text-sm">
+            {PERSONAL_HUB_COPY.level(getLevelFromXP(progress.totalXp))}
+          </Text>
+        </View>
         <Text className="text-player-card-muted mt-1 text-sm">
           {getValueDisplayDefinition(definition, localizedCopy.values)}
-        </Text>
-        <Text className="text-player-card-muted mt-1 text-sm">
-          {PERSONAL_HUB_COPY.level(getLevelFromXP(progress.totalXp))}
         </Text>
       </View>
     </View>
