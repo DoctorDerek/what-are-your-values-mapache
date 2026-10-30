@@ -4,7 +4,7 @@
 
 Play the live game: [whatareyourvaluesmapache.com](https://whatareyourvaluesmapache.com/)
 
-What Are Your Values, Mapache? is a private, offline values-clarification autobattler. Pick the value that matters more in each pair; repeated choices produce a Top Five and a complete ranking across 100 included values plus any Custom Values you add.
+What Are Your Values, Mapache? is a private, offline values-clarification autobattler. Pick the value that matters more in each pair; repeated choices produce a Top Five and a complete ranking across 103 included values plus any Custom Values you add.
 
 ## Mobile Web Lighthouse Measurements
 
@@ -16,7 +16,7 @@ Latest successful automated Lighthouse scores for the canonical production websi
 
 The public web application currently includes:
 
-- 100 immutable canonical values with definitions.
+- 103 immutable canonical values with definitions.
 - Private Custom Value create, edit, and delete flows.
 - Durable local persistence through IndexedDB, with no account required.
 - A deterministic XState state machine and lazy pair scheduler.
