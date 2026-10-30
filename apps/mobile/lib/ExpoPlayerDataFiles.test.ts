@@ -117,7 +117,8 @@ describe("Expo Player Data Files", () => {
     expect(expoMocks.shareAsync).toHaveBeenCalledWith(temporaryFile.uri, {
       mimeType: "application/json",
       UTI: "public.json",
-      dialogTitle: "Save or share your private WAYVM backup",
+      dialogTitle:
+        "Save or share your private backup for What Are Your Values, Mapache?",
     })
     expect(temporaryFile.delete).toHaveBeenCalledOnce()
   })

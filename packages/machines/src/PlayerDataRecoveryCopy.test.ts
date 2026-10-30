@@ -5,7 +5,7 @@ describe("Player Data Recovery Copy", () => {
   it("freezes the exact unreadable-save and storage-unavailable contracts", () => {
     expect(playerDataRecoveryCopy.loading).toBe("Loading your values…")
     expect(playerDataRecoveryCopy.unreadableData.body).toEqual([
-      "WAYVM could not safely load the current save on this device. Nothing has been erased.",
+      "What Are Your Values, Mapache? could not safely load the current save on this device. Nothing has been erased.",
       "You can restore the last known-good save, import another backup, download the unreadable data for recovery, or choose Delete All Data.",
     ])
     expect(playerDataRecoveryCopy.unreadableData.restoreConfirmation).toBe(

@@ -109,7 +109,7 @@ Keep justified exceptions in ESLint config, not inline suppressions:
 - Native static `@game/data/assets/` PNG and Rive imports may use Metro’s literal `require()` form. Other module requires remain checked.
 - `EncodeGif.ts` may reference its local ambient `gifenc.d.ts` declaration so consuming app programs include those types without a runtime import.
 
-`eslint.config.test.ts` exercises the real configuration with accepted and rejected source examples, including native exception boundaries and all four TypeScript extensions. The shared repository owns the coverage guard; WAYVM does not maintain a duplicate scanner.
+`eslint.config.test.ts` exercises the real configuration with accepted and rejected source examples, including native exception boundaries and all four TypeScript extensions. The shared repository owns the coverage guard; What Are Your Values, Mapache? does not maintain a duplicate scanner.
 
 ```powershell
 pnpm lint

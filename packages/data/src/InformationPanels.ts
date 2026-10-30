@@ -82,7 +82,7 @@ export const HOW_IT_WORKS_INFORMATION_PANEL = Object.freeze({
   blocks: Object.freeze([
     Object.freeze({
       kind: "lead",
-      text: "WAYVM turns values clarification into a simple game: choose which of two values matters more to you right now.",
+      text: "What Are Your Values, Mapache? turns values clarification into a simple game: choose which of two values matters more to you right now.",
     }),
     Object.freeze({
       kind: "section",
@@ -139,7 +139,7 @@ export const HOW_IT_WORKS_INFORMATION_PANEL = Object.freeze({
       heading: "How This Differs From the Source Card Sort",
       paragraphs: Object.freeze([
         "The 2011 Personal Values Card Sort asks a person to sort values into three to five importance groups, identify five to ten central values, and rank those selected values. It often continues through an interview with open questions and reflective listening.",
-        "WAYVM takes a different path: it repeatedly compares pairs across your entire active deck and preserves an evolving result you can revisit. It is an adaptation, not a replacement for conversation, ACT, motivational interviewing, therapy, or professional care.",
+        "What Are Your Values, Mapache? takes a different path: it repeatedly compares pairs across your entire active deck and preserves an evolving result you can revisit. It is an adaptation, not a replacement for conversation, ACT, motivational interviewing, therapy, or professional care.",
       ]),
     }),
     Object.freeze({
@@ -172,7 +172,7 @@ export const WHY_VALUES_MATTER_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "paragraph",
-      text: "Broad groups can be a useful starting point. The 2011 Personal Values Card Sort goes further by asking a person to select five to ten central values and rank them. WAYVM goes in a different direction: it repeatedly compares pairs across the entire active deck so trade-offs among all included and player-authored values remain visible.",
+      text: "Broad groups can be a useful starting point. The 2011 Personal Values Card Sort goes further by asking a person to select five to ten central values and rank them. What Are Your Values, Mapache? goes in a different direction: it repeatedly compares pairs across the entire active deck so trade-offs among all included and player-authored values remain visible.",
     }),
     Object.freeze({
       kind: "paragraph",
@@ -180,7 +180,7 @@ export const WHY_VALUES_MATTER_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "paragraph",
-      text: "No published list can include every value that matters to every person. That is why WAYVM includes private Custom Values without a fixed numeric count limit. A value such as Ingenuity can be central to someone even when it is absent from the source list.",
+      text: "No published list can include every value that matters to every person. That is why What Are Your Values, Mapache? includes private Custom Values without a fixed numeric count limit. A value such as Ingenuity can be central to someone even when it is absent from the source list.",
     }),
     Object.freeze({
       kind: "paragraph",
@@ -196,7 +196,7 @@ export const WHY_VALUES_MATTER_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "paragraph",
-      text: "WAYVM is inspired by values-sorting exercises used in Acceptance and Commitment Therapy, or ACT. In ACT, values can be understood as chosen directions for ongoing action rather than tasks that are completed once. WAYVM is a self-reflection game, not ACT, therapy, diagnosis, or medical care.",
+      text: "What Are Your Values, Mapache? is inspired by values-sorting exercises used in Acceptance and Commitment Therapy, or ACT. In ACT, values can be understood as chosen directions for ongoing action rather than tasks that are completed once. What Are Your Values, Mapache? is a self-reflection game, not ACT, therapy, diagnosis, or medical care.",
     }),
     Object.freeze({
       kind: "paragraph",
@@ -233,7 +233,7 @@ export const WHY_I_MADE_THIS_GAME_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "paragraph",
-      text: "The current game preserves the 100 values from the public-domain 2011 Personal Values Card Sort and adds Ingenuity, Destiny, and Pets as WAYVM-authored built-in values. No values list can be complete for every person, so WAYVM also lets you add as many private Custom Values as are useful to you.",
+      text: "The current game preserves the 100 values from the public-domain 2011 Personal Values Card Sort and adds Ingenuity, Destiny, and Pets as built-in values created for What Are Your Values, Mapache? No values list can be complete for every person, so What Are Your Values, Mapache? also lets you add as many private Custom Values as are useful to you.",
     }),
     Object.freeze({
       kind: "paragraph",
@@ -262,7 +262,7 @@ export const FREE_RESOURCES_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "paragraph",
-      text: "WAYVM is a self-reflection game, not therapy or medical advice. The organizations and authors below do not endorse or sponsor this game. These perspectives are not interchangeable, and inclusion does not imply that one tradition agrees with another.",
+      text: "What Are Your Values, Mapache? is a self-reflection game, not therapy or medical advice. The organizations and authors below do not endorse or sponsor this game. These perspectives are not interchangeable, and inclusion does not imply that one tradition agrees with another.",
     }),
     Object.freeze({
       kind: "paragraph",
@@ -288,7 +288,7 @@ export const FREE_RESOURCES_INFORMATION_PANEL = Object.freeze({
       kind: "resource",
       title: "Personal Values Card Sort — 2011 Update",
       description:
-        "Read the public-domain source for the original 100 values and definitions, the three-to-five-pile procedure, the final five-to-ten ranking, and the three blank “Other Value” cards adapted by WAYVM.",
+        "Read the public-domain source for the original 100 values and definitions, the three-to-five-pile procedure, the final five-to-ten ranking, and the three blank “Other Value” cards adapted by What Are Your Values, Mapache?",
       actionLabel: "Open the Personal Values Card Sort",
       url: "https://www.guilford.com/add/miller11_old/pers_val.pdf?t=1",
     }),
@@ -342,21 +342,21 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
       heading: "Private. Offline. Account-free.",
       paragraphs: Object.freeze([
         "This app uses storage on your device to save your progress, Custom Values, achievements, avatar appearance, language, and settings and to work offline. It does not use this storage for analytics, advertising, or tracking.",
-        "WAYVM has no account, cloud sync, global leaderboard, advertising, or analytics about your game choices. The app does not send your comparisons, canonical or Custom Values, definitions, ranking, Top Five, achievements, or settings to us.",
+        "What Are Your Values, Mapache? has no account, cloud sync, global leaderboard, advertising, or analytics about your game choices. The app does not send your comparisons, canonical or Custom Values, definitions, ranking, Top Five, achievements, or settings to us.",
         "The production website uses cookieless Vercel Web Analytics for aggregate page views, referral sources, approximate location, and browser and device information. Reported page URLs exclude query strings and fragments. No game state is included, and native apps do not load this analytics service.",
-        "WAYVM does not set tracking or advertising cookies.",
+        "What Are Your Values, Mapache? does not set tracking or advertising cookies.",
         "Export happens only when you choose it. JSON export creates a backup you control. If you send a file to another app or service, that destination handles it under its own privacy policy.",
-        "External resource links open websites outside WAYVM. Those sites can receive ordinary web request information and follow their own privacy practices.",
-        "Local data is not encrypted by WAYVM at launch. Someone with access to your unlocked device or browser profile may be able to access it. Use your device’s security features if that matters for your situation.",
+        "External resource links open websites outside What Are Your Values, Mapache? Those sites can receive ordinary web request information and follow their own privacy practices.",
+        "Local data is not encrypted by What Are Your Values, Mapache? at launch. Someone with access to your unlocked device or browser profile may be able to access it. Use your device’s security features if that matters for your situation.",
         "Clearing browser or site data, using private-browsing storage, uninstalling the app, or resetting the device may remove local progress. Export a JSON backup if you want a portable copy.",
-        "Reset Levels & Experience returns every active value to Level 1 with 0 XP while keeping Custom Value definitions, achievements, language, and settings. Delete All Data removes all WAYVM player data from this device or browser profile.",
+        "Reset Levels & Experience returns every active value to Level 1 with 0 XP while keeping Custom Value definitions, achievements, language, and settings. Delete All Data removes all player data for What Are Your Values, Mapache? from this device or browser profile.",
       ]),
     }),
     Object.freeze({
       kind: "section",
       heading: "A Reflection Game, Not Therapy",
       paragraphs: Object.freeze([
-        "WAYVM is not a medical device, diagnostic test, psychotherapy service, crisis service, or substitute for professional care. It does not determine whether a value is good, healthy, moral, or correct.",
+        "What Are Your Values, Mapache? is not a medical device, diagnostic test, psychotherapy service, crisis service, or substitute for professional care. It does not determine whether a value is good, healthy, moral, or correct.",
       ]),
     }),
     Object.freeze({
@@ -370,15 +370,15 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
       kind: "section",
       heading: "Values Source",
       paragraphs: Object.freeze([
-        "The original 100 values and definitions are adapted from the 2011 update of the Personal Values Card Sort by William R. Miller, Janet C’de Baca, Daniel B. Matthews, and Paula L. Wilbourne, University of New Mexico. The source instrument states that it is in the public domain and may be copied or adapted without further permission. Ingenuity, Destiny, and Pets are three WAYVM-authored additions, not entries from that source.",
-        "The source also includes three blank “Other Value” cards, demonstrating that its printed vocabulary is intentionally open-ended. WAYVM adapts that openness through optional private values written by the player without treating the paper template’s three blanks as a product ceiling. Player-authored names and definitions are not part of the source instrument and are not endorsed by its authors.",
+        "The original 100 values and definitions are adapted from the 2011 update of the Personal Values Card Sort by William R. Miller, Janet C’de Baca, Daniel B. Matthews, and Paula L. Wilbourne, University of New Mexico. The source instrument states that it is in the public domain and may be copied or adapted without further permission. Ingenuity, Destiny, and Pets are three additions created for What Are Your Values, Mapache?, not entries from that source.",
+        "The source also includes three blank “Other Value” cards, demonstrating that its printed vocabulary is intentionally open-ended. What Are Your Values, Mapache? adapts that openness through optional private values written by the player without treating the paper template’s three blanks as a product ceiling. Player-authored names and definitions are not part of the source instrument and are not endorsed by its authors.",
       ]),
     }),
     Object.freeze({
       kind: "section",
       heading: "Intellectual Influences",
       paragraphs: Object.freeze([
-        "WAYVM is inspired by values-sorting exercises used in Acceptance and Commitment Therapy and informed by ideas about meaning, freedom, practice, and honest self-expression. Reference to ACT, the World Health Organization, Viktor Frankl, Erich Fromm, Bruce Lee, Buddhism, or any linked organization does not imply endorsement, partnership, or sponsorship.",
+        "What Are Your Values, Mapache? is inspired by values-sorting exercises used in Acceptance and Commitment Therapy and informed by ideas about meaning, freedom, practice, and honest self-expression. Reference to ACT, the World Health Organization, Viktor Frankl, Erich Fromm, Bruce Lee, Buddhism, or any linked organization does not imply endorsement, partnership, or sponsorship.",
       ]),
     }),
     Object.freeze({
@@ -391,7 +391,8 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
     Object.freeze({
       kind: "resource",
       title: "Kenney Input Prompts",
-      description: "Controller glyph artwork, shared across WAYVM’s platforms.",
+      description:
+        "Controller glyph artwork, shared across platforms for What Are Your Values, Mapache?",
       actionLabel: "Visit Kenney",
       url: "https://kenney.nl/assets/input-prompts",
     }),
@@ -399,7 +400,7 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
       kind: "section",
       heading: "Medal Artwork",
       paragraphs: Object.freeze([
-        "The 3D gold, silver, and bronze medals are Microsoft Fluent Emoji artwork, bundled with WAYVM under the MIT License. Copyright (c) Microsoft Corporation.",
+        "The 3D gold, silver, and bronze medals are Microsoft Fluent Emoji artwork, bundled with What Are Your Values, Mapache? under the MIT License. Copyright (c) Microsoft Corporation.",
       ]),
     }),
     Object.freeze({
@@ -428,7 +429,8 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
     Object.freeze({
       kind: "resource",
       title: "SeethingSwarm",
-      description: "Creator of WAYVM’s animal pixel art and animations.",
+      description:
+        "Creator of the animal pixel art and animations for What Are Your Values, Mapache?",
       actionLabel: "Visit SeethingSwarm",
       url: "https://seethingswarm.itch.io/",
     }),
@@ -436,7 +438,7 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
       kind: "resource",
       title: "Heroes99 by AU_pixel",
       description:
-        "Creator of WAYVM’s customizable hero art and animations, used under the Heroes99 license.",
+        "Creator of the customizable hero art and animations used in What Are Your Values, Mapache? under the Heroes99 license.",
       actionLabel: "Visit Heroes99",
       url: "https://au-pixel.itch.io/heroes99",
     }),

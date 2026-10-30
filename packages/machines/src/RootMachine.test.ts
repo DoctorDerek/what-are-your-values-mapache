@@ -1061,7 +1061,7 @@ describe("Root Machine", () => {
     expect(erasedSnapshot.context.pendingPlayerSettings).toBeNull()
     expect(erasedSnapshot.context.settingsReturnTarget).toBeNull()
     expect(erasedSnapshot.context.portabilityNotice).toBe(
-      "All local WAYVM player data was deleted.",
+      "All local player data for What Are Your Values, Mapache? was deleted.",
     )
   })
 
@@ -3163,7 +3163,7 @@ describe("Root Machine", () => {
     expect(erasedSnapshot.context.battleProfileStoreState).toBeNull()
     expect(erasedSnapshot.context.pendingResetReview).toBeNull()
     expect(erasedSnapshot.context.portabilityNotice).toBe(
-      "All local WAYVM player data was deleted.",
+      "All local player data for What Are Your Values, Mapache? was deleted.",
     )
     expect(
       erasedSnapshot.context.playerData?.profile.activeDeck.valueIds,
@@ -3781,7 +3781,7 @@ describe("Root Machine", () => {
     await expect(durableStore.readAll()).resolves.toEqual(new Map())
     expect(deletedSnapshot.context.recoveryEntries).toBeNull()
     expect(deletedSnapshot.context.portabilityNotice).toBe(
-      "All local WAYVM player data was deleted.",
+      "All local player data for What Are Your Values, Mapache? was deleted.",
     )
   })
 

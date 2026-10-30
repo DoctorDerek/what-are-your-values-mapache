@@ -24,7 +24,7 @@ describe("web application manifest", () => {
     expect(dynamic).toBe("force-static")
     expect(manifest()).toMatchObject({
       name: "What Are Your Values, Mapache?",
-      short_name: "WAYVM",
+      short_name: "What Are Your Values, Mapache?",
       description:
         "A free game designed to help you find your values in life. Choose which of two values matters more to you right now, and watch cute animals duel in a high-speed autobattler.",
       start_url: "/",

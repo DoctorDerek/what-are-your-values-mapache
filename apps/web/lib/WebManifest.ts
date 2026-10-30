@@ -13,7 +13,7 @@ export function createWebManifest(
     id: "/",
     lang: catalog.metadata.languageTag,
     name: catalog.introduction.title,
-    short_name: "WAYVM",
+    short_name: catalog.introduction.title,
     description: catalog.introduction.tagline,
     start_url: catalog.metadata.webPath,
     scope: "/",

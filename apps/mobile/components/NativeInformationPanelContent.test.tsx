@@ -21,7 +21,7 @@ describe("NativeInformationPanelContent", () => {
 
     expect(
       screen.getByText(
-        "WAYVM turns values clarification into a simple game: choose which of two values matters more to you right now.",
+        "What Are Your Values, Mapache? turns values clarification into a simple game: choose which of two values matters more to you right now.",
       ),
     ).toBeOnTheScreen()
     expect(

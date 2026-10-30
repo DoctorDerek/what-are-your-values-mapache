@@ -29,6 +29,7 @@ export const expoPlayerDataFileAdapter = createNativePlayerDataFileAdapter({
     Sharing.shareAsync(uri, {
       mimeType: JSON_MIME_TYPE,
       UTI: "public.json",
-      dialogTitle: "Save or share your private WAYVM backup",
+      dialogTitle:
+        "Save or share your private backup for What Are Your Values, Mapache?",
     }),
 })

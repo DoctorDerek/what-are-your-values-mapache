@@ -647,7 +647,9 @@ describe("GameClient Integration", () => {
       name: "Your Saved Data Needs Attention",
     })
     fireEvent.change(
-      screen.getByLabelText("Choose WAYVM JSON backup for recovery"),
+      screen.getByLabelText(
+        "Choose JSON backup for recovery in What Are Your Values, Mapache?",
+      ),
       { target: { files: [backupFile] } },
     )
     expect(
@@ -693,7 +695,9 @@ describe("GameClient Integration", () => {
       name: "Your Saved Data Needs Attention",
     })
     fireEvent.change(
-      screen.getByLabelText("Choose WAYVM JSON backup for recovery"),
+      screen.getByLabelText(
+        "Choose JSON backup for recovery in What Are Your Values, Mapache?",
+      ),
       { target: { files: [unreadableBackup] } },
     )
 
@@ -1676,9 +1680,14 @@ describe("GameClient Integration", () => {
     render(<GameClient />)
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     await openProductMenuDestination("Import & Export")
-    fireEvent.change(screen.getByLabelText("Choose WAYVM JSON backup"), {
-      target: { files: [backupFile] },
-    })
+    fireEvent.change(
+      screen.getByLabelText(
+        "Choose JSON backup for What Are Your Values, Mapache?",
+      ),
+      {
+        target: { files: [backupFile] },
+      },
+    )
 
     expect(
       await screen.findByRole("heading", { name: "Review Import" }),
@@ -1693,9 +1702,14 @@ describe("GameClient Integration", () => {
     expect(screen.getByRole("button", { name: "Choose Backup" })).toHaveFocus()
     expect(screen.queryByText("Craftsmanship")).not.toBeInTheDocument()
 
-    fireEvent.change(screen.getByLabelText("Choose WAYVM JSON backup"), {
-      target: { files: [backupFile] },
-    })
+    fireEvent.change(
+      screen.getByLabelText(
+        "Choose JSON backup for What Are Your Values, Mapache?",
+      ),
+      {
+        target: { files: [backupFile] },
+      },
+    )
     expect(
       screen.queryByText(playerDataPortabilityCopy.importCancelled),
     ).not.toBeInTheDocument()
@@ -1744,9 +1758,14 @@ describe("GameClient Integration", () => {
     render(<GameClient />)
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     await openProductMenuDestination("Import & Export")
-    fireEvent.change(screen.getByLabelText("Choose WAYVM JSON backup"), {
-      target: { files: [invalidBackup] },
-    })
+    fireEvent.change(
+      screen.getByLabelText(
+        "Choose JSON backup for What Are Your Values, Mapache?",
+      ),
+      {
+        target: { files: [invalidBackup] },
+      },
+    )
 
     const issue = await screen.findByRole("alert")
     expect(issue).toHaveTextContent(playerDataPortabilityCopy.importInvalid)
@@ -1773,9 +1792,14 @@ describe("GameClient Integration", () => {
     render(<GameClient />)
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     await openProductMenuDestination("Import & Export")
-    fireEvent.change(screen.getByLabelText("Choose WAYVM JSON backup"), {
-      target: { files: [unreadableBackup] },
-    })
+    fireEvent.change(
+      screen.getByLabelText(
+        "Choose JSON backup for What Are Your Values, Mapache?",
+      ),
+      {
+        target: { files: [unreadableBackup] },
+      },
+    )
 
     const issue = await screen.findByRole("alert")
     expect(issue).toHaveTextContent(playerDataPortabilityCopy.importInvalid)
