@@ -1,5 +1,6 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
 import { LOCALIZATION_CATALOG_RESOLUTIONS } from "@game/data/src/LocalizationCatalog"
+import { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues } from "@game/data/src/ValueRanking"
 import { describe, expect, it, jest } from "@jest/globals"
@@ -43,6 +44,9 @@ describe("native localization resilience", () => {
     const onClose = jest.fn()
     await render(
       <NativeAllValues
+        runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+        shouldReduceMotion
+        onOpenMenu={jest.fn()}
         rankedValues={rankValues(deck, createInitialValueProgress(deck))}
         onClose={onClose}
         onAddCustomValue={jest.fn()}
