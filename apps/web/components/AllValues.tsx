@@ -160,34 +160,35 @@ export default function AllValues({
               ) : null}
             </>
           }
-          actions={definition.kind === "custom" ? (
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    id={`edit-${definition.id}`}
-                    type="button"
-                    disabled={isPersistencePending}
-                    onClick={(event) => {
-                      customValueActionRef.current = event.currentTarget.id
-                      setActiveTask({ kind: "edit", value: definition })
-                    }}
-                    className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-lg font-black text-white uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
-                  >
-                    {localizedCopy.interfaceCopy.screen.edit}
-                  </button>
-                  <button
-                    id={`delete-${definition.id}`}
-                    type="button"
-                    disabled={isPersistencePending}
-                    onClick={(event) => {
-                      customValueActionRef.current = event.currentTarget.id
-                      setActiveTask({ kind: "delete", value: definition })
-                    }}
-                    className="bg-mapache-vivid-secondary-red border-4 border-black px-3 py-2 text-lg font-black text-black uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
-                  >
-                    {localizedCopy.interfaceCopy.screen.delete}
-                  </button>
-                </div>
-              ) : null
+          actions={
+            definition.kind === "custom" ? (
+              <div className="flex flex-wrap gap-3">
+                <button
+                  id={`edit-${definition.id}`}
+                  type="button"
+                  disabled={isPersistencePending}
+                  onClick={(event) => {
+                    customValueActionRef.current = event.currentTarget.id
+                    setActiveTask({ kind: "edit", value: definition })
+                  }}
+                  className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-lg font-black text-white uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
+                >
+                  {localizedCopy.interfaceCopy.screen.edit}
+                </button>
+                <button
+                  id={`delete-${definition.id}`}
+                  type="button"
+                  disabled={isPersistencePending}
+                  onClick={(event) => {
+                    customValueActionRef.current = event.currentTarget.id
+                    setActiveTask({ kind: "delete", value: definition })
+                  }}
+                  className="bg-mapache-vivid-secondary-red border-4 border-black px-3 py-2 text-lg font-black text-black uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
+                >
+                  {localizedCopy.interfaceCopy.screen.delete}
+                </button>
+              </div>
+            ) : null
           }
         >
           <p className="mt-5 overflow-x-auto overflow-y-auto border-t-4 border-black pt-4 text-xl leading-relaxed font-bold [overflow-wrap:anywhere] break-words whitespace-pre-wrap">

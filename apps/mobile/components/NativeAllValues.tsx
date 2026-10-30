@@ -180,19 +180,19 @@ export default function NativeAllValues({
           keyboardShouldPersistTaps="handled"
         >
           <View className="flex-row flex-wrap items-center justify-between gap-4 pr-2">
-          <View className="min-w-0 shrink grow basis-44">
-            <Text
-              variant="h1"
-              className="text-mapache-vivid-primary-cyan text-left text-2xl font-black uppercase xl:text-4xl"
-            >
-              {localizedCopy.interfaceCopy.screen.allValues}
-            </Text>
-            <Text className="text-sm font-bold text-white">
-              {localizedCopy.interfaceCopy.screen.activeValues(
-                String(rankedValues.length),
-              )}
-            </Text>
-          </View>
+            <View className="min-w-0 shrink grow basis-44">
+              <Text
+                variant="h1"
+                className="text-mapache-vivid-primary-cyan text-left text-2xl font-black uppercase xl:text-4xl"
+              >
+                {localizedCopy.interfaceCopy.screen.allValues}
+              </Text>
+              <Text className="text-sm font-bold text-white">
+                {localizedCopy.interfaceCopy.screen.activeValues(
+                  String(rankedValues.length),
+                )}
+              </Text>
+            </View>
             <Button
               size="compact"
               variant="secondary"

@@ -15,9 +15,9 @@ export default function NativeValueLevelProgress({
 
   return (
     <View className="w-36 max-w-full min-w-0 gap-2 border-4 border-black bg-white px-3 py-2 xl:w-44">
-        <Text className="text-mapache-vivid-primary-raspberry text-right text-lg font-black uppercase">
-          {localizedCopy.interfaceCopy.screen.valueLevel(String(level))}
-        </Text>
+      <Text className="text-mapache-vivid-primary-raspberry text-right text-lg font-black uppercase">
+        {localizedCopy.interfaceCopy.screen.valueLevel(String(level))}
+      </Text>
       <View
         accessibilityLabel={localizedCopy.interfaceCopy.screen.xpTowardLevel(
           String(level + 1),

@@ -22,14 +22,19 @@ export default function NativeValueAnimal({
   shouldReduceMotion: boolean
   testID?: string
 }) {
-  const presentation = resolveValueAnimalPresentation(definition, runtimeClipCatalog)
-  const imagePath = presentation.kind === "animal" ? presentation.clip.relativePath : ""
+  const presentation = resolveValueAnimalPresentation(
+    definition,
+    runtimeClipCatalog,
+  )
+  const imagePath =
+    presentation.kind === "animal" ? presentation.clip.relativePath : ""
   const status = useNativeSeethingSwarmAssetStatus(imagePath)
   const [failedPath, setFailedPath] = useState<string | null>(null)
   const { isAttended, attentionHandlers } = useAnimalAttentionInput()
-  const geometry = presentation.kind === "animal"
-    ? createSeethingSwarmSurfaceGeometry(presentation.animal, "portrait")
-    : null
+  const geometry =
+    presentation.kind === "animal"
+      ? createSeethingSwarmSurfaceGeometry(presentation.animal, "portrait")
+      : null
 
   return (
     <Pressable
@@ -44,16 +49,19 @@ export default function NativeValueAnimal({
         height: Math.max(SEETHING_SWARM_HUB_TILE_SIZE, geometry?.height ?? 0),
       }}
     >
-      {presentation.kind === "animal" && geometry && status !== "failed" && failedPath !== imagePath && (
-        <NativeSeethingSwarmHubAnimal
-          calmClip={presentation.clip}
-          catalog={runtimeClipCatalog}
-          geometry={geometry}
-          isAttended={isAttended}
-          shouldReduceMotion={shouldReduceMotion}
-          onLoadError={() => setFailedPath(imagePath)}
-        />
-      )}
+      {presentation.kind === "animal" &&
+        geometry &&
+        status !== "failed" &&
+        failedPath !== imagePath && (
+          <NativeSeethingSwarmHubAnimal
+            calmClip={presentation.clip}
+            catalog={runtimeClipCatalog}
+            geometry={geometry}
+            isAttended={isAttended}
+            shouldReduceMotion={shouldReduceMotion}
+            onLoadError={() => setFailedPath(imagePath)}
+          />
+        )}
     </Pressable>
   )
 }
