@@ -531,7 +531,7 @@ describe("All Values Component Integration", () => {
     renderAllValues(undefined, { onClose, onOpenMenu })
     const search = screen.getByRole("searchbox", { name: "Search All Values" })
     fireEvent.change(search, { target: { value: "Acceptance" } })
-    fireEvent.click(screen.getByRole("button", { name: "Menu", exact: true }))
+    fireEvent.click(screen.getByRole("button", { name: "Menu" }))
     expect(onOpenMenu).toHaveBeenCalledTimes(1)
     expect(search).toHaveValue("Acceptance")
     expect(screen.getByRole("heading", { name: "Acceptance" })).toBeVisible()

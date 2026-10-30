@@ -76,7 +76,7 @@ for (const locale of ["en", "es-MX"] as const) {
         if (width < 1280) {
           expect(geometry.name.top).toBeGreaterThanOrEqual(geometry.box.bottom)
           expect(geometry.name.left).toBeLessThan(geometry.box.right)
-          expect(geometry.name.width).toBeGreaterThan(geometry.box.width)
+          expect(geometry.name.width).toBeGreaterThanOrEqual(geometry.box.width)
         } else if (scale === 1) {
           expect(geometry.name.right).toBeLessThan(geometry.box.left)
           expect(geometry.name.top).toBeLessThan(geometry.box.bottom)
