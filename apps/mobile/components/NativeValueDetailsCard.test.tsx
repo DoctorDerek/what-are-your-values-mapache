@@ -1,4 +1,5 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
+import { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import {
   createCustomValueId,
   type CustomValueDefinition,
@@ -35,6 +36,8 @@ describe("NativeValueDetailsCard", () => {
     if (!acceptance) throw new Error("Canonical test value is unavailable")
 
     const cardProps = {
+      runtimeClipCatalog: createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
+      shouldReduceMotion: true,
       isHighlighted: false,
       isPersistencePending: false,
       showRank: true,
@@ -87,6 +90,8 @@ describe("NativeValueDetailsCard", () => {
         isPersistencePending={false}
         rankedValue={rankedValue}
         showRank={false}
+        runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+        shouldReduceMotion
         onDelete={onDelete}
         onEdit={onEdit}
       />,
@@ -116,6 +121,8 @@ describe("NativeValueDetailsCard", () => {
         isPersistencePending
         rankedValue={rankedValue}
         showRank={false}
+        runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+        shouldReduceMotion
         onDelete={onDelete}
         onEdit={onEdit}
       />,

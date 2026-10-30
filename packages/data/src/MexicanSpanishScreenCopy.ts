@@ -29,7 +29,7 @@ export const MEXICAN_SPANISH_SCREEN_COPY: InterfaceCopy["screen"] = {
   activeValues: (count) => `${count} valores activos`,
   includedValues: "Valores incluidos",
   includedValueCount: (count) => `${count} valores incluidos`,
-  topFive: "Mis cinco principales",
+  topFive: "Mis cinco valores principales",
   remainingValues: "Los demás valores",
   values: "Valores",
   searchAllValues: "Buscar en todos los valores",

@@ -45,6 +45,7 @@ function RecoveredSessionView({ actor }: { readonly actor: RootActor }) {
       shouldReduceMotion
       isMenuOpen={false}
       onClose={vi.fn()}
+      onOpenMenu={vi.fn()}
       onAddCustomValue={vi.fn()}
       onUpdateCustomValue={vi.fn()}
       onDeleteCustomValue={vi.fn()}

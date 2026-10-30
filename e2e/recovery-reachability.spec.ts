@@ -31,13 +31,18 @@ test("enlarged Home retains readable values and reachable lower actions", async 
   await expect(
     page.getByRole("heading", { name: "Aceptación", exact: true }),
   ).toBeInViewport({ ratio: 1 })
-  await expect(
-    upperComposition.getByText("que me acepten tal como soy", { exact: true }),
-  ).toBeInViewport({ ratio: 1 })
+  const definition = upperComposition.getByText("que me acepten tal como soy", {
+    exact: true,
+  })
+  await definition.scrollIntoViewIfNeeded()
+  await expect(definition).toBeInViewport({ ratio: 1 })
   await expect(add).toBeInViewport({ ratio: 1 })
   await expect(battle).toBeInViewport({ ratio: 1 })
   expect(await add.boundingBox()).toEqual(addBounds)
   expect(await battle.boundingBox()).toEqual(battleBounds)
+  expect(await page.evaluate(() => document.scrollingElement!.scrollTop)).toBe(
+    0,
+  )
   await page.screenshot({
     path: testInfo.outputPath("enlarged-home-values.png"),
   })

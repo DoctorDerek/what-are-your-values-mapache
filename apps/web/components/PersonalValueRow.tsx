@@ -77,14 +77,16 @@ export default function PersonalValueRow({
         />
       </span>
       <div className="min-w-0 flex-[1_1_8rem] [overflow-wrap:anywhere]">
-        <h3 className="text-player-card-ink text-lg leading-tight font-black xl:text-2xl">
-          {getValueDisplayName(value.definition, localizedCopy.values)}
-        </h3>
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h3 className="text-player-card-ink text-lg leading-tight font-black xl:text-2xl">
+            {getValueDisplayName(value.definition, localizedCopy.values)}
+          </h3>
+          <p className="text-player-card-muted text-xs xl:text-sm">
+            {PERSONAL_HUB_COPY.level(getLevelFromXP(value.progress.totalXp))}
+          </p>
+        </div>
         <p className="text-player-card-muted mt-1 text-xs leading-snug xl:text-base">
           {getValueDisplayDefinition(value.definition, localizedCopy.values)}
-        </p>
-        <p className="text-player-card-muted mt-1 text-xs xl:text-sm">
-          {PERSONAL_HUB_COPY.level(getLevelFromXP(value.progress.totalXp))}
         </p>
       </div>
     </li>

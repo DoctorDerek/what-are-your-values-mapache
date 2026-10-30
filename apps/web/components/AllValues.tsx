@@ -20,7 +20,6 @@ import CustomValueEditor from "@/components/CustomValueEditor"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import ValueLevelProgress from "@/components/ValueLevelProgress"
 
 export default function AllValues({
   rankedValues,
@@ -32,6 +31,7 @@ export default function AllValues({
   isMenuOpen,
   persistenceIssue = null,
   onClose,
+  onOpenMenu,
   onAddCustomValue,
   onUpdateCustomValue,
   onDeleteCustomValue,
@@ -47,6 +47,7 @@ export default function AllValues({
   isMenuOpen: boolean
   persistenceIssue?: string | null
   onClose: () => void
+  onOpenMenu: () => void
   onAddCustomValue: (name: string) => void
   onUpdateCustomValue: (
     valueId: CustomValueId,
@@ -123,7 +124,7 @@ export default function AllValues({
 
   const renderRows = (values: readonly RankedValue[]) =>
     values.map((rankedValue) => {
-      const { definition, progress } = rankedValue
+      const { definition } = rankedValue
       const displayName = getValueDisplayName(definition, localization.values)
       const customValueId = definition.kind === "custom" ? definition.id : null
 
@@ -144,7 +145,7 @@ export default function AllValues({
                     ? localization.metadata.languageTag
                     : undefined
                 }
-                className="min-w-[min(100%,16rem)] flex-1 text-3xl font-black break-words hyphens-auto uppercase [hyphenate-limit-chars:6_3_3] xl:text-4xl"
+                className="min-w-0 flex-[1_1_16rem] text-3xl font-black break-words hyphens-auto uppercase [hyphenate-limit-chars:6_3_3] xl:text-4xl"
               >
                 {getWrappableValueDisplayName(
                   definition,
@@ -157,36 +158,37 @@ export default function AllValues({
                   {localizedCopy.interfaceCopy.screen.yours}
                 </span>
               ) : null}
-              <ValueLevelProgress totalXp={progress.totalXp} />
-              {definition.kind === "custom" ? (
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    id={`edit-${definition.id}`}
-                    type="button"
-                    disabled={isPersistencePending}
-                    onClick={(event) => {
-                      customValueActionRef.current = event.currentTarget.id
-                      setActiveTask({ kind: "edit", value: definition })
-                    }}
-                    className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-lg font-black text-white uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
-                  >
-                    {localizedCopy.interfaceCopy.screen.edit}
-                  </button>
-                  <button
-                    id={`delete-${definition.id}`}
-                    type="button"
-                    disabled={isPersistencePending}
-                    onClick={(event) => {
-                      customValueActionRef.current = event.currentTarget.id
-                      setActiveTask({ kind: "delete", value: definition })
-                    }}
-                    className="bg-mapache-vivid-secondary-red border-4 border-black px-3 py-2 text-lg font-black text-black uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
-                  >
-                    {localizedCopy.interfaceCopy.screen.delete}
-                  </button>
-                </div>
-              ) : null}
             </>
+          }
+          actions={
+            definition.kind === "custom" ? (
+              <div className="flex flex-wrap gap-3">
+                <button
+                  id={`edit-${definition.id}`}
+                  type="button"
+                  disabled={isPersistencePending}
+                  onClick={(event) => {
+                    customValueActionRef.current = event.currentTarget.id
+                    setActiveTask({ kind: "edit", value: definition })
+                  }}
+                  className="bg-mapache-vivid-secondary-purple border-4 border-black px-3 py-2 text-lg font-black text-white uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
+                >
+                  {localizedCopy.interfaceCopy.screen.edit}
+                </button>
+                <button
+                  id={`delete-${definition.id}`}
+                  type="button"
+                  disabled={isPersistencePending}
+                  onClick={(event) => {
+                    customValueActionRef.current = event.currentTarget.id
+                    setActiveTask({ kind: "delete", value: definition })
+                  }}
+                  className="bg-mapache-vivid-secondary-red border-4 border-black px-3 py-2 text-lg font-black text-black uppercase focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-black"
+                >
+                  {localizedCopy.interfaceCopy.screen.delete}
+                </button>
+              </div>
+            ) : null
           }
         >
           <p className="mt-5 overflow-x-auto overflow-y-auto border-t-4 border-black pt-4 text-xl leading-relaxed font-bold [overflow-wrap:anywhere] break-words whitespace-pre-wrap">
@@ -224,7 +226,7 @@ export default function AllValues({
     >
       <header className="bg-mapache-vivid-dark max-h-[40dvh] overflow-y-auto border-b-4 border-black px-4 py-3 xl:px-8">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-[1_1_12rem]">
             <h1 className="text-mapache-vivid-primary-cyan text-2xl font-black break-words uppercase xl:text-4xl">
               {localizedCopy.interfaceCopy.screen.allValues}
             </h1>
@@ -234,6 +236,16 @@ export default function AllValues({
               )}
             </p>
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            wrap
+            disabled={isNavigationBlocked}
+            onClick={onOpenMenu}
+          >
+            {localizedCopy.interfaceCopy.menu.openAction}
+          </Button>
         </div>
         <div className="mx-auto mt-3 w-full max-w-6xl">
           <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3">

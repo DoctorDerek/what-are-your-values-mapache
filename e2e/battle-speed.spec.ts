@@ -101,6 +101,8 @@ for (const width of [320, 1440]) {
     await page.getByRole("button", { name: "Start", exact: true }).click()
     await page.getByRole("button", { name: "Battle", exact: true }).click()
     const controls = page.getByRole("group", { name: "Battle animation speed" })
+    await expect(controls).toBeVisible()
+    await expect(controls.getByRole("button")).toHaveCount(4)
     const choiceRows = await controls
       .getByRole("button")
       .evaluateAll((buttons) =>

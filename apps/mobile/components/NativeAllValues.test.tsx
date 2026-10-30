@@ -1,5 +1,6 @@
 import { createActiveDeck, type ActiveDeck } from "@game/data/src/ActiveDeck"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
+import { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import {
   createCustomValueId,
   type CustomValueDefinition,
@@ -57,6 +58,9 @@ function createIngenuityDeck() {
 
 function createCallbacks() {
   return {
+    runtimeClipCatalog: createSeethingSwarmTypographyOnlyRuntimeClipCatalog(),
+    shouldReduceMotion: true,
+    onOpenMenu: jest.fn(),
     onAddCustomValue: jest.fn(),
     onClose: jest.fn(),
     onDeleteCustomValue: jest.fn(),
@@ -74,6 +78,22 @@ function getLegacyCustomDetails() {
 }
 
 describe("NativeAllValues", () => {
+  it("opens Menu without discarding the current search", async () => {
+    const callbacks = createCallbacks()
+    await render(
+      <NativeAllValues
+        {...callbacks}
+        rankedValues={createRankedValues(createActiveDeck([]))}
+      />,
+    )
+    const user = userEvent.setup()
+    const search = screen.getByLabelText("Search All Values")
+    await user.type(search, "Acceptance")
+    await user.press(screen.getByRole("button", { name: "Menu" }))
+    expect(callbacks.onOpenMenu).toHaveBeenCalledTimes(1)
+    expect(search).toHaveProp("value", "Acceptance")
+    expect(screen.getByRole("header", { name: "Acceptance" })).toBeOnTheScreen()
+  })
   it("renders selected labels and selected included-value meanings without changing private custom text", async () => {
     const english = getLocaleCatalog()
     const deck = createIngenuityDeck()
@@ -281,7 +301,7 @@ describe("NativeAllValues", () => {
     const rankedValues = createRankedValuesWithEvidence().slice(0, 6)
     await render(<NativeAllValues {...callbacks} rankedValues={rankedValues} />)
 
-    expect(screen.getAllByText("Top Five")).toHaveLength(1)
+    expect(screen.getAllByText("Top Five Values")).toHaveLength(1)
     expect(screen.getAllByText("All Other Values")).toHaveLength(1)
     expect(screen.getByLabelText("Rank 1, gold medal")).toBeOnTheScreen()
     expect(screen.getByLabelText("Rank 6, silver medal")).toBeOnTheScreen()

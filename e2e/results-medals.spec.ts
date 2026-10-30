@@ -19,7 +19,7 @@ for (const width of [320, 1440]) {
   test(`First Results reveal medal tiers before sorting finishes at ${width}px`, async ({
     page,
   }) => {
-    await page.clock.install()
+    await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") })
     await page.setViewportSize({ width, height: width === 320 ? 720 : 900 })
     await page.goto("/")
     await page.getByRole("button", { name: "Start", exact: true }).click()
@@ -43,7 +43,7 @@ for (const width of [320, 1440]) {
     await expect(
       page.getByRole("button", { name: "Undo", exact: true }),
     ).toBeEnabled()
-    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1_000))
+    await page.clock.pauseAt(new Date("2026-01-01T01:00:00Z"))
     await page.getByRole("button", { name: "Stop", exact: true }).click()
     const row = page.locator(`[data-results-value="${winnerId}"]`)
     const slot = row.locator("[data-results-medal]")

@@ -54,6 +54,7 @@ describe("selected interface catalog", () => {
           shouldReduceMotion
           isMenuOpen={false}
           onClose={onClose}
+          onOpenMenu={vi.fn()}
           onAddCustomValue={vi.fn()}
           onUpdateCustomValue={vi.fn()}
           onDeleteCustomValue={vi.fn()}

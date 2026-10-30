@@ -24,18 +24,16 @@ describe("ValueLevelProgress Component Integration", () => {
     const progress = screen.getByLabelText("Level 1: 0 of 2 XP toward Level 2")
 
     expect(progress).toBeVisible()
-    expect(progress).toHaveClass(
-      "w-full",
-      "min-w-0",
-      "basis-full",
-      "xl:w-auto",
-      "xl:min-w-44",
-      "xl:basis-auto",
-    )
-    expect(progress).not.toHaveClass(
-      "sm:w-auto",
-      "sm:min-w-44",
-      "sm:basis-auto",
-    )
+    const level = screen.getByText("Level 1")
+    const bar = screen.getByRole("progressbar", { name: "XP toward Level 2" })
+    const fraction = screen.getByText("0/2 XP")
+    expect(
+      level.compareDocumentPosition(bar) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(
+      bar.compareDocumentPosition(fraction) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(bar).toHaveAttribute("aria-valuenow", "0")
+    expect(bar).toHaveAttribute("aria-valuemax", "2")
   })
 })

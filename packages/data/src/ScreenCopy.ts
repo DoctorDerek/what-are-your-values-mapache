@@ -27,7 +27,7 @@ export const SCREEN_COPY = Object.freeze({
   activeValues: (count: string) => `${count} Active Values`,
   includedValues: "Included Values",
   includedValueCount: (count: string) => `${count} Included Values`,
-  topFive: "Top Five",
+  topFive: "Top Five Values",
   remainingValues: "All Other Values",
   values: "Values",
   searchAllValues: "Search All Values",

@@ -866,6 +866,8 @@ function NativeGameClientContent({
     return (
       <View className="flex-1">
         <NativeAllValues
+          runtimeClipCatalog={SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG}
+          shouldReduceMotion={shouldReduceMotion}
           backRequestId={allValuesBackRequestId}
           localization={getLocaleCatalog(playerData.settings.locale)}
           key={battleProfile.scheduler.deckRevision}
@@ -878,6 +880,7 @@ function NativeGameClientContent({
           rankedValues={rankedValues}
           onAddCustomValue={handleAddCustomValue}
           onClose={() => send({ type: "ALL_VALUES.CLOSE_REQUESTED" })}
+          onOpenMenu={() => setIsProductMenuOpen(true)}
           onNavigationBlockedChange={setIsAllValuesNavigationBlocked}
           onDeleteCustomValue={(valueId) =>
             send({ type: "ALL_VALUES.DELETE_REQUESTED", valueId })

@@ -1,5 +1,6 @@
 import { projectAllValues } from "@game/data/src/AllValuesProjection"
 import type { LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
+import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValueDisplayName,
@@ -29,10 +30,13 @@ export default function NativeAllValues({
   isPersistencePending = false,
   onAddCustomValue,
   onClose,
+  onOpenMenu,
   onDeleteCustomValue,
   onUpdateCustomValue,
   persistenceIssue = null,
   rankedValues,
+  runtimeClipCatalog,
+  shouldReduceMotion,
   localization: localizationOverride,
   onNavigationBlockedChange,
 }: {
@@ -42,6 +46,7 @@ export default function NativeAllValues({
   readonly isPersistencePending?: boolean
   readonly onAddCustomValue: (name: string) => void
   readonly onClose: () => void
+  readonly onOpenMenu: () => void
   readonly onDeleteCustomValue: (valueId: CustomValueId) => void
   readonly onUpdateCustomValue: (
     valueId: CustomValueId,
@@ -50,6 +55,8 @@ export default function NativeAllValues({
   ) => void
   readonly persistenceIssue?: string | null
   readonly rankedValues: readonly RankedValue[]
+  readonly runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
+  readonly shouldReduceMotion: boolean
   readonly onNavigationBlockedChange?: (isBlocked: boolean) => void
 }) {
   const localizedCopy = useLocaleCatalog(localizationOverride)
@@ -172,18 +179,28 @@ export default function NativeAllValues({
           contentContainerClassName="gap-2 py-3"
           keyboardShouldPersistTaps="handled"
         >
-          <View className="min-w-0">
-            <Text
-              variant="h1"
-              className="text-mapache-vivid-primary-cyan text-left text-2xl font-black uppercase xl:text-4xl"
+          <View className="flex-row flex-wrap items-center justify-between gap-4 pr-2">
+            <View className="min-w-0 shrink grow basis-44">
+              <Text
+                variant="h1"
+                className="text-mapache-vivid-primary-cyan text-left text-2xl font-black uppercase xl:text-4xl"
+              >
+                {localizedCopy.interfaceCopy.screen.allValues}
+              </Text>
+              <Text className="text-sm font-bold text-white">
+                {localizedCopy.interfaceCopy.screen.activeValues(
+                  String(rankedValues.length),
+                )}
+              </Text>
+            </View>
+            <Button
+              size="compact"
+              variant="secondary"
+              disabled={isNavigationBlocked}
+              onPress={onOpenMenu}
             >
-              {localizedCopy.interfaceCopy.screen.allValues}
-            </Text>
-            <Text className="text-sm font-bold text-white">
-              {localizedCopy.interfaceCopy.screen.activeValues(
-                String(rankedValues.length),
-              )}
-            </Text>
+              <Text>{localizedCopy.interfaceCopy.menu.openAction}</Text>
+            </Button>
           </View>
           <View className="flex-row flex-wrap justify-between gap-x-3">
             <Text className="font-black text-white">
@@ -284,6 +301,8 @@ export default function NativeAllValues({
                   </Text>
                 ) : null}
                 <NativeValueDetailsCard
+                  runtimeClipCatalog={runtimeClipCatalog}
+                  shouldReduceMotion={shouldReduceMotion}
                   localization={localization}
                   isHighlighted={item.definition.id === highlightedValueId}
                   isPersistencePending={isPersistencePending}

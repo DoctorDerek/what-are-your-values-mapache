@@ -266,8 +266,9 @@ test("the rainbow clock pauses for hover, focus and inactivity then expires with
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.clock.install()
+  await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") })
   await startBattle(page)
+  await page.clock.pauseAt(new Date("2026-01-01T01:00:00Z"))
   await compareNextPair(page)
   const card = page.getByRole("complementary", { name: "Achievement unlocked" })
   await expect(card).toBeVisible()
@@ -278,7 +279,6 @@ test("the rainbow clock pauses for hover, focus and inactivity then expires with
       (element) => new DOMMatrix(getComputedStyle(element).transform).a,
     )
   const geometry = await readBattleGeometry(page)
-  await page.clock.pauseAt(new Date(Date.now() + 1_000))
   await page.clock.runFor(2_000)
   const afterTwoSeconds = await readProgress()
   expect(afterTwoSeconds).toBeGreaterThan(0)

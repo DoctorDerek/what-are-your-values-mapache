@@ -56,6 +56,7 @@ function renderAllValues(
       rankedValues={rankedValues}
       isMenuOpen={false}
       onClose={vi.fn()}
+      onOpenMenu={vi.fn()}
       onAddCustomValue={vi.fn()}
       onUpdateCustomValue={vi.fn()}
       onDeleteCustomValue={vi.fn()}
@@ -195,7 +196,7 @@ describe("All Values Component Integration", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(
       CANONICAL_VALUES.length,
     )
-    expect(screen.queryByText("Top Five")).not.toBeInTheDocument()
+    expect(screen.queryByText("Top Five Values")).not.toBeInTheDocument()
     expect(
       screen.getByText(
         `“${getValueDisplayDefinition(rankedValues[0].definition)}”`,
@@ -493,7 +494,7 @@ describe("All Values Component Integration", () => {
       { onClose },
     )
 
-    expect(screen.getAllByText("Top Five")).toHaveLength(1)
+    expect(screen.getAllByText("Top Five Values")).toHaveLength(1)
     for (let rank = 1; rank <= 15; rank++) {
       const color = rank <= 5 ? "gold" : rank <= 10 ? "silver" : "bronze"
       const row = screen.getByText(`Rank ${rank}, ${color} medal`).closest("li")
@@ -523,24 +524,20 @@ describe("All Values Component Integration", () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
-  it("closes through Escape and keeps long value cells overflow-safe", () => {
+  it("opens Menu without clearing the search and closes through Escape afterward", () => {
     const onClose = vi.fn()
+    const onOpenMenu = vi.fn()
 
-    renderAllValues(undefined, { onClose })
+    renderAllValues(undefined, { onClose, onOpenMenu })
+    const search = screen.getByRole("searchbox", { name: "Search All Values" })
+    fireEvent.change(search, { target: { value: "Acceptance" } })
+    fireEvent.click(screen.getByRole("button", { name: "Menu" }))
+    expect(onOpenMenu).toHaveBeenCalledTimes(1)
+    expect(search).toHaveValue("Acceptance")
+    expect(screen.getByRole("heading", { name: "Acceptance" })).toBeVisible()
 
     fireEvent.keyDown(window, { key: "Escape" })
     expect(onClose).toHaveBeenCalledTimes(1)
-
-    screen.getAllByRole("listitem").forEach((listItem) => {
-      expect(listItem).toHaveClass("overflow-x-auto", "overflow-y-auto")
-    })
-    screen.getAllByText(/^“/).forEach((definitionCopy) => {
-      expect(definitionCopy).toHaveClass(
-        "overflow-x-auto",
-        "overflow-y-auto",
-        "break-words",
-      )
-    })
   })
 
   it("reports when a literal search has no matching value or definition", () => {

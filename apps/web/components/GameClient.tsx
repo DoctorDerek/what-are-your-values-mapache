@@ -128,6 +128,8 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
   const [isControlsOpen, setIsControlsOpen] = useState(false)
   const [activeInformationPanelId, setActiveInformationPanelId] =
     useState<InformationPanelId | null>(null)
+  const isProductOverlayOpen =
+    isProductMenuOpen || activeInformationPanelId !== null || isControlsOpen
   const productMenuReturnFocusTargetRef = useRef<HTMLElement | null>(null)
   const playerData = state.context.playerData
   const shouldReduceMotion = playerData
@@ -358,6 +360,14 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     event.preventDefault()
     productMenuReturnFocusTargetRef.current?.focus()
   }, [])
+  const handleProductMenuCloseAutoFocus = useCallback(
+    (event: Event) => {
+      event.preventDefault()
+      if (!isProductOverlayOpen)
+        productMenuReturnFocusTargetRef.current?.focus({ preventScroll: true })
+    },
+    [isProductOverlayOpen],
+  )
   const handleProductMenuDestinationSelect = useCallback(
     (destination: ProductMenuDestination) => {
       setIsProductMenuOpen(false)
@@ -732,8 +742,6 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
       onOpenChange={setIsControlsOpen}
     />
   ) : null
-  const isProductOverlayOpen =
-    isProductMenuOpen || activeInformationPanelId !== null || isControlsOpen
   const isHubSurface =
     state.matches("Hub") ||
     state.matches("AddingCustomValues") ||
@@ -888,6 +896,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           />
         )}
         <ProductMenu
+          onCloseAutoFocus={handleProductMenuCloseAutoFocus}
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}
           open={isProductMenuOpen}
           onDestinationSelect={handleProductMenuDestinationSelect}
@@ -908,6 +917,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           onClose={() => send({ type: "ACHIEVEMENTS.CLOSE_REQUESTED" })}
         />
         <ProductMenu
+          onCloseAutoFocus={handleProductMenuCloseAutoFocus}
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}
           open={isProductMenuOpen}
           onDestinationSelect={handleProductMenuDestinationSelect}
@@ -945,6 +955,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           }
         />
         <ProductMenu
+          onCloseAutoFocus={handleProductMenuCloseAutoFocus}
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}
           open={isProductMenuOpen}
           onDestinationSelect={handleProductMenuDestinationSelect}
@@ -981,6 +992,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           }
         />
         <ProductMenu
+          onCloseAutoFocus={handleProductMenuCloseAutoFocus}
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}
           open={isProductMenuOpen}
           onDestinationSelect={handleProductMenuDestinationSelect}
@@ -1019,6 +1031,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           onRequestReset={handleResetRequested}
         />
         <ProductMenu
+          onCloseAutoFocus={handleProductMenuCloseAutoFocus}
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}
           open={isProductMenuOpen}
           onDestinationSelect={handleProductMenuDestinationSelect}
@@ -1044,6 +1057,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           isPersistencePending={state.matches({ AllValues: "Persisting" })}
           persistenceIssue={state.context.persistenceIssue}
           onClose={handleAllValuesClose}
+          onOpenMenu={handleProductMenuOpen}
           onNavigationBlockedChange={setIsAllValuesNavigationBlocked}
           backRequestId={allValuesBackRequestId}
           onAddCustomValue={handleAddCustomValue}
@@ -1053,6 +1067,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           }
         />
         <ProductMenu
+          onCloseAutoFocus={handleProductMenuCloseAutoFocus}
           contextActionLabel={PRODUCT_MENU_COPY.closeAction}
           open={isProductMenuOpen}
           onDestinationSelect={handleProductMenuDestinationSelect}
@@ -1099,6 +1114,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           onWinnerSelected={handleWinnerSelected}
         />
         <ProductMenu
+          onCloseAutoFocus={handleProductMenuCloseAutoFocus}
           contextActionLabel={PRODUCT_MENU_COPY.resumeBattleAction}
           open={isProductMenuOpen}
           onDestinationSelect={handleProductMenuDestinationSelect}

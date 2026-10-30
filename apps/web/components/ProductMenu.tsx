@@ -10,11 +10,13 @@ export default function ProductMenu({
   open,
   onDestinationSelect,
   onOpenChange,
+  onCloseAutoFocus,
 }: {
   contextActionLabel: string
   open: boolean
   onDestinationSelect: (destination: ProductMenuDestination) => void
   onOpenChange: (open: boolean) => void
+  onCloseAutoFocus?: (event: Event) => void
 }) {
   const localizedCopy = useLocaleCatalog()
   const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
@@ -23,6 +25,7 @@ export default function ProductMenu({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        onCloseAutoFocus={onCloseAutoFocus}
         aria-describedby={undefined}
         className="grid-rows-[minmax(0,auto)_minmax(0,1fr)_auto] [overflow-wrap:anywhere] hyphens-auto"
       >
