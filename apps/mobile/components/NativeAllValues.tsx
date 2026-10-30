@@ -1,5 +1,6 @@
 import { projectAllValues } from "@game/data/src/AllValuesProjection"
 import type { LocalizationCatalog } from "@game/data/src/LocalizationCatalog"
+import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValueDisplayName,
@@ -33,6 +34,8 @@ export default function NativeAllValues({
   onUpdateCustomValue,
   persistenceIssue = null,
   rankedValues,
+  runtimeClipCatalog,
+  shouldReduceMotion,
   localization: localizationOverride,
   onNavigationBlockedChange,
 }: {
@@ -50,6 +53,8 @@ export default function NativeAllValues({
   ) => void
   readonly persistenceIssue?: string | null
   readonly rankedValues: readonly RankedValue[]
+  readonly runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
+  readonly shouldReduceMotion: boolean
   readonly onNavigationBlockedChange?: (isBlocked: boolean) => void
 }) {
   const localizedCopy = useLocaleCatalog(localizationOverride)
@@ -284,6 +289,8 @@ export default function NativeAllValues({
                   </Text>
                 ) : null}
                 <NativeValueDetailsCard
+                  runtimeClipCatalog={runtimeClipCatalog}
+                  shouldReduceMotion={shouldReduceMotion}
                   localization={localization}
                   isHighlighted={item.definition.id === highlightedValueId}
                   isPersistencePending={isPersistencePending}

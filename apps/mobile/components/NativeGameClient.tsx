@@ -866,6 +866,8 @@ function NativeGameClientContent({
     return (
       <View className="flex-1">
         <NativeAllValues
+          runtimeClipCatalog={SEETHING_SWARM_NATIVE_RUNTIME_CLIP_CATALOG}
+          shouldReduceMotion={shouldReduceMotion}
           backRequestId={allValuesBackRequestId}
           localization={getLocaleCatalog(playerData.settings.locale)}
           key={battleProfile.scheduler.deckRevision}

@@ -14,18 +14,10 @@ export default function NativeValueLevelProgress({
     getLevelProgressFromXP(totalXp)
 
   return (
-    <View className="mt-3 w-full border-4 border-black bg-white px-3 py-2">
-      <View className="flex-row items-baseline justify-between gap-3">
-        <Text className="text-mapache-vivid-primary-raspberry text-lg font-black uppercase">
+    <View className="w-36 max-w-full min-w-0 gap-2 border-4 border-black bg-white px-3 py-2 xl:w-44">
+        <Text className="text-mapache-vivid-primary-raspberry text-right text-lg font-black uppercase">
           {localizedCopy.interfaceCopy.screen.valueLevel(String(level))}
         </Text>
-        <Text className="text-mapache-vivid-primary-raspberry text-sm font-black uppercase">
-          {localizedCopy.interfaceCopy.screen.xpFraction(
-            String(earnedXpTowardNextLevel),
-            String(requiredXpForNextLevel),
-          )}
-        </Text>
-      </View>
       <View
         accessibilityLabel={localizedCopy.interfaceCopy.screen.xpTowardLevel(
           String(level + 1),
@@ -36,7 +28,7 @@ export default function NativeValueLevelProgress({
           max: requiredXpForNextLevel,
           now: earnedXpTowardNextLevel,
         }}
-        className="mt-2 h-3 flex-row overflow-hidden border-2 border-black bg-white"
+        className="h-3 flex-row overflow-hidden border-2 border-black bg-white"
       >
         <View
           className="bg-mapache-vivid-primary-raspberry"
@@ -48,6 +40,12 @@ export default function NativeValueLevelProgress({
           }}
         />
       </View>
+      <Text className="text-mapache-vivid-primary-raspberry text-left text-sm font-black uppercase">
+        {localizedCopy.interfaceCopy.screen.xpFraction(
+          String(earnedXpTowardNextLevel),
+          String(requiredXpForNextLevel),
+        )}
+      </Text>
     </View>
   )
 }

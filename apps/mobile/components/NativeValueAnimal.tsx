@@ -3,7 +3,7 @@ import {
   SEETHING_SWARM_HUB_TILE_SIZE,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
-import type { ValueDefinition } from "@game/data/src/Value"
+import type { ActiveValueDefinition } from "@game/data/src/Value"
 import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingSwarmBattleChoreography"
 import { useState } from "react"
 import { Pressable } from "react-native"
@@ -17,7 +17,7 @@ export default function NativeValueAnimal({
   shouldReduceMotion,
   testID,
 }: {
-  definition: ValueDefinition
+  definition: ActiveValueDefinition
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
   shouldReduceMotion: boolean
   testID?: string
