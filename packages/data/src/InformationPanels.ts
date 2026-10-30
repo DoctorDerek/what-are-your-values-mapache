@@ -310,11 +310,11 @@ export const FREE_RESOURCES_INFORMATION_PANEL = Object.freeze({
     }),
     Object.freeze({
       kind: "resource",
-      title: "Bruce Lee Foundation: Jeet Kune Do",
+      title: "Bruce Lee: Jeet Kune Do",
       description:
         "Explore Bruce Lee’s emphasis on simplicity, directness, freedom, honest self-expression, and learning from experience.",
-      actionLabel: "Visit the Bruce Lee Foundation",
-      url: "https://bruceleefoundation.org/jeetkunedo/",
+      actionLabel: "Visit BruceLee.com",
+      url: "https://brucelee.com/jeet-kune-do",
     }),
     Object.freeze({
       kind: "resource",
@@ -444,7 +444,7 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
       kind: "section",
       heading: "Source Code",
       paragraphs: Object.freeze([
-        "The application code may be available under its stated open-source license. Commercial art, fonts, music, and other third-party assets remain under their own licenses and are not granted by the code license.",
+        "Commercial art, fonts, music, and other third-party assets remain under their own licenses and are not granted by the code license.",
       ]),
     }),
     Object.freeze({
