@@ -89,7 +89,7 @@ pnpm --filter @game/web start
 
 Recovery is not catalog acceptance. `LocalizationCatalogQuality.test.ts` checks every raw shipped catalog and requires zero recovery diagnostics. Shared fault-injection tests cover missing fields, malformed sections, blank copy, duplicate IDs, throwing formatters, and damaged English. Web and native integration tests remove the entire English catalog while exercising usable controls; the web session test also records a battle and reopens the saved profile.
 
-`LOCALIZATION_CATALOG_RESOLUTIONS` exposes startup diagnostics. `resolveLocalizedFormatter` returns diagnostics for a particular formatter invocation, and `createLocaleFormatters` accepts an optional scoped diagnostic callback. Diagnostics contain only locale, key, reason, and fallback category—not copy, player data, or exception contents. They are not uploaded, logged globally, or shown as repeated player toasts. Formatter probes are representative, not proof of every possible input or translation meaning; locale review and in-context QA remain necessary.
+`LOCALIZATION_CATALOG_RESOLUTIONS` exposes startup diagnostics. `resolveLocalizedFormatter` returns diagnostics for a particular formatter invocation, and `createLocaleFormatters` accepts an optional scoped diagnostic callback. Diagnostics contain only locale, key, reason, and fallback category, not copy, player data, or exception contents. They are not uploaded, logged globally, or shown as repeated player toasts. Formatter probes are representative, not proof of every possible input or translation meaning; locale review and in-context QA remain necessary.
 
 ## Medal artwork
 
@@ -109,7 +109,7 @@ Keep justified exceptions in ESLint config, not inline suppressions:
 - Native static `@game/data/assets/` PNG and Rive imports may use Metro’s literal `require()` form. Other module requires remain checked.
 - `EncodeGif.ts` may reference its local ambient `gifenc.d.ts` declaration so consuming app programs include those types without a runtime import.
 
-`eslint.config.test.ts` exercises the real configuration with accepted and rejected source examples, including native exception boundaries and all four TypeScript extensions. The shared repository owns the coverage guard; WAYVM does not maintain a duplicate scanner.
+`eslint.config.test.ts` exercises the real configuration with accepted and rejected source examples, including native exception boundaries and all four TypeScript extensions. The shared repository owns the coverage guard; What Are Your Values, Mapache? does not maintain a duplicate scanner.
 
 ```powershell
 pnpm lint

@@ -21,11 +21,11 @@ describe("NativeInformationPanelContent", () => {
 
     expect(
       screen.getByText(
-        "WAYVM turns values clarification into a simple game: choose which of two values matters more to you right now.",
+        "What Are Your Values, Mapache? turns values clarification into a simple game: choose which of two values matters more to you right now.",
       ),
     ).toBeOnTheScreen()
     expect(
-      screen.getByText("Start With 103 Values—or Add Your Own"),
+      screen.getByText("Start With 103 Values or Add Your Own"),
     ).toBeOnTheScreen()
     expect(
       screen.getByText(
@@ -39,7 +39,7 @@ describe("NativeInformationPanelContent", () => {
       />,
     )
 
-    expect(screen.getByText("—Dr. Derek Austin")).toBeOnTheScreen()
+    expect(screen.getByText("Dr. Derek Austin")).toBeOnTheScreen()
   })
 
   it("opens only the explicitly selected canonical external resource", async () => {

@@ -97,7 +97,7 @@ describe("Player Data Recovery", () => {
       type: "application/json",
     })
     const recoveryInput = screen.getByLabelText(
-      "Choose WAYVM JSON backup for recovery",
+      "Choose JSON backup for recovery in What Are Your Values, Mapache?",
     )
     const clickRecoveryInput = vi.spyOn(recoveryInput, "click")
 

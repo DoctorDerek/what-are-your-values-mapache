@@ -52,13 +52,14 @@ export const playerDataResetCopy = Object.freeze({
   "delete-all-data": Object.freeze({
     actionLabel: "Delete All Data",
     summary:
-      "Remove all WAYVM player data from this device or browser profile and return to Introduction.",
+      "Remove all player data for What Are Your Values, Mapache? from this device or browser profile and return to Introduction.",
     confirmationTitle: "Delete All Data?",
     confirmationBody: Object.freeze([
-      "This permanently removes all WAYVM player data from this device or browser profile, including levels, experience, Custom Values, achievements, battle matching, Undo and Redo history, language, settings, local backups, and control mappings.",
+      "This permanently removes all player data for What Are Your Values, Mapache? from this device or browser profile, including levels, experience, Custom Values, achievements, battle matching, Undo and Redo history, language, settings, local backups, and control mappings.",
       "You will return to Introduction. This does not uninstall the app or remove the offline program files needed to open it. This cannot be undone. Export your data first if you may want it later.",
     ]),
-    successAnnouncement: "All local WAYVM player data was deleted.",
+    successAnnouncement:
+      "All local player data for What Are Your Values, Mapache? was deleted.",
   }),
 }) satisfies Readonly<Record<string, PlayerDataResetCopy>>
 

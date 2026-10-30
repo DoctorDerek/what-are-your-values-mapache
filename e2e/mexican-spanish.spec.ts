@@ -201,7 +201,7 @@ test.describe("Spanish static document", () => {
       .getByRole("main", { name: "Cargando tus valores…" })
       .locator("noscript p")
     await expect(noScriptCopy).toHaveText([
-      "Un juego rápido de batallas automáticas que te ayuda a descubrir tus valores de vida.",
+      "Un juego gratis diseñado para ayudarte a descubrir tus valores de vida. Elige cuál de dos valores te importa más en este momento y mira cómo unos animales adorables se baten en duelo en un juego rápido de batallas automáticas.",
       "El juego interactivo requiere JavaScript.",
     ])
     for (const paragraph of await noScriptCopy.all())

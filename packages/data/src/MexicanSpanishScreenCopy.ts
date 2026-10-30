@@ -47,8 +47,9 @@ export const MEXICAN_SPANISH_SCREEN_COPY: InterfaceCopy["screen"] = {
     "Las comparaciones anteriores siguen siendo parte de tu historial de progreso. Actualizar este valor personalizado conserva su progreso, reinicia el emparejamiento de las batallas y borra los historiales de Deshacer y Rehacer.",
   customDeleteConsequences:
     "Quitar este valor personalizado elimina permanentemente su nombre, definición y progreso. Los demás valores conservan sus niveles y experiencia. El emparejamiento de las batallas se reinicia y los historiales de Deshacer y Rehacer se borran.",
-  chooseBackup: "Elegir respaldo JSON de WAYVM",
-  chooseRecoveryBackup: "Elegir respaldo JSON de WAYVM para recuperar datos",
+  chooseBackup: "Elegir respaldo JSON de ¿Cuáles son tus valores, Mapache?",
+  chooseRecoveryBackup:
+    "Elegir respaldo JSON de ¿Cuáles son tus valores, Mapache? para recuperar datos",
   replacesCurrentData: "Reemplaza los datos actuales en este dispositivo",
   noCustomValues: "No hay valores personalizados que eliminar.",
   resetOrDelete: "Reiniciar o eliminar",

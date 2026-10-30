@@ -386,7 +386,7 @@ describe("NativeGameClient Menu navigation", () => {
     await openMenuDestination(user, "How It Works")
     expect(await screen.findByLabelText("How It Works")).toBeOnTheScreen()
     expect(
-      screen.getByText("Start With 103 Values—or Add Your Own"),
+      screen.getByText("Start With 103 Values or Add Your Own"),
     ).toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Close" }))
 

@@ -13,7 +13,7 @@ export const playerDataRecoveryCopy = Object.freeze({
   unreadableData: Object.freeze({
     title: "Your Saved Data Needs Attention",
     body: Object.freeze([
-      "WAYVM could not safely load the current save on this device. Nothing has been erased.",
+      "What Are Your Values, Mapache? could not safely load the current save on this device. Nothing has been erased.",
       "You can restore the last known-good save, import another backup, download the unreadable data for recovery, or choose Delete All Data.",
     ] as const),
     restoreConfirmation:
@@ -33,7 +33,7 @@ export const playerDataRecoveryCopy = Object.freeze({
   } as const),
   storageUnavailable: Object.freeze({
     title: "Progress Cannot Be Saved Reliably",
-    body: "WAYVM cannot currently write to device storage. Keep this screen open while you export a backup or free storage. Continuing without a reliable save could lose new progress.",
+    body: "What Are Your Values, Mapache? cannot currently write to device storage. Keep this screen open while you export a backup or free storage. Continuing without a reliable save could lose new progress.",
     currentBackupReady: "Your current data backup is ready.",
     pendingBackupReady: "Your pending player data backup is ready.",
   } as const),

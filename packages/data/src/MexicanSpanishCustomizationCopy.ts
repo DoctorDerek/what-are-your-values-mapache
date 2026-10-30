@@ -7,7 +7,7 @@ export const MEXICAN_SPANISH_CUSTOMIZATION_COPY: Pick<
   customValues: {
     editorTitle: "Agregar valor personalizado",
     example:
-      "Por ejemplo: Trabajo bien hecho — hacer las cosas con cuidado y sentir orgullo por hacerlas bien",
+      "Por ejemplo: Trabajo bien hecho: hacer las cosas con cuidado y sentir orgullo por hacerlas bien",
     name: "Nombre del valor",
     definition: "Definición",
     back: "Volver",

@@ -66,13 +66,13 @@ describe("Introduction Component Integration", () => {
     render(
       <Splash
         onLocaleChange={vi.fn()}
-        notice="All local WAYVM player data was deleted."
+        notice="All local player data for What Are Your Values, Mapache? was deleted."
         onComplete={vi.fn()}
       />,
     )
 
     expect(screen.getByRole("status")).toHaveTextContent(
-      "All local WAYVM player data was deleted.",
+      "All local player data for What Are Your Values, Mapache? was deleted.",
     )
   })
 })

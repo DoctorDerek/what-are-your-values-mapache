@@ -40,44 +40,45 @@ export const MEXICAN_SPANISH_RECOVERY_COPY: Pick<
     },
     screenTitle: "Importar y exportar",
     introduction:
-      "Tu progreso, valores personalizados, logros, idioma y configuración se guardan en este dispositivo. Exporta un respaldo JSON para conservar una copia portátil o mover tus datos entre aplicaciones de WAYVM compatibles.",
+      "Tu progreso, valores personalizados, logros, idioma y configuración se guardan en este dispositivo. Exporta un respaldo JSON para conservar una copia portátil o mover tus datos entre aplicaciones compatibles de ¿Cuáles son tus valores, Mapache?",
     exportTitle: "Exportar datos",
     exportDescription:
-      "Guarda un respaldo JSON con versión de tu progreso, valores personalizados, logros, idioma, configuración y otros datos portátiles de WAYVM. Exportar no nos envía tus datos.",
+      "Guarda un respaldo JSON con versión de tu progreso, valores personalizados, logros, idioma, configuración y otros datos portátiles de ¿Cuáles son tus valores, Mapache? Exportar no nos envía tus datos.",
     exportAction: "Exportar datos",
-    exportSuccess: "Tu respaldo de WAYVM está listo.",
+    exportSuccess:
+      "Tu respaldo de ¿Cuáles son tus valores, Mapache? está listo.",
     exportFailure:
-      "WAYVM no pudo crear un respaldo. Tus datos guardados no cambiaron. Inténtalo de nuevo o revisa el espacio disponible en tu dispositivo.",
+      "¿Cuáles son tus valores, Mapache? no pudo crear un respaldo. Tus datos guardados no cambiaron. Inténtalo de nuevo o revisa el espacio disponible en tu dispositivo.",
     importTitle: "Importar datos",
     importDescription:
-      "Elige un respaldo JSON de WAYVM. La aplicación lo validará y te mostrará una vista previa antes de reemplazar los datos de este dispositivo.",
+      "Elige un respaldo JSON de ¿Cuáles son tus valores, Mapache? La aplicación lo validará y te mostrará una vista previa antes de reemplazar los datos de este dispositivo.",
     chooseBackupAction: "Elegir respaldo",
     importPreviewTitle: "Revisar importación",
     technicalDetails: "Detalles técnicos",
     importPreviewWarning:
-      "Importar este respaldo reemplazará los datos actuales de WAYVM en este dispositivo. Primero se creará un respaldo de seguridad local.",
+      "Importar este respaldo reemplazará los datos actuales de ¿Cuáles son tus valores, Mapache? en este dispositivo. Primero se creará un respaldo de seguridad local.",
     importCancelAction: "Cancelar",
     importReplaceAction: "Importar y reemplazar",
     importCancelled: "Se canceló la importación. Tus datos no cambiaron.",
     importSuccess: "Respaldo restaurado. Tu progreso importado está listo.",
     importSuccessSummary: "Respaldo restaurado",
     importInvalid:
-      "Este archivo no es un respaldo válido de WAYVM. Tus datos no cambiaron.",
+      "Este archivo no es un respaldo válido de ¿Cuáles son tus valores, Mapache? Tus datos no cambiaron.",
     importNewer:
-      "Este respaldo se creó con una versión más reciente de WAYVM y no se puede abrir aquí de forma segura. Actualiza la aplicación e inténtalo de nuevo. Tus datos no cambiaron.",
+      "Este respaldo se creó con una versión más reciente de ¿Cuáles son tus valores, Mapache? y no se puede abrir aquí de forma segura. Actualiza la aplicación e inténtalo de nuevo. Tus datos no cambiaron.",
     importUnsupported:
-      "Este respaldo usa una versión de formato que WAYVM no puede abrir de forma segura. Tus datos no cambiaron.",
+      "Este respaldo usa una versión de formato que ¿Cuáles son tus valores, Mapache? no puede abrir de forma segura. Tus datos no cambiaron.",
     importUnsafe:
-      "Este respaldo es demasiado grande o contiene datos que WAYVM no puede procesar de forma segura. Tus datos no cambiaron.",
+      "Este respaldo es demasiado grande o contiene datos que ¿Cuáles son tus valores, Mapache? no puede procesar de forma segura. Tus datos no cambiaron.",
     importRestoreFailure:
-      "WAYVM no pudo restaurar este respaldo. Tus datos guardados no cambiaron. Inténtalo de nuevo.",
+      "¿Cuáles son tus valores, Mapache? no pudo restaurar este respaldo. Tus datos guardados no cambiaron. Inténtalo de nuevo.",
   },
   recovery: {
     loading: "Cargando tus valores…",
     unreadableData: {
       title: "Tus datos guardados necesitan atención",
       body: [
-        "WAYVM no pudo cargar de forma segura la partida guardada actual de este dispositivo. No se ha borrado nada.",
+        "¿Cuáles son tus valores, Mapache? no pudo cargar de forma segura la partida guardada actual de este dispositivo. No se ha borrado nada.",
         "Puedes restaurar la última partida guardada válida, importar otro respaldo, descargar los datos ilegibles para recuperarlos o elegir Eliminar todos los datos.",
       ],
       restoreConfirmation:
@@ -98,7 +99,7 @@ export const MEXICAN_SPANISH_RECOVERY_COPY: Pick<
     },
     storageUnavailable: {
       title: "No se puede guardar el progreso de forma confiable",
-      body: "Por ahora, WAYVM no puede escribir en el almacenamiento del dispositivo. Mantén esta pantalla abierta mientras exportas un respaldo o liberas espacio. Continuar sin un guardado confiable podría hacerte perder progreso nuevo.",
+      body: "Por ahora, ¿Cuáles son tus valores, Mapache? no puede escribir en el almacenamiento del dispositivo. Mantén esta pantalla abierta mientras exportas un respaldo o liberas espacio. Continuar sin un guardado confiable podría hacerte perder progreso nuevo.",
       currentBackupReady: "El respaldo de tus datos actuales está listo.",
       pendingBackupReady:
         "El respaldo de tus datos de jugador pendientes está listo.",
@@ -165,14 +166,14 @@ export const MEXICAN_SPANISH_RECOVERY_COPY: Pick<
     "delete-all-data": {
       actionLabel: "Eliminar todos los datos",
       summary:
-        "Elimina todos los datos de jugador de WAYVM de este dispositivo o perfil del navegador y vuelve a la introducción.",
+        "Elimina todos los datos de jugador de ¿Cuáles son tus valores, Mapache? de este dispositivo o perfil del navegador y vuelve a la introducción.",
       confirmationTitle: "¿Eliminar todos los datos?",
       confirmationBody: [
-        "Esto elimina permanentemente todos los datos de jugador de WAYVM de este dispositivo o perfil del navegador, incluidos los niveles, la experiencia, los valores personalizados, los logros, el emparejamiento de las batallas, los historiales de Deshacer y Rehacer, el idioma, la configuración, los respaldos locales y las asignaciones de controles.",
+        "Esto elimina permanentemente todos los datos de jugador de ¿Cuáles son tus valores, Mapache? de este dispositivo o perfil del navegador, incluidos los niveles, la experiencia, los valores personalizados, los logros, el emparejamiento de las batallas, los historiales de Deshacer y Rehacer, el idioma, la configuración, los respaldos locales y las asignaciones de controles.",
         "Volverás a la introducción. Esto no desinstala la aplicación ni elimina los archivos del programa necesarios para abrirlo sin conexión. No se puede deshacer. Exporta tus datos primero si podrías necesitarlos después.",
       ],
       successAnnouncement:
-        "Se eliminaron todos los datos locales de jugador de WAYVM.",
+        "Se eliminaron todos los datos locales de jugador de ¿Cuáles son tus valores, Mapache?",
     },
   },
   resetBackupReady:

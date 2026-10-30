@@ -29,35 +29,35 @@ export const playerDataPortabilityCopy = Object.freeze({
   },
   screenTitle: "Import & Export",
   introduction:
-    "Your progress, Custom Values, achievements, language, and settings are stored on this device. Export a JSON backup to keep a portable copy or move your data between supported WAYVM apps.",
+    "Your progress, Custom Values, achievements, language, and settings are stored on this device. Export a JSON backup to keep a portable copy or move your data between supported apps for What Are Your Values, Mapache?",
   exportTitle: "Export Data",
   exportDescription:
-    "Save a versioned JSON backup of your progress, Custom Values, achievements, language, settings, and other portable WAYVM data. Exporting does not upload your data to us.",
+    "Save a versioned JSON backup of your progress, Custom Values, achievements, language, settings, and other portable data for What Are Your Values, Mapache? Exporting does not upload your data to us.",
   exportAction: "Export Data",
-  exportSuccess: "Your WAYVM backup is ready.",
+  exportSuccess: "Your backup for What Are Your Values, Mapache? is ready.",
   exportFailure:
-    "WAYVM could not create a backup. Your saved data was not changed. Please try again or check available device storage.",
+    "What Are Your Values, Mapache? could not create a backup. Your saved data was not changed. Please try again or check available device storage.",
   importTitle: "Import Data",
   importDescription:
-    "Choose a WAYVM JSON backup. The app will validate it and show you a preview before replacing data on this device.",
+    "Choose a JSON backup for What Are Your Values, Mapache? The app will validate it and show you a preview before replacing data on this device.",
   chooseBackupAction: "Choose Backup",
   importPreviewTitle: "Review Import",
   technicalDetails: "Technical details",
   importPreviewWarning:
-    "Importing this backup will replace the current WAYVM data on this device. A local safety backup will be created first.",
+    "Importing this backup will replace the current data for What Are Your Values, Mapache? on this device. A local safety backup will be created first.",
   importCancelAction: "Cancel",
   importReplaceAction: "Import & Replace",
   importCancelled: "Import canceled. Your data was not changed.",
   importSuccess: "Backup restored. Your imported progress is ready.",
   importSuccessSummary: "Backup restored",
   importInvalid:
-    "This file is not a valid WAYVM backup. Your data was not changed.",
+    "This file is not a valid backup for What Are Your Values, Mapache? Your data was not changed.",
   importNewer:
-    "This backup was created by a newer version of WAYVM and cannot be opened safely here. Update the app and try again. Your data was not changed.",
+    "This backup was created by a newer version of What Are Your Values, Mapache? and cannot be opened safely here. Update the app and try again. Your data was not changed.",
   importUnsupported:
-    "This backup uses a format version WAYVM cannot open safely. Your data was not changed.",
+    "This backup uses a format version What Are Your Values, Mapache? cannot open safely. Your data was not changed.",
   importUnsafe:
-    "This backup is too large or contains data WAYVM cannot process safely. Your data was not changed.",
+    "This backup is too large or contains data What Are Your Values, Mapache? cannot process safely. Your data was not changed.",
   importRestoreFailure:
-    "WAYVM could not restore this backup. Your saved data was not changed. Please try again.",
+    "What Are Your Values, Mapache? could not restore this backup. Your saved data was not changed. Please try again.",
 })

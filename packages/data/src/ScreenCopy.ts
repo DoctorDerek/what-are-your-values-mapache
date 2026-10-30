@@ -45,8 +45,9 @@ export const SCREEN_COPY = Object.freeze({
     "Earlier comparisons remain part of your progress history. Updating this Custom Value keeps its progress, restarts battle matching, and clears Undo and Redo.",
   customDeleteConsequences:
     "Removing this Custom Value permanently deletes its name, definition, and progress. Every remaining value keeps its levels and experience. Battle matching restarts, and Undo and Redo history clears.",
-  chooseBackup: "Choose WAYVM JSON backup",
-  chooseRecoveryBackup: "Choose WAYVM JSON backup for recovery",
+  chooseBackup: "Choose JSON backup for What Are Your Values, Mapache?",
+  chooseRecoveryBackup:
+    "Choose JSON backup for recovery in What Are Your Values, Mapache?",
   replacesCurrentData: "Replaces current data on this device",
   noCustomValues: "No Custom Values to delete.",
   resetOrDelete: "Reset or Delete",

@@ -25,7 +25,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
     blocks: [
       {
         kind: "lead",
-        text: "WAYVM convierte la exploración de tus valores en un juego sencillo: elige cuál de dos valores te importa más en este momento.",
+        text: "¿Cuáles son tus valores, Mapache? convierte la exploración de tus valores en un juego sencillo: elige cuál de dos valores te importa más en este momento.",
       },
       {
         kind: "section",
@@ -82,7 +82,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
         heading: "En qué se diferencia del ejercicio original",
         paragraphs: [
           "El Personal Values Card Sort de 2011 pide ordenar los valores en tres a cinco grupos según su importancia, identificar entre cinco y diez valores centrales y ordenar esos valores seleccionados. A menudo continúa con una entrevista de preguntas abiertas y escucha reflexiva.",
-          "WAYVM toma otro camino: compara pares repetidamente en todo tu conjunto de valores activos y conserva un resultado que evoluciona y que puedes consultar otra vez. Es una adaptación, no un reemplazo de la conversación, la ACT, la entrevista motivacional, la terapia ni la atención profesional.",
+          "¿Cuáles son tus valores, Mapache? toma otro camino: compara pares repetidamente en todo tu conjunto de valores activos y conserva un resultado que evoluciona y que puedes consultar otra vez. Es una adaptación, no un reemplazo de la conversación, la ACT, la entrevista motivacional, la terapia ni la atención profesional.",
         ],
       },
       {
@@ -114,7 +114,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
       },
       {
         kind: "paragraph",
-        text: "Los grupos amplios pueden ser un punto de partida útil. El Personal Values Card Sort de 2011 va más allá al pedir elegir entre cinco y diez valores centrales y ordenarlos. WAYVM toma otro rumbo: compara pares repetidamente en todo el conjunto de valores activos para que sigan siendo visibles las decisiones entre todos los valores incluidos y los que tú escribas.",
+        text: "Los grupos amplios pueden ser un punto de partida útil. El Personal Values Card Sort de 2011 va más allá al pedir elegir entre cinco y diez valores centrales y ordenarlos. ¿Cuáles son tus valores, Mapache? toma otro rumbo: compara pares repetidamente en todo el conjunto de valores activos para que sigan siendo visibles las decisiones entre todos los valores incluidos y los que tú escribas.",
       },
       {
         kind: "paragraph",
@@ -122,7 +122,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
       },
       {
         kind: "paragraph",
-        text: "Ninguna lista publicada puede incluir todos los valores que le importan a cada persona. Por eso WAYVM incluye valores personalizados privados sin un límite numérico fijo. Un valor como Ingenio puede ser central para alguien aunque no aparezca en la lista original.",
+        text: "Ninguna lista publicada puede incluir todos los valores que le importan a cada persona. Por eso ¿Cuáles son tus valores, Mapache? incluye valores personalizados privados sin un límite numérico fijo. Un valor como Ingenio puede ser central para alguien aunque no aparezca en la lista original.",
       },
       {
         kind: "paragraph",
@@ -138,7 +138,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
       },
       {
         kind: "paragraph",
-        text: "WAYVM se inspira en ejercicios para ordenar valores que se usan en la terapia de aceptación y compromiso, o ACT. En la ACT, los valores pueden entenderse como direcciones elegidas para actuar continuamente, no como tareas que se completan una sola vez. WAYVM es un juego de reflexión personal, no es ACT, terapia, diagnóstico ni atención médica.",
+        text: "¿Cuáles son tus valores, Mapache? se inspira en ejercicios para ordenar valores que se usan en la terapia de aceptación y compromiso, o ACT. En la ACT, los valores pueden entenderse como direcciones elegidas para actuar continuamente, no como tareas que se completan una sola vez. ¿Cuáles son tus valores, Mapache? es un juego de reflexión personal, no es ACT, terapia, diagnóstico ni atención médica.",
       },
       {
         kind: "paragraph",
@@ -174,7 +174,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
       },
       {
         kind: "paragraph",
-        text: "El juego actual conserva los 100 valores del Personal Values Card Sort de 2011, de dominio público, y agrega Ingenio, Destino y Mascotas como valores incluidos creados para WAYVM. Ninguna lista de valores puede estar completa para todas las personas, así que WAYVM también te permite agregar tantos valores personalizados privados como te resulten útiles.",
+        text: "El juego actual conserva los 100 valores del Personal Values Card Sort de 2011, de dominio público, y agrega Ingenio, Destino y Mascotas como valores incluidos creados para ¿Cuáles son tus valores, Mapache? Ninguna lista de valores puede estar completa para todas las personas, así que ¿Cuáles son tus valores, Mapache? también te permite agregar tantos valores personalizados privados como te resulten útiles.",
       },
       {
         kind: "paragraph",
@@ -184,7 +184,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
         kind: "paragraph",
         text: "El juego no puede decirte cuáles deberían ser tus valores y no hay un resultado moralmente correcto. Solo te da una forma más clara de notar lo que más te importa.",
       },
-      { kind: "signature", text: "—Dr. Derek Austin" },
+      { kind: "signature", text: "Dr. Derek Austin" },
     ],
   },
   "free-resources": {
@@ -199,7 +199,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
       },
       {
         kind: "paragraph",
-        text: "WAYVM es un juego de reflexión personal, no es terapia ni asesoría médica. Las organizaciones y los autores que aparecen abajo no avalan ni patrocinan este juego. Estas perspectivas no son intercambiables y su inclusión no implica que una tradición coincida con otra.",
+        text: "¿Cuáles son tus valores, Mapache? es un juego de reflexión personal, no es terapia ni asesoría médica. Las organizaciones y los autores que aparecen abajo no avalan ni patrocinan este juego. Estas perspectivas no son intercambiables y su inclusión no implica que una tradición coincida con otra.",
       },
       {
         kind: "paragraph",
@@ -224,9 +224,9 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
       },
       {
         kind: "resource",
-        title: "Personal Values Card Sort — actualización de 2011",
+        title: "Personal Values Card Sort: actualización de 2011",
         description:
-          "Consulta la fuente de dominio público de los 100 valores originales y sus definiciones, el procedimiento de tres a cinco grupos, la clasificación final de cinco a diez valores y las tres tarjetas en blanco de “Otro valor” que WAYVM adapta.",
+          "Consulta la fuente de dominio público de los 100 valores originales y sus definiciones, el procedimiento de tres a cinco grupos, la clasificación final de cinco a diez valores y las tres tarjetas en blanco de “Otro valor” que ¿Cuáles son tus valores, Mapache? adapta.",
         actionLabel: "Abrir Personal Values Card Sort",
         url: "https://www.guilford.com/add/miller11_old/pers_val.pdf?t=1",
       },
@@ -279,21 +279,21 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
         heading: "Privado. Sin conexión. Sin cuenta.",
         paragraphs: [
           "Esta aplicación usa el almacenamiento de tu dispositivo para guardar tu progreso, valores personalizados, logros, apariencia del avatar, idioma y configuración, y para funcionar sin conexión. No usa ese almacenamiento para analítica, publicidad ni seguimiento.",
-          "WAYVM no tiene cuentas, sincronización en la nube, tablas de clasificación globales, publicidad ni analítica de tus elecciones de juego. La aplicación no nos envía tus comparaciones, valores incluidos o personalizados, definiciones, clasificación, cinco valores principales, logros ni configuración.",
+          "¿Cuáles son tus valores, Mapache? no tiene cuentas, sincronización en la nube, tablas de clasificación globales, publicidad ni analítica de tus elecciones de juego. La aplicación no nos envía tus comparaciones, valores incluidos o personalizados, definiciones, clasificación, cinco valores principales, logros ni configuración.",
           "El sitio web de producción usa Vercel Web Analytics sin cookies para recopilar datos agregados de visitas a páginas, fuentes de referencia, ubicación aproximada e información del navegador y dispositivo. Las URL de páginas reportadas excluyen los parámetros de consulta y los fragmentos. No se incluye ningún estado del juego y las aplicaciones nativas no cargan este servicio de analítica.",
-          "WAYVM no establece cookies de seguimiento ni de publicidad.",
+          "¿Cuáles son tus valores, Mapache? no establece cookies de seguimiento ni de publicidad.",
           "Solo se exportan datos cuando tú lo eliges. La exportación JSON crea un respaldo que tú controlas. Si envías un archivo a otra aplicación o servicio, ese destino lo maneja conforme a su propia política de privacidad.",
-          "Los enlaces a recursos externos abren sitios fuera de WAYVM. Esos sitios pueden recibir información habitual de las solicitudes web y siguen sus propias prácticas de privacidad.",
-          "En su lanzamiento, WAYVM no cifra los datos locales. Alguien con acceso a tu dispositivo desbloqueado o a tu perfil del navegador podría acceder a ellos. Usa las funciones de seguridad de tu dispositivo si esto es importante en tu situación.",
+          "Los enlaces a recursos externos abren sitios fuera de ¿Cuáles son tus valores, Mapache? Esos sitios pueden recibir información habitual de las solicitudes web y siguen sus propias prácticas de privacidad.",
+          "En su lanzamiento, ¿Cuáles son tus valores, Mapache? no cifra los datos locales. Alguien con acceso a tu dispositivo desbloqueado o a tu perfil del navegador podría acceder a ellos. Usa las funciones de seguridad de tu dispositivo si esto es importante en tu situación.",
           "Borrar los datos del navegador o del sitio, usar almacenamiento de navegación privada, desinstalar la aplicación o restablecer el dispositivo puede eliminar el progreso local. Exporta un respaldo JSON si quieres una copia portátil.",
-          "Reiniciar niveles y experiencia devuelve todos los valores activos al nivel 1 con 0 XP y conserva las definiciones de los valores personalizados, los logros, el idioma y la configuración. Eliminar todos los datos elimina todos los datos de jugador de WAYVM de este dispositivo o perfil del navegador.",
+          "Reiniciar niveles y experiencia devuelve todos los valores activos al nivel 1 con 0 XP y conserva las definiciones de los valores personalizados, los logros, el idioma y la configuración. Eliminar todos los datos elimina todos los datos de jugador de ¿Cuáles son tus valores, Mapache? de este dispositivo o perfil del navegador.",
         ],
       },
       {
         kind: "section",
         heading: "Un juego de reflexión, no terapia",
         paragraphs: [
-          "WAYVM no es un dispositivo médico, una prueba diagnóstica, un servicio de psicoterapia, un servicio de atención en crisis ni un sustituto de la atención profesional. No determina si un valor es bueno, saludable, moral o correcto.",
+          "¿Cuáles son tus valores, Mapache? no es un dispositivo médico, una prueba diagnóstica, un servicio de psicoterapia, un servicio de atención en crisis ni un sustituto de la atención profesional. No determina si un valor es bueno, saludable, moral o correcto.",
         ],
       },
       {
@@ -307,15 +307,15 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
         kind: "section",
         heading: "Fuente de los valores",
         paragraphs: [
-          "Los 100 valores originales y sus definiciones se adaptaron de la actualización de 2011 del Personal Values Card Sort de William R. Miller, Janet C’de Baca, Daniel B. Matthews y Paula L. Wilbourne, de la Universidad de Nuevo México. El instrumento original indica que es de dominio público y que puede copiarse o adaptarse sin permiso adicional. Ingenio, Destino y Mascotas son tres incorporaciones creadas para WAYVM, no entradas de esa fuente.",
-          "La fuente también incluye tres tarjetas en blanco de “Otro valor”, lo que demuestra que su vocabulario impreso es intencionalmente abierto. WAYVM adapta esa apertura mediante valores privados opcionales escritos por quien juega, sin tratar los tres espacios del formato en papel como un límite del producto. Los nombres y las definiciones escritos por quien juega no forman parte del instrumento original ni cuentan con el aval de sus autores.",
+          "Los 100 valores originales y sus definiciones se adaptaron de la actualización de 2011 del Personal Values Card Sort de William R. Miller, Janet C’de Baca, Daniel B. Matthews y Paula L. Wilbourne, de la Universidad de Nuevo México. El instrumento original indica que es de dominio público y que puede copiarse o adaptarse sin permiso adicional. Ingenio, Destino y Mascotas son tres incorporaciones creadas para ¿Cuáles son tus valores, Mapache?, no entradas de esa fuente.",
+          "La fuente también incluye tres tarjetas en blanco de “Otro valor”, lo que demuestra que su vocabulario impreso es intencionalmente abierto. ¿Cuáles son tus valores, Mapache? adapta esa apertura mediante valores privados opcionales escritos por quien juega, sin tratar los tres espacios del formato en papel como un límite del producto. Los nombres y las definiciones escritos por quien juega no forman parte del instrumento original ni cuentan con el aval de sus autores.",
         ],
       },
       {
         kind: "section",
         heading: "Influencias intelectuales",
         paragraphs: [
-          "WAYVM se inspira en ejercicios para ordenar valores que se usan en la terapia de aceptación y compromiso, y toma ideas sobre el sentido, la libertad, la práctica y la expresión personal honesta. Mencionar la ACT, la Organización Mundial de la Salud, Viktor Frankl, Erich Fromm, Bruce Lee, el budismo o cualquier organización enlazada no implica aval, asociación ni patrocinio.",
+          "¿Cuáles son tus valores, Mapache? se inspira en ejercicios para ordenar valores que se usan en la terapia de aceptación y compromiso, y toma ideas sobre el sentido, la libertad, la práctica y la expresión personal honesta. Mencionar la ACT, la Organización Mundial de la Salud, Viktor Frankl, Erich Fromm, Bruce Lee, el budismo o cualquier organización enlazada no implica aval, asociación ni patrocinio.",
         ],
       },
       {
@@ -329,7 +329,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
         kind: "resource",
         title: "Kenney Input Prompts",
         description:
-          "Ilustraciones de botones de controles, compartidas entre las plataformas de WAYVM.",
+          "Ilustraciones de botones de controles, compartidas entre las plataformas de ¿Cuáles son tus valores, Mapache?",
         actionLabel: "Visitar Kenney",
         url: "https://kenney.nl/assets/input-prompts",
       },
@@ -337,7 +337,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
         kind: "section",
         heading: "Ilustraciones de medallas",
         paragraphs: [
-          "Las medallas 3D de oro, plata y bronce son ilustraciones de Microsoft Fluent Emoji, incluidas en WAYVM bajo la licencia MIT. Copyright (c) Microsoft Corporation.",
+          "Las medallas 3D de oro, plata y bronce son ilustraciones de Microsoft Fluent Emoji, incluidas en ¿Cuáles son tus valores, Mapache? bajo la licencia MIT. Copyright (c) Microsoft Corporation.",
         ],
       },
       {
@@ -367,7 +367,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
         kind: "resource",
         title: "SeethingSwarm",
         description:
-          "Creador del arte en píxeles y las animaciones de animales de WAYVM.",
+          "Creador del arte en píxeles y las animaciones de animales de ¿Cuáles son tus valores, Mapache?",
         actionLabel: "Visitar SeethingSwarm",
         url: "https://seethingswarm.itch.io/",
       },
@@ -375,7 +375,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
         kind: "resource",
         title: "Heroes99 de AU_pixel",
         description:
-          "Creador del arte y las animaciones del héroe personalizable de WAYVM, utilizados bajo la licencia de Heroes99.",
+          "Creador del arte y las animaciones del héroe personalizable de ¿Cuáles son tus valores, Mapache?, utilizados bajo la licencia de Heroes99.",
         actionLabel: "Visitar Heroes99",
         url: "https://au-pixel.itch.io/heroes99",
       },

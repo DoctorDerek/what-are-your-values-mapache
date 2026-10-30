@@ -100,7 +100,9 @@ describe("Data Management", () => {
     ).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole("button", { name: "Export Data" }))
-    const importInput = screen.getByLabelText("Choose WAYVM JSON backup")
+    const importInput = screen.getByLabelText(
+      "Choose JSON backup for What Are Your Values, Mapache?",
+    )
     const inputClick = vi.spyOn(importInput, "click")
     expect(importInput).toHaveAttribute("accept", WAYVM_IMPORT_FILE_ACCEPT)
     fireEvent.click(screen.getByRole("button", { name: "Choose Backup" }))
@@ -191,7 +193,7 @@ describe("Data Management", () => {
     renderDataManagement({
       activity: "Checking backup…",
       issue:
-        "This file is not a valid WAYVM backup. Your data was not changed.",
+        "This file is not a valid backup for What Are Your Values, Mapache? Your data was not changed.",
     })
 
     const issue = screen.getByRole("alert")

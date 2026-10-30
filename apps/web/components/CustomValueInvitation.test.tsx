@@ -87,7 +87,7 @@ describe("Hub custom-value invitation", () => {
     expect(screen.getByLabelText("Definition")).toHaveValue("")
     expect(
       screen.getByText(
-        "For example: Craftsmanship — to take care and pride in making things well",
+        "For example: Craftsmanship: to take care and pride in making things well",
       ),
     ).toBeVisible()
     expect(screen.getByLabelText("Value name")).toHaveAccessibleDescription(

@@ -24,7 +24,7 @@ export const MEXICAN_SPANISH_PRESENTATION_COPY: Pick<
   introduction: {
     title: "¿Cuáles son tus valores, Mapache?",
     tagline:
-      "Un juego rápido de batallas automáticas que te ayuda a descubrir tus valores de vida.",
+      "Un juego gratis diseñado para ayudarte a descubrir tus valores de vida. Elige cuál de dos valores te importa más en este momento y mira cómo unos animales adorables se baten en duelo en un juego rápido de batallas automáticas.",
     body: [
       "Conocer tus valores puede ayudarte a encontrar sentido a tu vida, tomar decisiones difíciles y conocerte mejor.",
       "Compara 103 valores incluidos en batallas rápidas de uno contra uno. Si falta algo importante, agrega valores personalizados privados con los nombres y las definiciones que tú elijas.",

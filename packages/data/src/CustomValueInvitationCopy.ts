@@ -5,7 +5,7 @@ export const CUSTOM_VALUE_AUTHORING_EXAMPLE = Object.freeze({
 
 export const CUSTOM_VALUE_INVITATION_COPY = Object.freeze({
   editorTitle: "Add Custom Value",
-  example: `For example: ${CUSTOM_VALUE_AUTHORING_EXAMPLE.name} — ${CUSTOM_VALUE_AUTHORING_EXAMPLE.definition}`,
+  example: `For example: ${CUSTOM_VALUE_AUTHORING_EXAMPLE.name}: ${CUSTOM_VALUE_AUTHORING_EXAMPLE.definition}`,
   name: "Value name",
   definition: "Definition",
   back: "Back",
