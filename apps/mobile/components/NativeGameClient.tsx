@@ -880,6 +880,7 @@ function NativeGameClientContent({
           rankedValues={rankedValues}
           onAddCustomValue={handleAddCustomValue}
           onClose={() => send({ type: "ALL_VALUES.CLOSE_REQUESTED" })}
+          onOpenMenu={() => setIsProductMenuOpen(true)}
           onNavigationBlockedChange={setIsAllValuesNavigationBlocked}
           onDeleteCustomValue={(valueId) =>
             send({ type: "ALL_VALUES.DELETE_REQUESTED", valueId })

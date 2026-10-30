@@ -31,6 +31,7 @@ export default function AllValues({
   isMenuOpen,
   persistenceIssue = null,
   onClose,
+  onOpenMenu,
   onAddCustomValue,
   onUpdateCustomValue,
   onDeleteCustomValue,
@@ -46,6 +47,7 @@ export default function AllValues({
   isMenuOpen: boolean
   persistenceIssue?: string | null
   onClose: () => void
+  onOpenMenu: () => void
   onAddCustomValue: (name: string) => void
   onUpdateCustomValue: (
     valueId: CustomValueId,
@@ -223,7 +225,7 @@ export default function AllValues({
     >
       <header className="bg-mapache-vivid-dark max-h-[40dvh] overflow-y-auto border-b-4 border-black px-4 py-3 xl:px-8">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="text-mapache-vivid-primary-cyan text-2xl font-black break-words uppercase xl:text-4xl">
               {localizedCopy.interfaceCopy.screen.allValues}
             </h1>
@@ -233,6 +235,16 @@ export default function AllValues({
               )}
             </p>
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            wrap
+            disabled={isNavigationBlocked}
+            onClick={onOpenMenu}
+          >
+            {localizedCopy.interfaceCopy.menu.openAction}
+          </Button>
         </div>
         <div className="mx-auto mt-3 w-full max-w-6xl">
           <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3">

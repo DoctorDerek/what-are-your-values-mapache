@@ -1044,6 +1044,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           isPersistencePending={state.matches({ AllValues: "Persisting" })}
           persistenceIssue={state.context.persistenceIssue}
           onClose={handleAllValuesClose}
+          onOpenMenu={handleProductMenuOpen}
           onNavigationBlockedChange={setIsAllValuesNavigationBlocked}
           backRequestId={allValuesBackRequestId}
           onAddCustomValue={handleAddCustomValue}
