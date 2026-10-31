@@ -1,7 +1,7 @@
 import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
-import { useMemo } from "react"
+import { useMemo, type ReactNode } from "react"
 import { FlatList, ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeAchievementCard from "@/components/NativeAchievementCard"
@@ -11,10 +11,12 @@ import { Text } from "@/components/ui/text"
 export default function NativeAchievements({
   achievements,
   canClose,
+  notifications,
   onClose,
 }: {
   readonly achievements: readonly AchievementPresentation[]
   readonly canClose: boolean
+  readonly notifications?: ReactNode
   readonly onClose: () => void
 }) {
   const localizedCopy = useLocaleCatalog()
@@ -30,6 +32,7 @@ export default function NativeAchievements({
   return (
     <MapacheScreen>
       <View className="mx-auto min-h-0 w-full max-w-5xl flex-1 p-4 xl:p-8">
+        <View className="relative min-h-0 flex-1 overflow-hidden">
         <FlatList
           className="min-h-0 flex-1"
           contentContainerClassName="pr-2 pb-2"
@@ -72,6 +75,8 @@ export default function NativeAchievements({
             <View className="border-x-4 border-b-4 border-black bg-white pb-2" />
           }
         />
+        {notifications}
+        </View>
         <ScrollView
           className="max-h-[35%] shrink-0 grow-0"
           contentContainerClassName="items-end pt-3 pr-2 pb-2"

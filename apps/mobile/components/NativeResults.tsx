@@ -335,13 +335,7 @@ export default function NativeResults({
             />
           )}
         />
-        <ScrollView
-          pointerEvents="box-none"
-          className="absolute inset-x-0 bottom-0 z-50 max-h-full"
-          contentContainerClassName="p-2"
-        >
-          {notifications}
-        </ScrollView>
+        {notifications}
       </View>
       <ScrollView className="max-h-[25%] shrink-0 grow-0">
         <View
