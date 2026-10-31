@@ -51,6 +51,30 @@ afterEach(() => {
 })
 
 describe("native hero preview", () => {
+  it("plays one action per accepted interaction, finishes after exit, and keeps idle for reduced motion", async () => {
+    const { rerender } = await render(<NativeHeroes99Hero appearance={DEFAULT_HEROES99_APPEARANCE} shouldReduceMotion={false} interactive />)
+    const hero = screen.getByRole("button", { name: "Your Heroes99 character" })
+    await fireEvent(image(), "load")
+    await fireEvent(hero, "hoverIn")
+    await act(async () => { jest.advanceTimersByTime(40) })
+    expect(getAnimatedStyle(animation())).toMatchObject({ transform: [{ translateX: -480 }] })
+    await fireEvent(hero, "hoverOut")
+    await fireEvent.press(hero)
+    expect(getAnimatedStyle(animation())).toMatchObject({ transform: [{ translateX: -480 }] })
+    await act(async () => { jest.advanceTimersByTime(800) })
+    await fireEvent.press(hero)
+    await act(async () => { jest.advanceTimersByTime(40) })
+    expect(getAnimatedStyle(animation())).toMatchObject({ transform: [{ translateX: -960 }] })
+    await act(async () => { jest.advanceTimersByTime(800) })
+    await fireEvent(hero, "focus")
+    await act(async () => { jest.advanceTimersByTime(40) })
+    expect(getAnimatedStyle(animation())).toMatchObject({ transform: [{ translateX: -1440 }] })
+    await rerender(<NativeHeroes99Hero appearance={DEFAULT_HEROES99_APPEARANCE} shouldReduceMotion interactive />)
+    await fireEvent.press(hero)
+    await act(async () => { jest.advanceTimersByTime(40) })
+    expect(getAnimatedStyle(animation())).toMatchObject({ transform: [{ translateX: -0 }] })
+  })
+
   it("waits for the composed image, contains its aspect ratio, and pauses in the background", async () => {
     const { unmount, rerender } = await render(
       <NativeHeroes99Hero

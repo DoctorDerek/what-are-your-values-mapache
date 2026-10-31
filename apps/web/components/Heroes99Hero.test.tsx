@@ -1,6 +1,6 @@
 import { DEFAULT_HEROES99_APPEARANCE } from "@game/data/src/Heroes99Appearance"
 import { DRESSING_ROOM_COPY } from "@game/data/src/Heroes99DressingRoom"
-import { act, render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import Heroes99Hero from "@/components/Heroes99Hero"
 import { composeHeroes99 } from "@/lib/ComposeHeroes99"
@@ -25,6 +25,27 @@ const createStrip = (width = 12): HeroStrip => {
 }
 
 describe("Heroes99 preview lifecycle", () => {
+  it("plays separate varied flourishes, finishes after exit and ignores overlapping input", async () => {
+    compose.mockResolvedValue(createStrip())
+    const { rerender } = render(<Heroes99Hero appearance={DEFAULT_HEROES99_APPEARANCE} shouldReduceMotion={false} interactive />)
+    const hero = screen.getByRole("button", { name: DRESSING_ROOM_COPY.character })
+    await waitFor(() => expect(hero.querySelector("canvas")).not.toBeNull())
+    const currentClip = () => hero.querySelector("canvas")!
+    for (const clip of ["attack_1", "attack_2", "attack_3"]) {
+      fireEvent.pointerEnter(hero, { pointerType: "mouse" })
+      expect(currentClip()).toHaveAttribute("data-hero-clip", clip)
+      fireEvent.pointerLeave(hero)
+      fireEvent.click(hero)
+      expect(currentClip()).toHaveAttribute("data-hero-clip", clip)
+      fireEvent.animationEnd(currentClip())
+      expect(currentClip()).toHaveAttribute("data-hero-clip", "idle")
+    }
+    fireEvent.focus(hero)
+    expect(currentClip()).toHaveAttribute("data-hero-clip", "attack_1")
+    rerender(<Heroes99Hero appearance={DEFAULT_HEROES99_APPEARANCE} shouldReduceMotion interactive />)
+    fireEvent.click(hero)
+    expect(currentClip()).toHaveAttribute("data-hero-clip", "idle")
+  })
   const originalContext = Object.getOwnPropertyDescriptor(
     HTMLCanvasElement.prototype,
     "getContext",

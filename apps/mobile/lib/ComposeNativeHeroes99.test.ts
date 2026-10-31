@@ -16,6 +16,7 @@ const renderer = vi.hoisted(() => {
       clear: vi.fn(),
       drawImage: vi.fn(),
       drawImageRect: vi.fn(),
+      readPixels: vi.fn<() => Uint8Array>(() => state.pixels),
     }
     const image = createImage()
     return {
@@ -34,6 +35,7 @@ const renderer = vi.hoisted(() => {
     unavailableSurface: -1,
     invalidImage: false,
     onLoad: null as (() => void) | null,
+    pixels: new Uint8Array(800 * 680 * 4),
   }
   const paint = { dispose: vi.fn() }
   const makeOffscreen = vi.fn((_width: number, _height: number) => {
@@ -79,6 +81,8 @@ const renderer = vi.hoisted(() => {
 vi.mock("@shopify/react-native-skia", () => ({
   Skia: renderer.Skia,
   ImageFormat: { PNG: "PNG" },
+  ColorType: { RGBA_8888: "RGBA_8888" },
+  AlphaType: { Unpremul: "Unpremul" },
 }))
 vi.mock("react-native", () => ({
   Image: {
@@ -113,6 +117,20 @@ describe("Heroes99 native composition lifecycle", () => {
     renderer.state.unavailableSurface = -1
     renderer.state.invalidImage = false
     renderer.state.onLoad = null
+    renderer.state.pixels = new Uint8Array(800 * 680 * 4)
+  })
+
+  it("uses one authored-art crop for idle and all three Home flourishes", async () => {
+    renderer.state.pixels[(6 * 800 + 40) * 4 + 3] = 255
+    renderer.state.pixels[((7 * 40 + 30) * 800 + 72) * 4 + 3] = 255
+    const result = await composeNativeHeroes99(DEFAULT_HEROES99_APPEARANCE, assets, new AbortController().signal, "home")
+    expect(result).toMatchObject({ width: 33, height: 25 })
+    const [sheet, strip] = renderer.state.surfaces
+    expect(sheet!.canvas.readPixels).toHaveBeenCalledWith(0, 0, { width: 800, height: 680, colorType: "RGBA_8888", alphaType: "Unpremul" })
+    expect(strip!.canvas.drawImageRect).toHaveBeenCalledTimes(22)
+    expect(strip!.canvas.drawImageRect).toHaveBeenLastCalledWith(sheet!.image, { x: 340, y: 286, width: 33, height: 25 }, { x: 693, y: 0, width: 33, height: 25 }, renderer.paint)
+    expect(sheet!.dispose).toHaveBeenCalledOnce()
+    expect(strip!.dispose).toHaveBeenCalledOnce()
   })
 
   it("composes the selected layers and representative-first strip then releases all Skia resources", async () => {
