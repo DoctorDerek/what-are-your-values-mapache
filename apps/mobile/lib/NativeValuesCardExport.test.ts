@@ -219,7 +219,13 @@ const prepare = (
   format: "gif" | "png" = "png",
   signal = new AbortController().signal,
   includeLevels = true,
-) => prepareNativeValuesCard(model, palette, { includeHero, includeLevels, format, signal })
+) =>
+  prepareNativeValuesCard(model, palette, {
+    includeHero,
+    includeLevels,
+    format,
+    signal,
+  })
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -235,7 +241,12 @@ beforeEach(() => {
 describe("native values-card files", () => {
   it("omits level text without mutating saved content or blocking file delivery", async () => {
     const original = structuredClone(model.values)
-    const card = await prepare(false, "png", new AbortController().signal, false)
+    const card = await prepare(
+      false,
+      "png",
+      new AbortController().signal,
+      false,
+    )
     const painted = native.paragraphs.map(({ value }) => value)
     expect(painted).not.toContain(model.values[0].levelLabel)
     expect(painted).toContain(model.values[0].name)

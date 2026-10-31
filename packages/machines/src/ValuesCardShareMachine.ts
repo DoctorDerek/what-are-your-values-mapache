@@ -164,7 +164,11 @@ export const valuesCardShareMachine = setup({
       },
     },
     Delivering: {
-      on: { "CARD_SHARE.FORMAT": {}, "CARD_SHARE.HERO": {}, "CARD_SHARE.LEVELS": {} },
+      on: {
+        "CARD_SHARE.FORMAT": {},
+        "CARD_SHARE.HERO": {},
+        "CARD_SHARE.LEVELS": {},
+      },
       invoke: {
         src: "deliver",
         input: ({ context }) => context,

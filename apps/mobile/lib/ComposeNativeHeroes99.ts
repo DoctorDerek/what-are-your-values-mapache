@@ -3,18 +3,21 @@ import {
   type Heroes99Appearance,
 } from "@game/data/src/Heroes99Appearance"
 import {
-  unionHeroes99Bounds,
-  type Heroes99RuntimeAssets,
-} from "@game/data/src/Heroes99RuntimeAssets"
-import {
   getHeroes99MotionBounds,
   getHeroes99PresentationFrames,
   type Heroes99PresentationMode,
 } from "@game/data/src/Heroes99Presentation"
 import {
-  HEROES99_SPATIAL_ARCHITECTURE,
-} from "@game/data/src/Heroes99SpatialArchitecture"
-import { AlphaType, ColorType, ImageFormat, Skia } from "@shopify/react-native-skia"
+  unionHeroes99Bounds,
+  type Heroes99RuntimeAssets,
+} from "@game/data/src/Heroes99RuntimeAssets"
+import { HEROES99_SPATIAL_ARCHITECTURE } from "@game/data/src/Heroes99SpatialArchitecture"
+import {
+  AlphaType,
+  ColorType,
+  ImageFormat,
+  Skia,
+} from "@shopify/react-native-skia"
 import { Image } from "react-native"
 
 export async function composeNativeHeroes99(
@@ -31,10 +34,8 @@ export async function composeNativeHeroes99(
   const idleBounds = unionHeroes99Bounds(
     layers.flatMap((layer) => (layer.bounds.width > 0 ? [layer.bounds] : [])),
   )
-  const {
-    sheet_width_px: width,
-    sheet_height_px: height,
-  } = HEROES99_SPATIAL_ARCHITECTURE.grid_metrics
+  const { sheet_width_px: width, sheet_height_px: height } =
+    HEROES99_SPATIAL_ARCHITECTURE.grid_metrics
   const sheet = Skia.Surface.MakeOffscreen(width, height)
   if (!sheet) throw new Error("Hero composition surface is unavailable")
   try {
@@ -62,9 +63,13 @@ export async function composeNativeHeroes99(
     let bounds = idleBounds
     if (mode === "home") {
       const pixels = canvas.readPixels(0, 0, {
-        width, height, colorType: ColorType.RGBA_8888, alphaType: AlphaType.Unpremul,
+        width,
+        height,
+        colorType: ColorType.RGBA_8888,
+        alphaType: AlphaType.Unpremul,
       })
-      if (!(pixels instanceof Uint8Array)) throw new Error("Hero pixels could not be read")
+      if (!(pixels instanceof Uint8Array))
+        throw new Error("Hero pixels could not be read")
       bounds = getHeroes99MotionBounds(pixels)
     }
     const frames = getHeroes99PresentationFrames(mode)

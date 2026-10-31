@@ -4,13 +4,23 @@ import { test } from "./fixtures"
 
 for (const locale of ["en", "es-MX"] as const)
   for (const width of [390, 1440])
-    test(`Home flourishes stay anchored and finish independently in ${locale} at ${width}px`, async ({ page }, testInfo) => {
+    test(`Home flourishes stay anchored and finish independently in ${locale} at ${width}px`, async ({
+      page,
+    }, testInfo) => {
       const copy = getLocaleCatalog(locale)
       await page.setViewportSize({ width, height: 900 })
       await page.emulateMedia({ reducedMotion: "no-preference" })
       await page.goto(locale === "en" ? "/" : "/es")
-      await page.getByRole("button", { name: copy.introduction.startAction, exact: true }).click()
-      const hero = page.getByRole("button", { name: copy.interfaceCopy.dressingRoom.character, exact: true })
+      await page
+        .getByRole("button", {
+          name: copy.introduction.startAction,
+          exact: true,
+        })
+        .click()
+      const hero = page.getByRole("button", {
+        name: copy.interfaceCopy.dressingRoom.character,
+        exact: true,
+      })
       const artwork = hero.locator("canvas")
       await expect(artwork).toHaveAttribute("data-hero-clip", "idle")
       const baseline = await hero.boundingBox()
@@ -19,9 +29,15 @@ for (const locale of ["en", "es-MX"] as const)
       for (const clip of ["attack_1", "attack_2", "attack_3"]) {
         await hero.hover()
         await expect(artwork).toHaveAttribute("data-hero-clip", clip)
-        const firstPosition = await artwork.evaluate((canvas) => getComputedStyle(canvas).transform)
+        const firstPosition = await artwork.evaluate(
+          (canvas) => getComputedStyle(canvas).transform,
+        )
         await page.mouse.move(0, 0)
-        await expect.poll(() => artwork.evaluate((canvas) => getComputedStyle(canvas).transform)).not.toBe(firstPosition)
+        await expect
+          .poll(() =>
+            artwork.evaluate((canvas) => getComputedStyle(canvas).transform),
+          )
+          .not.toBe(firstPosition)
         expect(await hero.boundingBox()).toEqual(baseline)
         expect(await list.boundingBox()).toEqual(listBounds)
         await page.screenshot({ path: testInfo.outputPath(`${clip}.png`) })
@@ -37,11 +53,15 @@ for (const locale of ["en", "es-MX"] as const)
       await expect(artwork).toHaveCSS("transform", "none")
       expect(await hero.boundingBox()).toEqual(baseline)
       await page.addStyleTag({ content: "html { font-size: 200%; }" })
-      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth),
+      ).toBeLessThanOrEqual(width)
       await page.screenshot({ path: testInfo.outputPath("enlarged-home.png") })
     })
 
-test("intentional touch requests a flourish but dragging and cancelled touches do not", async ({ page }) => {
+test("intentional touch requests a flourish but dragging and cancelled touches do not", async ({
+  page,
+}) => {
   await page.goto("/")
   await page.getByRole("button", { name: "Start", exact: true }).click()
   const hero = page.getByRole("button", { name: "Your Heroes99 character" })

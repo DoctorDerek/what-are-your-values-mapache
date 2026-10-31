@@ -36,7 +36,11 @@ describe("values-card share lifecycle", () => {
     }).start()
     await waitFor(actor, (state) => state.matches("Ready"))
     expect(prepare).toHaveBeenCalledWith(
-      expect.objectContaining({ format: "gif", includeHero: true, includeLevels: true }),
+      expect.objectContaining({
+        format: "gif",
+        includeHero: true,
+        includeLevels: true,
+      }),
     )
     expect(first.save).not.toHaveBeenCalled()
     actor.send({ type: "CARD_SHARE.DELIVER", delivery: "save" })
@@ -45,7 +49,11 @@ describe("values-card share lifecycle", () => {
     await waitFor(actor, (state) => state.matches("Ready"))
     expect(first.dispose).toHaveBeenCalledOnce()
     expect(prepare).toHaveBeenLastCalledWith(
-      expect.objectContaining({ format: "gif", includeHero: true, includeLevels: false }),
+      expect.objectContaining({
+        format: "gif",
+        includeHero: true,
+        includeLevels: false,
+      }),
     )
     actor.send({ type: "CARD_SHARE.CLOSE" })
     expect(next.dispose).toHaveBeenCalledOnce()
@@ -146,21 +154,37 @@ describe("values-card share lifecycle", () => {
 
   it("keeps both inclusion choices and the delivered file stable until sharing completes", async () => {
     let complete: (outcome: "handed-off") => void = () => undefined
-    const file = { ...artifact(), share: vi.fn(() => new Promise<"handed-off">((resolve) => { complete = resolve })) }
+    const file = {
+      ...artifact(),
+      share: vi.fn(
+        () =>
+          new Promise<"handed-off">((resolve) => {
+            complete = resolve
+          }),
+      ),
+    }
     const prepare = vi.fn<PrepareValuesCard>(async () => file)
-    const actor = createActor(valuesCardShareMachine, { input: { prepare } }).start()
+    const actor = createActor(valuesCardShareMachine, {
+      input: { prepare },
+    }).start()
     await waitFor(actor, (state) => state.matches("Ready"))
     actor.send({ type: "CARD_SHARE.DELIVER", delivery: "share" })
     actor.send({ type: "CARD_SHARE.LEVELS", includeLevels: false })
     actor.send({ type: "CARD_SHARE.HERO", includeHero: false })
-    expect(actor.getSnapshot().context).toMatchObject({ includeHero: true, includeLevels: true, artifact: file })
+    expect(actor.getSnapshot().context).toMatchObject({
+      includeHero: true,
+      includeLevels: true,
+      artifact: file,
+    })
     expect(prepare).toHaveBeenCalledOnce()
     expect(file.dispose).not.toHaveBeenCalled()
     complete("handed-off")
     await waitFor(actor, (state) => state.context.outcome === "handed-off")
     actor.send({ type: "CARD_SHARE.LEVELS", includeLevels: false })
     await waitFor(actor, (state) => state.matches("Ready"))
-    expect(prepare).toHaveBeenLastCalledWith(expect.objectContaining({ includeHero: true, includeLevels: false }))
+    expect(prepare).toHaveBeenLastCalledWith(
+      expect.objectContaining({ includeHero: true, includeLevels: false }),
+    )
     actor.send({ type: "CARD_SHARE.CLOSE" })
   })
 })

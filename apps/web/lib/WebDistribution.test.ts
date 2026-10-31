@@ -1,15 +1,18 @@
-import { describe, expect, it } from "vitest"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
-import { PERMANENT_WEB_REDIRECTS, getWebEntryRedirect } from "@/lib/WebEntryRedirects"
-import deployment from "@/vercel.json"
+import { describe, expect, it } from "vitest"
 import {
   CANONICAL_WEB_ORIGIN,
   CANONICAL_WEB_ROOT_URL,
-  isCanonicalProductionDeployment,
-  SHIPPED_ENGLISH_WEB_PATH,
   getStaticLocaleRouteParams,
   getWebRouteLocale,
+  isCanonicalProductionDeployment,
+  SHIPPED_ENGLISH_WEB_PATH,
 } from "@/lib/WebDistribution"
+import {
+  getWebEntryRedirect,
+  PERMANENT_WEB_REDIRECTS,
+} from "@/lib/WebEntryRedirects"
+import deployment from "@/vercel.json"
 
 const NON_PRODUCTION_VERCEL_ENVIRONMENTS = Object.freeze([
   "preview",
@@ -30,11 +33,17 @@ describe("web distribution", () => {
     const sources = PERMANENT_WEB_REDIRECTS.map((redirect) => redirect.from)
     expect(new Set(sources).size).toBe(sources.length)
     for (const redirect of PERMANENT_WEB_REDIRECTS) {
-      expect(deployment.redirects).toContainEqual({ source: redirect.from, destination: redirect.to, permanent: true })
+      expect(deployment.redirects).toContainEqual({
+        source: redirect.from,
+        destination: redirect.to,
+        permanent: true,
+      })
       expect(redirect.addedInVersion).toBe("0.1.0")
       expect(redirect.to).toBe(spanish.metadata.webPath)
       expect(getWebEntryRedirect(redirect.to)).toBeUndefined()
-      expect(new URL(redirect.to, CANONICAL_WEB_ORIGIN).origin).toBe(CANONICAL_WEB_ORIGIN)
+      expect(new URL(redirect.to, CANONICAL_WEB_ORIGIN).origin).toBe(
+        CANONICAL_WEB_ORIGIN,
+      )
     }
   })
   it("owns one exact canonical English production URL", () => {

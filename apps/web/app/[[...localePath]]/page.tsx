@@ -1,3 +1,4 @@
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import { notFound } from "next/navigation"
 import WebPublicPage from "@/components/WebPublicPage"
 import { getWebRouteLocale } from "@/lib/WebDistribution"
@@ -21,4 +22,3 @@ export default async function Page({
     )
   return <WebPublicPage locale={locale} />
 }
-import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"

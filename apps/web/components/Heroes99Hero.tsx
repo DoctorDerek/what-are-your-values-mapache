@@ -1,11 +1,15 @@
 "use client"
 
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
-import { getHeroes99PresentationFrames, HEROES99_IDLE_CLIP, HEROES99_FLOURISHES } from "@game/data/src/Heroes99Presentation"
+import {
+  getHeroes99PresentationFrames,
+  HEROES99_FLOURISHES,
+  HEROES99_IDLE_CLIP,
+} from "@game/data/src/Heroes99Presentation"
 import type { Heroes99RuntimeAssets } from "@game/data/src/Heroes99RuntimeAssets"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { heroes99AttentionMachine } from "@game/machines/src/Heroes99AttentionMachine"
 import { useMachine } from "@xstate/react"
-import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import {
@@ -39,11 +43,15 @@ export default function Heroes99Hero({
   const [failed, setFailed] = useState(false)
   const [isActive, setIsActive] = useState(true)
   const [attention, send] = useMachine(heroes99AttentionMachine)
-  const { attentionHandlers, activateAttention } = useAnimalAttentionInput(() => send({ type: "HERO_ATTENTION.ACTIVATE" }))
+  const { attentionHandlers, activateAttention } = useAnimalAttentionInput(() =>
+    send({ type: "HERO_ATTENTION.ACTIVATE" }),
+  )
   const mode = interactive ? "home" : "idle"
   const frameCount = getHeroes99PresentationFrames(mode).length
   const isFlourishing = attention.matches("Flourishing")
-  const clip = isFlourishing ? HEROES99_FLOURISHES[attention.context.flourish] : HEROES99_IDLE_CLIP
+  const clip = isFlourishing
+    ? HEROES99_FLOURISHES[attention.context.flourish]
+    : HEROES99_IDLE_CLIP
   const Surface = interactive ? "button" : "div"
   const canvas = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
@@ -53,7 +61,11 @@ export default function Heroes99Hero({
     return () => document.removeEventListener("visibilitychange", update)
   }, [])
   useEffect(() => {
-    send({ type: "HERO_ATTENTION.AVAILABILITY", canAnimate: interactive && !shouldReduceMotion && isActive && !!strip && !failed })
+    send({
+      type: "HERO_ATTENTION.AVAILABILITY",
+      canAnimate:
+        interactive && !shouldReduceMotion && isActive && !!strip && !failed,
+    })
   }, [interactive, shouldReduceMotion, isActive, strip, failed, send])
   useLayoutEffect(() => {
     if (!strip || !canvas.current) return
@@ -92,7 +104,8 @@ export default function Heroes99Hero({
       }
       className={cx(
         "[container-type:size] relative flex shrink-0 items-end justify-center",
-        interactive && "cursor-pointer touch-pan-y focus-visible:outline-4 focus-visible:-outline-offset-4",
+        interactive &&
+          "cursor-pointer touch-pan-y focus-visible:outline-4 focus-visible:-outline-offset-4",
         className,
       )}
     >
@@ -111,20 +124,28 @@ export default function Heroes99Hero({
             height={strip.height}
             className={cx(
               "absolute top-0 left-0 h-full max-w-none [image-rendering:pixelated]",
-              !shouldReduceMotion && isActive &&
-                (isFlourishing ? "animate-heroes99-flourish motion-reduce:animate-none" : "animate-heroes99-idle motion-reduce:animate-none"),
+              !shouldReduceMotion &&
+                isActive &&
+                (isFlourishing
+                  ? "animate-heroes99-flourish motion-reduce:animate-none"
+                  : "animate-heroes99-idle motion-reduce:animate-none"),
             )}
             style={
               {
                 width: `${frameCount * 100}%`,
                 "--hero-frame-count": clip.frameCount,
                 "--hero-duration": `${clip.frameDuration * clip.frameCount}ms`,
-                "--hero-start": `${-100 * clip.offset / frameCount}%`,
-                "--hero-end": `${-100 * (clip.offset + clip.frameCount) / frameCount}%`,
+                "--hero-start": `${(-100 * clip.offset) / frameCount}%`,
+                "--hero-end": `${(-100 * (clip.offset + clip.frameCount)) / frameCount}%`,
               } as CSSProperties
             }
             data-hero-clip={clip.name}
-            onAnimationEnd={() => send({ type: "HERO_ATTENTION.COMPLETE", generation: attention.context.generation })}
+            onAnimationEnd={() =>
+              send({
+                type: "HERO_ATTENTION.COMPLETE",
+                generation: attention.context.generation,
+              })
+            }
           />
         </div>
       ) : (

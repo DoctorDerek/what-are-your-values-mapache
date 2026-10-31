@@ -59,7 +59,9 @@ describe("values-card preview", () => {
       screen.getByRole("button", { name: /GIF · Animated/ }),
     ).toHaveAttribute("aria-pressed", "true")
     expect(file.save).not.toHaveBeenCalled()
-    expect(screen.getByRole("checkbox", { name: "Include levels" })).toBeChecked()
+    expect(
+      screen.getByRole("checkbox", { name: "Include levels" }),
+    ).toBeChecked()
     const back = screen.getByRole("button", { name: "Back" })
     const save = screen.getByRole("button", { name: "Save GIF" })
     const share = screen.getByRole("button", { name: "Share GIF" })
@@ -75,7 +77,12 @@ describe("values-card preview", () => {
     )
     await screen.findByRole("img", { name: /Curiosity/ })
     fireEvent.click(screen.getByRole("checkbox", { name: "Include levels" }))
-    await waitFor(() => expect(prepare).toHaveBeenLastCalledWith(model, expect.objectContaining({ includeHero: false, includeLevels: false })))
+    await waitFor(() =>
+      expect(prepare).toHaveBeenLastCalledWith(
+        model,
+        expect.objectContaining({ includeHero: false, includeLevels: false }),
+      ),
+    )
     await screen.findByRole("img", { name: /Curiosity/ })
     fireEvent.click(screen.getByRole("button", { name: "PNG · Still" }))
     await waitFor(() =>

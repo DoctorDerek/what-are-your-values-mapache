@@ -2,7 +2,9 @@ import { useRef, useState, type FocusEvent, type PointerEvent } from "react"
 
 const ANIMAL_TAP_MOVEMENT_TOLERANCE_PX = 8
 
-export default function useAnimalAttentionInput(onAttentionRequest?: () => void) {
+export default function useAnimalAttentionInput(
+  onAttentionRequest?: () => void,
+) {
   const [isHovered, setIsHovered] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
   const [isTapped, setIsTapped] = useState(false)

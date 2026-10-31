@@ -24,7 +24,8 @@ export const heroes99AttentionMachine = setup({
     ),
     beginFlourish: assign(({ context }) => ({
       flourish: context.nextFlourish,
-      nextFlourish: context.nextFlourish === 0 ? 1 : context.nextFlourish === 1 ? 2 : 0,
+      nextFlourish:
+        context.nextFlourish === 0 ? 1 : context.nextFlourish === 1 ? 2 : 0,
       generation: context.generation + 1,
     })),
   },
@@ -55,7 +56,8 @@ export const heroes99AttentionMachine = setup({
     Flourishing: {
       on: {
         "HERO_ATTENTION.COMPLETE": {
-          guard: ({ context, event }) => context.generation === event.generation,
+          guard: ({ context, event }) =>
+            context.generation === event.generation,
           target: "Idle",
         },
       },

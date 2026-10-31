@@ -1,8 +1,12 @@
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
-import { getHeroes99PresentationFrames, HEROES99_IDLE_CLIP, HEROES99_FLOURISHES } from "@game/data/src/Heroes99Presentation"
+import {
+  getHeroes99PresentationFrames,
+  HEROES99_FLOURISHES,
+  HEROES99_IDLE_CLIP,
+} from "@game/data/src/Heroes99Presentation"
+import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { heroes99AttentionMachine } from "@game/machines/src/Heroes99AttentionMachine"
 import { useMachine } from "@xstate/react"
-import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { useEffect, useState } from "react"
 import { AppState, Image, Pressable, View } from "react-native"
 import Animated, {
@@ -45,11 +49,15 @@ export default function NativeHeroes99Hero({
   const [readySource, setReadySource] = useState<string | null>(null)
   const [isActive, setIsActive] = useState(AppState.currentState === "active")
   const [attention, send] = useMachine(heroes99AttentionMachine)
-  const { attentionHandlers } = useAnimalAttentionInput(() => send({ type: "HERO_ATTENTION.ACTIVATE" }))
+  const { attentionHandlers } = useAnimalAttentionInput(() =>
+    send({ type: "HERO_ATTENTION.ACTIVATE" }),
+  )
   const mode = interactive ? "home" : "idle"
   const frameCount = getHeroes99PresentationFrames(mode).length
   const isFlourishing = attention.matches("Flourishing")
-  const clip = isFlourishing ? HEROES99_FLOURISHES[attention.context.flourish] : HEROES99_IDLE_CLIP
+  const clip = isFlourishing
+    ? HEROES99_FLOURISHES[attention.context.flourish]
+    : HEROES99_IDLE_CLIP
   const Surface = interactive ? Pressable : View
   const progress = useSharedValue(0)
   const scale = strip
@@ -61,14 +69,33 @@ export default function NativeHeroes99Hero({
     transform: [
       {
         translateX:
-          -(clip.offset + Math.min(clip.frameCount - 1, Math.floor(progress.get()))) *
-          width,
+          -(
+            clip.offset +
+            Math.min(clip.frameCount - 1, Math.floor(progress.get()))
+          ) * width,
       },
     ],
   }))
   useEffect(() => {
-    send({ type: "HERO_ATTENTION.AVAILABILITY", canAnimate: interactive && !shouldReduceMotion && isActive && !!strip && strip.source.uri === readySource && !failed })
-  }, [interactive, shouldReduceMotion, isActive, strip, readySource, failed, send])
+    send({
+      type: "HERO_ATTENTION.AVAILABILITY",
+      canAnimate:
+        interactive &&
+        !shouldReduceMotion &&
+        isActive &&
+        !!strip &&
+        strip.source.uri === readySource &&
+        !failed,
+    })
+  }, [
+    interactive,
+    shouldReduceMotion,
+    isActive,
+    strip,
+    readySource,
+    failed,
+    send,
+  ])
   useEffect(() => {
     const listener = AppState.addEventListener("change", (state) =>
       setIsActive(state === "active"),
@@ -77,7 +104,12 @@ export default function NativeHeroes99Hero({
   }, [])
   useEffect(() => {
     const controller = new AbortController()
-    void composeNativeHeroes99(appearance, HEROES99_ASSETS, controller.signal, mode)
+    void composeNativeHeroes99(
+      appearance,
+      HEROES99_ASSETS,
+      controller.signal,
+      mode,
+    )
       .then((result) => {
         if (!controller.signal.aborted) {
           setStrip(result)
@@ -94,23 +126,37 @@ export default function NativeHeroes99Hero({
     progress.set(0)
     if (!shouldReduceMotion && isActive && strip?.source.uri === readySource) {
       const generation = attention.context.generation
-      const complete = () => send({ type: "HERO_ATTENTION.COMPLETE", generation })
-      const animation = withTiming(clip.frameCount, {
-            duration: clip.frameDuration * clip.frameCount,
-            easing: Easing.linear,
-            reduceMotion: ReduceMotion.Never,
-          }, (finished) => {
-            if (finished && isFlourishing) scheduleOnRN(complete)
-          })
-      progress.set(isFlourishing ? animation : withRepeat(animation,
-          -1,
-          false,
-          undefined,
-          ReduceMotion.Never,
-        ))
+      const complete = () =>
+        send({ type: "HERO_ATTENTION.COMPLETE", generation })
+      const animation = withTiming(
+        clip.frameCount,
+        {
+          duration: clip.frameDuration * clip.frameCount,
+          easing: Easing.linear,
+          reduceMotion: ReduceMotion.Never,
+        },
+        (finished) => {
+          if (finished && isFlourishing) scheduleOnRN(complete)
+        },
+      )
+      progress.set(
+        isFlourishing
+          ? animation
+          : withRepeat(animation, -1, false, undefined, ReduceMotion.Never),
+      )
     }
     return () => cancelAnimation(progress)
-  }, [isActive, progress, readySource, shouldReduceMotion, strip, clip, isFlourishing, attention.context.generation, send])
+  }, [
+    isActive,
+    progress,
+    readySource,
+    shouldReduceMotion,
+    strip,
+    clip,
+    isFlourishing,
+    attention.context.generation,
+    send,
+  ])
   return (
     <Surface
       {...(interactive && attentionHandlers)}
@@ -131,10 +177,7 @@ export default function NativeHeroes99Hero({
           <Animated.View
             testID="heroes99-idle-strip"
             className="absolute top-0 left-0"
-            style={[
-              { width: width * frameCount, height: imageHeight },
-              motion,
-            ]}
+            style={[{ width: width * frameCount, height: imageHeight }, motion]}
           >
             <Image
               alt=""

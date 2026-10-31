@@ -3,17 +3,15 @@ import {
   type Heroes99Appearance,
 } from "@game/data/src/Heroes99Appearance"
 import {
-  unionHeroes99Bounds,
-  type Heroes99RuntimeAssets,
-} from "@game/data/src/Heroes99RuntimeAssets"
-import {
   getHeroes99MotionBounds,
   getHeroes99PresentationFrames,
   type Heroes99PresentationMode,
 } from "@game/data/src/Heroes99Presentation"
 import {
-  HEROES99_SPATIAL_ARCHITECTURE,
-} from "@game/data/src/Heroes99SpatialArchitecture"
+  unionHeroes99Bounds,
+  type Heroes99RuntimeAssets,
+} from "@game/data/src/Heroes99RuntimeAssets"
+import { HEROES99_SPATIAL_ARCHITECTURE } from "@game/data/src/Heroes99SpatialArchitecture"
 import type { StaticImageData } from "next/image"
 
 export async function composeHeroes99(
@@ -27,10 +25,8 @@ export async function composeHeroes99(
     if (!layer) throw new Error("Hero layers are unavailable")
     return layer
   })
-  const {
-    sheet_width_px: width,
-    sheet_height_px: height,
-  } = HEROES99_SPATIAL_ARCHITECTURE.grid_metrics
+  const { sheet_width_px: width, sheet_height_px: height } =
+    HEROES99_SPATIAL_ARCHITECTURE.grid_metrics
   const idleBounds = unionHeroes99Bounds(
     layers.flatMap((layer) => (layer.bounds.width > 0 ? [layer.bounds] : [])),
   )
@@ -59,9 +55,10 @@ export async function composeHeroes99(
       if (result.status === "fulfilled") result.value.close()
   }
   const frames = getHeroes99PresentationFrames(mode)
-  const bounds = mode === "home"
-    ? getHeroes99MotionBounds(context.getImageData(0, 0, width, height).data)
-    : idleBounds
+  const bounds =
+    mode === "home"
+      ? getHeroes99MotionBounds(context.getImageData(0, 0, width, height).data)
+      : idleBounds
   const strip = document.createElement("canvas")
   strip.width = bounds.width * frames.length
   strip.height = bounds.height
@@ -82,6 +79,8 @@ export async function composeHeroes99(
     )
   signal.throwIfAborted()
   return {
-    canvas: strip, width: bounds.width, height: bounds.height,
+    canvas: strip,
+    width: bounds.width,
+    height: bounds.height,
   }
 }

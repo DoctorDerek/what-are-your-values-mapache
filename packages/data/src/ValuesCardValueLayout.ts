@@ -1,6 +1,6 @@
+import { graphemeSegments } from "unicode-segmenter/grapheme"
 import type { ValuesCardModel } from "./ValuesCard"
 import type { ValuesCardPainter } from "./ValuesCardScene"
-import { graphemeSegments } from "unicode-segmenter/grapheme"
 
 function wrapCardName(
   value: string,
@@ -75,7 +75,8 @@ export function layoutValuesCardValues<Asset>(
         }
       : null
     const nameRight =
-      nameX + Math.max(0, ...lines.map((line) => painter.measure(line, size, 900)))
+      nameX +
+      Math.max(0, ...lines.map((line) => painter.measure(line, size, 900)))
     return {
       value,
       index,

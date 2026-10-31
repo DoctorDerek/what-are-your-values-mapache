@@ -33,7 +33,9 @@ export const HEROES99_FLOURISHES = [
   {
     name: "attack_3",
     offset:
-      HEROES99_IDLE_FRAME_COUNT + count(animations.Attack1) + count(animations.Attack2),
+      HEROES99_IDLE_FRAME_COUNT +
+      count(animations.Attack1) +
+      count(animations.Attack2),
     frameCount: count(animations.Attack3),
     frameDuration: flourishFrameDuration,
   },
@@ -42,10 +44,15 @@ export const HEROES99_FLOURISHES = [
 export function getHeroes99PresentationFrames(mode: Heroes99PresentationMode) {
   const { frame_width_px: width, frame_height_px: height } =
     HEROES99_SPATIAL_ARCHITECTURE.grid_metrics
-  const idle = Array.from({ length: HEROES99_IDLE_FRAME_COUNT }, (_, index) => ({
-    x: ((index + HEROES99_REPRESENTATIVE_FRAME) % HEROES99_IDLE_FRAME_COUNT) * width,
-    y: 0,
-  }))
+  const idle = Array.from(
+    { length: HEROES99_IDLE_FRAME_COUNT },
+    (_, index) => ({
+      x:
+        ((index + HEROES99_REPRESENTATIVE_FRAME) % HEROES99_IDLE_FRAME_COUNT) *
+        width,
+      y: 0,
+    }),
+  )
   return mode === "idle"
     ? idle
     : [
@@ -63,8 +70,11 @@ export function getHeroes99PresentationFrames(mode: Heroes99PresentationMode) {
 export function getHeroes99MotionBounds(
   pixels: Uint8Array | Uint8ClampedArray,
 ): Heroes99Bounds {
-  const { frame_width_px: width, frame_height_px: height, sheet_width_px: sheetWidth } =
-    HEROES99_SPATIAL_ARCHITECTURE.grid_metrics
+  const {
+    frame_width_px: width,
+    frame_height_px: height,
+    sheet_width_px: sheetWidth,
+  } = HEROES99_SPATIAL_ARCHITECTURE.grid_metrics
   let left = width
   let top = height
   let right = 0

@@ -14,7 +14,10 @@ describe("Home hero attention", () => {
       expect(actor.getSnapshot().matches("Flourishing")).toBe(true)
       expect(actor.getSnapshot().context.flourish).toBe(flourish)
       actor.send({ type: "HERO_ATTENTION.ACTIVATE" })
-      actor.send({ type: "HERO_ATTENTION.COMPLETE", generation: generation - 1 })
+      actor.send({
+        type: "HERO_ATTENTION.COMPLETE",
+        generation: generation - 1,
+      })
       expect(actor.getSnapshot().matches("Flourishing")).toBe(true)
       actor.send({ type: "HERO_ATTENTION.COMPLETE", generation })
       expect(actor.getSnapshot().matches("Idle")).toBe(true)

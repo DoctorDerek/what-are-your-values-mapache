@@ -27,41 +27,97 @@ function model() {
 }
 
 describe("values-card composition", () => {
-  it.each(["en", "es-MX"] as const)("centers all optional-content combinations as one truthful block in %s", (locale) => {
-    const copy = getLocaleCatalog(locale)
-    const card = { ...model(), hasComparisons: true, title: copy.hub.rankedTitle, invitation: copy.card.invitation, values: model().values.map((value, index) => ({ ...value, name: index === 0 ? "Mi valor “私の価値”" : value.name, levelLabel: copy.hub.level(index + 1) })) }
-    const original = structuredClone(card.values)
-    const palette = readValuesCardPalette(["#009dae", "#71dfe7", "#c2fff9", "#ffe652", "#18233e", "#384873", "#000000", "#ffffff"])
-    for (const includeHero of [true, false]) for (const includeLevels of [true, false]) {
-      const bounds: { left: number; right: number }[] = []
-      const text: CardText[] = []
-      const painter: ValuesCardPainter = {
-        measure: (value, size) => [...value].length * size * 0.5,
-        rectangle: (rectangle) => { if (rectangle.width === 82) bounds.push({ left: rectangle.x, right: rectangle.x + rectangle.width }) },
-        sprite: (key, _source, rectangle) => { if (key !== "hero") bounds.push({ left: rectangle.x, right: rectangle.x + rectangle.width }) },
-        text: (item) => {
-          text.push(item)
-          if (item.y <= 170 || item.y >= 780) return
-          const width = painter.measure(item.value, item.size, item.weight)
-          const left = item.x - (item.align === "right" ? width : item.align === "center" ? width / 2 : 0)
-          bounds.push({ left, right: left + width })
-        },
+  it.each(["en", "es-MX"] as const)(
+    "centers all optional-content combinations as one truthful block in %s",
+    (locale) => {
+      const copy = getLocaleCatalog(locale)
+      const card = {
+        ...model(),
+        hasComparisons: true,
+        title: copy.hub.rankedTitle,
+        invitation: copy.card.invitation,
+        values: model().values.map((value, index) => ({
+          ...value,
+          name: index === 0 ? "Mi valor “私の価値”" : value.name,
+          levelLabel: copy.hub.level(index + 1),
+        })),
       }
-      paintValuesCard({ painter, model: card, palette, frame: 0, hero: includeHero ? { width: 23, height: 29 } : null, includeLevels })
-      expect(card.values).toEqual(original)
-      expect(text.filter((item) => card.values.some((value) => value.levelLabel === item.value))).toHaveLength(includeLevels ? card.values.length : 0)
-      expect(text.some((item) => item.value === card.values[0].name)).toBe(true)
-      if (includeHero && includeLevels) {
-        expect(text.find((item) => item.value === card.values[0].name)?.x).toBe(731)
-      } else {
-        const left = Math.min(...bounds.map((item) => item.left))
-        const right = Math.max(...bounds.map((item) => item.right))
-        expect((left + right) / 2).toBeCloseTo(includeHero ? 996 : 800)
-        expect(left).toBeGreaterThan(12)
-        expect(right).toBeLessThan(1588)
-      }
-    }
-  })
+      const original = structuredClone(card.values)
+      const palette = readValuesCardPalette([
+        "#009dae",
+        "#71dfe7",
+        "#c2fff9",
+        "#ffe652",
+        "#18233e",
+        "#384873",
+        "#000000",
+        "#ffffff",
+      ])
+      for (const includeHero of [true, false])
+        for (const includeLevels of [true, false]) {
+          const bounds: { left: number; right: number }[] = []
+          const text: CardText[] = []
+          const painter: ValuesCardPainter = {
+            measure: (value, size) => [...value].length * size * 0.5,
+            rectangle: (rectangle) => {
+              if (rectangle.width === 82)
+                bounds.push({
+                  left: rectangle.x,
+                  right: rectangle.x + rectangle.width,
+                })
+            },
+            sprite: (key, _source, rectangle) => {
+              if (key !== "hero")
+                bounds.push({
+                  left: rectangle.x,
+                  right: rectangle.x + rectangle.width,
+                })
+            },
+            text: (item) => {
+              text.push(item)
+              if (item.y <= 170 || item.y >= 780) return
+              const width = painter.measure(item.value, item.size, item.weight)
+              const left =
+                item.x -
+                (item.align === "right"
+                  ? width
+                  : item.align === "center"
+                    ? width / 2
+                    : 0)
+              bounds.push({ left, right: left + width })
+            },
+          }
+          paintValuesCard({
+            painter,
+            model: card,
+            palette,
+            frame: 0,
+            hero: includeHero ? { width: 23, height: 29 } : null,
+            includeLevels,
+          })
+          expect(card.values).toEqual(original)
+          expect(
+            text.filter((item) =>
+              card.values.some((value) => value.levelLabel === item.value),
+            ),
+          ).toHaveLength(includeLevels ? card.values.length : 0)
+          expect(text.some((item) => item.value === card.values[0].name)).toBe(
+            true,
+          )
+          if (includeHero && includeLevels) {
+            expect(
+              text.find((item) => item.value === card.values[0].name)?.x,
+            ).toBe(731)
+          } else {
+            const left = Math.min(...bounds.map((item) => item.left))
+            const right = Math.max(...bounds.map((item) => item.right))
+            expect((left + right) / 2).toBeCloseTo(includeHero ? 996 : 800)
+            expect(left).toBeGreaterThan(12)
+            expect(right).toBeLessThan(1588)
+          }
+        }
+    },
+  )
 
   it("builds the shared preview and export model despite a lost catalog", () => {
     const { catalog, issues } = resolveLocalizationCatalog("en", null, null)

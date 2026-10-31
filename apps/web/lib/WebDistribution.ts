@@ -4,7 +4,10 @@ import {
   type SupportedLocale,
 } from "@game/data/src/LocaleRegistry"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
-import { getWebEntryRedirect, PERMANENT_WEB_REDIRECTS } from "@/lib/WebEntryRedirects"
+import {
+  getWebEntryRedirect,
+  PERMANENT_WEB_REDIRECTS,
+} from "@/lib/WebEntryRedirects"
 
 export const CANONICAL_WEB_ORIGIN =
   "https://whatareyourvaluesmapache.com" as const
@@ -32,7 +35,9 @@ export function getWebRouteLocale(localePath: readonly string[] = []) {
 
 export function getStaticLocaleRouteParams() {
   return [
-    ...SHIPPED_LOCALES.map((locale) => getLocaleCatalog(locale).metadata.webPath),
+    ...SHIPPED_LOCALES.map(
+      (locale) => getLocaleCatalog(locale).metadata.webPath,
+    ),
     ...PERMANENT_WEB_REDIRECTS.map((redirect) => redirect.from),
   ].map((pathname) => ({
     localePath: pathname.split("/").filter(Boolean),

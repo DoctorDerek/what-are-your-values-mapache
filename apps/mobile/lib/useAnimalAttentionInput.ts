@@ -1,6 +1,8 @@
 import { useState } from "react"
 
-export default function useAnimalAttentionInput(onAttentionRequest?: () => void) {
+export default function useAnimalAttentionInput(
+  onAttentionRequest?: () => void,
+) {
   const [isHovered, setIsHovered] = useState(false)
   const [isTapped, setIsTapped] = useState(false)
 

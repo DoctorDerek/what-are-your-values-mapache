@@ -27,8 +27,16 @@ const createStrip = (width = 12): HeroStrip => {
 describe("Heroes99 preview lifecycle", () => {
   it("plays separate varied flourishes, finishes after exit and ignores overlapping input", async () => {
     compose.mockResolvedValue(createStrip())
-    const { rerender } = render(<Heroes99Hero appearance={DEFAULT_HEROES99_APPEARANCE} shouldReduceMotion={false} interactive />)
-    const hero = screen.getByRole("button", { name: DRESSING_ROOM_COPY.character })
+    const { rerender } = render(
+      <Heroes99Hero
+        appearance={DEFAULT_HEROES99_APPEARANCE}
+        shouldReduceMotion={false}
+        interactive
+      />,
+    )
+    const hero = screen.getByRole("button", {
+      name: DRESSING_ROOM_COPY.character,
+    })
     await waitFor(() => expect(hero.querySelector("canvas")).not.toBeNull())
     const currentClip = () => hero.querySelector("canvas")!
     for (const clip of ["attack_1", "attack_2", "attack_3"]) {
@@ -42,7 +50,13 @@ describe("Heroes99 preview lifecycle", () => {
     }
     fireEvent.focus(hero)
     expect(currentClip()).toHaveAttribute("data-hero-clip", "attack_1")
-    rerender(<Heroes99Hero appearance={DEFAULT_HEROES99_APPEARANCE} shouldReduceMotion interactive />)
+    rerender(
+      <Heroes99Hero
+        appearance={DEFAULT_HEROES99_APPEARANCE}
+        shouldReduceMotion
+        interactive
+      />,
+    )
     fireEvent.click(hero)
     expect(currentClip()).toHaveAttribute("data-hero-clip", "idle")
   })

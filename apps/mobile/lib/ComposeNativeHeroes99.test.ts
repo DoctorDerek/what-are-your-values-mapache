@@ -123,12 +123,27 @@ describe("Heroes99 native composition lifecycle", () => {
   it("uses one authored-art crop for idle and all three Home flourishes", async () => {
     renderer.state.pixels[(6 * 800 + 40) * 4 + 3] = 255
     renderer.state.pixels[((7 * 40 + 30) * 800 + 72) * 4 + 3] = 255
-    const result = await composeNativeHeroes99(DEFAULT_HEROES99_APPEARANCE, assets, new AbortController().signal, "home")
+    const result = await composeNativeHeroes99(
+      DEFAULT_HEROES99_APPEARANCE,
+      assets,
+      new AbortController().signal,
+      "home",
+    )
     expect(result).toMatchObject({ width: 33, height: 25 })
     const [sheet, strip] = renderer.state.surfaces
-    expect(sheet!.canvas.readPixels).toHaveBeenCalledWith(0, 0, { width: 800, height: 680, colorType: "RGBA_8888", alphaType: "Unpremul" })
+    expect(sheet!.canvas.readPixels).toHaveBeenCalledWith(0, 0, {
+      width: 800,
+      height: 680,
+      colorType: "RGBA_8888",
+      alphaType: "Unpremul",
+    })
     expect(strip!.canvas.drawImageRect).toHaveBeenCalledTimes(22)
-    expect(strip!.canvas.drawImageRect).toHaveBeenLastCalledWith(sheet!.image, { x: 340, y: 286, width: 33, height: 25 }, { x: 693, y: 0, width: 33, height: 25 }, renderer.paint)
+    expect(strip!.canvas.drawImageRect).toHaveBeenLastCalledWith(
+      sheet!.image,
+      { x: 340, y: 286, width: 33, height: 25 },
+      { x: 693, y: 0, width: 33, height: 25 },
+      renderer.paint,
+    )
     expect(sheet!.dispose).toHaveBeenCalledOnce()
     expect(strip!.dispose).toHaveBeenCalledOnce()
   })

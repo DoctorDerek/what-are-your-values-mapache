@@ -1,4 +1,3 @@
-import { layoutValuesCardValues } from "./ValuesCardValueLayout"
 import { HEROES99_IDLE_FRAME_COUNT } from "./Heroes99SpatialArchitecture"
 import { SEETHING_SWARM_CALM_FRAME_DURATION_MS } from "./SeethingSwarmAnimalPresentation"
 import {
@@ -10,6 +9,7 @@ import {
   type ValuesCardModel,
   type ValuesCardPalette,
 } from "./ValuesCard"
+import { layoutValuesCardValues } from "./ValuesCardValueLayout"
 
 export type CardRectangle = Readonly<{
   x: number
@@ -117,9 +117,21 @@ export function paintValuesCard<Asset>({
       },
     )
   }
-  const layout = layoutValuesCardValues(model, painter, hero !== null, includeLevels)
+  const layout = layoutValuesCardValues(
+    model,
+    painter,
+    hero !== null,
+    includeLevels,
+  )
   const shift = layout.columnShift
-  for (const { value, index, middle, size, lines, animal: target } of layout.rows) {
+  for (const {
+    value,
+    index,
+    middle,
+    size,
+    lines,
+    animal: target,
+  } of layout.rows) {
     if (model.hasComparisons) {
       painter.rectangle(
         { x: 450 + shift, y: middle - 40, width: 82, height: 68 },
@@ -170,15 +182,16 @@ export function paintValuesCard<Asset>({
         color: palette.ink,
       }),
     )
-    if (includeLevels) painter.text({
-      value: value.levelLabel,
-      x: layout.levelX,
-      y: middle + 20,
-      size: 55,
-      weight: 400,
-      color: palette.muted,
-      align: "right",
-    })
+    if (includeLevels)
+      painter.text({
+        value: value.levelLabel,
+        x: layout.levelX,
+        y: middle + 20,
+        size: 55,
+        weight: 400,
+        color: palette.muted,
+        align: "right",
+      })
   }
   painter.rectangle(
     { x: 12, y: 780, width: 1576, height: 108 },
