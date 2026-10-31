@@ -102,12 +102,9 @@ describe("NativeAchievementBanner", () => {
     },
   )
 
-  it("retains safe-area screen placement and independently dismisses the newer card", async () => {
+  it("independently dismisses the newer card in a content overlay", async () => {
     const settings = props()
     const { rerender } = await render(<NativeAchievementBanner {...settings} />)
-    expect(screen.getByTestId("achievement-overlay")).toHaveStyle({
-      bottom: 12,
-    })
     const dismiss = screen.getByRole("button", {
       name: "Dismiss achievement: 5 Battles",
     })
