@@ -153,6 +153,9 @@ for (const viewport of [
       const profile = await page
         .getByRole("region", { name: "Profile progress" })
         .boundingBox()
+      const exits = await page.getByRole("navigation", { name: "Results actions" }).boundingBox()
+      if (viewport.width < 1280) expect(exits!.y + exits!.height).toBeLessThanOrEqual(profile!.y)
+      else expect(profile!.y + profile!.height).toBeLessThanOrEqual(exits!.y)
       expect(toast!.y).toBeGreaterThan(menu!.y + menu!.height)
       expect(toast!.y + toast!.height).toBeLessThan(profile!.y)
       for (const label of ["See my values", "Keep battling"]) {
@@ -199,6 +202,35 @@ for (const viewport of [
     })
   }
 }
+
+test.describe("touch navigation with an earned achievement", () => {
+  test.use({ hasTouch: true, viewport: { width: 390, height: 844 } })
+
+  test("Achievements Back receives a right-thumb tap while First Battle remains visible", async ({ page }, testInfo) => {
+    await startBattle(page)
+    await compareNextPair(page)
+    await page.getByRole("button", { name: "Stop", exact: true }).tap()
+    await page.getByRole("button", { name: "See my values", exact: true }).tap()
+    await page.getByRole("button", { name: "Achievements", exact: true }).tap()
+    const banner = page.getByRole("complementary", { name: "Achievement unlocked" })
+    await banner.getByRole("button", { name: "Dismiss achievement: First Battle" }).focus()
+    const back = page.getByRole("button", { name: "Back", exact: true })
+    await expect(back).toBeEnabled()
+    await page.getByRole("listitem").last().scrollIntoViewIfNeeded()
+    const bounds = (await back.boundingBox())!
+    const notice = (await banner.boundingBox())!
+    expect(notice.y + notice.height).toBeLessThanOrEqual(bounds.y)
+    expect(await back.evaluate(button => {
+      const r = button.getBoundingClientRect()
+      return [.15, .5, .85].every(x => [.15, .5, .85].every(y =>
+        button.contains(document.elementFromPoint(r.left + x * r.width, r.top + y * r.height))))
+    })).toBe(true)
+    await page.screenshot({ path: testInfo.outputPath("achievements-back-with-earned-banner.png") })
+    await page.touchscreen.tap(bounds.x + bounds.width * .8, bounds.y + bounds.height / 2)
+    await expect(page.getByRole("button", { name: "Battle", exact: true })).toBeVisible()
+    await expect(banner).toBeVisible()
+  })
+})
 
 for (const textSize of [100, 200, 400]) {
   test(`stack arrival, independent dismissal and queued admission never change game geometry at ${textSize}% text`, async ({
