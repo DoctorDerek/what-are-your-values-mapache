@@ -380,9 +380,7 @@ export default function Results({
                   ))}
                 </ol>
               </div>
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-full overflow-y-auto overscroll-contain p-2">
-                {notifications}
-              </div>
+              {notifications}
             </div>
             <section
               className="shrink-0 border-2 border-black bg-white p-2 text-black shadow-[3px_3px_0_#000]"

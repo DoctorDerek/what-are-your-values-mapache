@@ -3,7 +3,7 @@
 import { createLocaleFormatters } from "@game/data/src/LocaleFormatters"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef, type ReactNode } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 
@@ -68,10 +68,12 @@ function AchievementCard({
 export default function Achievements({
   achievements,
   canClose,
+  notifications,
   onClose,
 }: {
   readonly achievements: readonly AchievementPresentation[]
   readonly canClose: boolean
+  readonly notifications?: ReactNode
   readonly onClose: () => void
 }) {
   const localizedCopy = useLocaleCatalog()
@@ -96,6 +98,7 @@ export default function Achievements({
       className="flex flex-col"
     >
       <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col">
+        <div className="relative isolate flex min-h-0 flex-1 flex-col overflow-hidden">
         <div
           data-controller-scroll
           tabIndex={0}
@@ -134,6 +137,8 @@ export default function Achievements({
               ))}
             </ol>
           </section>
+        </div>
+        {notifications}
         </div>
         <footer className="flex max-h-[35%] shrink-0 justify-end overflow-auto pt-[12px] pr-[8px] pb-[8px]">
           <Button

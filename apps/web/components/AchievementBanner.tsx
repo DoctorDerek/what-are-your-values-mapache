@@ -11,13 +11,13 @@ import AchievementToast from "@/components/AchievementToast"
 export default function AchievementBanner({
   achievements,
   isAcknowledgementPending,
-  placement = "screen",
+  placement = "content",
   shouldReduceMotion,
   onPresented,
 }: {
   achievements: readonly AchievementPresentation[]
   isAcknowledgementPending: boolean
-  placement?: "battle" | "screen" | "inline"
+  placement?: "battle" | "content"
   shouldReduceMotion: boolean
   onPresented: (achievementId: AchievementPresentation["id"]) => void
 }) {
@@ -59,12 +59,10 @@ export default function AchievementBanner({
     state.context.interactions.length > 0
   if (state.context.visible.length === 0) return null
 
-  return (
+  const stack = (
     <div
       className={cx(
-        placement !== "screen"
-          ? "pointer-events-none relative mx-auto flex w-80 max-w-[calc(100%-8px)] min-w-0 flex-col gap-2 [overflow-anchor:none]"
-          : "pointer-events-none fixed right-[max(0.75rem,env(safe-area-inset-right))] bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-[max(0.75rem,env(safe-area-inset-left))] z-[60] mx-auto flex max-w-80 flex-col gap-2 [overflow-anchor:none]",
+        "pointer-events-none relative mx-auto flex w-80 max-w-[calc(100%-8px)] min-w-0 flex-col gap-2 [overflow-anchor:none]",
         placement === "battle" &&
           "max-h-full overflow-y-auto overscroll-contain p-1",
       )}
@@ -89,6 +87,11 @@ export default function AchievementBanner({
           }
         />
       ))}
+    </div>
+  )
+  return placement === "battle" ? stack : (
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-full overflow-y-auto overscroll-contain p-2">
+      {stack}
     </div>
   )
 }
