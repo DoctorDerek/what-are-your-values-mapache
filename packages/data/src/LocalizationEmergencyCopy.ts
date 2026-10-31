@@ -18,6 +18,7 @@ export const LOCALIZATION_EMERGENCY_COPY = Object.freeze({
   shareCard: "Share my values card",
   imageFormat: "Image format",
   includeHero: "Include my hero",
+  includeLevels: "Include levels",
   preview: "Values card preview",
   details: "Technical details",
   level: (level: number) => `Level ${level}`,

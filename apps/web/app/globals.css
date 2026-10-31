@@ -80,11 +80,16 @@
 }
 
 @theme inline {
-  --animate-heroes99-idle: heroes99-idle var(--hero-idle-duration)
+  --animate-heroes99-idle: heroes99-idle var(--hero-duration)
     steps(var(--hero-frame-count), end) infinite;
+  --animate-heroes99-flourish: heroes99-idle var(--hero-duration)
+    steps(var(--hero-frame-count), end) 1;
   @keyframes heroes99-idle {
+    from {
+      transform: translateX(var(--hero-start));
+    }
     to {
-      transform: translateX(-100%);
+      transform: translateX(var(--hero-end));
     }
   }
   --animate-seething-swarm-strip: advance-seething-swarm-strip

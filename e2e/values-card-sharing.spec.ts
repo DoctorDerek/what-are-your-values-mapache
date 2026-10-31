@@ -121,6 +121,49 @@ for (const locale of ["en", "es-MX"] as const) {
     await preview.screenshot({
       path: testInfo.outputPath("medals-preview-320.png"),
     })
+    const allIncludedPreview = await preview
+      .getByRole("img")
+      .getAttribute("src")
+    for (const [includeHero, includeLevels] of [
+      [false, true],
+      [true, false],
+      [false, false],
+      [true, true],
+    ]) {
+      await preview
+        .getByRole("checkbox", { name: catalog.card.includeHero, exact: true })
+        .setChecked(includeHero)
+      await preview
+        .getByRole("checkbox", {
+          name: catalog.card.includeLevels,
+          exact: true,
+        })
+        .setChecked(includeLevels)
+      await expect(save).toBeEnabled()
+      await expect(preview.getByRole("img")).not.toHaveAttribute(
+        "src",
+        allIncludedPreview!,
+      )
+      const image = await preview
+        .getByRole("img")
+        .evaluate(async (element: HTMLImageElement) => {
+          const bytes = new Uint8Array(
+            await (await fetch(element.src)).arrayBuffer(),
+          )
+          return Array.from(bytes)
+        })
+      const download = page.waitForEvent("download")
+      await save.click()
+      const selectedPath = testInfo.outputPath(
+        `card-${locale}-hero-${includeHero}-levels-${includeLevels}.png`,
+      )
+      await (await download).saveAs(selectedPath)
+      expect(Buffer.from(image).equals(await readFile(selectedPath))).toBe(true)
+      expect(await sharp(selectedPath).metadata()).toMatchObject({
+        width: 1600,
+        height: 900,
+      })
+    }
   })
 }
 

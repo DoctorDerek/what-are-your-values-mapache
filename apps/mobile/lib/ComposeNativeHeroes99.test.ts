@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { composeNativeHeroes99 } from "./ComposeNativeHeroes99"
 
 const renderer = vi.hoisted(() => {
+  const readPixels = vi.fn<() => Uint8Array>()
   const createImage = () => ({
     dispose: vi.fn(),
     encodeToBase64: vi.fn(() => "synthetic-preview"),
@@ -16,6 +17,7 @@ const renderer = vi.hoisted(() => {
       clear: vi.fn(),
       drawImage: vi.fn(),
       drawImageRect: vi.fn(),
+      readPixels,
     }
     const image = createImage()
     return {
@@ -49,6 +51,7 @@ const renderer = vi.hoisted(() => {
     return data
   })
   return {
+    readPixels,
     state,
     paint,
     makeOffscreen,
@@ -79,6 +82,8 @@ const renderer = vi.hoisted(() => {
 vi.mock("@shopify/react-native-skia", () => ({
   Skia: renderer.Skia,
   ImageFormat: { PNG: "PNG" },
+  ColorType: { RGBA_8888: "RGBA_8888" },
+  AlphaType: { Unpremul: "Unpremul" },
 }))
 vi.mock("react-native", () => ({
   Image: {
@@ -113,6 +118,37 @@ describe("Heroes99 native composition lifecycle", () => {
     renderer.state.unavailableSurface = -1
     renderer.state.invalidImage = false
     renderer.state.onLoad = null
+    renderer.readPixels.mockReturnValue(new Uint8Array(800 * 680 * 4))
+  })
+
+  it("uses one authored-art crop for idle and all three Home flourishes", async () => {
+    const pixels = new Uint8Array(800 * 680 * 4)
+    pixels[(6 * 800 + 40) * 4 + 3] = 255
+    pixels[((7 * 40 + 30) * 800 + 72) * 4 + 3] = 255
+    renderer.readPixels.mockReturnValue(pixels)
+    const result = await composeNativeHeroes99(
+      DEFAULT_HEROES99_APPEARANCE,
+      assets,
+      new AbortController().signal,
+      "home",
+    )
+    expect(result).toMatchObject({ width: 33, height: 25 })
+    const [sheet, strip] = renderer.state.surfaces
+    expect(sheet!.canvas.readPixels).toHaveBeenCalledWith(0, 0, {
+      width: 800,
+      height: 680,
+      colorType: "RGBA_8888",
+      alphaType: "Unpremul",
+    })
+    expect(strip!.canvas.drawImageRect).toHaveBeenCalledTimes(22)
+    expect(strip!.canvas.drawImageRect).toHaveBeenLastCalledWith(
+      sheet!.image,
+      { x: 340, y: 286, width: 33, height: 25 },
+      { x: 693, y: 0, width: 33, height: 25 },
+      renderer.paint,
+    )
+    expect(sheet!.dispose).toHaveBeenCalledOnce()
+    expect(strip!.dispose).toHaveBeenCalledOnce()
   })
 
   it("composes the selected layers and representative-first strip then releases all Skia resources", async () => {
