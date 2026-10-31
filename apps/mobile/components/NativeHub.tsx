@@ -178,7 +178,7 @@ export default function NativeHub({
                         ? PERSONAL_HUB_COPY.rankedTitle
                         : PERSONAL_HUB_COPY.unrankedTitle
                     }
-                    className="min-w-0 flex-[1_1_10rem] self-center px-3 py-[min(1rem,max(0.25rem,calc(100vh-37rem)))] xl:w-full xl:flex-auto xl:flex-row xl:justify-center xl:gap-x-3 xl:py-4"
+                    className="min-w-0 flex-[1_1_8.5rem] self-center px-3 py-[min(1rem,max(0.25rem,calc(100vh-37rem)))] xl:w-full xl:flex-auto xl:flex-row xl:justify-center xl:gap-x-3 xl:py-4"
                   >
                     {(hasComparisons
                       ? PERSONAL_HUB_COPY.rankedTitleLines
@@ -197,11 +197,12 @@ export default function NativeHub({
                       </Text>
                     )}
                   </View>
-                  <View className="xl:bg-player-card-values w-[96px] max-w-full items-center justify-center py-2 pr-2 xl:w-1/3 xl:py-3 xl:pr-0">
+                  <View className="xl:bg-player-card-values ml-auto max-w-full items-center justify-center p-2 xl:ml-0 xl:w-1/3 xl:p-3">
                     <NativeHeroes99Hero
                       appearance={appearance}
                       shouldReduceMotion={shouldReduceMotion}
-                      sizeClassName="h-[112px] w-[80px] xl:h-96 xl:w-64"
+                      interactive
+                      sizeClassName="h-24 w-[min(10rem,max(4rem,calc(45vw-2rem)))] xl:h-32 xl:w-52"
                     />
                   </View>
                 </View>

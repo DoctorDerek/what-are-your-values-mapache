@@ -1,11 +1,10 @@
-import {
-  HEROES99_IDLE_FRAME_DURATION_MS,
-  type Heroes99Appearance,
-} from "@game/data/src/Heroes99Appearance"
-import { HEROES99_IDLE_FRAME_COUNT } from "@game/data/src/Heroes99SpatialArchitecture"
+import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
+import { getHeroes99PresentationFrames, HEROES99_IDLE_CLIP, HEROES99_FLOURISHES } from "@game/data/src/Heroes99Presentation"
+import { heroes99AttentionMachine } from "@game/machines/src/Heroes99AttentionMachine"
+import { useMachine } from "@xstate/react"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { useEffect, useState } from "react"
-import { AppState, Image, View } from "react-native"
+import { AppState, Image, Pressable, View } from "react-native"
 import Animated, {
   cancelAnimation,
   Easing,
@@ -15,10 +14,12 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated"
+import { scheduleOnRN } from "react-native-worklets"
 import { useResolveClassNames } from "uniwind"
 import { Text } from "@/components/ui/text"
 import { HEROES99_ASSETS } from "@/generated/heroes99/Heroes99Assets"
 import { composeNativeHeroes99 } from "@/lib/ComposeNativeHeroes99"
+import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
 
 type HeroStrip = Awaited<ReturnType<typeof composeNativeHeroes99>>
 
@@ -26,10 +27,12 @@ export default function NativeHeroes99Hero({
   appearance,
   shouldReduceMotion,
   sizeClassName = "h-40",
+  interactive = false,
 }: {
   appearance: Heroes99Appearance
   shouldReduceMotion: boolean
   sizeClassName?: string
+  interactive?: boolean
 }) {
   const localizedCopy = useLocaleCatalog()
   const DRESSING_ROOM_COPY = localizedCopy.interfaceCopy.dressingRoom
@@ -41,6 +44,13 @@ export default function NativeHeroes99Hero({
   const [failed, setFailed] = useState(false)
   const [readySource, setReadySource] = useState<string | null>(null)
   const [isActive, setIsActive] = useState(AppState.currentState === "active")
+  const [attention, send] = useMachine(heroes99AttentionMachine)
+  const { attentionHandlers } = useAnimalAttentionInput(() => send({ type: "HERO_ATTENTION.ACTIVATE" }))
+  const mode = interactive ? "home" : "idle"
+  const frameCount = getHeroes99PresentationFrames(mode).length
+  const isFlourishing = attention.matches("Flourishing")
+  const clip = isFlourishing ? HEROES99_FLOURISHES[attention.context.flourish] : HEROES99_IDLE_CLIP
+  const Surface = interactive ? Pressable : View
   const progress = useSharedValue(0)
   const scale = strip
     ? Math.min(stageWidth / strip.width, height / strip.height)
@@ -51,11 +61,14 @@ export default function NativeHeroes99Hero({
     transform: [
       {
         translateX:
-          -Math.min(HEROES99_IDLE_FRAME_COUNT - 1, Math.floor(progress.get())) *
+          -(clip.offset + Math.min(clip.frameCount - 1, Math.floor(progress.get()))) *
           width,
       },
     ],
   }))
+  useEffect(() => {
+    send({ type: "HERO_ATTENTION.AVAILABILITY", canAnimate: interactive && !shouldReduceMotion && isActive && !!strip && strip.source.uri === readySource && !failed })
+  }, [interactive, shouldReduceMotion, isActive, strip, readySource, failed, send])
   useEffect(() => {
     const listener = AppState.addEventListener("change", (state) =>
       setIsActive(state === "active"),
@@ -64,7 +77,7 @@ export default function NativeHeroes99Hero({
   }, [])
   useEffect(() => {
     const controller = new AbortController()
-    void composeNativeHeroes99(appearance, HEROES99_ASSETS, controller.signal)
+    void composeNativeHeroes99(appearance, HEROES99_ASSETS, controller.signal, mode)
       .then((result) => {
         if (!controller.signal.aborted) {
           setStrip(result)
@@ -75,31 +88,34 @@ export default function NativeHeroes99Hero({
         if (!controller.signal.aborted) setFailed(true)
       })
     return () => controller.abort()
-  }, [appearance])
+  }, [appearance, mode])
   useEffect(() => {
     cancelAnimation(progress)
     progress.set(0)
-    if (!shouldReduceMotion && isActive && strip?.source.uri === readySource)
-      progress.set(
-        withRepeat(
-          withTiming(HEROES99_IDLE_FRAME_COUNT, {
-            duration:
-              HEROES99_IDLE_FRAME_DURATION_MS * HEROES99_IDLE_FRAME_COUNT,
+    if (!shouldReduceMotion && isActive && strip?.source.uri === readySource) {
+      const generation = attention.context.generation
+      const complete = () => send({ type: "HERO_ATTENTION.COMPLETE", generation })
+      const animation = withTiming(clip.frameCount, {
+            duration: clip.frameDuration * clip.frameCount,
             easing: Easing.linear,
             reduceMotion: ReduceMotion.Never,
-          }),
+          }, (finished) => {
+            if (finished && isFlourishing) scheduleOnRN(complete)
+          })
+      progress.set(isFlourishing ? animation : withRepeat(animation,
           -1,
           false,
           undefined,
           ReduceMotion.Never,
-        ),
-      )
+        ))
+    }
     return () => cancelAnimation(progress)
-  }, [isActive, progress, readySource, shouldReduceMotion, strip])
+  }, [isActive, progress, readySource, shouldReduceMotion, strip, clip, isFlourishing, attention.context.generation, send])
   return (
-    <View
+    <Surface
+      {...(interactive && attentionHandlers)}
       accessible
-      accessibilityRole="image"
+      accessibilityRole={interactive ? "button" : "image"}
       accessibilityLabel={
         failed ? DRESSING_ROOM_COPY.placeholder : DRESSING_ROOM_COPY.character
       }
@@ -116,7 +132,7 @@ export default function NativeHeroes99Hero({
             testID="heroes99-idle-strip"
             className="absolute top-0 left-0"
             style={[
-              { width: width * HEROES99_IDLE_FRAME_COUNT, height: imageHeight },
+              { width: width * frameCount, height: imageHeight },
               motion,
             ]}
           >
@@ -128,7 +144,7 @@ export default function NativeHeroes99Hero({
               source={strip.source}
               resizeMode="stretch"
               style={{
-                width: width * HEROES99_IDLE_FRAME_COUNT,
+                width: width * frameCount,
                 height: imageHeight,
               }}
               onLoad={() => setReadySource(strip.source.uri)}
@@ -141,6 +157,6 @@ export default function NativeHeroes99Hero({
           {failed ? DRESSING_ROOM_COPY.placeholder : DRESSING_ROOM_COPY.loading}
         </Text>
       )}
-    </View>
+    </Surface>
   )
 }

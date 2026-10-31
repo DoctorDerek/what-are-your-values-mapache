@@ -7,30 +7,33 @@ import {
   type Heroes99RuntimeAssets,
 } from "@game/data/src/Heroes99RuntimeAssets"
 import {
-  HEROES99_IDLE_FRAME_COUNT,
-  HEROES99_REPRESENTATIVE_FRAME,
+  getHeroes99MotionBounds,
+  getHeroes99PresentationFrames,
+  type Heroes99PresentationMode,
+} from "@game/data/src/Heroes99Presentation"
+import {
   HEROES99_SPATIAL_ARCHITECTURE,
 } from "@game/data/src/Heroes99SpatialArchitecture"
-import { ImageFormat, Skia } from "@shopify/react-native-skia"
+import { AlphaType, ColorType, ImageFormat, Skia } from "@shopify/react-native-skia"
 import { Image } from "react-native"
 
 export async function composeNativeHeroes99(
   appearance: Heroes99Appearance,
   assets: Heroes99RuntimeAssets<number>,
   signal: AbortSignal,
+  mode: Heroes99PresentationMode = "idle",
 ) {
   const layers = getHeroes99LayerPaths(appearance).map((path) => {
     const layer = assets.layers[path]
     if (!layer) throw new Error("Hero layers are unavailable")
     return layer
   })
-  const bounds = unionHeroes99Bounds(
+  const idleBounds = unionHeroes99Bounds(
     layers.flatMap((layer) => (layer.bounds.width > 0 ? [layer.bounds] : [])),
   )
   const {
     sheet_width_px: width,
     sheet_height_px: height,
-    frame_width_px: frameWidth,
   } = HEROES99_SPATIAL_ARCHITECTURE.grid_metrics
   const sheet = Skia.Surface.MakeOffscreen(width, height)
   if (!sheet) throw new Error("Hero composition surface is unavailable")
@@ -56,10 +59,19 @@ export async function composeNativeHeroes99(
       }
     }
     sheet.flush()
+    let bounds = idleBounds
+    if (mode === "home") {
+      const pixels = canvas.readPixels(0, 0, {
+        width, height, colorType: ColorType.RGBA_8888, alphaType: AlphaType.Unpremul,
+      })
+      if (!(pixels instanceof Uint8Array)) throw new Error("Hero pixels could not be read")
+      bounds = getHeroes99MotionBounds(pixels)
+    }
+    const frames = getHeroes99PresentationFrames(mode)
     const image = sheet.makeImageSnapshot()
     try {
       const strip = Skia.Surface.MakeOffscreen(
-        bounds.width * HEROES99_IDLE_FRAME_COUNT,
+        bounds.width * frames.length,
         bounds.height,
       )
       if (!strip) throw new Error("Hero preview surface is unavailable")
@@ -67,19 +79,16 @@ export async function composeNativeHeroes99(
       try {
         const target = strip.getCanvas()
         target.clear(Skia.Color("transparent"))
-        for (let frame = 0; frame < HEROES99_IDLE_FRAME_COUNT; frame++)
+        for (const [index, frame] of frames.entries())
           target.drawImageRect(
             image,
             Skia.XYWHRect(
-              ((frame + HEROES99_REPRESENTATIVE_FRAME) %
-                HEROES99_IDLE_FRAME_COUNT) *
-                frameWidth +
-                bounds.left,
-              bounds.top,
+              frame.x + bounds.left,
+              frame.y + bounds.top,
               bounds.width,
               bounds.height,
             ),
-            Skia.XYWHRect(frame * bounds.width, 0, bounds.width, bounds.height),
+            Skia.XYWHRect(index * bounds.width, 0, bounds.width, bounds.height),
             paint,
           )
         strip.flush()
