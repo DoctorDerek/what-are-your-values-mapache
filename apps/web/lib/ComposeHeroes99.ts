@@ -7,8 +7,11 @@ import {
   type Heroes99RuntimeAssets,
 } from "@game/data/src/Heroes99RuntimeAssets"
 import {
-  HEROES99_IDLE_FRAME_COUNT,
-  HEROES99_REPRESENTATIVE_FRAME,
+  getHeroes99MotionBounds,
+  getHeroes99PresentationFrames,
+  type Heroes99PresentationMode,
+} from "@game/data/src/Heroes99Presentation"
+import {
   HEROES99_SPATIAL_ARCHITECTURE,
 } from "@game/data/src/Heroes99SpatialArchitecture"
 import type { StaticImageData } from "next/image"
@@ -17,6 +20,7 @@ export async function composeHeroes99(
   appearance: Heroes99Appearance,
   assets: Heroes99RuntimeAssets<StaticImageData>,
   signal: AbortSignal,
+  mode: Heroes99PresentationMode = "idle",
 ) {
   const layers = getHeroes99LayerPaths(appearance).map((path) => {
     const layer = assets.layers[path]
@@ -26,9 +30,8 @@ export async function composeHeroes99(
   const {
     sheet_width_px: width,
     sheet_height_px: height,
-    frame_width_px: frameWidth,
   } = HEROES99_SPATIAL_ARCHITECTURE.grid_metrics
-  const bounds = unionHeroes99Bounds(
+  const idleBounds = unionHeroes99Bounds(
     layers.flatMap((layer) => (layer.bounds.width > 0 ? [layer.bounds] : [])),
   )
   const sheet = document.createElement("canvas")
@@ -55,26 +58,30 @@ export async function composeHeroes99(
     for (const result of loaded)
       if (result.status === "fulfilled") result.value.close()
   }
+  const frames = getHeroes99PresentationFrames(mode)
+  const bounds = mode === "home"
+    ? getHeroes99MotionBounds(context.getImageData(0, 0, width, height).data)
+    : idleBounds
   const strip = document.createElement("canvas")
-  strip.width = bounds.width * HEROES99_IDLE_FRAME_COUNT
+  strip.width = bounds.width * frames.length
   strip.height = bounds.height
   const stripContext = strip.getContext("2d")
   if (!stripContext) throw new Error("Hero preview is unavailable")
   stripContext.imageSmoothingEnabled = false
-  for (let frame = 0; frame < HEROES99_IDLE_FRAME_COUNT; frame++)
+  for (const [index, frame] of frames.entries())
     stripContext.drawImage(
       sheet,
-      ((frame + HEROES99_REPRESENTATIVE_FRAME) % HEROES99_IDLE_FRAME_COUNT) *
-        frameWidth +
-        bounds.left,
-      bounds.top,
+      frame.x + bounds.left,
+      frame.y + bounds.top,
       bounds.width,
       bounds.height,
-      frame * bounds.width,
+      index * bounds.width,
       0,
       bounds.width,
       bounds.height,
     )
   signal.throwIfAborted()
-  return { canvas: strip, width: bounds.width, height: bounds.height }
+  return {
+    canvas: strip, width: bounds.width, height: bounds.height,
+  }
 }
