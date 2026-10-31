@@ -7,7 +7,8 @@ test.use({ serviceWorkers: "block" })
 test("Spanish survives gameplay, reload, and language changes without translating private values", async ({
   page,
 }) => {
-  await page.goto("/que-valoras-en-la-vida")
+  await page.goto("/es")
+  await expect(page).toHaveURL(/\/que-valoras-en-la-vida$/)
   await expect(page.locator("html")).toHaveAttribute("lang", "es-MX")
   await expect(page.getByRole("combobox", { name: "Idioma" })).toHaveValue(
     "es-MX",
@@ -57,7 +58,8 @@ test("Spanish survives gameplay, reload, and language changes without translatin
   await expect(page.getByRole("combobox", { name: "Language" })).toHaveValue(
     "en",
   )
-  await page.reload()
+  await page.goto("/es")
+  await expect(page).toHaveURL(/\/que-valoras-en-la-vida$/)
   await expect(
     page.getByRole("heading", { name: "My Top Five Life Values", exact: true }),
   ).toBeVisible()
@@ -170,7 +172,8 @@ test.describe("Spanish static document", () => {
     page,
     request,
   }) => {
-    await page.goto("/que-valoras-en-la-vida")
+    await page.goto("/es")
+    await expect(page).toHaveURL(/\/que-valoras-en-la-vida$/)
     await expect(page.locator("html")).toHaveAttribute("lang", "es-MX")
     await expect(page).toHaveTitle(/¿Cuáles son tus valores, Mapache\?/)
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
