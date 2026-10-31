@@ -35,9 +35,36 @@ for (const scale of [100, 200]) {
       exact: true,
     })
     const rosterViewport = roster.locator("..")
+    const profile = page.getByRole("region", { name: "Progreso del perfil", exact: true })
+    const exit = page.getByRole("button", { name: "Ver mis valores", exact: true })
     expect((await rosterViewport.boundingBox())!.height).toBeGreaterThanOrEqual(
       160,
     )
+    if (scale === 200) {
+      const firstRow = roster.getByRole("listitem").first()
+      await firstRow.evaluate(row => row.scrollIntoView({ block: "start" }))
+      const dismiss = page.getByRole("button", { name: /^Cerrar logro:/ }).first()
+      if (await dismiss.isVisible()) await dismiss.click()
+      await firstRow.evaluate(row => row.scrollIntoView({ block: "start" }))
+      await expect.poll(() => firstRow.evaluate(row => {
+        const r = row.getBoundingClientRect()
+        return row.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2))
+      })).toBe(true)
+      await expect(exit).toBeInViewport({ ratio: 1 })
+      await expect(resume).toBeInViewport({ ratio: 1 })
+      await page.screenshot({ path: testInfo.outputPath("enlarged-results-roster-and-exits.png") })
+      await profile.evaluate(strip => strip.scrollIntoView({ block: "end" }))
+    }
+    await expect(profile).toBeInViewport({ ratio: 1 })
+    const profileBounds = (await profile.boundingBox())!
+    for (const action of [exit, resume]) {
+      const r = (await action.boundingBox())!
+      expect(r.y + r.height).toBeLessThanOrEqual(profileBounds.y + 1)
+      expect(await action.evaluate(button => {
+        const rect = button.getBoundingClientRect()
+        return button.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2))
+      })).toBe(true)
+    }
     const lines = await resume.evaluate(getRenderedTextLines)
     expect(
       lines.some((line) => line.toLowerCase().includes("combatiendo")),
