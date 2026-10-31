@@ -306,14 +306,12 @@ export default function Results({
       spacing="compact"
       className="overflow-hidden"
     >
-      <div className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-2">
-        <div
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
-          data-controller-scroll
-          tabIndex={0}
-          onScroll={settleRowPositions}
-        >
-          <div className="flex min-h-full flex-col gap-2">
+      <div
+        className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-2 overflow-y-auto overscroll-contain"
+        data-controller-scroll
+        tabIndex={0}
+        onScroll={settleRowPositions}
+      >
             <header className="flex shrink-0 flex-wrap items-center justify-between gap-2">
               <div className="flex min-w-0 grow basis-36 flex-wrap items-center gap-x-2">
                 <h1 className="text-mapache-vivid-primary-cyan max-w-full text-2xl font-black [overflow-wrap:anywhere]">
@@ -382,6 +380,28 @@ export default function Results({
               </div>
               {notifications}
             </div>
+        <nav
+          className="noise-bg bg-mapache-vivid-dark sticky bottom-0 z-10 flex shrink-0 flex-wrap gap-2 pb-[8px] xl:order-last"
+          aria-label={localizedCopy.interfaceCopy.screen.resultsActions}
+        >
+          <Button
+            size="sm"
+            wrap
+            className="max-w-full min-w-min flex-[1_1_0] px-[6px] text-center leading-tight break-normal wrap-normal"
+            onClick={onSeeValues}
+          >
+            {RESULTS_COPY.seeValuesAction}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            wrap
+            className="max-w-full min-w-min flex-[1_1_0] px-[6px] text-center leading-tight break-normal wrap-normal"
+            onClick={onKeepBattling}
+          >
+            {RESULTS_COPY.keepBattlingAction}
+          </Button>
+        </nav>
             <section
               className="shrink-0 border-2 border-black bg-white p-2 text-black shadow-[3px_3px_0_#000]"
               aria-label={localizedCopy.interfaceCopy.screen.profileProgress}
@@ -415,30 +435,6 @@ export default function Results({
                 )}
               />
             </section>
-          </div>
-        </div>
-        <nav
-          className="flex shrink-0 flex-wrap gap-2 pb-[8px]"
-          aria-label={localizedCopy.interfaceCopy.screen.resultsActions}
-        >
-          <Button
-            size="sm"
-            wrap
-            className="max-w-full min-w-min flex-[1_1_0] px-[6px] text-center leading-tight break-normal wrap-normal"
-            onClick={onSeeValues}
-          >
-            {RESULTS_COPY.seeValuesAction}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            wrap
-            className="max-w-full min-w-min flex-[1_1_0] px-[6px] text-center leading-tight break-normal wrap-normal"
-            onClick={onKeepBattling}
-          >
-            {RESULTS_COPY.keepBattlingAction}
-          </Button>
-        </nav>
       </div>
     </MapacheScreen>
   )
