@@ -47,7 +47,7 @@ async function loadImage(uri: string, signal: AbortSignal) {
 export async function prepareNativeValuesCard(
   model: ValuesCardModel<number>,
   palette: ValuesCardPalette,
-  { format, includeHero, signal }: ValuesCardPreparation,
+  { format, includeHero, includeLevels, signal }: ValuesCardPreparation,
 ): Promise<PreparedValuesCard> {
   const { width, height } = VALUES_CARD_SIZE
   const surface = Skia.Surface.MakeOffscreen(width, height)
@@ -161,7 +161,7 @@ export async function prepareNativeValuesCard(
       },
     }
     const render = (frame: number) => {
-      paintValuesCard({ painter, model, palette, frame, hero })
+      paintValuesCard({ painter, model, palette, frame, hero, includeLevels })
       surface.flush()
     }
     render(0)

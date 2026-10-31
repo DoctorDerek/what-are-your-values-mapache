@@ -1,4 +1,3 @@
-import { graphemeSegments } from "unicode-segmenter/grapheme"
 import { HEROES99_IDLE_FRAME_COUNT } from "./Heroes99SpatialArchitecture"
 import { SEETHING_SWARM_CALM_FRAME_DURATION_MS } from "./SeethingSwarmAnimalPresentation"
 import {
@@ -10,6 +9,7 @@ import {
   type ValuesCardModel,
   type ValuesCardPalette,
 } from "./ValuesCard"
+import { layoutValuesCardValues } from "./ValuesCardValueLayout"
 
 export type CardRectangle = Readonly<{
   x: number
@@ -71,43 +71,20 @@ function fitSingleLineCardText(
   )
 }
 
-function wrapCardName(
-  value: string,
-  width: number,
-  size: number,
-  painter: ValuesCardPainter,
-) {
-  const lines: string[] = []
-  let line = ""
-  for (const { segment } of graphemeSegments(value)) {
-    const next = line + segment
-    if (line && painter.measure(next, size, 900) > width) {
-      const boundary = line.lastIndexOf(" ")
-      if (boundary > 0) {
-        lines.push(line.slice(0, boundary))
-        line = line.slice(boundary + 1) + segment
-      } else {
-        lines.push(line)
-        line = segment
-      }
-    } else line = next
-  }
-  if (line) lines.push(line)
-  return lines
-}
-
 export function paintValuesCard<Asset>({
   painter,
   model,
   palette,
   frame,
   hero,
+  includeLevels = true,
 }: {
   painter: ValuesCardPainter
   model: ValuesCardModel<Asset>
   palette: ValuesCardPalette
   frame: number
   hero: Readonly<{ width: number; height: number }> | null
+  includeLevels?: boolean
 }): void {
   painter.rectangle({ x: 0, y: 0, ...VALUES_CARD_SIZE }, palette.frame)
   painter.rectangle(
@@ -140,9 +117,21 @@ export function paintValuesCard<Asset>({
       },
     )
   }
-  const shift = hero ? 0 : -188
-  for (const [index, value] of model.values.entries()) {
-    const middle = 235 + index * 119
+  const layout = layoutValuesCardValues(
+    model,
+    painter,
+    hero !== null,
+    includeLevels,
+  )
+  const shift = layout.columnShift
+  for (const {
+    value,
+    index,
+    middle,
+    size,
+    lines,
+    animal: target,
+  } of layout.rows) {
     if (model.hasComparisons) {
       painter.rectangle(
         { x: 450 + shift, y: middle - 40, width: 82, height: 68 },
@@ -166,20 +155,8 @@ export function paintValuesCard<Asset>({
         )
     }
     const animal = value.animal
-    if (animal) {
+    if (animal && target) {
       const bounds = animal.visibleBounds
-      const scale = Math.max(
-        1,
-        Math.min(
-          6,
-          Math.floor(
-            Math.min(
-              (value.medal ? 110 : 170) / bounds.width,
-              104 / bounds.height,
-            ),
-          ),
-        ),
-      )
       painter.sprite(
         index,
         {
@@ -188,30 +165,13 @@ export function paintValuesCard<Asset>({
           width: bounds.width,
           height: bounds.height,
         },
-        {
-          x: Math.round(
-            (value.medal ? 670 : 620) + shift - (bounds.width * scale) / 2,
-          ),
-          y: middle + 46 - bounds.height * scale,
-          width: bounds.width * scale,
-          height: bounds.height * scale,
-        },
+        { ...target, x: target.x + layout.adjustment },
       )
-    }
-    const level = value.levelLabel
-    const levelWidth = painter.measure(level, 55, 400)
-    const nameX = 731 + shift
-    const nameWidth = 1542 - levelWidth - 24 - nameX
-    let size = 78
-    let lines = wrapCardName(value.name, nameWidth, size, painter)
-    while ((lines.length > 2 || lines.length * size > 100) && size > 12) {
-      size -= 2
-      lines = wrapCardName(value.name, nameWidth, size, painter)
     }
     lines.forEach((line, lineIndex) =>
       painter.text({
         value: line,
-        x: nameX,
+        x: layout.nameX,
         y:
           middle +
           size * 0.35 -
@@ -222,15 +182,16 @@ export function paintValuesCard<Asset>({
         color: palette.ink,
       }),
     )
-    painter.text({
-      value: level,
-      x: 1542,
-      y: middle + 20,
-      size: 55,
-      weight: 400,
-      color: palette.muted,
-      align: "right",
-    })
+    if (includeLevels)
+      painter.text({
+        value: value.levelLabel,
+        x: layout.levelX,
+        y: middle + 20,
+        size: 55,
+        weight: 400,
+        color: palette.muted,
+        align: "right",
+      })
   }
   painter.rectangle(
     { x: 12, y: 780, width: 1576, height: 108 },

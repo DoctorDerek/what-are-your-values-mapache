@@ -218,7 +218,14 @@ const prepare = (
   includeHero = false,
   format: "gif" | "png" = "png",
   signal = new AbortController().signal,
-) => prepareNativeValuesCard(model, palette, { includeHero, format, signal })
+  includeLevels = true,
+) =>
+  prepareNativeValuesCard(model, palette, {
+    includeHero,
+    includeLevels,
+    format,
+    signal,
+  })
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -232,6 +239,21 @@ beforeEach(() => {
 })
 
 describe("native values-card files", () => {
+  it("omits level text without mutating saved content or blocking file delivery", async () => {
+    const original = structuredClone(model.values)
+    const card = await prepare(
+      false,
+      "png",
+      new AbortController().signal,
+      false,
+    )
+    const painted = native.paragraphs.map(({ value }) => value)
+    expect(painted).not.toContain(model.values[0].levelLabel)
+    expect(painted).toContain(model.values[0].name)
+    expect(model.values).toEqual(original)
+    expect(await card.share()).toBe("handed-off")
+    card.dispose()
+  })
   it("uses the selected card language for the native share sheet", async () => {
     const spanish = getLocaleCatalog("es-MX")
     const card = await prepareNativeValuesCard(
@@ -244,6 +266,7 @@ describe("native values-card files", () => {
       palette,
       {
         includeHero: false,
+        includeLevels: false,
         format: "png",
         signal: new AbortController().signal,
       },

@@ -144,6 +144,7 @@ describe("Root layout", () => {
     expect(generateStaticParams()).toEqual([
       { localePath: [] },
       { localePath: ["que-valoras-en-la-vida"] },
+      { localePath: ["es"] },
     ])
   })
 })

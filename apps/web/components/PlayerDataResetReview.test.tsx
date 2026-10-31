@@ -66,7 +66,9 @@ describe("Player Data Reset Review", () => {
     })
     expect(confirmation).toBeDisabled()
     expect(
-      screen.getByText(/This permanently removes all WAYVM player data/),
+      screen.getByText(
+        /This permanently removes all player data for What Are Your Values, Mapache\?/,
+      ),
     ).toBeVisible()
 
     fireEvent.click(

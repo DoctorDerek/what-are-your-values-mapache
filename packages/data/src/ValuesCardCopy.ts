@@ -6,6 +6,7 @@ export const VALUES_CARD_COPY = Object.freeze({
   png: { name: "PNG", description: "Still" },
   format: "Image format",
   includeHero: "Include my hero",
+  includeLevels: "Include levels",
   back: "Back",
   preparing: "Preparing your card…",
   delivering: "Opening your file…",

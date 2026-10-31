@@ -170,6 +170,7 @@ export function resolveLocalizationCatalog(
       png: formatLabel("png"),
       format: text("card", "format", emergency.imageFormat),
       includeHero: text("card", "includeHero", emergency.includeHero),
+      includeLevels: text("card", "includeLevels", emergency.includeLevels),
       back: text("card", "back", emergency.back),
       preparing: text("card", "preparing"),
       delivering: text("card", "delivering"),

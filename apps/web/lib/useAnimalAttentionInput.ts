@@ -2,7 +2,9 @@ import { useRef, useState, type FocusEvent, type PointerEvent } from "react"
 
 const ANIMAL_TAP_MOVEMENT_TOLERANCE_PX = 8
 
-export default function useAnimalAttentionInput() {
+export default function useAnimalAttentionInput(
+  onAttentionRequest?: () => void,
+) {
   const [isHovered, setIsHovered] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
   const [isTapped, setIsTapped] = useState(false)
@@ -13,9 +15,15 @@ export default function useAnimalAttentionInput() {
 
   return {
     isAttended: isHovered || isFocused || isTapped,
+    activateAttention: () => {
+      if (lastPointerType.current !== "touch") onAttentionRequest?.()
+    },
     attentionHandlers: {
       onPointerEnter: (event: PointerEvent<HTMLElement>) => {
-        if (event.pointerType !== "touch") setIsHovered(true)
+        if (event.pointerType !== "touch") {
+          setIsHovered(true)
+          onAttentionRequest?.()
+        }
       },
       onPointerLeave: () => setIsHovered(false),
       onPointerDown: (event: PointerEvent<HTMLElement>) => {
@@ -44,8 +52,10 @@ export default function useAnimalAttentionInput() {
           tap?.pointerId === event.pointerId &&
           Math.hypot(event.clientX - tap.x, event.clientY - tap.y) <=
             ANIMAL_TAP_MOVEMENT_TOLERANCE_PX
-        )
+        ) {
           setIsTapped(true)
+          onAttentionRequest?.()
+        }
         pendingTap.current = null
       },
       onPointerCancel: () => {
@@ -58,7 +68,10 @@ export default function useAnimalAttentionInput() {
         setIsFocused(true)
       },
       onFocus: () => {
-        if (lastPointerType.current !== "touch") setIsFocused(true)
+        if (lastPointerType.current !== "touch") {
+          setIsFocused(true)
+          onAttentionRequest?.()
+        }
       },
       onBlur: (event: FocusEvent<HTMLElement>) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {

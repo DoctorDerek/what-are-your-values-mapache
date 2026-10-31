@@ -80,12 +80,28 @@ it("previews GIF on native, changes content, saves and closes without committing
     "source",
     { uri: file.previewUri },
   )
-  await fireEvent.press(screen.getByRole("checkbox"))
+  expect(
+    screen.getByRole("checkbox", { name: "Include levels", checked: true }),
+  ).toBeOnTheScreen()
+  await fireEvent.press(
+    screen.getByRole("checkbox", { name: "Include my hero" }),
+  )
   await waitFor(() =>
     expect(prepare).toHaveBeenLastCalledWith(
       model,
       expect.anything(),
-      expect.objectContaining({ includeHero: false }),
+      expect.objectContaining({ includeHero: false, includeLevels: true }),
+    ),
+  )
+  await screen.findByLabelText("My Top Five Values: Fun")
+  await fireEvent.press(
+    screen.getByRole("checkbox", { name: "Include levels" }),
+  )
+  await waitFor(() =>
+    expect(prepare).toHaveBeenLastCalledWith(
+      model,
+      expect.anything(),
+      expect.objectContaining({ includeHero: false, includeLevels: false }),
     ),
   )
   await screen.findByLabelText("My Top Five Values: Fun")

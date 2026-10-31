@@ -43,7 +43,8 @@ export default function NativeValuesCardShare({
     },
     [actor],
   )
-  const { artifact, format, includeHero, error, outcome } = state.context
+  const { artifact, format, includeHero, includeLevels, error, outcome } =
+    state.context
   const isDelivering = state.matches("Delivering")
   return (
     <Modal
@@ -129,25 +130,51 @@ export default function NativeValuesCardShare({
                 </View>
               )}
             </View>
-            <Pressable
-              accessibilityRole="checkbox"
-              accessibilityState={{
-                checked: includeHero,
-                disabled: isDelivering,
-              }}
-              disabled={isDelivering}
-              onPress={() =>
-                send({ type: "CARD_SHARE.HERO", includeHero: !includeHero })
-              }
-              className="min-h-12 flex-row items-center gap-2"
-            >
-              <Text className="text-2xl text-white">
-                {includeHero ? "☑" : "☐"}
-              </Text>
-              <Text className="min-w-0 flex-1 font-bold text-white">
-                {copy.includeHero}
-              </Text>
-            </Pressable>
+            <View className="flex-row flex-wrap gap-x-6">
+              <Pressable
+                accessibilityRole="checkbox"
+                accessibilityLabel={copy.includeHero}
+                accessibilityState={{
+                  checked: includeHero,
+                  disabled: isDelivering,
+                }}
+                disabled={isDelivering}
+                onPress={() =>
+                  send({ type: "CARD_SHARE.HERO", includeHero: !includeHero })
+                }
+                className="min-h-12 max-w-full flex-row items-center gap-2"
+              >
+                <Text accessible={false} className="text-2xl text-white">
+                  {includeHero ? "☑" : "☐"}
+                </Text>
+                <Text className="min-w-0 shrink font-bold text-white">
+                  {copy.includeHero}
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="checkbox"
+                accessibilityLabel={copy.includeLevels}
+                accessibilityState={{
+                  checked: includeLevels,
+                  disabled: isDelivering,
+                }}
+                disabled={isDelivering}
+                onPress={() =>
+                  send({
+                    type: "CARD_SHARE.LEVELS",
+                    includeLevels: !includeLevels,
+                  })
+                }
+                className="min-h-12 max-w-full flex-row items-center gap-2"
+              >
+                <Text accessible={false} className="text-2xl text-white">
+                  {includeLevels ? "☑" : "☐"}
+                </Text>
+                <Text className="min-w-0 shrink font-bold text-white">
+                  {copy.includeLevels}
+                </Text>
+              </Pressable>
+            </View>
             {error && (
               <View className="gap-2 border-4 border-black bg-white p-3">
                 <Text

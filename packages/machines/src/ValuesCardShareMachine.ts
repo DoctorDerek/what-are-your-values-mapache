@@ -12,6 +12,7 @@ type ShareContext = {
   prepare: PrepareValuesCard
   format: ValuesCardFormat
   includeHero: boolean
+  includeLevels: boolean
   artifact: PreparedValuesCard | null
   error: string | null
   outcome: ValuesCardDelivery | null
@@ -20,6 +21,7 @@ type ShareContext = {
 type ShareEvent =
   | { type: "CARD_SHARE.FORMAT"; format: ValuesCardFormat }
   | { type: "CARD_SHARE.HERO"; includeHero: boolean }
+  | { type: "CARD_SHARE.LEVELS"; includeLevels: boolean }
   | { type: "CARD_SHARE.RETRY" }
   | { type: "CARD_SHARE.DELIVER"; delivery: "save" | "share" }
   | { type: "CARD_SHARE.CLOSE" }
@@ -49,6 +51,7 @@ const prepare = fromPromise<PreparedValuesCard, ShareContext>(
           .prepare({
             format: input.format,
             includeHero: input.includeHero,
+            includeLevels: input.includeLevels,
             signal: controller.signal,
           })
           .then((artifact) => {
@@ -92,6 +95,7 @@ export const valuesCardShareMachine = setup({
     ...input,
     format: "gif",
     includeHero: true,
+    includeLevels: true,
     artifact: null,
     error: null,
     outcome: null,
@@ -114,6 +118,14 @@ export const valuesCardShareMachine = setup({
       actions: [
         "releaseArtifact",
         assign({ includeHero: ({ event }) => event.includeHero }),
+      ],
+    },
+    "CARD_SHARE.LEVELS": {
+      target: ".Preparing",
+      reenter: true,
+      actions: [
+        "releaseArtifact",
+        assign({ includeLevels: ({ event }) => event.includeLevels }),
       ],
     },
   },
@@ -152,7 +164,11 @@ export const valuesCardShareMachine = setup({
       },
     },
     Delivering: {
-      on: { "CARD_SHARE.FORMAT": {}, "CARD_SHARE.HERO": {} },
+      on: {
+        "CARD_SHARE.FORMAT": {},
+        "CARD_SHARE.HERO": {},
+        "CARD_SHARE.LEVELS": {},
+      },
       invoke: {
         src: "deliver",
         input: ({ context }) => context,
