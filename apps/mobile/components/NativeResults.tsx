@@ -337,7 +337,30 @@ export default function NativeResults({
         />
         {notifications}
       </View>
-      <ScrollView className="max-h-[25%] shrink-0 grow-0">
+      <View className="max-h-[65%] min-h-0 shrink-0 flex-col xl:flex-col-reverse">
+      <ScrollView
+        className="max-h-[40vh] shrink-0 grow-0"
+        contentContainerClassName="flex-row flex-wrap gap-2 pt-2 pb-2"
+      >
+        <Button
+          size="compact"
+          className="basis-readable-action min-w-0 flex-1"
+          onPress={onSeeValues}
+          onFocus={settleRowPositions}
+        >
+          <Text>{RESULTS_COPY.seeValuesAction}</Text>
+        </Button>
+        <Button
+          size="compact"
+          variant="outline"
+          className="basis-readable-action min-w-0 flex-1"
+          onPress={onKeepBattling}
+          onFocus={settleRowPositions}
+        >
+          <Text>{RESULTS_COPY.keepBattlingAction}</Text>
+        </Button>
+      </ScrollView>
+      <ScrollView className="max-h-[25vh] min-h-0 shrink grow-0">
         <View
           accessible
           accessibilityLabel={localizedCopy.interfaceCopy.screen.resultSummary(
@@ -365,28 +388,7 @@ export default function NativeResults({
           </View>
         </View>
       </ScrollView>
-      <ScrollView
-        className="max-h-[40%] shrink-0 grow-0"
-        contentContainerClassName="flex-row flex-wrap gap-2 pt-2 pb-2"
-      >
-        <Button
-          size="compact"
-          className="basis-readable-action min-w-0 flex-1"
-          onPress={onSeeValues}
-          onFocus={settleRowPositions}
-        >
-          <Text>{RESULTS_COPY.seeValuesAction}</Text>
-        </Button>
-        <Button
-          size="compact"
-          variant="outline"
-          className="basis-readable-action min-w-0 flex-1"
-          onPress={onKeepBattling}
-          onFocus={settleRowPositions}
-        >
-          <Text>{RESULTS_COPY.keepBattlingAction}</Text>
-        </Button>
-      </ScrollView>
+      </View>
     </MapacheScreen>
   )
 }
