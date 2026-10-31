@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { composeNativeHeroes99 } from "./ComposeNativeHeroes99"
 
 const renderer = vi.hoisted(() => {
+  const readPixels = vi.fn<() => Uint8Array>()
   const createImage = () => ({
     dispose: vi.fn(),
     encodeToBase64: vi.fn(() => "synthetic-preview"),
@@ -16,7 +17,7 @@ const renderer = vi.hoisted(() => {
       clear: vi.fn(),
       drawImage: vi.fn(),
       drawImageRect: vi.fn(),
-      readPixels: vi.fn<() => Uint8Array>(() => state.pixels),
+      readPixels,
     }
     const image = createImage()
     return {
@@ -35,7 +36,6 @@ const renderer = vi.hoisted(() => {
     unavailableSurface: -1,
     invalidImage: false,
     onLoad: null as (() => void) | null,
-    pixels: new Uint8Array(800 * 680 * 4),
   }
   const paint = { dispose: vi.fn() }
   const makeOffscreen = vi.fn((_width: number, _height: number) => {
@@ -51,6 +51,7 @@ const renderer = vi.hoisted(() => {
     return data
   })
   return {
+    readPixels,
     state,
     paint,
     makeOffscreen,
@@ -117,12 +118,14 @@ describe("Heroes99 native composition lifecycle", () => {
     renderer.state.unavailableSurface = -1
     renderer.state.invalidImage = false
     renderer.state.onLoad = null
-    renderer.state.pixels = new Uint8Array(800 * 680 * 4)
+    renderer.readPixels.mockReturnValue(new Uint8Array(800 * 680 * 4))
   })
 
   it("uses one authored-art crop for idle and all three Home flourishes", async () => {
-    renderer.state.pixels[(6 * 800 + 40) * 4 + 3] = 255
-    renderer.state.pixels[((7 * 40 + 30) * 800 + 72) * 4 + 3] = 255
+    const pixels = new Uint8Array(800 * 680 * 4)
+    pixels[(6 * 800 + 40) * 4 + 3] = 255
+    pixels[((7 * 40 + 30) * 800 + 72) * 4 + 3] = 255
+    renderer.readPixels.mockReturnValue(pixels)
     const result = await composeNativeHeroes99(
       DEFAULT_HEROES99_APPEARANCE,
       assets,
