@@ -338,56 +338,57 @@ export default function NativeResults({
         {notifications}
       </View>
       <View className="max-h-[65%] min-h-0 shrink-0 flex-col xl:flex-col-reverse">
-      <ScrollView
-        className="max-h-[40vh] shrink-0 grow-0"
-        contentContainerClassName="flex-row flex-wrap gap-2 pt-2 pb-2"
-      >
-        <Button
-          size="compact"
-          className="basis-readable-action min-w-0 flex-1"
-          onPress={onSeeValues}
-          onFocus={settleRowPositions}
+        <ScrollView
+          className="max-h-[40vh] shrink-0 grow-0"
+          contentContainerClassName="flex-row flex-wrap gap-2 pt-2 pb-2"
         >
-          <Text>{RESULTS_COPY.seeValuesAction}</Text>
-        </Button>
-        <Button
-          size="compact"
-          variant="outline"
-          className="basis-readable-action min-w-0 flex-1"
-          onPress={onKeepBattling}
-          onFocus={settleRowPositions}
-        >
-          <Text>{RESULTS_COPY.keepBattlingAction}</Text>
-        </Button>
-      </ScrollView>
-      <ScrollView className="max-h-[25vh] min-h-0 shrink grow-0">
-        <View
-          accessible
-          accessibilityLabel={localizedCopy.interfaceCopy.screen.resultSummary(
-            changeSummary,
-            integer(results.exitProfileXp),
-            integer(finalProfileProgress.level),
-            changeLabel,
-          )}
-          className="border-2 border-black bg-white p-2"
-        >
-          <View className="flex-row flex-wrap justify-between gap-x-3">
-            <Text className="text-lg font-black text-black">
-              {RESULTS_COPY.profileLevel(integer(profileProgress.level))}
-            </Text>
-            <Text className="text-base font-semibold text-black">
-              {RESULTS_COPY.profileXp(integer(frame.profileXp))} · {changeLabel}
-            </Text>
+          <Button
+            size="compact"
+            className="basis-readable-action min-w-0 flex-1"
+            onPress={onSeeValues}
+            onFocus={settleRowPositions}
+          >
+            <Text>{RESULTS_COPY.seeValuesAction}</Text>
+          </Button>
+          <Button
+            size="compact"
+            variant="outline"
+            className="basis-readable-action min-w-0 flex-1"
+            onPress={onKeepBattling}
+            onFocus={settleRowPositions}
+          >
+            <Text>{RESULTS_COPY.keepBattlingAction}</Text>
+          </Button>
+        </ScrollView>
+        <ScrollView className="max-h-[25vh] min-h-0 shrink grow-0">
+          <View
+            accessible
+            accessibilityLabel={localizedCopy.interfaceCopy.screen.resultSummary(
+              changeSummary,
+              integer(results.exitProfileXp),
+              integer(finalProfileProgress.level),
+              changeLabel,
+            )}
+            className="border-2 border-black bg-white p-2"
+          >
+            <View className="flex-row flex-wrap justify-between gap-x-3">
+              <Text className="text-lg font-black text-black">
+                {RESULTS_COPY.profileLevel(integer(profileProgress.level))}
+              </Text>
+              <Text className="text-base font-semibold text-black">
+                {RESULTS_COPY.profileXp(integer(frame.profileXp))} ·{" "}
+                {changeLabel}
+              </Text>
+            </View>
+            <View className="mt-1 h-3 flex-row overflow-hidden border border-black">
+              <View
+                className="bg-mapache-vivid-primary-raspberry"
+                style={{ flex: frame.profileLevelBarPercentage }}
+              />
+              <View style={{ flex: 100 - frame.profileLevelBarPercentage }} />
+            </View>
           </View>
-          <View className="mt-1 h-3 flex-row overflow-hidden border border-black">
-            <View
-              className="bg-mapache-vivid-primary-raspberry"
-              style={{ flex: frame.profileLevelBarPercentage }}
-            />
-            <View style={{ flex: 100 - frame.profileLevelBarPercentage }} />
-          </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
       </View>
     </MapacheScreen>
   )

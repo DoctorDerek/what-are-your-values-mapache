@@ -52,7 +52,9 @@ describe("NativeAchievements", () => {
         }
       />,
     )
-    expect(screen.getByRole("button", { name: "Dismiss achievement: 5 Battles" })).toBeOnTheScreen()
+    expect(
+      screen.getByRole("button", { name: "Dismiss achievement: 5 Battles" }),
+    ).toBeOnTheScreen()
     await user.press(screen.getByRole("button", { name: "Back" }))
     expect(onClose).toHaveBeenCalledTimes(1)
     expect(onPresented).not.toHaveBeenCalled()

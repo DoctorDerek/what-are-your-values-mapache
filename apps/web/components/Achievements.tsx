@@ -99,46 +99,46 @@ export default function Achievements({
     >
       <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col">
         <div className="relative isolate flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div
-          data-controller-scroll
-          tabIndex={0}
-          className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pr-[8px] pb-[8px]"
-        >
-          <header className="flex min-w-0 flex-wrap items-center justify-between gap-3 pb-[12px]">
-            <h1
-              ref={headingRef}
-              tabIndex={-1}
-              id="achievements-heading"
-              className="text-mapache-vivid-primary-cyan min-w-0 text-xl leading-tight font-black [overflow-wrap:anywhere] hyphens-auto drop-shadow-[3px_3px_0px_#000000] outline-none"
-            >
-              {localizedCopy.interfaceCopy.screen.achievements}
-            </h1>
-            <p className="bg-mapache-vivid-secondary-green max-w-full border-4 border-black px-[10px] py-[6px] text-base leading-tight font-black [overflow-wrap:anywhere] text-black">
-              {localizedCopy.interfaceCopy.screen.achievementsUnlocked(
-                integer(unlockedCount),
-                integer(achievements.length),
-              )}
-            </p>
-          </header>
-
-          <section
-            aria-labelledby="achievements-heading"
-            className="w-full min-w-0 border-4 border-black bg-white p-[12px] shadow-[5px_5px_0px_0px_#000000] xl:p-5"
+          <div
+            data-controller-scroll
+            tabIndex={0}
+            className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pr-[8px] pb-[8px]"
           >
-            <p className="text-mapache-vivid-dark text-base leading-snug font-bold [overflow-wrap:anywhere] hyphens-auto">
-              {localizedCopy.interfaceCopy.screen.achievementPrivacy}
-            </p>
-            <ol className="mt-[14px] flex min-w-0 flex-col gap-[16px] pr-[5px] pb-[5px]">
-              {achievements.map((achievement) => (
-                <AchievementCard
-                  key={achievement.id}
-                  achievement={achievement}
-                />
-              ))}
-            </ol>
-          </section>
-        </div>
-        {notifications}
+            <header className="flex min-w-0 flex-wrap items-center justify-between gap-3 pb-[12px]">
+              <h1
+                ref={headingRef}
+                tabIndex={-1}
+                id="achievements-heading"
+                className="text-mapache-vivid-primary-cyan min-w-0 text-xl leading-tight font-black [overflow-wrap:anywhere] hyphens-auto drop-shadow-[3px_3px_0px_#000000] outline-none"
+              >
+                {localizedCopy.interfaceCopy.screen.achievements}
+              </h1>
+              <p className="bg-mapache-vivid-secondary-green max-w-full border-4 border-black px-[10px] py-[6px] text-base leading-tight font-black [overflow-wrap:anywhere] text-black">
+                {localizedCopy.interfaceCopy.screen.achievementsUnlocked(
+                  integer(unlockedCount),
+                  integer(achievements.length),
+                )}
+              </p>
+            </header>
+
+            <section
+              aria-labelledby="achievements-heading"
+              className="w-full min-w-0 border-4 border-black bg-white p-[12px] shadow-[5px_5px_0px_0px_#000000] xl:p-5"
+            >
+              <p className="text-mapache-vivid-dark text-base leading-snug font-bold [overflow-wrap:anywhere] hyphens-auto">
+                {localizedCopy.interfaceCopy.screen.achievementPrivacy}
+              </p>
+              <ol className="mt-[14px] flex min-w-0 flex-col gap-[16px] pr-[5px] pb-[5px]">
+                {achievements.map((achievement) => (
+                  <AchievementCard
+                    key={achievement.id}
+                    achievement={achievement}
+                  />
+                ))}
+              </ol>
+            </section>
+          </div>
+          {notifications}
         </div>
         <footer className="flex max-h-[35%] shrink-0 justify-end overflow-auto pt-[12px] pr-[8px] pb-[8px]">
           <Button

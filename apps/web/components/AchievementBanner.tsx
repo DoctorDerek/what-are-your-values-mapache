@@ -89,7 +89,9 @@ export default function AchievementBanner({
       ))}
     </div>
   )
-  return placement === "battle" ? stack : (
+  return placement === "battle" ? (
+    stack
+  ) : (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 max-h-full overflow-y-auto overscroll-contain p-2">
       {stack}
     </div>
