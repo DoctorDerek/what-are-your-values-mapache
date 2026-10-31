@@ -176,6 +176,7 @@ export type PreparedValuesCard = Readonly<{
 export type ValuesCardPreparation = Readonly<{
   format: ValuesCardFormat
   includeHero: boolean
+  includeLevels: boolean
   signal: AbortSignal
 }>
 export type PrepareValuesCard = (
