@@ -38,7 +38,7 @@ export default function ValuesCardShare({
     },
     [actor],
   )
-  const { artifact, format, includeHero, error, outcome } = state.context
+  const { artifact, format, includeHero, includeLevels, error, outcome } = state.context
   const isDelivering = state.matches("Delivering")
   return (
     <Dialog
@@ -121,6 +121,7 @@ export default function ValuesCardShare({
               </div>
             )}
           </div>
+          <div className="flex flex-wrap gap-x-6">
           <label className="flex min-h-11 cursor-pointer items-center gap-2 text-left font-bold text-white">
             <input
               type="checkbox"
@@ -136,6 +137,19 @@ export default function ValuesCardShare({
             />
             {copy.includeHero}
           </label>
+          <label className="flex min-h-11 cursor-pointer items-center gap-2 text-left font-bold text-white">
+            <input
+              type="checkbox"
+              checked={includeLevels}
+              disabled={isDelivering}
+              className="size-6 accent-cyan-400"
+              onChange={(event) =>
+                send({ type: "CARD_SHARE.LEVELS", includeLevels: event.target.checked })
+              }
+            />
+            {copy.includeLevels}
+          </label>
+          </div>
           {error && (
             <div
               role="alert"

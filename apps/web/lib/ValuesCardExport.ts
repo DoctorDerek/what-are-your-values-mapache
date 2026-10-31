@@ -23,7 +23,7 @@ import { FLUENT_MEDAL_ARTWORK } from "@/lib/FluentMedalArtwork"
 
 export async function prepareWebValuesCard(
   model: ValuesCardModel<StaticImageData>,
-  { format, includeHero, signal }: ValuesCardPreparation,
+  { format, includeHero, includeLevels, signal }: ValuesCardPreparation,
 ): Promise<PreparedValuesCard> {
   await document.fonts.ready
   signal.throwIfAborted()
@@ -93,7 +93,7 @@ export async function prepareWebValuesCard(
       },
     }
     const render = (frame: number) =>
-      paintValuesCard({ painter, model, palette, frame, hero })
+      paintValuesCard({ painter, model, palette, frame, hero, includeLevels })
     render(0)
     const still = await new Promise<Blob>((resolve, reject) =>
       canvas.toBlob(
@@ -127,7 +127,7 @@ export async function prepareWebValuesCard(
     const file = new File([blob], `my-values-card.${format}`, {
       type: blob.type,
     })
-    const shareData: ShareData = { files: [file] }
+    const shareData: ShareData = { files: [file], text: model.invitation }
     const canShare =
       typeof navigator.canShare === "function" && navigator.canShare(shareData)
     const previewUri = URL.createObjectURL(blob)
