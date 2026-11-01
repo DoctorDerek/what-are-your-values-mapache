@@ -86,6 +86,17 @@ function expectUnchangedBattleGeometry(
     })
 }
 
+async function expectResultsActionsAboveProfile(page: Page) {
+  const [actions, profile] = await Promise.all([
+    page.getByRole("navigation", { name: "Results actions" }).boundingBox(),
+    page.getByRole("region", { name: "Profile progress" }).boundingBox(),
+  ])
+  if (!actions || !profile)
+    throw new Error("Results footer regions are missing")
+  expect(actions.y + actions.height).toBeLessThanOrEqual(profile.y)
+  return actions
+}
+
 for (const viewport of [
   { width: 320, height: 540 },
   { width: 1440, height: 900 },
@@ -150,17 +161,9 @@ for (const viewport of [
       const menu = await page
         .getByRole("button", { name: "Menu", exact: true })
         .boundingBox()
-      const profile = await page
-        .getByRole("region", { name: "Profile progress" })
-        .boundingBox()
-      const exits = await page
-        .getByRole("navigation", { name: "Results actions" })
-        .boundingBox()
-      if (viewport.width < 1280)
-        expect(exits!.y + exits!.height).toBeLessThanOrEqual(profile!.y)
-      else expect(profile!.y + profile!.height).toBeLessThanOrEqual(exits!.y)
+      const exits = await expectResultsActionsAboveProfile(page)
       expect(toast!.y).toBeGreaterThan(menu!.y + menu!.height)
-      expect(toast!.y + toast!.height).toBeLessThan(profile!.y)
+      expect(toast!.y + toast!.height).toBeLessThan(exits.y)
       for (const label of ["See my values", "Keep battling"]) {
         const action = page.getByRole("button", { name: label, exact: true })
         await expect(action).toBeInViewport({ ratio: 1 })
@@ -205,6 +208,35 @@ for (const viewport of [
     })
   }
 }
+
+test("Results keeps its focused exit above Profile progress across the xl breakpoint", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1279, height: 900 })
+  await startBattle(page)
+  await compareNextPair(page)
+  await page.getByRole("button", { name: "Stop", exact: true }).click()
+  const seeValues = page.getByRole("button", {
+    name: "See my values",
+    exact: true,
+  })
+  const resume = page.getByRole("button", {
+    name: "Keep battling",
+    exact: true,
+  })
+  await seeValues.focus()
+  await page.keyboard.press("Tab")
+  for (const width of [1279, 1280, 1440, 1279]) {
+    await page.setViewportSize({ width, height: 900 })
+    await expect(resume).toBeFocused()
+    await expect(resume).toBeInViewport({ ratio: 1 })
+    await expectResultsActionsAboveProfile(page)
+  }
+  await page.keyboard.press("Enter")
+  await expect(
+    page.getByRole("button", { name: /^Choose / }).first(),
+  ).toBeEnabled()
+})
 
 test.describe("touch navigation with an earned achievement", () => {
   test.use({ hasTouch: true, viewport: { width: 390, height: 844 } })
