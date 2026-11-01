@@ -337,7 +337,7 @@ export default function NativeResults({
         />
         {notifications}
       </View>
-      <View className="max-h-[65%] min-h-0 shrink-0 flex-col xl:flex-col-reverse">
+      <View className="max-h-[65%] min-h-0 shrink-0 flex-col">
         <ScrollView
           className="max-h-[40vh] shrink-0 grow-0"
           contentContainerClassName="flex-row flex-wrap gap-2 pt-2 pb-2"
