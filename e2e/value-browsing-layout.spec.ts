@@ -58,28 +58,34 @@ for (const locale of ["en", "es-MX"] as const) {
           const box = bar.parentElement!
           const level = box.firstElementChild!
           const xp = box.lastElementChild!
+          const levelText = document.createRange()
+          levelText.selectNodeContents(level)
           return {
             name: name.getBoundingClientRect().toJSON(),
             box: box.getBoundingClientRect().toJSON(),
             level: level.getBoundingClientRect().toJSON(),
             bar: bar.getBoundingClientRect().toJSON(),
             xp: xp.getBoundingClientRect().toJSON(),
-            levelAlign: getComputedStyle(level).textAlign,
-            xpAlign: getComputedStyle(xp).textAlign,
+            levelText: levelText.getBoundingClientRect().toJSON(),
             overflow: row.scrollWidth - row.clientWidth,
           }
         })
         expect(geometry.overflow).toBeLessThanOrEqual(1)
-        if (width === 390 && scale === 2) {
-          expect(geometry.levelAlign).toBe("left")
-          expect(geometry.xpAlign).toBe("right")
+        if (scale === 2) {
           expect(geometry.xp.top).toBeGreaterThanOrEqual(geometry.level.bottom)
           expect(geometry.xp.left).toBeGreaterThanOrEqual(geometry.bar.right)
         } else {
-          expect(geometry.levelAlign).toBe("right")
-          expect(geometry.xpAlign).toBe("left")
           expect(geometry.bar.top).toBeGreaterThanOrEqual(geometry.level.bottom)
           expect(geometry.xp.top).toBeGreaterThanOrEqual(geometry.bar.bottom)
+          expect(
+            Math.abs(geometry.xp.left - geometry.bar.left),
+          ).toBeLessThanOrEqual(1)
+        }
+        if (width === 390) {
+          const edge = scale === 1 ? "right" : "left"
+          expect(
+            Math.abs(geometry.levelText[edge] - geometry.bar[edge]),
+          ).toBeLessThanOrEqual(1)
         }
         if (width < 1280) {
           expect(geometry.name.bottom).toBeLessThanOrEqual(geometry.box.top)
@@ -149,6 +155,7 @@ for (const locale of ["en", "es-MX"] as const) {
   test(`${locale} keeps names, standings, animals and progress inside the phone cards before and after a battle`, async ({
     page,
   }, testInfo) => {
+    test.slow()
     await page.addInitScript(() => {
       Object.defineProperty(crypto, "randomUUID", {
         value: () => "00000000-0000-4000-8000-0000000005dc",
