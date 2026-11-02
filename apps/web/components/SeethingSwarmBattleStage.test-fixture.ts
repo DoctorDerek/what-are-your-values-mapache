@@ -61,6 +61,12 @@ export function createSeethingSwarmBattleStageTestCatalog(
       ),
     ),
   ]
+  return createSeethingSwarmTestCatalogForAnimals(animalIds)
+}
+
+export function createSeethingSwarmTestCatalogForAnimals(
+  animalIds: readonly ZooAnimalId[],
+) {
   const animals = animalIds.map((animalId) =>
     Object.freeze({
       animalId,
