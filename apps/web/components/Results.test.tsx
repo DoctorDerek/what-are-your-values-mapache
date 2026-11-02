@@ -120,7 +120,7 @@ describe("Battle-exit Results presentation", () => {
           '[data-hub-active-clip="true"] img',
         )
         expect(animalImage).toBeVisible()
-        expect(portrait).not.toContainElement(slot)
+        expect(portrait?.contains(slot)).toBe(false)
         expect(slot.querySelector("img")).toBeNull()
         for (const [advanceMs, medal] of [
           [50, "bronze"],
