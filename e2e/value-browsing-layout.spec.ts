@@ -270,7 +270,10 @@ for (const locale of ["en", "es-MX"] as const) {
           const definition = row.locator("p")
           await definition.scrollIntoViewIfNeeded()
           await expect(definition).toBeInViewport()
-          await page.setViewportSize({ width, height: 1600 })
+          await page.setViewportSize({
+            width,
+            height: 844 + Math.ceil(2 * layout.row.height),
+          })
           await row.evaluate((element) =>
             element.scrollIntoView({ block: "center" }),
           )
