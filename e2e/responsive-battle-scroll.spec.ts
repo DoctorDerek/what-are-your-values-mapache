@@ -353,6 +353,10 @@ for (const viewport of [
   test(`bottom controls remain reachable while definitions scroll at ${viewport.width}px with ${viewport.textScale}% text${viewport.fontFamily ? " using fallback font metrics" : ""}`, async ({
     page,
   }) => {
+    test.slow(
+      true,
+      "This journey checks both scroll areas, pointer presses, undo, redo and the Results exit.",
+    )
     await page.addInitScript(() => {
       Object.defineProperty(crypto, "randomUUID", {
         value: () => "00000000-0000-4000-8000-000000012944",
