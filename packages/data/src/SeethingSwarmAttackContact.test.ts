@@ -22,6 +22,18 @@ describe("source-inspected attack contact", () => {
     })
   })
 
+  it.each([
+    ["squirrelpack", 4, 2],
+    ["tigerpack", 7, 3],
+  ] as const)(
+    "uses the painted contact frame for %s",
+    (animalId, frameCount, frameIndex) => {
+      expect(
+        resolveSeethingSwarmAttackContact({ ...attack, animalId, frameCount }),
+      ).toEqual({ frameIndex, facesAway: false })
+    },
+  )
+
   it("turns the deer away for its backwards kick only", () => {
     expect(
       resolveSeethingSwarmAttackContact({

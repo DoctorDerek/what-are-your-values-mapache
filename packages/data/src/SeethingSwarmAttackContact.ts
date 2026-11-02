@@ -31,6 +31,8 @@ const INSPECTED_ATTACK_CONTACTS = [
   ["parrotpack", "attack_ground", 6, 2],
   ["pigpack", "bite", 7, 3],
   ["raccoonpack", "attack", 7, 3],
+  ["squirrelpack", "attack", 4, 2],
+  ["tigerpack", "attack", 7, 3],
   ["turtlepack", "attack", 8, 3],
   ["wolfpack", "attack", 7, 3],
 ] as const

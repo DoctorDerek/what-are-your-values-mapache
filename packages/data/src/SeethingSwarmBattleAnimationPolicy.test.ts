@@ -63,6 +63,7 @@ const EXPECTED_SOURCE_ANIMATION_IDS = Object.freeze([
   "liedown_godown",
   "liedown_idle",
   "peck",
+  "roar",
   "run",
   "sit",
   "sit_blink",
@@ -152,7 +153,7 @@ describe("SeethingSwarm battle animation policy", () => {
       ]),
     )
 
-    expect(policiesByUsageKind["battle-eligible"]).toHaveLength(63)
+    expect(policiesByUsageKind["battle-eligible"]).toHaveLength(64)
     expect(
       policiesByUsageKind["environment-gated"].map(
         ({ animationId }) => animationId,
