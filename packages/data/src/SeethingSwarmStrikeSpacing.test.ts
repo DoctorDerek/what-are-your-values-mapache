@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest"
-import { resolveSeethingSwarmFamilyPerformanceProfile } from "./SeethingSwarmFamilyPerformanceProfiles"
+import { describe, expect, it, vi } from "vitest"
+import * as familyProfiles from "./SeethingSwarmFamilyPerformanceProfiles"
 import { resolveSeethingSwarmStrikeSpacing } from "./SeethingSwarmStrikeSpacing"
 import { ZOO_ANIMALS } from "./ZooAnimals"
 
@@ -36,11 +36,33 @@ describe("Squirrel and Tiger strike spacing", () => {
     ).toBeUndefined()
   })
 
+  it("falls back to the ordinary tile spacing when a family has no measured contact", () => {
+    const original = familyProfiles.resolveSeethingSwarmFamilyPerformanceProfile
+    const replacement = vi
+      .spyOn(familyProfiles, "resolveSeethingSwarmFamilyPerformanceProfile")
+      .mockImplementation((id) =>
+        id === "wolfpack"
+          ? { ...original(id), packId: "unmeasured-family" }
+          : original(id),
+      )
+    try {
+      expect(
+        resolveSeethingSwarmStrikeSpacing("squirrelpack", "wolfpack", "attack"),
+      ).toBeUndefined()
+      expect(
+        resolveSeethingSwarmStrikeSpacing("wolfpack", "tigerpack", "attack"),
+      ).toBeUndefined()
+    } finally {
+      replacement.mockRestore()
+    }
+  })
+
   it("covers both directions for every original-palette animal", () => {
     for (const { id } of ZOO_ANIMALS) {
       for (const addition of ["squirrelpack", "tigerpack"] as const) {
         const attack =
-          resolveSeethingSwarmFamilyPerformanceProfile(id).attack[0]!
+          familyProfiles.resolveSeethingSwarmFamilyPerformanceProfile(id)
+            .attack[0]!
         for (const spacing of [
           resolveSeethingSwarmStrikeSpacing(addition, id, "attack"),
           resolveSeethingSwarmStrikeSpacing(id, addition, attack),

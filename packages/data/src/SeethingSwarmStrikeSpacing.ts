@@ -68,23 +68,20 @@ export function resolveSeethingSwarmStrikeSpacing(
   defender: ZooAnimalId,
   attack: string,
 ) {
-  if (
-    attacker !== "squirrelpack" &&
-    attacker !== "tigerpack" &&
-    defender !== "squirrelpack" &&
-    defender !== "tigerpack"
-  )
+  const newAttacker = attacker === "squirrelpack" || attacker === "tigerpack"
+  if (!newAttacker && defender !== "squirrelpack" && defender !== "tigerpack")
     return undefined
   const source = resolveSeethingSwarmFamilyPerformanceProfile(attacker).packId
   const target = resolveSeethingSwarmFamilyPerformanceProfile(defender).packId
   let impact: number | undefined
-  if (source === "squirrelpack" || source === "tigerpack") {
-    impact = contactSpans[target]?.[source === "squirrelpack" ? 0 : 1]
-  } else if (target === "squirrelpack" || target === "tigerpack") {
+  if (newAttacker) {
+    impact = contactSpans[target]?.[attacker === "squirrelpack" ? 0 : 1]
+  } else {
+    const againstSquirrel = defender === "squirrelpack"
     const variation = alternateStrikes[`${source}/${attack}`]
     impact =
-      variation?.[target === "squirrelpack" ? 0 : 1] ??
-      contactSpans[source]?.[target === "squirrelpack" ? 2 : 3]
+      variation?.[againstSquirrel ? 0 : 1] ??
+      contactSpans[source]?.[againstSquirrel ? 2 : 3]
   }
   return impact === undefined
     ? undefined
