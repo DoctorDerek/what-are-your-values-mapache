@@ -3,6 +3,7 @@ import {
   SEETHING_SWARM_BATTLE_RESULT_DURATION_MS,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import { resolveSeethingSwarmStrikeSpacing } from "@game/data/src/SeethingSwarmStrikeSpacing"
 import type { ValueId } from "@game/data/src/Value"
 import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
 import {
@@ -91,6 +92,27 @@ function BattlePlayback({
   const winnerSide = choreography.combatants.find(
     (combatant) => combatant.valueId === winnerId,
   )?.side
+  const duel =
+    choreography.mode === "licensed" && winnerSide !== undefined
+      ? choreography.combatants
+      : undefined
+  const striker = duel?.[winnerSide === "first" ? 0 : 1]
+  const defender = duel?.[winnerSide === "first" ? 1 : 0]
+  const spacing =
+    striker && defender
+      ? resolveSeethingSwarmStrikeSpacing(
+          striker.animalId,
+          defender.animalId,
+          striker.clips.attack.clip.animationId,
+        )
+      : undefined
+  const travelStyle:
+    (CSSProperties & { "--battle-strike-spacing": string }) | undefined =
+    spacing && striker
+      ? {
+          "--battle-strike-spacing": `${(resultCue === "impact" || resultCue === "recovery" ? spacing.impact : spacing.windup) * striker.geometry.integerScale}px`,
+        }
+      : undefined
   const canWinnerTravel =
     winnerSide !== undefined && readySides.get(winnerSide) === true
   const cue = !winnerId
@@ -199,6 +221,7 @@ function BattlePlayback({
                     : "animate-seething-swarm-approach"),
               )}
               data-combatant-traveler={combatant.side}
+              style={travelStyle}
               onAnimationEnd={(event) => {
                 if (
                   event.target === event.currentTarget &&
