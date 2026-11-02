@@ -1,6 +1,6 @@
 import type { ZooAnimalId } from "./ZooAnimals"
 
-const SOURCE_SNAPSHOT_ID = "seethingswarm-animals:2026-03-15"
+const SOURCE_SNAPSHOT_ID = "seethingswarm-animals:2026-11-01"
 
 export type SeethingSwarmSourceEvidenceFile = Readonly<{
   relativePath: string
@@ -51,26 +51,26 @@ function defineSourcePack(
 
 export const SEETHING_SWARM_SOURCE_SNAPSHOT = Object.freeze({
   sourceSnapshotId: SOURCE_SNAPSHOT_ID,
-  storefrontReviewedOn: "2026-08-29",
-  packCount: 27,
-  stableAnimalCount: 45,
-  characterAnimationStripCount: 774,
+  storefrontReviewedOn: "2026-11-01",
+  packCount: 29,
+  stableAnimalCount: 47,
+  characterAnimationStripCount: 801,
   auxiliaryEffectStripCount: 1,
   excludedHumanWeaponStripCount: 102,
-  totalPngStripCount: 877,
-  distinctAnimationIdCount: 86,
+  totalPngStripCount: 904,
+  distinctAnimationIdCount: 87,
   evidenceFiles: Object.freeze([
     defineEvidenceFile(
       "seethingswarm_animals_full_animation_list_with_frame_count.txt",
-      "2C5AFDBBC911F1C94BFAD9499890AC6D3A1BBDB16EC4614AAA8937E0BE5AFF4C",
+      "068CB81C0A55B01937EB5122AB67EAC87537A0DC9A39FD4D1B9D330D68B21D51",
     ),
     defineEvidenceFile(
       "seethingswarm_animals_colors_list.txt",
-      "7E4E37C4C3E308B7C1D0CF493909ADBF6B3AE347A54E7A18CA205F977FFC8C9E",
+      "F5E35860055BED865EF9A3363DC0FE35BD273AD749A1D857BB3ED20686707B33",
     ),
     defineEvidenceFile(
       "seethingswarm_animals_spritesheet_sizes.txt",
-      "D06AA917785C577F64D1C0581B4A5D2BEADF87AF5098F40D3FEAA55FE42B59E7",
+      "6F2775009EFE2D9F972F05A4E509B89796F5EFADEC7887706FC48516EEEA00D6",
     ),
     defineEvidenceFile(
       "LICENSE.txt",
@@ -160,6 +160,15 @@ export const SEETHING_SWARM_SOURCE_PACKS = Object.freeze([
   defineSourcePack("pigpack", "Pigpack", "pigpack_spritesheets", ["pigpack"]),
   defineSourcePack("raccoonpack", "Raccoonpack", "raccoonpack_spritesheets", [
     "raccoonpack",
+  ]),
+  defineSourcePack(
+    "squirrelpack",
+    "Squirrelpack",
+    "squirrelpack_spritesheets",
+    ["squirrelpack"],
+  ),
+  defineSourcePack("tigerpack", "Tigerpack", "tigerpack_spritesheets", [
+    "tigerpack",
   ]),
   defineSourcePack("turtlepack", "Turtlepack", "turtle_spritesheets", [
     "turtle",

@@ -14,7 +14,8 @@ import {
 
 describe("SeethingSwarm runtime clip catalog", () => {
   it("preserves the inspected rest frame separately from animation extents", () => {
-    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     for (const animal of catalog.animals) {
       expect(animal.referencePose).toEqual({
         animationId: animal.animalId === "bat" ? "idle_upright" : "idle",
@@ -39,7 +40,7 @@ describe("SeethingSwarm runtime clip catalog", () => {
 
   it("rejects a missing reference animation instead of choosing an arbitrary pose", () => {
     const { registry, sources } =
-      createCompleteSeethingSwarmRuntimeClipTestFixture()
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const animal = registry.animals[0]
     const animations = { ...animal.animations }
     delete animations.idle_upright
@@ -59,7 +60,7 @@ describe("SeethingSwarm runtime clip catalog", () => {
 
   it("rejects reference-frame pixels outside the clip extent", () => {
     const { registry, sources } =
-      createCompleteSeethingSwarmRuntimeClipTestFixture()
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const referencePath =
       registry.animals[0].animations.idle_upright.relativePath
     expect(() =>
@@ -76,9 +77,9 @@ describe("SeethingSwarm runtime clip catalog", () => {
       ),
     ).toThrow("SeethingSwarm reference pose exceeds clip bounds for bat")
   })
-  it("resolves all 774 canonical character clips and the Frog effect", () => {
+  it("resolves all 801 canonical character clips and the Frog effect", () => {
     const { registry, catalog } =
-      createCompleteSeethingSwarmRuntimeClipTestFixture()
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const resolvedCharacterClips = registry.animals.flatMap((animal) =>
       Object.keys(animal.animations).map((animationId) =>
         resolveSeethingSwarmRuntimeCharacterClip(
@@ -96,17 +97,17 @@ describe("SeethingSwarm runtime clip catalog", () => {
 
     expect(catalog.mode).toBe("licensed")
     expect(catalog.evidenceSnapshotId).toBe(registry.evidenceSnapshotId)
-    expect(catalog.animals).toHaveLength(45)
-    expect(catalog.characterClipCount).toBe(774)
+    expect(catalog.animals).toHaveLength(47)
+    expect(catalog.characterClipCount).toBe(801)
     expect(catalog.auxiliaryEffectClipCount).toBe(1)
-    expect(resolvedCharacterClips).toHaveLength(774)
+    expect(resolvedCharacterClips).toHaveLength(801)
     expect(
       new Set(
         resolvedCharacterClips.map(
           ({ animalId, animationId }) => `${animalId}:${animationId}`,
         ),
       ).size,
-    ).toBe(774)
+    ).toBe(801)
     expect(frogEffect).toMatchObject({
       kind: "auxiliary-effect",
       animalId: "frogpack",
@@ -118,7 +119,8 @@ describe("SeethingSwarm runtime clip catalog", () => {
   })
 
   it("deeply freezes every level of catalog metadata", () => {
-    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const characterClips = catalog.animals.flatMap(
       ({ characterClips }) => characterClips,
     )
@@ -146,7 +148,8 @@ describe("SeethingSwarm runtime clip catalog", () => {
   })
 
   it("keeps character and auxiliary identities in disjoint lookup domains", () => {
-    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
 
     expect(() =>
       resolveSeethingSwarmRuntimeCharacterClip(catalog, "frogpack", "fly"),
@@ -218,11 +221,11 @@ describe("SeethingSwarm runtime clip catalog", () => {
 
     expect(() =>
       createSeethingSwarmLicensedRuntimeClipCatalog(
-        { ...registry, characterAnimationCount: 773 },
+        { ...registry, characterAnimationCount: 800 },
         sources,
       ),
     ).toThrow(
-      "Invalid SeethingSwarm runtime character clip count: expected 773, received 774",
+      "Invalid SeethingSwarm runtime character clip count: expected 800, received 801",
     )
     expect(() =>
       createSeethingSwarmLicensedRuntimeClipCatalog(

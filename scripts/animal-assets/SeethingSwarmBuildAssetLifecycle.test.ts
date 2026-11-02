@@ -164,7 +164,7 @@ describe("SeethingSwarm protected build asset lifecycle", () => {
       expect(protectedBuildResult).toEqual({ mode: "licensed" })
       expect(licensedPresentationResult).toEqual({
         mode: "licensed",
-        assetCount: 775,
+        assetCount: 802,
       })
       expect(protectedBuildStatus).toEqual([
         "Extracted the authorized SeethingSwarm asset archive.\n",
