@@ -70,14 +70,19 @@ for (const locale of ["en", "es-MX"] as const) {
           }
         })
         expect(geometry.overflow).toBeLessThanOrEqual(1)
-        expect(geometry.levelAlign).toBe("right")
-        expect(geometry.xpAlign).toBe("left")
-        expect(geometry.bar.top).toBeGreaterThanOrEqual(geometry.level.bottom)
-        expect(geometry.xp.top).toBeGreaterThanOrEqual(geometry.bar.bottom)
+        if (width === 390 && scale === 2) {
+          expect(geometry.levelAlign).toBe("left")
+          expect(geometry.xpAlign).toBe("right")
+          expect(geometry.xp.top).toBeGreaterThanOrEqual(geometry.level.bottom)
+          expect(geometry.xp.left).toBeGreaterThanOrEqual(geometry.bar.right)
+        } else {
+          expect(geometry.levelAlign).toBe("right")
+          expect(geometry.xpAlign).toBe("left")
+          expect(geometry.bar.top).toBeGreaterThanOrEqual(geometry.level.bottom)
+          expect(geometry.xp.top).toBeGreaterThanOrEqual(geometry.bar.bottom)
+        }
         if (width < 1280) {
-          expect(geometry.name.top).toBeGreaterThanOrEqual(geometry.box.bottom)
-          expect(geometry.name.left).toBeLessThan(geometry.box.right)
-          expect(geometry.name.width).toBeGreaterThanOrEqual(geometry.box.width)
+          expect(geometry.name.bottom).toBeLessThanOrEqual(geometry.box.top)
         } else if (scale === 1) {
           expect(geometry.name.right).toBeLessThan(geometry.box.left)
           expect(geometry.name.top).toBeLessThan(geometry.box.bottom)
@@ -140,4 +145,191 @@ for (const locale of ["en", "es-MX"] as const) {
       ).toBe(0)
     })
   }
+
+  test(`${locale} keeps names, standings, animals and progress inside the phone cards before and after a battle`, async ({
+    page,
+  }, testInfo) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(crypto, "randomUUID", {
+        value: () => "00000000-0000-4000-8000-0000000005dc",
+      })
+    })
+    await page.goto(copy.metadata.webPath)
+    const button = (name: string) =>
+      page.getByRole("button", { name, exact: true })
+    await button(copy.introduction.startAction).click()
+    for (const ranked of [false, true]) {
+      if (ranked) {
+        await button(copy.hub.battle).click()
+        const battle = page.locator("[data-choreography-identity]")
+        const first = battle.locator('[data-combatant-side="first"]')
+        await expect(first).toHaveAttribute("data-animal-id", "tigerpack")
+        await battle.locator('[data-battle-arena-side="first"]').click()
+        await expect(
+          button(copy.interfaceCopy.controlActions.undo),
+        ).toBeEnabled()
+        await button(copy.interfaceCopy.controlActions.stop).click()
+        await button(copy.interfaceCopy.results.seeValuesAction).click()
+      }
+      await button(copy.hub.browse).click()
+      const rows = page.locator("[data-value-row]")
+      await expect(rows).toHaveCount(103)
+      for (const [width, scale] of [
+        [390, 1],
+        [320, 2],
+      ] as const) {
+        await page.setViewportSize({ width, height: 844 })
+        await page.evaluate(
+          (size) => {
+            document.documentElement.style.fontSize = size
+          },
+          scale * 100 + "%",
+        )
+        const overflow = await rows.evaluateAll((elements) =>
+          elements
+            .filter((el) => el.scrollWidth > el.clientWidth + 1)
+            .map((el) => el.id),
+        )
+        expect(overflow).toEqual([])
+        for (const [id, name, expectedRank] of [
+          ["fitness", locale === "en" ? "Fitness" : "Condición física", 1],
+          ["order", locale === "en" ? "Order" : "Orden", 70],
+        ] as const) {
+          const row = page.locator(`[id="all-values-row-pvcs-2011:${id}"]`)
+          const heading = row.getByRole("heading", { name, exact: true })
+          await expect(heading).toBeVisible()
+          await expect(
+            row.getByText(
+              copy.interfaceCopy.screen.valueLevel(
+                ranked && id === "fitness" ? "3" : "1",
+              ),
+              { exact: true },
+            ),
+          ).toBeVisible()
+          const standing = row.getByText("#" + expectedRank, { exact: true })
+          await expect(standing).toHaveCount(ranked ? 1 : 0)
+          await expect(row.locator('img[src*="gold"]')).toHaveCount(
+            ranked && id === "fitness" ? 1 : 0,
+          )
+          const frame = row.locator("[data-value-presentation]")
+          await expect(frame).toHaveAttribute(
+            "data-value-presentation",
+            "animal",
+          )
+          const layout = await row.evaluate((el) => {
+            const bounds = (selector: string) =>
+              el.querySelector(selector)!.getBoundingClientRect().toJSON()
+            return {
+              row: el.getBoundingClientRect().toJSON(),
+              heading: bounds("h3"),
+              art: bounds("[data-value-presentation]"),
+              progress: el
+                .querySelector('[role="progressbar"]')!
+                .parentElement!.getBoundingClientRect()
+                .toJSON(),
+              definition: bounds("p"),
+            }
+          })
+          expect(layout.heading.bottom).toBeLessThanOrEqual(layout.art.top)
+          expect(layout.definition.top).toBeGreaterThanOrEqual(
+            layout.progress.bottom,
+          )
+          for (const bounds of [
+            layout.heading,
+            layout.art,
+            layout.progress,
+            layout.definition,
+          ]) {
+            expect(bounds.left).toBeGreaterThanOrEqual(layout.row.left)
+            expect(bounds.right).toBeLessThanOrEqual(layout.row.right)
+          }
+          expect(layout.art.width).toBe(id === "fitness" ? 173 : 80)
+          if (scale === 1)
+            expect(layout.art.right).toBeLessThanOrEqual(layout.progress.left)
+          else
+            expect(layout.progress.top).toBeGreaterThanOrEqual(
+              layout.art.bottom,
+            )
+          if (ranked) {
+            const rect = await standing.boundingBox()
+            if (scale === 1) expect(rect!.y).toBeLessThan(layout.art.top)
+            else {
+              expect(rect!.x).toBeGreaterThanOrEqual(layout.art.right)
+              expect(rect!.y).toBeLessThan(layout.art.bottom)
+            }
+          }
+          await heading.scrollIntoViewIfNeeded()
+          await expect(heading).toBeInViewport()
+          const definition = row.locator("p")
+          await definition.scrollIntoViewIfNeeded()
+          await expect(definition).toBeInViewport()
+          await page.setViewportSize({ width, height: 1600 })
+          expect((await row.boundingBox())!.height).toBe(layout.row.height)
+          await row.screenshot({
+            path: testInfo.outputPath(
+              `${locale}-${width}-${ranked ? "ranked" : "unranked"}-${id}.png`,
+            ),
+            animations: "disabled",
+          })
+          await page.setViewportSize({ width, height: 844 })
+        }
+      }
+      await page.evaluate(() => {
+        document.documentElement.style.fontSize = "100%"
+      })
+      await button(copy.interfaceCopy.dressingRoom.back).click()
+    }
+  })
+
+  test(`${locale} lets the roster scroll and lets search keep a matching value after its initial reveal`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto(copy.metadata.webPath)
+    const button = (name: string) =>
+      page.getByRole("button", { name, exact: true })
+    await button(copy.introduction.startAction).click()
+    const roster = page.getByRole("region", {
+      name: copy.hub.unrankedList,
+      exact: true,
+    })
+    await roster.focus()
+    await page.keyboard.press("ArrowDown")
+    await expect
+      .poll(() => roster.evaluate((el) => el.scrollTop))
+      .toBeGreaterThan(0)
+    await page.keyboard.press("Tab")
+    await expect(button(copy.hub.add)).toBeFocused()
+    await button(copy.hub.add).click()
+    const valueName = locale === "en" ? "Fitness" : "Condición física"
+    await page
+      .getByRole("textbox", {
+        name: copy.interfaceCopy.customValues.name,
+        exact: true,
+      })
+      .fill(valueName)
+    await button(copy.interfaceCopy.screen.openValue(valueName)).click()
+    await page
+      .getByRole("dialog")
+      .getByRole("button", {
+        name: copy.interfaceCopy.dressingRoom.discard,
+        exact: true,
+      })
+      .click()
+    const row = page.locator('[id="all-values-row-pvcs-2011:fitness"]')
+    await expect(row).toBeFocused()
+    const search = page.getByRole("searchbox")
+    const query = locale === "en" ? "fitness" : "física"
+    await search.click()
+    await search.pressSequentially(query)
+    await expect(search).toHaveValue(query)
+    await expect(search).toBeFocused()
+    await row.getByRole("heading", { name: valueName }).click()
+    await expect(search).toBeFocused()
+    await search.press("Backspace")
+    await expect(search).toHaveValue(query.slice(0, -1))
+    await search.fill("")
+    await expect(page.locator("[data-value-row]")).toHaveCount(103)
+    await expect(search).toBeFocused()
+  })
 }
