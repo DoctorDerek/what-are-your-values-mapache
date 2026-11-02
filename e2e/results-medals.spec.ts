@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test"
 import { test } from "./fixtures"
+import { expectRankMedalImage } from "./rank-medal-image"
 
 test.use({
   serviceWorkers: "block",
@@ -65,10 +66,7 @@ for (const width of [320, 1440]) {
       await page.clock.runFor(advanceMs)
       await expect(slot).toHaveAttribute("data-results-medal", medal)
       const image = slot.locator("img")
-      await expect(image).toHaveAttribute(
-        "src",
-        new RegExp(`/${medal}(?:\\.[^/]+)?\\.png$`),
-      )
+      await expectRankMedalImage(image, medal)
       await image.evaluate((element: HTMLImageElement) => element.decode())
       await expect(image).toBeInViewport()
       const evidence = await slot.evaluate((element: HTMLElement) => {
