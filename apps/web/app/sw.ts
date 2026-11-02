@@ -3,6 +3,7 @@
 
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist"
 import { CacheFirst, NetworkFirst, Serwist } from "serwist"
+import { getPrecachedDeploymentAsset } from "../lib/PrecachedDeploymentAsset"
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -80,6 +81,7 @@ const serwist = new Serwist({
   precacheOptions: {
     cleanupOutdatedCaches: true,
     navigateFallback: "/",
+    urlManipulation: getPrecachedDeploymentAsset,
   },
   skipWaiting: false,
   clientsClaim: false,

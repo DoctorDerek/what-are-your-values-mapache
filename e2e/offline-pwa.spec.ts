@@ -2,6 +2,7 @@ import { expect } from "@playwright/test"
 import type { Page } from "@playwright/test"
 import { SHIPPED_LOCALES } from "#game/data/src/LocaleRegistry"
 import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
+import { SEETHING_SWARM_SOURCE_SNAPSHOT } from "#game/data/src/SeethingSwarmSourceEvidence"
 import { test } from "./fixtures"
 
 const playwrightTestBaseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL
@@ -131,6 +132,10 @@ test("the web runtime follows its deployment offline policy", async ({
   context,
   page,
 }, testInfo) => {
+  test.slow(
+    registrationIsExpected && browserName !== "webkit",
+    "This journey installs the offline cache, plays offline, then reconnects.",
+  )
   if (browserName === "chromium")
     await page.route("**/*", (route) => route.continue())
   await page.emulateMedia({ reducedMotion: "reduce" })
@@ -192,7 +197,10 @@ test("the web runtime follows its deployment offline policy", async ({
     return (await cache.keys()).map((request) => request.url)
   })
   expect(cachedAnimalUrls.length).toBeGreaterThan(0)
-  expect(cachedAnimalUrls.length).toBeLessThan(775)
+  expect(cachedAnimalUrls.length).toBeLessThan(
+    SEETHING_SWARM_SOURCE_SNAPSHOT.characterAnimationStripCount +
+      SEETHING_SWARM_SOURCE_SNAPSHOT.auxiliaryEffectStripCount,
+  )
   testInfo.annotations.push({
     type: "cache-scope",
     description: `${shellUrls.length} shell entries; ${cachedAnimalUrls.length} requested animal strips cached after controlled Hub reload`,
@@ -210,6 +218,25 @@ test("the web runtime follows its deployment offline policy", async ({
       async (url) => (await fetch(url)).ok,
       cachedAnimalUrls[0],
     ),
+  ).toBe(true)
+  const cachedScript = shellUrls.find((entry) =>
+    /^\/_next\/static\/chunks\/.+\.js$/.test(new URL(entry).pathname),
+  )
+  if (!cachedScript)
+    throw new Error("The offline shell is missing its JavaScript")
+  expect(
+    await page.evaluate(async (cachedUrl) => {
+      const cached = await caches.match(cachedUrl)
+      const tagged = new URL(cachedUrl)
+      tagged.searchParams.delete("__WB_REVISION__")
+      tagged.searchParams.set("dpl", "offline-regression")
+      const served = await fetch(tagged)
+      return (
+        served.ok &&
+        cached !== undefined &&
+        (await served.text()) === (await cached.text())
+      )
+    }, cachedScript),
   ).toBe(true)
   if (legacyAnimalPath) {
     const restored = await page.evaluate(async (path) => {
@@ -282,7 +309,7 @@ test("the web runtime follows its deployment offline policy", async ({
     page.getByRole("button", { name: "Undo", exact: true }),
   ).toBeEnabled()
   await context.setOffline(false)
-  await page.reload({ waitUntil: "networkidle" })
+  await page.reload({ waitUntil: "domcontentloaded" })
   await page.getByRole("button", { name: "Battle", exact: true }).click()
   await expect(
     page.getByRole("button", { name: /^Choose / }).first(),
