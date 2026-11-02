@@ -225,6 +225,11 @@ test("browser Back closes actual parents, preserves drafts and permits Hub depar
 test("battle results show committed progress without delaying either exit", async ({
   page,
 }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(crypto, "randomUUID", {
+      value: () => "bfc518dd-4ee2-42c6-906a-e9baf8edfc40",
+    })
+  })
   await page.goto("/")
   await page.getByRole("button", { name: "Start" }).click()
   await page.getByRole("button", { name: "Battle", exact: true }).click()
@@ -233,12 +238,8 @@ test("battle results show committed progress without delaying either exit", asyn
   const entryPair = await choices.evaluateAll((buttons) =>
     buttons.map((button) => button.getAttribute("aria-label")),
   )
-  const firstChoice = await choices.first().getAttribute("aria-label")
-  await (
-    firstChoice?.startsWith("Choose Acceptance")
-      ? choices.last()
-      : choices.first()
-  ).click()
+  const winner = page.getByRole("button", { name: /^Choose Wealth\./ })
+  await winner.click()
   await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled()
   await page
     .getByRole("button", {
