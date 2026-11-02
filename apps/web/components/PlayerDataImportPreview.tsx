@@ -90,25 +90,27 @@ export default function PlayerDataImportPreview({
           </details>
         </div>
       </div>
-      <footer className="shrink-0 border-t-4 border-black p-[12px] pb-[20px] xl:p-5">
-        <div className="flex flex-wrap gap-3">
+      <footer className="max-h-3/4 shrink-0 overflow-y-auto overscroll-contain border-t-4 border-black p-[12px] pb-[20px] xl:p-5">
+        <div className="flex flex-wrap gap-[8px] xl:gap-3">
           <Button
             size="sm"
             wrap
+            textCase="normal-case"
             variant="outline"
             disabled={isBusy}
             onClick={onCancel}
-            className="min-w-0 flex-[1_1_8rem] wrap-anywhere max-xl:px-[4px] max-xl:py-[8px]"
+            className="min-w-0 flex-[1_1_8rem] leading-tight wrap-anywhere max-xl:px-[4px] max-xl:py-[8px]"
           >
             {copy.importCancelAction}
           </Button>
           <Button
             size="sm"
             wrap
+            textCase="normal-case"
             disabled={isBusy}
             onClick={onConfirm}
             aria-label={confirmLabel ?? copy.importReplaceAction}
-            className="min-w-0 flex-[1_1_8rem] wrap-anywhere hyphens-manual max-xl:px-[4px] max-xl:py-[8px]"
+            className="min-w-0 flex-[1_1_8rem] leading-tight wrap-anywhere hyphens-manual max-xl:px-[4px] max-xl:py-[8px]"
           >
             {getWrappableImportAction(
               confirmLabel ?? copy.importReplaceAction,
