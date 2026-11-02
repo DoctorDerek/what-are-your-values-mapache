@@ -9,7 +9,6 @@ import {
   SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ROSTER,
 } from "@game/data/src/ValueAnimalAssociation"
 import { VALUE_TO_ANIMAL_MAP } from "@game/data/src/ValueToAnimalMap"
-import { ZOO_ANIMALS } from "@game/data/src/ZooAnimals"
 import { describe, expect, it } from "vitest"
 import { resolveSeethingSwarmBattleCombatant } from "./SeethingSwarmBattleCombatant"
 
@@ -44,11 +43,15 @@ describe("SeethingSwarm battle combatants", () => {
     expect(combatants.every(Object.isFrozen)).toBe(true)
   })
 
-  it("locks the versioned Custom Value roster to all original animals", () => {
+  it("locks the versioned Custom Value roster to all original animals", async () => {
     expect(SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ASSOCIATION_VERSION).toBe(1)
-    expect(SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ROSTER).toEqual(
-      ZOO_ANIMALS.map(({ id }) => id),
+    const bytes = new TextEncoder().encode(
+      JSON.stringify(SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ROSTER),
     )
+    const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))
+    expect(
+      Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join(""),
+    ).toBe("1d0967d1102873668fa78bef6a15cd0741ea23cc73d0faab6da7649d2011866d")
     expect(SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ROSTER).toHaveLength(45)
     expect(new Set(SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ROSTER).size).toBe(45)
     expect(Object.isFrozen(SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ROSTER)).toBe(

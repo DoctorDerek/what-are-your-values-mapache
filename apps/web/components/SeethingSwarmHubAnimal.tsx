@@ -2,6 +2,7 @@ import {
   SEETHING_SWARM_CALM_FRAME_DURATION_MS,
   type SeethingSwarmAnimalPresentationGeometry,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
+import { resolveSeethingSwarmFamilyPerformanceProfile } from "@game/data/src/SeethingSwarmFamilyPerformanceProfiles"
 import type {
   SeethingSwarmRuntimeCharacterClip,
   SeethingSwarmRuntimeClipCatalog,
@@ -19,7 +20,8 @@ import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
 import { useSeethingSwarmPreparedAssets } from "@/components/SeethingSwarmAssetPreparation"
 
 export default function SeethingSwarmHubAnimal({
-  calmClip,
+  calmClip: initialCalmClip,
+  tapRequest = 0,
   geometry,
   catalog,
   isAttended,
@@ -30,12 +32,13 @@ export default function SeethingSwarmHubAnimal({
   geometry: SeethingSwarmAnimalPresentationGeometry
   catalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   isAttended: boolean
+  tapRequest?: number
   shouldReduceMotion: boolean
   onLoadError: () => void
 }) {
   const alternatives = useMemo(
-    () => createSeethingSwarmAttentionAlternatives(calmClip, catalog),
-    [calmClip, catalog],
+    () => createSeethingSwarmAttentionAlternatives(initialCalmClip, catalog),
+    [initialCalmClip, catalog],
   )
   const [attention, setAttention] = useState(createSeethingSwarmAttentionState)
   const nextAttention = updateSeethingSwarmAttention(
@@ -43,8 +46,25 @@ export default function SeethingSwarmHubAnimal({
     isAttended,
     !shouldReduceMotion,
     alternatives.length,
+    tapRequest,
   )
   if (nextAttention !== attention) setAttention(nextAttention)
+  const calmPool = useMemo(() => {
+    if (initialCalmClip.animalId !== "tigerpack" || catalog.mode !== "licensed")
+      return [initialCalmClip]
+    const animal = catalog.animals.find(
+      ({ animalId }) => animalId === initialCalmClip.animalId,
+    )
+    if (!animal) return [initialCalmClip]
+    const profile = resolveSeethingSwarmFamilyPerformanceProfile(
+      animal.animalId,
+    )
+    const clips = profile.calm.flatMap((id) =>
+      animal.characterClips.filter(({ animationId }) => animationId === id),
+    )
+    return clips.length ? clips : [initialCalmClip]
+  }, [initialCalmClip, catalog])
+  const calmClip = calmPool[nextAttention.entries % calmPool.length]!
   const attended = nextAttention.isActive
   const steps = useMemo(
     () =>

@@ -42,10 +42,15 @@ test("Spanish survives gameplay, reload, and language changes without translatin
   await expect(
     page.getByRole("heading", { name: "Resultados", exact: true }),
   ).toBeVisible()
+  const returnedToHub = page.waitForEvent(
+    "framenavigated",
+    (frame) => frame === page.mainFrame(),
+  )
   await page
     .getByRole("button", { name: "Ver mis valores", exact: true })
     .click()
-  await page.reload()
+  await returnedToHub
+  await page.reload({ waitUntil: "domcontentloaded" })
   await expect(
     page.getByRole("heading", {
       name: "Mis cinco principales valores de vida",

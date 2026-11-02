@@ -233,6 +233,22 @@ export const SEETHING_SWARM_FAMILY_PERFORMANCE_PROFILES = Object.freeze([
     ["bark", "jump"],
   ),
   defineProfile(
+    "squirrelpack",
+    ["idle"],
+    ["idle_blink"],
+    ["run", "dash"],
+    ["attack"],
+    ["jump"],
+  ),
+  defineProfile(
+    "tigerpack",
+    ["idle", "idle_blink", "sit"],
+    ["crouch", "roar"],
+    ["run", "dash"],
+    ["attack"],
+    ["roar", "jump"],
+  ),
+  defineProfile(
     "turtlepack",
     ["idle", "idle_blink"],
     ["idle_blink"],

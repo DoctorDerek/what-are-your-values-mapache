@@ -53,7 +53,8 @@ function isCalmAnimation(animationId: string) {
 
 describe("SeethingSwarm animal presentation", () => {
   it("preserves 3x source pixels and the rest anchor across complete motion bounds", () => {
-    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const animal = catalog.animals[0]
     const original = animal.characterClips[0]
     const clips = [
@@ -109,7 +110,8 @@ describe("SeethingSwarm animal presentation", () => {
     expect(Object.isFrozen(geometry.visibleBounds)).toBe(true)
   })
   it("reserves a common ground line with clearance below flying reference poses", () => {
-    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const animal = catalog.animals[0]
     const geometry = createSeethingSwarmAnimalPresentationGeometry(
       animal.referencePose,
@@ -128,7 +130,8 @@ describe("SeethingSwarm animal presentation", () => {
     })
   })
   it("rejects empty clearance and invalid source bounds without fitting valid large art", () => {
-    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const animal = catalog.animals[0]
     expect(() =>
       createSeethingSwarmAnimalPresentationGeometry(animal.referencePose, []),
@@ -166,7 +169,8 @@ describe("SeethingSwarm animal presentation", () => {
   })
 
   it("resolves all canonical values through calm catalog clips", () => {
-    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const resolutions = CANONICAL_VALUES.map((value) =>
       resolveValueAnimalPresentation(value, catalog),
     )
@@ -191,7 +195,8 @@ describe("SeethingSwarm animal presentation", () => {
   })
 
   it("prefers idle over idle upright regardless of catalog clip order", () => {
-    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const bat = catalog.animals[0]!
     const idleUpright = bat.characterClips.find(
       ({ animationId }) => animationId === "idle_upright",
@@ -220,7 +225,8 @@ describe("SeethingSwarm animal presentation", () => {
   })
 
   it("shows the battle-assigned animal for a Custom Value without reading its authored text", () => {
-    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const presentation = resolveValueAnimalPresentation(customValue, catalog)
     const renamedPresentation = resolveValueAnimalPresentation(
       {
@@ -260,7 +266,8 @@ describe("SeethingSwarm animal presentation", () => {
   })
 
   it("rejects missing canonical mappings animals and calm clips", () => {
-    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     expect(() =>
       resolveValueAnimalPresentation(
         {

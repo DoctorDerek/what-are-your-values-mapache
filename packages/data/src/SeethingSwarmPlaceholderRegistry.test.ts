@@ -19,7 +19,7 @@ describe("SeethingSwarm placeholder registry", () => {
     )
 
     expect(animalIds).toEqual(ZOO_ANIMALS.map(({ id }) => id))
-    expect(animalIds).toHaveLength(45)
+    expect(animalIds).toHaveLength(47)
     expect(new Set(animalIds).size).toBe(animalIds.length)
   })
 

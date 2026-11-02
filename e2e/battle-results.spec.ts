@@ -91,6 +91,19 @@ for (const scale of [100, 200]) {
         }),
       ).toBe(true)
     }
+    if (scale === 200) {
+      await page.addStyleTag({
+        content:
+          "nav button { font-family: Verdana, sans-serif; letter-spacing: 0.12em; }",
+      })
+      await expect(exit).toBeInViewport({ ratio: 1 })
+      await expect(resume).toBeInViewport({ ratio: 1 })
+    }
+    expect(
+      await resume.evaluate(
+        (button) => button.scrollWidth - button.clientWidth,
+      ),
+    ).toBe(0)
     const lines = await resume.evaluate(getRenderedTextLines)
     expect(
       lines.some((line) => line.toLowerCase().includes("combatiendo")),
@@ -101,7 +114,21 @@ for (const scale of [100, 200]) {
     await page.screenshot({
       path: testInfo.outputPath(`results-spanish-${scale}.png`),
     })
-    await resume.click()
+    const scroller = resume.locator(
+      "xpath=ancestor::*[@data-controller-scroll][1]",
+    )
+    await resume.hover()
+    await page.mouse.down()
+    try {
+      await expect(resume).toHaveCSS("translate", "6px 6px")
+      expect(
+        await scroller.evaluate(
+          (element) => element.scrollWidth - element.clientWidth,
+        ),
+      ).toBe(0)
+    } finally {
+      await page.mouse.up()
+    }
     await expect(
       page.getByRole("button", { name: "Detener", exact: true }),
     ).toBeVisible()
@@ -198,20 +225,28 @@ test("browser Back closes actual parents, preserves drafts and permits Hub depar
 test("battle results show committed progress without delaying either exit", async ({
   page,
 }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(crypto, "randomUUID", {
+      value: () => "bfc518dd-4ee2-42c6-906a-e9baf8edfc40",
+    })
+  })
   await page.goto("/")
+  await expect(
+    page.getByRole("button", { name: "Start", exact: true }),
+  ).toBeVisible()
+  await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") })
   await page.getByRole("button", { name: "Start" }).click()
   await page.getByRole("button", { name: "Battle", exact: true }).click()
 
+  await page
+    .getByRole("button", { name: "Skip battle animations", exact: true })
+    .click()
   const choices = page.getByRole("button", { name: /^Choose / })
   const entryPair = await choices.evaluateAll((buttons) =>
     buttons.map((button) => button.getAttribute("aria-label")),
   )
-  const firstChoice = await choices.first().getAttribute("aria-label")
-  await (
-    firstChoice?.startsWith("Choose Acceptance")
-      ? choices.last()
-      : choices.first()
-  ).click()
+  const winner = page.getByRole("button", { name: /^Choose Wealth\./ })
+  await winner.click()
   await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled()
   await page
     .getByRole("button", {
@@ -219,127 +254,56 @@ test("battle results show committed progress without delaying either exit", asyn
       exact: true,
     })
     .click()
-  await page.evaluate(() => {
-    let firstPosition: number | undefined
-    let firstRank: number | undefined
-    let rankWidth: string | undefined
-    let startedAt: number | undefined
-    let visibleSamples = 0
-    let lastVisibleSampleAt = 0
-    const observer = new MutationObserver(() => {
-      const indicator = document.querySelector(
-        '[aria-label="Profile progress"] [data-slot="progress-indicator"]',
-      )
-      const transform = indicator?.getAttribute("style")
-      if (transform && !transform.includes("translateX(-100%)")) {
-        document.documentElement.dataset.resultsBarMoved = "true"
-      }
-      const row = Array.from(
-        document.querySelectorAll('ol[aria-label="Your value results"] li'),
-      ).find((element) =>
-        element.querySelector(".sr-only")?.textContent?.startsWith("Rank 1,"),
-      )
-      if (!row) return
-      startedAt ??= performance.now()
-      firstPosition ??= row.getBoundingClientRect().top
-      const elapsedMs = performance.now() - startedAt
-      const roster = row.closest("ol")!.parentElement!
-      const rosterBounds = roster.getBoundingClientRect()
-      const identity = row.querySelector('div[aria-hidden="true"]')!
-      const rankCounter = identity.querySelector("span.absolute")!
-      const rank = Number(rankCounter.textContent?.replace("#", ""))
-      firstRank ??= rank
-      const currentRankWidth = getComputedStyle(
-        rankCounter.parentElement!,
-      ).width
-      rankWidth ??= currentRankWidth
-      if (rankWidth !== currentRankWidth)
-        document.documentElement.dataset.resultsRankShifted = "true"
-      if (rank !== firstRank && rank !== 1)
-        document.documentElement.dataset.resultsRankCounted = "true"
-      const rewardElements = [
-        identity.querySelector("span")!,
-        ...identity.querySelectorAll("div.flex-wrap > span"),
-        identity.querySelector('[data-slot="progress"]')!,
-        identity.querySelector('[data-value-presentation="animal"]'),
-      ].filter((element) => element !== null)
-      if (
-        elapsedMs > 300 &&
-        elapsedMs < 3_400 &&
-        elapsedMs - lastVisibleSampleAt >= 300
-      ) {
-        const visible = rewardElements.every((element) => {
-          const bounds = element.getBoundingClientRect()
-          const centerX = bounds.left + bounds.width / 2
-          const centerY = bounds.top + bounds.height / 2
-          return (
-            bounds.width > 0 &&
-            bounds.height > 0 &&
-            centerY >= rosterBounds.top &&
-            centerY < rosterBounds.bottom &&
-            row.contains(document.elementFromPoint(centerX, centerY))
-          )
-        })
-        if (!visible)
-          document.documentElement.dataset.resultsRewardObscured = "true"
-        else visibleSamples += 1
-        lastVisibleSampleAt = elapsedMs
-        if (visibleSamples >= 5)
-          document.documentElement.dataset.resultsRewardVisible = "true"
-      }
-      const valueTransform = row
-        .querySelector('[data-slot="progress-indicator"]')
-        ?.getAttribute("style")
-      if (
-        elapsedMs > 300 &&
-        elapsedMs < 3_400 &&
-        valueTransform &&
-        !valueTransform.includes("translateX(-100%)")
-      ) {
-        document.documentElement.dataset.resultsValueBarMoved = "true"
-        if (Math.abs(row.getBoundingClientRect().top - firstPosition) > 40)
-          document.documentElement.dataset.resultsConcurrentSort = "true"
-      }
-      if (elapsedMs >= 3_800) observer.disconnect()
-    })
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["style"],
-      childList: true,
-      subtree: true,
-    })
-  })
+  await page.clock.pauseAt(new Date("2026-01-01T01:00:00Z"))
   await page.getByRole("button", { name: /Stop/ }).click()
-
   await expect(page.getByRole("heading", { name: "Results" })).toBeVisible()
-  await expect(page.locator("html")).toHaveAttribute(
-    "data-results-rank-counted",
-    "true",
+
+  const row = page
+    .getByRole("list", { name: "Your value results" })
+    .getByRole("listitem")
+    .first()
+  await expect(row.locator(".sr-only")).toContainText("Wealth")
+  const counter = row.locator("span.absolute").filter({ hasText: /^#\d+$/ })
+  const profile = page.getByRole("region", { name: "Profile progress" })
+  const rank = async () => Number((await counter.textContent())!.slice(1))
+  const rankWidth = () =>
+    counter.evaluate(
+      (element) => getComputedStyle(element.parentElement!).width,
+    )
+  const startRank = await rank()
+  const startWidth = await rankWidth()
+  const startTravel = await row.evaluate((element: HTMLElement) =>
+    element.style.getPropertyValue("--results-travel"),
   )
-  await expect(page.locator("html")).not.toHaveAttribute(
-    "data-results-rank-shifted",
-    "true",
-  )
-  await expect(page.locator("html")).toHaveAttribute(
-    "data-results-bar-moved",
-    "true",
-  )
-  await expect(page.locator("html")).toHaveAttribute(
-    "data-results-value-bar-moved",
-    "true",
-  )
-  await expect(page.locator("html")).toHaveAttribute(
-    "data-results-concurrent-sort",
-    "true",
-  )
-  await expect(page.locator("html")).toHaveAttribute(
-    "data-results-reward-visible",
-    "true",
-  )
-  await expect(page.locator("html")).not.toHaveAttribute(
-    "data-results-reward-obscured",
-    "true",
-  )
+  await expect(
+    page.getByRole("button", { name: "See my values" }),
+  ).toBeEnabled()
+  await expect(
+    page.getByRole("button", { name: "Keep battling" }),
+  ).toBeEnabled()
+
+  await page.clock.runFor(650)
+  expect(await rank()).toBeLessThan(startRank)
+  expect(await rank()).toBeGreaterThan(1)
+  expect(await rankWidth()).toBe(startWidth)
+  expect(
+    Number(
+      await row.evaluate((element: HTMLElement) =>
+        element.style.getPropertyValue("--results-travel"),
+      ),
+    ),
+  ).toBeGreaterThan(Number(startTravel))
+  for (const progress of [
+    profile.getByRole("progressbar"),
+    row.getByRole("progressbar", { includeHidden: true }),
+  ])
+    expect(
+      Number(await progress.getAttribute("aria-valuenow")),
+    ).toBeGreaterThan(0)
+
+  await page.clock.runFor(3_150)
+  await expect(counter).toHaveText("#1")
+  expect(await rankWidth()).toBe(startWidth)
   await expect(
     page
       .getByRole("list", { name: "Your value results" })
@@ -360,6 +324,7 @@ test("battle results show committed progress without delaying either exit", asyn
     ),
   ).toBe(true)
 
+  await page.clock.resume()
   await page.getByRole("button", { name: "Keep battling" }).click()
   await expect(page.getByRole("main", { name: "Value battle" })).toBeVisible()
   await expect

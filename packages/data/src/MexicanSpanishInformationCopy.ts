@@ -367,7 +367,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
         kind: "resource",
         title: "SeethingSwarm",
         description:
-          "Creador del arte en píxeles y las animaciones de animales de ¿Cuáles son tus valores, Mapache?",
+          "SeethingSwarm creó el arte y las animaciones de los animales del juego, incluidos los de Squirrelpack y Tigerpack.",
         actionLabel: "Visitar SeethingSwarm",
         url: "https://seethingswarm.itch.io/",
       },

@@ -3,12 +3,15 @@ import { getErrorMessage } from "@game/utils/src/Errors"
 export const WEB_EXCLUSIVE_WRITER_LOCK_NAME =
   "what-are-your-values-mapache:player-data-writer" as const
 
+const WRITER_HANDOFF_TIMEOUT_MS = 500
+
 export type WebExclusiveWriterLockManager = {
   readonly request: (
     name: string,
     options: {
       readonly mode: "exclusive"
-      readonly ifAvailable: true
+      readonly signal?: AbortSignal
+      readonly ifAvailable?: true
     },
     callback: (lock: Lock | null) => Promise<void>,
   ) => Promise<void>
@@ -40,55 +43,74 @@ export async function acquireWebExclusiveWriterLease(
       reason: "lock-api-unavailable",
     })
 
-  return new Promise((resolve) => {
-    let acquisitionHasSettled = false
-    const settleAcquisition = (result: WebExclusiveWriterLeaseResult) => {
-      if (acquisitionHasSettled) return
-      acquisitionHasSettled = true
-      resolve(Object.freeze(result))
-    }
+  const acquisition = Promise.withResolvers<WebExclusiveWriterLeaseResult>()
+  const released = Promise.withResolvers<void>()
+  const lifetime = new AbortController()
+  const queued = new AbortController()
+  const deadline = setTimeout(() => queued.abort(), WRITER_HANDOFF_TIMEOUT_MS)
+  const release = () => lifetime.abort()
+  lifetime.signal.addEventListener(
+    "abort",
+    () => {
+      clearTimeout(deadline)
+      queued.abort()
+      released.resolve()
+    },
+    { once: true },
+  )
+  globalThis.window?.addEventListener(
+    "pagehide",
+    (event) => {
+      if (!event.persisted) release()
+    },
+    { signal: lifetime.signal },
+  )
 
+  const hold = (lock: Lock | null) => {
+    clearTimeout(deadline)
+    if (!lock || lifetime.signal.aborted) {
+      acquisition.resolve(
+        Object.freeze({ status: "read-only", reason: "lock-unavailable" }),
+      )
+      release()
+      return Promise.resolve()
+    }
+    acquisition.resolve(Object.freeze({ status: "writer", release }))
+    return released.promise
+  }
+
+  async function requestWriter(manager: WebExclusiveWriterLockManager) {
     try {
-      const lockRequest = lockManager.request(
+      await manager.request(
+        WEB_EXCLUSIVE_WRITER_LOCK_NAME,
+        { mode: "exclusive", signal: queued.signal },
+        hold,
+      )
+    } catch (error: unknown) {
+      if (!queued.signal.aborted) throw error
+      if (lifetime.signal.aborted) {
+        hold(null)
+        return
+      }
+      // A delayed browser may exceed the queue deadline even when the lock is free.
+      // Let its lock manager distinguish that case from a live competing writer.
+      await manager.request(
         WEB_EXCLUSIVE_WRITER_LOCK_NAME,
         { mode: "exclusive", ifAvailable: true },
-        async (lock) => {
-          if (!lock) {
-            settleAcquisition({
-              status: "read-only",
-              reason: "lock-unavailable",
-            })
-            return
-          }
-
-          let releaseLock = () => undefined
-          const releaseRequested = new Promise<void>((release) => {
-            let hasReleased = false
-            releaseLock = () => {
-              if (hasReleased) return
-              hasReleased = true
-              release()
-            }
-          })
-
-          settleAcquisition({ status: "writer", release: releaseLock })
-          await releaseRequested
-        },
+        hold,
       )
+    }
+  }
 
-      void lockRequest.catch((error: unknown) => {
-        settleAcquisition({
-          status: "read-only",
-          reason: "lock-request-failed",
-          issue: getErrorMessage(error),
-        })
-      })
-    } catch (error: unknown) {
-      settleAcquisition({
+  void requestWriter(lockManager).catch((error: unknown) => {
+    acquisition.resolve(
+      Object.freeze({
         status: "read-only",
         reason: "lock-request-failed",
         issue: getErrorMessage(error),
-      })
-    }
+      }),
+    )
+    release()
   })
+  return acquisition.promise
 }

@@ -12,6 +12,7 @@ const exclusiveLock = Object.freeze({
 
 describe("Web Exclusive Writer Lease", () => {
   afterEach(() => {
+    vi.useRealTimers()
     vi.unstubAllGlobals()
   })
 
@@ -29,20 +30,71 @@ describe("Web Exclusive Writer Lease", () => {
     })
   })
 
-  it("reports contention without waiting or stealing", async () => {
+  it("becomes read-only when the current writer keeps the lock", async () => {
+    vi.useFakeTimers()
     const request = vi.fn<WebExclusiveWriterLockManager["request"]>(
-      async (_name, _options, callback) => callback(null),
+      async (_name, { signal }, callback) => {
+        if (!signal) return callback(null)
+        await new Promise((_, reject) => {
+          signal.addEventListener("abort", () => reject(signal.reason), {
+            once: true,
+          })
+        })
+      },
     )
-
-    await expect(acquireWebExclusiveWriterLease({ request })).resolves.toEqual({
+    const acquisition = acquireWebExclusiveWriterLease({ request })
+    expect(request).toHaveBeenCalledWith(
+      WEB_EXCLUSIVE_WRITER_LOCK_NAME,
+      { mode: "exclusive", signal: expect.any(AbortSignal) },
+      expect.any(Function),
+    )
+    await vi.runOnlyPendingTimersAsync()
+    await expect(acquisition).resolves.toEqual({
       status: "read-only",
       reason: "lock-unavailable",
     })
-    expect(request).toHaveBeenCalledWith(
-      WEB_EXCLUSIVE_WRITER_LOCK_NAME,
-      { mode: "exclusive", ifAvailable: true },
-      expect.any(Function),
+  })
+
+  it("admits a free writer even if the browser answers after the queue deadline", async () => {
+    vi.useFakeTimers()
+    const request = vi.fn<WebExclusiveWriterLockManager["request"]>(
+      async (_name, options, callback) => {
+        if (options.ifAvailable) return callback(exclusiveLock)
+        await new Promise((_, reject) => {
+          options.signal!.addEventListener(
+            "abort",
+            () => reject(options.signal!.reason),
+            { once: true },
+          )
+        })
+      },
     )
+    const acquisition = acquireWebExclusiveWriterLease({ request })
+    await vi.runOnlyPendingTimersAsync()
+    const result = await acquisition
+    expect(
+      request.mock.calls.map(([, options]) => options.ifAvailable),
+    ).toEqual([undefined, true])
+    expect(result.status).toBe("writer")
+    if (result.status === "writer") result.release()
+  })
+
+  it("acquires a just-released writer and clears the deadline once granted", async () => {
+    vi.useFakeTimers()
+    const outgoing = Promise.withResolvers<void>()
+    const request = vi.fn<WebExclusiveWriterLockManager["request"]>(
+      async (_name, _options, callback) => {
+        await outgoing.promise
+        await callback(exclusiveLock)
+      },
+    )
+    const acquisition = acquireWebExclusiveWriterLease({ request })
+    outgoing.resolve()
+    const lease = await acquisition
+    if (lease.status !== "writer") throw new Error("Writer handoff failed")
+    await vi.runOnlyPendingTimersAsync()
+    expect(request.mock.calls[0]![1].signal!.aborted).toBe(false)
+    lease.release()
   })
 
   it("holds the exclusive lock until its idempotent release is requested", async () => {
@@ -68,6 +120,28 @@ describe("Web Exclusive Writer Lease", () => {
     result.release()
     await callbackCompleted
     expect(request).toHaveBeenCalledOnce()
+  })
+
+  it("retains the writer for a cached page and releases it when the document is discarded", async () => {
+    const returned = Promise.withResolvers<void>()
+    const request = vi.fn<WebExclusiveWriterLockManager["request"]>(
+      async (_name, _options, callback) => {
+        await callback(exclusiveLock)
+        returned.resolve()
+      },
+    )
+    const lease = await acquireWebExclusiveWriterLease({ request })
+    expect(lease.status).toBe("writer")
+    const signal = request.mock.calls[0]![1].signal!
+    window.dispatchEvent(
+      Object.assign(new Event("pagehide"), { persisted: true }),
+    )
+    expect(signal.aborted).toBe(false)
+    window.dispatchEvent(
+      Object.assign(new Event("pagehide"), { persisted: false }),
+    )
+    await returned.promise
+    expect(signal.aborted).toBe(true)
   })
 
   it("normalizes asynchronous lock request failures", async () => {

@@ -1,13 +1,12 @@
 import { hashText } from "@game/utils/src/HashText"
 import { isCanonicalValueId, type ValueId } from "./Value"
 import { VALUE_TO_ANIMAL_MAP } from "./ValueToAnimalMap"
-import { ZOO_ANIMALS, type ZooAnimalId } from "./ZooAnimals"
+import { CUSTOM_VALUE_ANIMAL_IDS_V1, type ZooAnimalId } from "./ZooAnimals"
 
 export const SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ASSOCIATION_VERSION = 1
 
-export const SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ROSTER = Object.freeze(
-  ZOO_ANIMALS.map(({ id }) => id),
-)
+export const SEETHING_SWARM_CUSTOM_VALUE_ANIMAL_ROSTER =
+  CUSTOM_VALUE_ANIMAL_IDS_V1
 
 const canonicalAnimalByValueId = new Map(
   VALUE_TO_ANIMAL_MAP.map(({ valueId, animalId }) => [valueId, animalId]),

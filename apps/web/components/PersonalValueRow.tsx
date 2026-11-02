@@ -30,7 +30,10 @@ export default function PersonalValueRow({
   const localizedCopy = useLocaleCatalog()
   const PERSONAL_HUB_COPY = localizedCopy.hub
 
-  const { isAttended, attentionHandlers } = useAnimalAttentionInput()
+  const { isAttended, attentionHandlers, tapRequest } = useAnimalAttentionInput(
+    undefined,
+    "row",
+  )
   const { medal, accessibleLabel } = getValueRankPresentation(
     value.rank,
     localizedCopy.interfaceCopy.rank,
@@ -69,6 +72,7 @@ export default function PersonalValueRow({
           surface="card"
           catalog={catalog}
           isAttended={isAttended}
+          tapRequest={tapRequest}
           valuePresentation={resolveValueAnimalPresentation(
             value.definition,
             catalog,

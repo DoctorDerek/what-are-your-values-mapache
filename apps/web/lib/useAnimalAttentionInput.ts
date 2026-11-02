@@ -1,13 +1,23 @@
-import { useRef, useState, type FocusEvent, type PointerEvent } from "react"
+import {
+  useRef,
+  useState,
+  type FocusEvent,
+  type KeyboardEvent,
+  type PointerEvent,
+} from "react"
 
 const ANIMAL_TAP_MOVEMENT_TOLERANCE_PX = 8
 
 export default function useAnimalAttentionInput(
   onAttentionRequest?: () => void,
+  scope: "control" | "row" = "control",
 ) {
   const [isHovered, setIsHovered] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
   const [isTapped, setIsTapped] = useState(false)
+  const [tapRequest, setTapRequest] = useState(0)
+  const ownsTarget = (target: EventTarget) =>
+    scope !== "row" || !(target instanceof Element && target.closest("button"))
   const lastPointerType = useRef<string | null>(null)
   const pendingTap = useRef<{ pointerId: number; x: number; y: number } | null>(
     null,
@@ -15,20 +25,33 @@ export default function useAnimalAttentionInput(
 
   return {
     isAttended: isHovered || isFocused || isTapped,
+    tapRequest,
     activateAttention: () => {
       if (lastPointerType.current !== "touch") onAttentionRequest?.()
     },
     attentionHandlers: {
       onPointerEnter: (event: PointerEvent<HTMLElement>) => {
-        if (event.pointerType !== "touch") {
+        if (event.pointerType !== "touch" && ownsTarget(event.target)) {
           setIsHovered(true)
           onAttentionRequest?.()
         }
       },
-      onPointerLeave: () => setIsHovered(false),
+      onPointerLeave: (event: PointerEvent<HTMLElement>) => {
+        setIsHovered(false)
+        if (event.pointerType !== "touch") {
+          setIsTapped(false)
+          pendingTap.current = null
+        }
+      },
       onPointerDown: (event: PointerEvent<HTMLElement>) => {
         lastPointerType.current = event.pointerType
-        if (event.pointerType !== "touch") return
+        pendingTap.current = null
+        if (
+          !ownsTarget(event.target) ||
+          event.button !== 0 ||
+          (scope !== "row" && event.pointerType !== "touch")
+        )
+          return
         setIsTapped(false)
         setIsFocused(false)
         pendingTap.current = {
@@ -40,7 +63,7 @@ export default function useAnimalAttentionInput(
       onPointerMove: (event: PointerEvent<HTMLElement>) => {
         const tap = pendingTap.current
         if (
-          tap &&
+          tap?.pointerId === event.pointerId &&
           Math.hypot(event.clientX - tap.x, event.clientY - tap.y) >
             ANIMAL_TAP_MOVEMENT_TOLERANCE_PX
         )
@@ -50,10 +73,12 @@ export default function useAnimalAttentionInput(
         const tap = pendingTap.current
         if (
           tap?.pointerId === event.pointerId &&
+          ownsTarget(event.target) &&
           Math.hypot(event.clientX - tap.x, event.clientY - tap.y) <=
             ANIMAL_TAP_MOVEMENT_TOLERANCE_PX
         ) {
           setIsTapped(true)
+          if (scope === "row") setTapRequest((previous) => previous + 1)
           onAttentionRequest?.()
         }
         pendingTap.current = null
@@ -63,12 +88,13 @@ export default function useAnimalAttentionInput(
         setIsHovered(false)
         setIsTapped(false)
       },
-      onKeyDown: () => {
+      onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+        if (!ownsTarget(event.target)) return
         lastPointerType.current = null
         setIsFocused(true)
       },
-      onFocus: () => {
-        if (lastPointerType.current !== "touch") {
+      onFocus: (event: FocusEvent<HTMLElement>) => {
+        if (ownsTarget(event.target) && lastPointerType.current !== "touch") {
           setIsFocused(true)
           onAttentionRequest?.()
         }

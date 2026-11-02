@@ -52,7 +52,10 @@ function ResultsValueRow({
   )
 
   const elementRef = useRef<HTMLLIElement>(null)
-  const { isAttended, attentionHandlers } = useAnimalAttentionInput()
+  const { isAttended, attentionHandlers, tapRequest } = useAnimalAttentionInput(
+    undefined,
+    "row",
+  )
   const [isNearViewport, setIsNearViewport] = useState(false)
   const { value, rank, totalXp } = frameValue
   const { level, earnedXpTowardNextLevel, requiredXpForNextLevel } =
@@ -141,6 +144,7 @@ function ResultsValueRow({
           showRank={false}
           catalog={runtimeClipCatalog}
           isAttended={isAttended}
+          tapRequest={tapRequest}
           valuePresentation={resolveValueAnimalPresentation(
             value.definition,
             runtimeClipCatalog,
@@ -216,6 +220,7 @@ export default function Results({
   const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
   const RESULTS_COPY = localizedCopy.interfaceCopy.results
 
+  const focusFromRowPointer = useRef(false)
   const [isSaveConfirmationVisible, setIsSaveConfirmationVisible] = useState(
     () => getResultsSaveConfirmationRemainingMs(openedAt, Date.now()) > 0,
   )
@@ -304,7 +309,7 @@ export default function Results({
     <MapacheScreen
       viewport="fixed"
       spacing="compact"
-      className="overflow-hidden"
+      className="overflow-hidden max-xl:[--mapache-screen-spacing:clamp(4px,calc(100vw_-_10rem),16px)]"
     >
       <div
         className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-2 overflow-y-auto overscroll-contain"
@@ -358,7 +363,18 @@ export default function Results({
             tabIndex={0}
             onWheelCapture={settleRowPositions}
             onScroll={settleRowPositions}
-            onFocusCapture={settleRowPositions}
+            onPointerDownCapture={(event) => {
+              focusFromRowPointer.current = Boolean(
+                (event.target as Element).closest("[data-results-value]"),
+              )
+            }}
+            onFocusCapture={(event) => {
+              if (
+                !focusFromRowPointer.current ||
+                event.target.matches(":focus-visible")
+              )
+                settleRowPositions()
+            }}
             onKeyDownCapture={settleRowPositions}
           >
             <ol
@@ -381,13 +397,14 @@ export default function Results({
           {notifications}
         </div>
         <nav
-          className="noise-bg bg-mapache-vivid-dark sticky bottom-0 z-10 flex shrink-0 flex-wrap gap-2 pb-[8px]"
+          className="noise-bg bg-mapache-vivid-dark sticky bottom-0 z-10 flex shrink-0 flex-wrap gap-2 pr-[8px] pb-[8px]"
           aria-label={localizedCopy.interfaceCopy.screen.resultsActions}
         >
           <Button
             size="sm"
             wrap
-            className="max-w-full min-w-min flex-[1_1_0] px-[6px] text-center leading-tight break-normal wrap-normal"
+            textCase="normal-case"
+            className="max-w-full flex-[1_1_0] text-center leading-tight break-normal wrap-break-word max-xl:px-[2px]"
             onClick={onSeeValues}
           >
             {RESULTS_COPY.seeValuesAction}
@@ -396,7 +413,8 @@ export default function Results({
             size="sm"
             variant="outline"
             wrap
-            className="max-w-full min-w-min flex-[1_1_0] px-[6px] text-center leading-tight break-normal wrap-normal"
+            textCase="normal-case"
+            className="max-w-full flex-[1_1_0] text-center leading-tight break-normal wrap-break-word max-xl:px-[2px]"
             onClick={onKeepBattling}
           >
             {RESULTS_COPY.keepBattlingAction}

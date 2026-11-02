@@ -18,6 +18,10 @@ const getChoiceValueName = async (choice: Locator) => {
 test("a player previews every appearance category and retains only saved choices", async ({
   page,
 }) => {
+  test.slow(
+    true,
+    "Two tabs hand off the writer, save separately, and reload the persisted data.",
+  )
   await page.goto("/")
   await page.getByRole("button", { name: "Start", exact: true }).click()
   await page
@@ -306,12 +310,12 @@ test("a secondary tab stays read-only then inherits released writer ownership", 
   await page.close()
 
   await secondaryPage.getByRole("button", { name: "Load Latest" }).click()
-  await expect(
-    secondaryPage.getByRole("heading", {
+  await secondaryPage
+    .getByRole("heading", {
       level: 2,
       name: /^My (?:Top Five Life )?Values$/,
-    }),
-  ).toBeVisible()
+    })
+    .waitFor({ state: "visible" })
   const inheritedWinningValue = secondaryPage
     .getByRole("listitem")
     .filter({ has: secondaryPage.getByText(ownerChoiceName, { exact: true }) })
@@ -321,22 +325,33 @@ test("a secondary tab stays read-only then inherits released writer ownership", 
   await expect(inheritedTopValue).toContainText("Level 3")
 
   await secondaryPage
-    .getByRole("button", { name: "Battle", exact: true })
+    .getByRole("button", { name: "Add value", exact: true })
     .click()
-  await expect(
-    secondaryPage.getByRole("main", { name: "Value battle" }),
-  ).toBeVisible()
-  const choiceButtons = secondaryPage.getByRole("button", { name: /^Choose / })
-  const inheritedPair = await choiceButtons.evaluateAll((buttons) =>
-    buttons.map((button) => button.getAttribute("aria-label")),
+  await secondaryPage
+    .getByLabel("Value name", { exact: true })
+    .fill(example.name)
+  await secondaryPage
+    .getByLabel("Definition", { exact: true })
+    .fill(example.definition)
+  const returnedToHub = secondaryPage.waitForEvent(
+    "framenavigated",
+    (frame) => frame === secondaryPage.mainFrame(),
   )
-
-  await choiceButtons.first().click()
-  await expect
-    .poll(() =>
-      choiceButtons.evaluateAll((buttons) =>
-        buttons.map((button) => button.getAttribute("aria-label")),
-      ),
-    )
-    .not.toEqual(inheritedPair)
+  await secondaryPage.getByRole("button", { name: "Save", exact: true }).click()
+  await expect(
+    secondaryPage.getByText(
+      "Your Custom Values are saved and ready to battle.",
+    ),
+  ).toBeVisible()
+  await returnedToHub
+  await secondaryPage.reload({ waitUntil: "domcontentloaded" })
+  await secondaryPage
+    .getByRole("button", { name: "Browse All Values", exact: true })
+    .click()
+  await secondaryPage
+    .getByRole("searchbox", { name: "Search All Values" })
+    .fill(example.name)
+  await expect(
+    secondaryPage.getByRole("heading", { name: example.name, exact: true }),
+  ).toBeVisible()
 })

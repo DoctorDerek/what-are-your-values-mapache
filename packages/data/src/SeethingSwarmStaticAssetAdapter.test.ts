@@ -162,7 +162,7 @@ describe("SeethingSwarm static asset adapter", () => {
       createSeethingSwarmTypographyOnlyStaticAssetAdapter({
         animals: SEETHING_SWARM_PLACEHOLDER_REGISTRY.animals.slice(0, -1),
       }),
-    ).toThrow("Invalid SeethingSwarm typography-only animal count: 44")
+    ).toThrow("Invalid SeethingSwarm typography-only animal count: 46")
 
     const reorderedAnimals = [
       SEETHING_SWARM_PLACEHOLDER_REGISTRY.animals[1]!,

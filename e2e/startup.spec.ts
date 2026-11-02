@@ -140,19 +140,25 @@ for (const locale of ["en", "es-MX"] as const) {
       })
       .locator("..")
     const body = page.getByTestId("information-panel-body")
+    await page.evaluate(() => document.fonts.ready.then(() => undefined))
     for (const region of [header, body]) {
+      const text = region.locator("h1 > span, p")
       expect((await region.boundingBox())!.height).toBeGreaterThan(100)
       await region.focus()
-      await region.press("Home")
-      await expect.poll(() => region.evaluate((node) => node.scrollTop)).toBe(0)
-      await region.press("End")
+      await expect(region).toBeFocused()
+      const overflows = await region.evaluate(
+        (element) => element.scrollHeight > element.clientHeight + 1,
+      )
+      if (overflows) await region.press("End")
+      await expect(text.last()).toBeInViewport({ ratio: 1 })
+      if (overflows) await region.press("Home")
+      await expect(text.first()).toBeInViewport()
       await expect
-        .poll(() =>
-          region.evaluate(
-            (node) =>
-              node.scrollTop >= node.scrollHeight - node.clientHeight - 1,
-          ),
-        )
+        .poll(async () => {
+          const first = (await text.first().boundingBox())!
+          const band = (await region.boundingBox())!
+          return first.y >= band.y
+        })
         .toBe(true)
     }
     const language = page.getByRole("combobox")

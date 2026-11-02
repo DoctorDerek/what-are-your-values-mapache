@@ -424,6 +424,7 @@ async function expectRenderedCombatant(
 test("the Zoo of War holds both animals through a committed battle", async ({
   page,
 }) => {
+  await prepareSeededMatchups(page, "00000000-0000-4000-8000-000000000073")
   await page.addInitScript(() => {
     window.completedAnimalClips = []
     window.animalStrikes = []
@@ -538,6 +539,8 @@ test("the Zoo of War holds both animals through a committed battle", async ({
   const choices = battle.getByRole("button", { name: /^Choose / })
 
   await expect(battle).toBeVisible()
+  await expect(firstCombatant).toHaveAttribute("data-animal-id", "bunnypack")
+  await expect(secondCombatant).toHaveAttribute("data-animal-id", "lilhedgehog")
   await expect(stage).not.toHaveAttribute("aria-hidden", "true")
   const cards = stage.locator("[data-value-card]")
   await expect(cards).toHaveCount(2)

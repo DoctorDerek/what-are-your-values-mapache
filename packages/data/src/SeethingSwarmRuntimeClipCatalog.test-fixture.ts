@@ -2,13 +2,23 @@ import {
   createSeethingSwarmAnimalManifest,
   type SeethingSwarmAnimalManifestInput,
 } from "./SeethingSwarmAnimalManifest"
-import { createSeethingSwarmAnimalRegistry } from "./SeethingSwarmAnimalRegistry"
+import {
+  createSeethingSwarmAnimalRegistry,
+  type SeethingSwarmAnimalRegistry,
+} from "./SeethingSwarmAnimalRegistry"
 import {
   createSeethingSwarmLicensedRuntimeClipCatalog,
   type SeethingSwarmRuntimeAssetSource,
 } from "./SeethingSwarmRuntimeClipCatalog"
 import { SEETHING_SWARM_SOURCE_SNAPSHOT } from "./SeethingSwarmSourceEvidence"
-import { ZOO_ANIMALS } from "./ZooAnimals"
+import { ZOO_ANIMALS, type ZooAnimalId } from "./ZooAnimals"
+
+export function fixtureAnimationCount(id: ZooAnimalId) {
+  if (id === "bat") return 26
+  if (id === "squirrelpack") return 12
+  if (id === "tigerpack") return 15
+  return 17
+}
 
 const frogpackAnimalIndex = ZOO_ANIMALS.findIndex(({ id }) => id === "frogpack")
 
@@ -17,7 +27,7 @@ export function createCompleteSeethingSwarmRuntimeClipTestRegistry() {
     ZOO_ANIMALS.map(({ id }, animalIndex) => {
       const familyId = `animal_${animalIndex}`
       const sourceRelativePath = `${familyId}_spritesheets`
-      const animationCount = animalIndex === 0 ? 26 : 17
+      const animationCount = fixtureAnimationCount(id)
 
       return createSeethingSwarmAnimalManifest({
         animalId: id,
@@ -61,7 +71,7 @@ export function createCompleteSeethingSwarmRuntimeClipTestRegistry() {
 }
 
 export function createCompleteSeethingSwarmRuntimeClipTestSources(
-  registry = createCompleteSeethingSwarmRuntimeClipTestRegistry(),
+  registry: SeethingSwarmAnimalRegistry = createCompleteSeethingSwarmRuntimeClipTestRegistry(),
 ) {
   return Object.freeze(
     registry.animals
@@ -112,8 +122,26 @@ export function createCompleteSeethingSwarmRuntimeClipTestSources(
   ) satisfies readonly SeethingSwarmRuntimeAssetSource<string>[]
 }
 
-export function createCompleteSeethingSwarmRuntimeClipTestFixture() {
-  const registry = createCompleteSeethingSwarmRuntimeClipTestRegistry()
+// Keep the original 45-animal catalog available to consumers of the March fixture.
+export function createCompleteSeethingSwarmRuntimeClipTestFixture(
+  snapshot: "march" | "current" = "march",
+) {
+  const current = createCompleteSeethingSwarmRuntimeClipTestRegistry()
+  const animals = current.animals.filter(
+    ({ animalId }) => animalId !== "squirrelpack" && animalId !== "tigerpack",
+  )
+  const registry =
+    snapshot === "current"
+      ? current
+      : {
+          ...current,
+          animals,
+          evidenceSnapshotId: "seethingswarm-animals:2026-03-15",
+          characterAnimationCount: animals.reduce(
+            (total, animal) => total + Object.keys(animal.animations).length,
+            0,
+          ),
+        }
   const sources = createCompleteSeethingSwarmRuntimeClipTestSources(registry)
   return Object.freeze({
     registry,

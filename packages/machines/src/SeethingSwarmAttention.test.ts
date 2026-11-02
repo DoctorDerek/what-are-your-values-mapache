@@ -18,6 +18,25 @@ describe("mounted attention entries", () => {
     expect(createSeethingSwarmAttentionState().alternativeIndex).toBe(0)
   })
 
+  it("advances once per completed tap while the same row stays attended", () => {
+    const first = updateSeethingSwarmAttention(
+      createSeethingSwarmAttentionState(),
+      true,
+      true,
+      2,
+      1,
+    )
+    const second = updateSeethingSwarmAttention(first, true, true, 2, 2)
+    expect(second).toMatchObject({ entries: 2, alternativeIndex: 1 })
+    expect(updateSeethingSwarmAttention(second, true, true, 2, 2)).toBe(second)
+    const reduced = updateSeethingSwarmAttention(second, true, false, 2, 3)
+    expect(reduced).toMatchObject({
+      entries: 2,
+      isActive: false,
+      alternativeIndex: 1,
+    })
+  })
+
   it("does not consume disabled entries or replay held attention after cancellation", () => {
     let state = updateSeethingSwarmAttention(
       createSeethingSwarmAttentionState(),
@@ -25,7 +44,7 @@ describe("mounted attention entries", () => {
       false,
       2,
     )
-    expect(state.hasEntered).toBe(false)
+    expect(state.entries).toBe(0)
     expect(state.generation).toBe(0)
     expect(updateSeethingSwarmAttention(state, true, true, 2)).toBe(state)
     state = updateSeethingSwarmAttention(state, false, true, 2)

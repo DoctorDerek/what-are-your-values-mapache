@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test"
 import { test } from "./fixtures"
+import { expectRankMedalImage } from "./rank-medal-image"
 
 test.use({
   serviceWorkers: "block",
@@ -19,9 +20,12 @@ for (const width of [320, 1440]) {
   test(`First Results reveal medal tiers before sorting finishes at ${width}px`, async ({
     page,
   }) => {
-    await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") })
     await page.setViewportSize({ width, height: width === 320 ? 720 : 900 })
     await page.goto("/")
+    await expect(
+      page.getByRole("button", { name: "Start", exact: true }),
+    ).toBeVisible()
+    await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") })
     await page.getByRole("button", { name: "Start", exact: true }).click()
     await page.getByRole("button", { name: "Battle", exact: true }).click()
     await page
@@ -65,11 +69,7 @@ for (const width of [320, 1440]) {
       await page.clock.runFor(advanceMs)
       await expect(slot).toHaveAttribute("data-results-medal", medal)
       const image = slot.locator("img")
-      await expect(image).toHaveAttribute(
-        "src",
-        new RegExp(`/${medal}(?:\\.[^/]+)?\\.png$`),
-      )
-      await image.evaluate((element: HTMLImageElement) => element.decode())
+      await expectRankMedalImage(image, medal)
       await expect(image).toBeInViewport()
       const evidence = await slot.evaluate((element: HTMLElement) => {
         const bounds = element.getBoundingClientRect()

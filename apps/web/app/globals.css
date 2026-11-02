@@ -114,7 +114,13 @@
       transform: translateX(
         calc(
           var(--battle-travel-direction) *
-            (100cqw - var(--battle-combatant-size) * 3 / 4)
+            (
+              100cqw -
+                var(
+                  --battle-strike-spacing,
+                  calc(var(--battle-combatant-size) * 3 / 4)
+                )
+            )
         )
       );
     }
@@ -131,7 +137,13 @@
       transform: translateX(
         calc(
           var(--battle-travel-direction) *
-            (100cqw - var(--battle-combatant-size) * 3 / 4)
+            (
+              100cqw -
+                var(
+                  --battle-strike-spacing,
+                  calc(var(--battle-combatant-size) * 3 / 4)
+                )
+            )
         )
       );
     }

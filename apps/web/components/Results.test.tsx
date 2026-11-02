@@ -424,8 +424,13 @@ describe("Battle-exit Results presentation", () => {
     )
     const roster = screen.getByRole("list", { name: "Your value results" })
     const row = within(roster).getAllByRole("listitem")[0]
-    fireEvent.touchStart(row)
+    fireEvent.pointerDown(row, { pointerType: "touch", button: 0 })
+    fireEvent.focus(roster.parentElement!)
     expect(row).not.toHaveAttribute("data-results-settled")
+    fireEvent.pointerDown(roster.parentElement!, {
+      pointerType: "mouse",
+      button: 0,
+    })
     fireEvent.scroll(roster.parentElement!)
     expect(row).toHaveAttribute("data-results-settled", "true")
   })
