@@ -20,9 +20,12 @@ for (const width of [320, 1440]) {
   test(`First Results reveal medal tiers before sorting finishes at ${width}px`, async ({
     page,
   }) => {
-    await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") })
     await page.setViewportSize({ width, height: width === 320 ? 720 : 900 })
     await page.goto("/")
+    await expect(
+      page.getByRole("button", { name: "Start", exact: true }),
+    ).toBeVisible()
+    await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") })
     await page.getByRole("button", { name: "Start", exact: true }).click()
     await page.getByRole("button", { name: "Battle", exact: true }).click()
     await page

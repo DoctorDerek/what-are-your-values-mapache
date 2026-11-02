@@ -230,8 +230,11 @@ test("battle results show committed progress without delaying either exit", asyn
       value: () => "bfc518dd-4ee2-42c6-906a-e9baf8edfc40",
     })
   })
-  await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") })
   await page.goto("/")
+  await expect(
+    page.getByRole("button", { name: "Start", exact: true }),
+  ).toBeVisible()
+  await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") })
   await page.getByRole("button", { name: "Start" }).click()
   await page.getByRole("button", { name: "Battle", exact: true }).click()
 

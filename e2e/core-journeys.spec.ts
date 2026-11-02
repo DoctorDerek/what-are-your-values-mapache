@@ -18,6 +18,10 @@ const getChoiceValueName = async (choice: Locator) => {
 test("a player previews every appearance category and retains only saved choices", async ({
   page,
 }) => {
+  test.slow(
+    true,
+    "Two tabs hand off the writer, save separately, and reload the persisted data.",
+  )
   await page.goto("/")
   await page.getByRole("button", { name: "Start", exact: true }).click()
   await page
