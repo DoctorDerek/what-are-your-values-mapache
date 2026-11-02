@@ -153,6 +153,7 @@ export default function AllValues({
                   definition,
                   localization.values,
                   localization.metadata.languageTag,
+                  "catalog",
                 )}
               </h3>
               {customValueId ? (

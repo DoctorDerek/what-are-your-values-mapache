@@ -96,14 +96,26 @@ const VALUE_NAME_WORD_BREAKS = new Map([
   ["es", SPANISH_VALUE_NAME_WORD_BREAKS],
 ])
 
+const CATALOG_HEADING_WORD_BREAKS = new Map([
+  ["en", new Map([["Dependability", "De\u00adpend\u00adability"]])],
+  ["es", new Map([["Autoestima", "Au\u00adtoes\u00adti\u00adma"]])],
+])
+
 export function getWrappableValueDisplayName(
   value: ActiveValueDefinition,
   translations?: ReadonlyMap<CanonicalValueId, LocalizedValueCopy>,
   languageTag = "en-US",
+  layout: "standard" | "catalog" = "standard",
 ): string {
   const name = getValueDisplayName(value, translations)
-  const wordBreaks = VALUE_NAME_WORD_BREAKS.get(languageTag.split("-")[0])
+  const language = languageTag.split("-")[0]
+  const wordBreaks = VALUE_NAME_WORD_BREAKS.get(language)
+  const headingBreaks =
+    layout === "catalog" ? CATALOG_HEADING_WORD_BREAKS.get(language) : undefined
   return value.kind === "canonical" && wordBreaks
-    ? name.replace(/\p{L}+/gu, (word) => wordBreaks.get(word) ?? word)
+    ? name.replace(
+        /\p{L}+/gu,
+        (word) => headingBreaks?.get(word) ?? wordBreaks.get(word) ?? word,
+      )
     : name
 }
