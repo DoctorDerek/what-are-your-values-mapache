@@ -34,21 +34,38 @@ async function expectNoAccessibilityViolations(
   ).toEqual([])
 }
 
-async function startAtHub(page: Page) {
+async function openIntroduction(page: Page) {
   await page.goto("/")
+  const start = page.getByRole("button", { name: "Start", exact: true })
+  await start.waitFor()
   await expect(
     page.getByRole("heading", {
       level: 1,
       name: "What Are Your Values, Mapache?",
     }),
   ).toBeVisible()
-  await page.getByRole("button", { name: "Start", exact: true }).click()
+  return start
+}
+
+async function startAtHub(page: Page) {
+  const start = await openIntroduction(page)
+  await start.click()
   await expect(
     page.getByRole("heading", {
       level: 2,
       name: /^My (?:Top Five Life )?Values$/,
     }),
   ).toBeVisible()
+}
+
+async function openBattleFromHub(page: Page) {
+  await page.getByRole("button", { name: "Battle", exact: true }).click()
+  const battle = page.getByRole("main", { name: "Value battle" })
+  await battle
+    .getByRole("button", { name: /^Choose / })
+    .first()
+    .waitFor()
+  return battle
 }
 
 async function openMenuDestination(page: Page, destinationName: string) {
@@ -61,16 +78,10 @@ async function openMenuDestination(page: Page, destinationName: string) {
 test("Introduction and Hub meet automated accessibility rules", async ({
   page,
 }) => {
-  await page.goto("/")
-  await expect(
-    page.getByRole("heading", {
-      level: 1,
-      name: "What Are Your Values, Mapache?",
-    }),
-  ).toBeVisible()
+  const start = await openIntroduction(page)
   await expectNoAccessibilityViolations(page, "Introduction")
 
-  await page.getByRole("button", { name: "Start", exact: true }).click()
+  await start.click()
   await expect(
     page.getByRole("heading", {
       level: 2,
@@ -193,8 +204,8 @@ test("battle and achievement feedback meet automated accessibility rules", async
   page,
 }) => {
   await startAtHub(page)
-  await page.getByRole("button", { name: "Battle", exact: true }).click()
-  await expect(page.getByRole("main", { name: "Value battle" })).toBeVisible()
+  const battle = await openBattleFromHub(page)
+  await expect(battle).toBeVisible()
   await expectNoAccessibilityViolations(page, "active Crucible")
 
   await page
@@ -213,8 +224,7 @@ test("overflowing value cards remain keyboard-readable beside achievement feedba
   await page.setViewportSize({ width: 1280, height: 600 })
   await page.emulateMedia({ reducedMotion: "reduce" })
   await startAtHub(page)
-  await page.getByRole("button", { name: "Battle", exact: true }).click()
-  const battle = page.getByRole("main", { name: "Value battle" })
+  const battle = await openBattleFromHub(page)
   await page.addStyleTag({ content: "html { font-size: 200%; }" })
   const content = battle.getByRole("region", { name: "Battle choices" })
   const stage = battle.locator("[data-battle-stage-state]")
@@ -289,11 +299,10 @@ for (const viewport of [
     await page.setViewportSize(viewport)
     await page.emulateMedia({ reducedMotion: "reduce" })
     await startAtHub(page)
-    await page.getByRole("button", { name: "Battle", exact: true }).click()
+    const battle = await openBattleFromHub(page)
     const textScaleStyle = await page.addStyleTag({
       content: `html { font-size: ${viewport.textScale}%; }${"fontFamily" in viewport ? ` body { font-family: ${viewport.fontFamily}, sans-serif; }` : ""}`,
     })
-    const battle = page.getByRole("main", { name: "Value battle" })
     const content = battle.getByRole("region", { name: "Battle choices" })
     const controls = battle.getByRole("navigation", { name: "Battle actions" })
     const controlsBefore = await controls.boundingBox()

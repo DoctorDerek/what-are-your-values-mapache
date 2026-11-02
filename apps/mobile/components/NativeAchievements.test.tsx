@@ -2,6 +2,7 @@ import { readAchievementId } from "@game/machines/src/AchievementCatalog"
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
 import { describe, expect, it, jest } from "@jest/globals"
 import { render, screen, userEvent } from "@testing-library/react-native"
+import NativeAchievementBanner from "@/components/NativeAchievementBanner"
 import NativeAchievements from "@/components/NativeAchievements"
 
 const lockedAchievement = Object.freeze({
@@ -32,6 +33,33 @@ const unlockedAchievement = Object.freeze({
 } satisfies AchievementPresentation)
 
 describe("NativeAchievements", () => {
+  it("lets the player go Back without dismissing the earned notification", async () => {
+    const onClose = jest.fn()
+    const onPresented = jest.fn()
+    const user = userEvent.setup()
+    await render(
+      <NativeAchievements
+        achievements={[unlockedAchievement]}
+        canClose
+        onClose={onClose}
+        notifications={
+          <NativeAchievementBanner
+            achievements={[unlockedAchievement]}
+            isAcknowledgementPending={false}
+            shouldReduceMotion
+            onPresented={onPresented}
+          />
+        }
+      />,
+    )
+    expect(
+      screen.getByRole("button", { name: "Dismiss achievement: 5 Battles" }),
+    ).toBeOnTheScreen()
+    await user.press(screen.getByRole("button", { name: "Back" }))
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(onPresented).not.toHaveBeenCalled()
+  })
+
   it("offers one non-destructive return action without interactive milestone rows", async () => {
     const onClose = jest.fn()
     const user = userEvent.setup()

@@ -2,26 +2,23 @@ import { achievementNotificationMachine } from "@game/machines/src/AchievementNo
 import type { AchievementPresentation } from "@game/machines/src/AchievementPresentation"
 import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { useActorRef } from "@xstate/react"
-import { cx } from "classix"
 import { useCallback, useEffect } from "react"
 import { AppState, ScrollView, View } from "react-native"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
 import NativeAchievementToast from "@/components/NativeAchievementToast"
 
 export default function NativeAchievementBanner({
   achievements,
   isAcknowledgementPending,
-  placement = "screen",
+  placement = "content",
   shouldReduceMotion,
   onPresented,
 }: {
   achievements: readonly AchievementPresentation[]
   isAcknowledgementPending: boolean
-  placement?: "battle" | "screen" | "inline"
+  placement?: "battle" | "content"
   shouldReduceMotion: boolean
   onPresented: (achievementId: AchievementPresentation["id"]) => void
 }) {
-  const safeAreaInsets = useSafeAreaInsets()
   const actor = useActorRef(achievementNotificationMachine, {
     input: { achievements, onPresented },
   })
@@ -83,32 +80,31 @@ export default function NativeAchievementBanner({
     />
   ))
 
+  if (placement === "content")
+    return (
+      <ScrollView
+        testID="achievement-overlay"
+        pointerEvents="box-none"
+        className="absolute inset-x-0 bottom-0 z-50 max-h-full"
+        contentContainerClassName="items-center gap-2 p-2"
+      >
+        {cards}
+      </ScrollView>
+    )
+
   return (
     <View
       pointerEvents="box-none"
       testID="achievement-overlay"
-      className={cx(
-        "z-50 items-center gap-2",
-        placement === "inline" ? "relative w-full" : "absolute right-3 left-3",
-        placement === "battle" && "top-0 bottom-2 justify-end",
-      )}
-      style={
-        placement === "screen"
-          ? { bottom: safeAreaInsets.bottom + 12 }
-          : undefined
-      }
+      className="absolute top-0 right-3 bottom-2 left-3 z-50 items-center justify-end gap-2"
     >
-      {placement === "battle" ? (
-        <ScrollView
-          pointerEvents="box-none"
-          className="max-h-full w-full grow-0"
-          contentContainerClassName="items-center gap-2 p-1"
-        >
-          {cards}
-        </ScrollView>
-      ) : (
-        cards
-      )}
+      <ScrollView
+        pointerEvents="box-none"
+        className="max-h-full w-full grow-0"
+        contentContainerClassName="items-center gap-2 p-1"
+      >
+        {cards}
+      </ScrollView>
     </View>
   )
 }

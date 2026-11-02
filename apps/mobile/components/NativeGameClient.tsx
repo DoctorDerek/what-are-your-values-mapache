@@ -569,7 +569,6 @@ function NativeGameClientContent({
     <NativeAchievementBanner
       achievements={pendingAchievementPresentations}
       isAcknowledgementPending={isRecordingAchievementPresentation}
-      placement={isResultsSurface || isHubSurface ? "inline" : "screen"}
       shouldReduceMotion={shouldReduceMotion}
       onPresented={handleAchievementPresented}
     />
@@ -708,6 +707,7 @@ function NativeGameClientContent({
         <NativeAchievements
           achievements={achievementPresentations}
           canClose={state.matches("Achievements")}
+          notifications={achievementBanner}
           onClose={() => send({ type: "ACHIEVEMENTS.CLOSE_REQUESTED" })}
         />
         <NativeProductMenu
@@ -718,7 +718,6 @@ function NativeGameClientContent({
         />
         {reopenedInformationPanel}
         {controls}
-        {achievementBanner}
       </View>
     )
 

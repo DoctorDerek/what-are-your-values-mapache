@@ -1,4 +1,4 @@
-import { expect, type Locator, type Route } from "@playwright/test"
+import { expect, type Locator, type Page, type Route } from "@playwright/test"
 import { test } from "./fixtures"
 import { installVisibleTextBounds } from "./visible-text-bounds"
 
@@ -7,6 +7,12 @@ test.use({ serviceWorkers: "block" })
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(installVisibleTextBounds)
 })
+
+async function prepareSeededMatchups(page: Page, seed: string) {
+  await page.addInitScript((seed) => {
+    Object.defineProperty(crypto, "randomUUID", { value: () => seed })
+  }, seed)
+}
 
 test("defers distant roster art and prepares animals when scrolling reaches them", async ({
   page,
@@ -202,12 +208,16 @@ declare global {
 test("cached matchup changes preserve animal pixels without layout-position jumps", async ({
   page,
 }) => {
+  await prepareSeededMatchups(page, "6c0ed74d-4731-407f-b626-cc574cd56b37")
   await page.goto("/", { waitUntil: "domcontentloaded" })
   await page.getByRole("button", { name: "Start", exact: true }).click()
   await page.getByRole("button", { name: "Battle", exact: true }).click()
   const battle = page.getByRole("main", { name: "Value battle" })
   const stage = battle.locator("[data-choreography-identity]")
   await expect(stage).toHaveAttribute("data-battle-stage-mode", "licensed")
+  await battle
+    .getByRole("button", { name: "Battle animation speed 3×" })
+    .click()
   const initialIdentity = await stage.getAttribute("data-choreography-identity")
   if (!initialIdentity) throw new Error("Initial battle identity is missing")
   const waitForLoadedImages = async () => {
@@ -257,10 +267,14 @@ test("cached matchup changes preserve animal pixels without layout-position jump
     requestAnimationFrame(sample)
   })
   try {
-    await page.keyboard.press("1")
-    await expect
-      .poll(() => stage.getAttribute("data-choreography-identity"))
-      .not.toBe(initialIdentity)
+    await battle
+      .getByRole("button", { name: /^Choose / })
+      .first()
+      .click()
+    await expect(stage).not.toHaveAttribute(
+      "data-choreography-identity",
+      initialIdentity,
+    )
     await expect(stage).toHaveAttribute(
       "data-battle-stage-state",
       "awaiting-input",
@@ -319,9 +333,7 @@ for (const { animalId, seed } of [
   test(`${animalId} completes equal-duration windup and contact segments`, async ({
     page,
   }) => {
-    await page.addInitScript((seed) => {
-      Object.defineProperty(crypto, "randomUUID", { value: () => seed })
-    }, seed)
+    await prepareSeededMatchups(page, seed)
     await page.goto("/")
     await page.getByRole("button", { name: "Start", exact: true }).click()
     await page.getByRole("button", { name: "Battle", exact: true }).click()

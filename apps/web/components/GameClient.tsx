@@ -763,7 +763,6 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     <AchievementBanner
       achievements={pendingAchievementPresentations}
       isAcknowledgementPending={isRecordingAchievementPresentation}
-      placement={isResultsSurface || isHubSurface ? "inline" : "screen"}
       shouldReduceMotion={shouldReduceMotion}
       onPresented={handleAchievementPresented}
     />
@@ -914,6 +913,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         <Achievements
           achievements={achievementPresentations}
           canClose={!isRecordingAchievementPresentation}
+          notifications={achievementBanner}
           onClose={() => send({ type: "ACHIEVEMENTS.CLOSE_REQUESTED" })}
         />
         <ProductMenu
@@ -925,7 +925,6 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         />
         {reopenedInformationPanel}
         {controls}
-        {achievementBanner}
       </>
     )
   }
