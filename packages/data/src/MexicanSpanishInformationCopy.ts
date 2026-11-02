@@ -367,7 +367,7 @@ export const MEXICAN_SPANISH_INFORMATION_COPY: InterfaceCopy["information"] = {
         kind: "resource",
         title: "SeethingSwarm",
         description:
-          "SeethingSwarm creó el arte y las animaciones de los animales del juego, incluidos los de Squirrelpack y Tigerpack.",
+          "SeethingSwarm creó el arte y las animaciones de los animales del juego.",
         actionLabel: "Visitar SeethingSwarm",
         url: "https://seethingswarm.itch.io/",
       },

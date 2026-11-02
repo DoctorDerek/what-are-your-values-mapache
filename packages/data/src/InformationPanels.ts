@@ -430,7 +430,7 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
       kind: "resource",
       title: "SeethingSwarm",
       description:
-        "SeethingSwarm created the game’s animal art and animations, including Squirrelpack and Tigerpack.",
+        "SeethingSwarm created the game’s animal art and animations.",
       actionLabel: "Visit SeethingSwarm",
       url: "https://seethingswarm.itch.io/",
     }),
