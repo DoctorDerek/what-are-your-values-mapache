@@ -1,12 +1,14 @@
 import { expect } from "@playwright/test"
 import { expectCompleteBattleTextReachable } from "./battle-text-reachability"
 import { test } from "./fixtures"
+import { installPaintedAnimalBounds } from "./painted-animal-bounds"
 import { installVisibleTextBounds } from "./visible-text-bounds"
 
 test.use({ serviceWorkers: "block" })
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(installVisibleTextBounds)
+  await page.addInitScript(installPaintedAnimalBounds)
 })
 
 interface ResponsiveStrikeEvidence {
@@ -165,15 +167,20 @@ for (const viewport of [
               bounds.x + bounds.width / 2 - target.x - target.width / 2,
               bounds.y + bounds.height / 2 - target.y - target.height / 2,
             )
+          const painted = window.getPaintedAnimalBounds(anchor)
+          const opposing = window.getPaintedAnimalBounds(defender)
           window.responsiveStrikes.push({
             identity: stage.getAttribute("data-choreography-identity"),
             side,
             originDistance: distance(origin),
             contactDistance: distance(current),
-            expectedContactDistance: (current.width * 3) / 4,
+            // The seeded Pig bite reaches Tiger from 32 source pixels at the 3x sprite scale.
+            expectedContactDistance:
+              side === "first" ? 32 * 3 : (current.width * 3) / 4,
             baselineDifference: Math.abs(current.bottom - target.bottom),
-            inViewport: [current, target].every(
+            inViewport: [painted, opposing].every(
               (bounds) =>
+                bounds !== null &&
                 bounds.left >= 0 &&
                 bounds.top >= 0 &&
                 bounds.right <= innerWidth &&
@@ -188,10 +195,11 @@ for (const viewport of [
                 return (
                   left < right &&
                   top < bottom &&
-                  current.left < right &&
-                  current.right > left &&
-                  current.top < bottom &&
-                  current.bottom > top
+                  painted !== null &&
+                  painted.left < right &&
+                  painted.right > left &&
+                  painted.top < bottom &&
+                  painted.bottom > top
                 )
               },
             ),
@@ -205,6 +213,19 @@ for (const viewport of [
     await page.getByRole("button", { name: "Battle", exact: true }).click()
     const stage = page.locator("[data-choreography-identity]")
     await expect(stage).toHaveAttribute("data-battle-stage-mode", "licensed")
+    await expect
+      .poll(() =>
+        stage
+          .locator("[data-combatant-side]")
+          .evaluateAll(
+            (animals) =>
+              animals.length === 2 &&
+              animals.every(
+                (animal) => window.getPaintedAnimalBounds(animal) !== null,
+              ),
+          ),
+      )
+      .toBe(true)
     const cardGeometry = await stage
       .locator("[data-value-card]")
       .evaluateAll((cards) => {
@@ -216,23 +237,41 @@ for (const viewport of [
         return cards.map((card) => ({
           card: measure(card.querySelector("label")!),
           animal: measure(card.querySelector("[data-combatant-side]")!),
+          painted: window.getPaintedAnimalBounds(
+            card.querySelector("[data-combatant-side]")!,
+          )!,
         }))
       })
     const [first, second] = cardGeometry
     if (!first || !second) throw new Error("Both value cards must be present")
     await expect(stage.locator("[data-combatant-side]")).toHaveCount(2)
-    for (const animal of await stage.locator("[data-combatant-side]").all())
-      await expect(animal).toBeInViewport({ ratio: 1 })
+    for (const { painted } of [first, second]) {
+      expect(painted.left).toBeGreaterThanOrEqual(0)
+      expect(painted.right).toBeLessThanOrEqual(viewport.width)
+      expect(painted.top).toBeGreaterThanOrEqual(0)
+      expect(painted.bottom).toBeLessThanOrEqual(viewport.height)
+    }
     expect(
       Math.abs(first.animal.bottom - second.animal.bottom),
     ).toBeLessThanOrEqual(1)
-    expect(first.animal.right).toBeLessThanOrEqual(second.animal.left)
+    expect(first.painted.right).toBeLessThanOrEqual(second.painted.left)
     expect(first.card.right).toBeLessThanOrEqual(second.card.left)
     expect(first.card.top).toBeCloseTo(second.card.top, 0)
     expect(first.card.bottom).toBeCloseTo(second.card.bottom, 0)
     expect(first.card.bottom).toBeLessThanOrEqual(first.animal.top)
     expect(second.card.bottom).toBeLessThanOrEqual(second.animal.top)
-    for (const side of ["first", "second"] as const) {
+    for (const [side, attacker, defender] of [
+      ["first", "pigpack", "tigerpack"],
+      ["second", "mousepack/mouse03_light_gray", "bat"],
+    ] as const) {
+      await expect(
+        stage.locator(`[data-combatant-side="${side}"]`),
+      ).toHaveAttribute("data-animal-id", attacker)
+      await expect(
+        stage.locator(
+          `[data-combatant-side="${side === "first" ? "second" : "first"}"]`,
+        ),
+      ).toHaveAttribute("data-animal-id", defender)
       if (side === "second")
         await page
           .getByRole("button", {
