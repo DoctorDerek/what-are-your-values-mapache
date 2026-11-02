@@ -30,6 +30,39 @@ describe("Value name typography", () => {
     }
   })
 
+  it.each([
+    ["en", "Dependability", "Depend\u00adability", "De\u00adpend\u00adability"],
+    [
+      "es-MX",
+      "Self-Esteem",
+      "Autoes\u00adti\u00adma",
+      "Au\u00adtoes\u00adti\u00adma",
+    ],
+  ] as const)(
+    "offers an earlier discretionary break only for the %s catalog heading",
+    (locale, englishName, standard, heading) => {
+      const copy = getLocaleCatalog(locale)
+      const value = CANONICAL_VALUES.find(
+        ({ englishName: candidate }) => candidate === englishName,
+      )!
+      expect(
+        getWrappableValueDisplayName(
+          value,
+          copy.values,
+          copy.metadata.languageTag,
+        ),
+      ).toBe(standard)
+      expect(
+        getWrappableValueDisplayName(
+          value,
+          copy.values,
+          copy.metadata.languageTag,
+          "catalog",
+        ),
+      ).toBe(heading)
+    },
+  )
+
   it("preserves all Spanish source names and supplies syllabic breaks for narrow Battle headings", () => {
     const catalog = getLocaleCatalog("es-MX")
     for (const value of CANONICAL_VALUES) {
