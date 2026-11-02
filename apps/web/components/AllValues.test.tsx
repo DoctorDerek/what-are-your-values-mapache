@@ -6,6 +6,7 @@ import {
   type SeethingSwarmRuntimeClipCatalog,
 } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import {
+  createCanonicalValueId,
   createCustomValueId,
   getValueDisplayDefinition,
   getValueDisplayName,
@@ -470,7 +471,9 @@ describe("All Values Component Integration", () => {
   })
 
   it("reveals the requested value without taking focus back when search changes", () => {
-    renderAllValues(undefined, { initialValueId: "pvcs-2011:fitness" })
+    renderAllValues(undefined, {
+      initialValueId: createCanonicalValueId("pvcs-2011:fitness"),
+    })
     const row = screen.getByRole("heading", { name: "Fitness" }).closest("li")
     expect(row).toHaveFocus()
     const search = screen.getByRole("searchbox")
