@@ -116,37 +116,35 @@ for (const locale of ["en", "es-MX"] as const) {
     await preview.screenshot({
       path: testInfo.outputPath("medals-preview-320.png"),
     })
-    const allIncludedPreview = await preview
-      .getByRole("img")
-      .getAttribute("src")
-    for (const [includeHero, includeLevels] of [
-      [false, true],
-      [true, false],
-      [false, false],
-      [true, true],
-    ]) {
-      await preview
-        .getByRole("checkbox", { name: catalog.card.includeHero, exact: true })
-        .setChecked(includeHero)
-      await preview
-        .getByRole("checkbox", {
-          name: catalog.card.includeLevels,
-          exact: true,
-        })
-        .setChecked(includeLevels)
+    const hero = preview.getByRole("checkbox", {
+      name: catalog.card.includeHero,
+      exact: true,
+    })
+    const levels = preview.getByRole("checkbox", {
+      name: catalog.card.includeLevels,
+      exact: true,
+    })
+    const previewImage = preview.getByRole("img")
+    for (const [toggle, includeHero, includeLevels] of [
+      [hero, false, true],
+      [levels, false, false],
+      [hero, true, false],
+      [levels, true, true],
+    ] as const) {
+      const previousImage = await previewImage.getAttribute("src")
+      await toggle.click()
+      await expect(hero).toBeChecked({ checked: includeHero })
+      await expect(levels).toBeChecked({ checked: includeLevels })
       await expect(save).toBeEnabled()
-      await expect(preview.getByRole("img")).not.toHaveAttribute(
-        "src",
-        allIncludedPreview!,
-      )
-      const image = await preview
-        .getByRole("img")
-        .evaluate(async (element: HTMLImageElement) => {
+      await expect(previewImage).not.toHaveAttribute("src", previousImage!)
+      const image = await previewImage.evaluate(
+        async (element: HTMLImageElement) => {
           const bytes = new Uint8Array(
             await (await fetch(element.src)).arrayBuffer(),
           )
           return Array.from(bytes)
-        })
+        },
+      )
       const download = page.waitForEvent("download")
       await save.click()
       const selectedPath = testInfo.outputPath(
