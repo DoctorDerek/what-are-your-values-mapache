@@ -96,6 +96,28 @@ describe("Web Exclusive Writer Lease", () => {
     expect(request).toHaveBeenCalledOnce()
   })
 
+  it("retains the writer for a cached page and releases it when the document is discarded", async () => {
+    const returned = Promise.withResolvers<void>()
+    const request = vi.fn<WebExclusiveWriterLockManager["request"]>(
+      async (_name, _options, callback) => {
+        await callback(exclusiveLock)
+        returned.resolve()
+      },
+    )
+    const lease = await acquireWebExclusiveWriterLease({ request })
+    expect(lease.status).toBe("writer")
+    const signal = request.mock.calls[0]![1].signal
+    window.dispatchEvent(
+      Object.assign(new Event("pagehide"), { persisted: true }),
+    )
+    expect(signal.aborted).toBe(false)
+    window.dispatchEvent(
+      Object.assign(new Event("pagehide"), { persisted: false }),
+    )
+    await returned.promise
+    expect(signal.aborted).toBe(true)
+  })
+
   it("normalizes asynchronous lock request failures", async () => {
     const request = vi.fn<WebExclusiveWriterLockManager["request"]>(
       async () => {

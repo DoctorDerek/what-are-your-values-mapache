@@ -306,12 +306,12 @@ test("a secondary tab stays read-only then inherits released writer ownership", 
   await page.close()
 
   await secondaryPage.getByRole("button", { name: "Load Latest" }).click()
-  await expect(
-    secondaryPage.getByRole("heading", {
+  await secondaryPage
+    .getByRole("heading", {
       level: 2,
       name: /^My (?:Top Five Life )?Values$/,
-    }),
-  ).toBeVisible()
+    })
+    .waitFor({ state: "visible" })
   const inheritedWinningValue = secondaryPage
     .getByRole("listitem")
     .filter({ has: secondaryPage.getByText(ownerChoiceName, { exact: true }) })
@@ -323,10 +323,11 @@ test("a secondary tab stays read-only then inherits released writer ownership", 
   await secondaryPage
     .getByRole("button", { name: "Battle", exact: true })
     .click()
+  const choiceButtons = secondaryPage.getByRole("button", { name: /^Choose / })
+  await choiceButtons.first().waitFor({ state: "visible" })
   await expect(
     secondaryPage.getByRole("main", { name: "Value battle" }),
   ).toBeVisible()
-  const choiceButtons = secondaryPage.getByRole("button", { name: /^Choose / })
   const inheritedPair = await choiceButtons.evaluateAll((buttons) =>
     buttons.map((button) => button.getAttribute("aria-label")),
   )

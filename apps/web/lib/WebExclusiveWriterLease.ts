@@ -48,11 +48,19 @@ export async function acquireWebExclusiveWriterLease(
       () => controller.abort(),
       WRITER_HANDOFF_TIMEOUT_MS,
     )
+    globalThis.window?.addEventListener(
+      "pagehide",
+      (event) => {
+        if (!event.persisted) controller.abort()
+      },
+      { signal: controller.signal },
+    )
     let acquisitionHasSettled = false
     const settleAcquisition = (result: WebExclusiveWriterLeaseResult) => {
       if (acquisitionHasSettled) return
       acquisitionHasSettled = true
       clearTimeout(deadline)
+      if (result.status === "read-only") controller.abort()
       resolve(Object.freeze(result))
     }
 
@@ -60,27 +68,25 @@ export async function acquireWebExclusiveWriterLease(
       const lockRequest = lockManager.request(
         WEB_EXCLUSIVE_WRITER_LOCK_NAME,
         { mode: "exclusive", signal: controller.signal },
-        async (lock) => {
-          if (!lock) {
+        (lock) => {
+          if (!lock || controller.signal.aborted) {
             settleAcquisition({
               status: "read-only",
               reason: "lock-unavailable",
             })
-            return
+            return Promise.resolve()
           }
 
-          let releaseLock = () => undefined
-          const releaseRequested = new Promise<void>((release) => {
-            let hasReleased = false
-            releaseLock = () => {
-              if (hasReleased) return
-              hasReleased = true
-              release()
-            }
+          const released = new Promise<void>((release) => {
+            controller.signal.addEventListener("abort", () => release(), {
+              once: true,
+            })
           })
-
-          settleAcquisition({ status: "writer", release: releaseLock })
-          await releaseRequested
+          settleAcquisition({
+            status: "writer",
+            release: () => controller.abort(),
+          })
+          return released
         },
       )
 
