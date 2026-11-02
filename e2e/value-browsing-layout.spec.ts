@@ -271,6 +271,10 @@ for (const locale of ["en", "es-MX"] as const) {
           await definition.scrollIntoViewIfNeeded()
           await expect(definition).toBeInViewport()
           await page.setViewportSize({ width, height: 1600 })
+          await row.evaluate((element) =>
+            element.scrollIntoView({ block: "center" }),
+          )
+          await expect(row).toBeInViewport({ ratio: 0.999 })
           expect((await row.boundingBox())!.height).toBeCloseTo(
             layout.row.height,
             2,
