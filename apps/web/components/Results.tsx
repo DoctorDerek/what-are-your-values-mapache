@@ -309,7 +309,7 @@ export default function Results({
     <MapacheScreen
       viewport="fixed"
       spacing="compact"
-      className="overflow-hidden"
+      className="overflow-hidden max-xl:[--mapache-screen-spacing:clamp(4px,calc(100vw_-_10rem),16px)]"
     >
       <div
         className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-2 overflow-y-auto overscroll-contain"
@@ -403,7 +403,8 @@ export default function Results({
           <Button
             size="sm"
             wrap
-            className="max-w-full min-w-min flex-[1_1_0] px-[6px] text-center leading-tight break-normal wrap-normal"
+            textCase="normal-case"
+            className="max-w-full flex-[1_1_0] text-center leading-tight break-normal wrap-break-word max-xl:px-[2px]"
             onClick={onSeeValues}
           >
             {RESULTS_COPY.seeValuesAction}
@@ -412,7 +413,8 @@ export default function Results({
             size="sm"
             variant="outline"
             wrap
-            className="max-w-full min-w-min flex-[1_1_0] px-[6px] text-center leading-tight break-normal wrap-normal"
+            textCase="normal-case"
+            className="max-w-full flex-[1_1_0] text-center leading-tight break-normal wrap-break-word max-xl:px-[2px]"
             onClick={onKeepBattling}
           >
             {RESULTS_COPY.keepBattlingAction}

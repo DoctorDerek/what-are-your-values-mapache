@@ -91,6 +91,19 @@ for (const scale of [100, 200]) {
         }),
       ).toBe(true)
     }
+    if (scale === 200) {
+      await page.addStyleTag({
+        content:
+          "nav button { font-family: Verdana, sans-serif; letter-spacing: 0.12em; }",
+      })
+      await expect(exit).toBeInViewport({ ratio: 1 })
+      await expect(resume).toBeInViewport({ ratio: 1 })
+    }
+    expect(
+      await resume.evaluate(
+        (button) => button.scrollWidth - button.clientWidth,
+      ),
+    ).toBe(0)
     const lines = await resume.evaluate(getRenderedTextLines)
     expect(
       lines.some((line) => line.toLowerCase().includes("combatiendo")),
