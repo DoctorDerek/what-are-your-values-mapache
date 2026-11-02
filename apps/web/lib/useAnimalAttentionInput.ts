@@ -36,8 +36,11 @@ export default function useAnimalAttentionInput(
           scope === "row" &&
           event.button === 0 &&
           ownsTarget(event.target) &&
-          event.currentTarget.ownerDocument.activeElement?.matches('input[type="search"]')
-        ) event.preventDefault()
+          event.currentTarget.ownerDocument.activeElement?.matches(
+            'input[type="search"]',
+          )
+        )
+          event.preventDefault()
       },
       onPointerEnter: (event: PointerEvent<HTMLElement>) => {
         if (event.pointerType !== "touch" && ownsTarget(event.target)) {

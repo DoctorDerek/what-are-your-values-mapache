@@ -39,7 +39,10 @@ export default function ValueAnimalPresentation({
     imagePath !== null &&
     (preparedStatus === "failed" || failedImagePath === imagePath)
   if (valuePresentation.kind === "typography-only") return null
-  const geometry = createSeethingSwarmSurfaceGeometry(valuePresentation.animal, "portrait")
+  const geometry = createSeethingSwarmSurfaceGeometry(
+    valuePresentation.animal,
+    "portrait",
+  )
   const portraitStyle: CSSProperties & {
     "--portrait-width": string
     "--portrait-height": string
