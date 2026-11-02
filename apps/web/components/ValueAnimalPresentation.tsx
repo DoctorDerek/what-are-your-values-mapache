@@ -58,7 +58,8 @@ export default function ValueAnimalPresentation({
       className={cx(
         "relative flex flex-none items-center",
         surface === "tile" && "bg-white shadow-[inset_0_0_0_4px_#000000]",
-        surface === "catalog" && "border-4 border-black bg-white",
+        surface === "catalog" &&
+          "float-left clear-left mr-(--value-gap) mb-(--value-gap) border-4 border-black bg-white xl:m-0",
       )}
     >
       <span

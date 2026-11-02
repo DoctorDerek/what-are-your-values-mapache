@@ -50,28 +50,33 @@ export default function AllValuesValueRow({
       data-value-row="true"
       {...attentionHandlers}
       className={cx(
-        "text-mapache-vivid-dark @container/value min-w-0 border-4 border-black bg-white p-[8px] shadow-[8px_8px_0px_0px_#000000] outline-none xl:p-7 @min-[22rem]/catalog:p-5",
+        "text-mapache-vivid-dark min-w-0 border-4 border-black bg-white p-[clamp(8px,calc(100%_-_20rem),20px)] shadow-[8px_8px_0px_0px_#000000] outline-none [--value-gap:clamp(8px,calc(100%_-_18rem),12px)] xl:p-7",
         isHighlighted && "ring-mapache-vivid-primary-cyan ring-8",
       )}
     >
-      <div className="flex min-w-0 flex-wrap items-center gap-x-[4px] gap-y-[8px] xl:gap-5 @min-[18rem]/value:gap-3">
-        <div className="order-first contents min-w-0 basis-full items-start justify-between gap-2 xl:flex-1 @min-[18rem]/value:flex">
-          <div className="order-first flex min-w-0 basis-full flex-wrap items-baseline gap-2 @min-[18rem]/value:basis-auto">
-            {heading}
-          </div>
-          {hasComparisons && (
-            <span className="order-1 flex shrink-0 items-center gap-[4px]">
-              <span className="sr-only">{accessibleLabel}</span>
-              <span
-                aria-hidden="true"
-                className="bg-mapache-vivid-secondary-purple px-[5px] py-[3px] text-sm leading-none font-black text-white tabular-nums"
-              >
-                #{rank}
-              </span>
-              {medal && <RankMedal color={medal.color} />}
-            </span>
+      <div className="flow-root min-w-0 xl:flex xl:items-center xl:gap-5">
+        <div
+          className={cx(
+            "float-left mb-(--value-gap) flex min-w-0 flex-wrap items-baseline gap-2 xl:m-0 xl:flex-1",
+            hasComparisons
+              ? "w-[min(100%,max(14rem,calc(100%_-_4.5rem)))]"
+              : "w-full",
           )}
+        >
+          {heading}
         </div>
+        {hasComparisons && (
+          <span className="float-right mb-(--value-gap) flex shrink-0 items-center gap-[4px] xl:m-0">
+            <span className="sr-only">{accessibleLabel}</span>
+            <span
+              aria-hidden="true"
+              className="bg-mapache-vivid-secondary-purple px-[5px] py-[3px] text-sm leading-none font-black text-white tabular-nums"
+            >
+              #{rank}
+            </span>
+            {medal && <RankMedal color={medal.color} />}
+          </span>
+        )}
         <ValueAnimalPresentation
           surface="catalog"
           catalog={runtimeClipCatalog}

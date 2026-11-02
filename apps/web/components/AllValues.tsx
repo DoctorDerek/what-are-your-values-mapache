@@ -193,7 +193,7 @@ export default function AllValues({
             ) : null
           }
         >
-          <p className="mt-[8px] border-t-4 border-black pt-[0.6em] text-xl leading-relaxed font-bold [overflow-wrap:anywhere] whitespace-pre-wrap xl:mt-5 @min-[18rem]/value:mt-3">
+          <p className="border-t-4 border-black pt-[0.6em] text-xl leading-relaxed font-bold [overflow-wrap:anywhere] whitespace-pre-wrap xl:mt-5">
             “{getValueDisplayDefinition(definition, localization.values)}”
           </p>
         </AllValuesValueRow>
@@ -224,7 +224,7 @@ export default function AllValues({
     <MapacheScreen
       spacing="safe-area-only"
       viewport="fixed"
-      className="@container/catalog grid grid-rows-[auto_minmax(0,1fr)_auto] text-white"
+      className="grid grid-rows-[auto_minmax(0,1fr)_auto] text-white"
     >
       <header className="bg-mapache-vivid-dark max-h-[40dvh] overflow-y-auto border-b-4 border-black px-4 py-3 xl:px-8">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4">
@@ -275,7 +275,7 @@ export default function AllValues({
         aria-label={localizedCopy.interfaceCopy.screen.values}
         tabIndex={0}
         data-controller-scroll
-        className="mx-auto min-h-0 w-full max-w-6xl overflow-y-auto overscroll-contain px-[8px] py-4 xl:px-8 @min-[22rem]/catalog:px-4"
+        className="mx-auto min-h-0 w-full max-w-6xl overflow-y-auto overscroll-contain px-[clamp(8px,calc(100%_-_20rem),16px)] py-4 xl:px-8"
       >
         {persistenceIssue ? (
           <div
