@@ -381,7 +381,7 @@ export default function Results({
           {notifications}
         </div>
         <nav
-          className="noise-bg bg-mapache-vivid-dark sticky bottom-0 z-10 flex shrink-0 flex-wrap gap-2 pb-[8px]"
+          className="noise-bg bg-mapache-vivid-dark sticky bottom-0 z-10 flex shrink-0 flex-wrap gap-2 pr-[8px] pb-[8px]"
           aria-label={localizedCopy.interfaceCopy.screen.resultsActions}
         >
           <Button

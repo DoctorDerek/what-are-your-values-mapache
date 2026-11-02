@@ -101,7 +101,21 @@ for (const scale of [100, 200]) {
     await page.screenshot({
       path: testInfo.outputPath(`results-spanish-${scale}.png`),
     })
-    await resume.click()
+    const scroller = resume.locator(
+      "xpath=ancestor::*[@data-controller-scroll][1]",
+    )
+    await resume.hover()
+    await page.mouse.down()
+    try {
+      await expect(resume).toHaveCSS("translate", "6px 6px")
+      expect(
+        await scroller.evaluate(
+          (element) => element.scrollWidth - element.clientWidth,
+        ),
+      ).toBe(0)
+    } finally {
+      await page.mouse.up()
+    }
     await expect(
       page.getByRole("button", { name: "Detener", exact: true }),
     ).toBeVisible()
