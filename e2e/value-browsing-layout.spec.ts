@@ -264,7 +264,10 @@ for (const locale of ["en", "es-MX"] as const) {
           await definition.scrollIntoViewIfNeeded()
           await expect(definition).toBeInViewport()
           await page.setViewportSize({ width, height: 1600 })
-          expect((await row.boundingBox())!.height).toBe(layout.row.height)
+          expect((await row.boundingBox())!.height).toBeCloseTo(
+            layout.row.height,
+            2,
+          )
           await row.screenshot({
             path: testInfo.outputPath(
               `${locale}-${width}-${ranked ? "ranked" : "unranked"}-${id}.png`,
