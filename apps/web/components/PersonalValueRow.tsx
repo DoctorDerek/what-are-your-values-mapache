@@ -41,7 +41,7 @@ export default function PersonalValueRow({
   return (
     <li
       {...attentionHandlers}
-      tabIndex={0}
+      tabIndex={-1}
       data-value-row="true"
       className="border-player-card-frame flex flex-wrap items-center gap-1.5 border-b px-2 py-2 last:border-0 focus-visible:outline-4 focus-visible:-outline-offset-4 xl:gap-3 xl:px-4"
       id={`hub-value-${value.definition.id}`}
@@ -67,8 +67,6 @@ export default function PersonalValueRow({
         id={`hub-value-${value.definition.id}-presentation`}
       >
         <ValueAnimalPresentation
-          rank={value.rank}
-          showRank={false}
           surface="card"
           catalog={catalog}
           isAttended={isAttended}

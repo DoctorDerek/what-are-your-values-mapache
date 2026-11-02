@@ -1509,7 +1509,7 @@ describe("GameClient Integration", () => {
     ).toBeVisible()
     expect(screen.getByText("Acceptance").closest("li")).toHaveAttribute(
       "tabindex",
-      "0",
+      "-1",
     )
     fireEvent.click(screen.getByRole("button", { name: "Browse All Values" }))
 

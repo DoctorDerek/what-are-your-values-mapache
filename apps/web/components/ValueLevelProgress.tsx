@@ -15,10 +15,12 @@ export default function ValueLevelProgress({ totalXp }: { totalXp: number }) {
         String(requiredXpForNextLevel),
         String(level + 1),
       )}
-      className="text-mapache-vivid-primary-raspberry grid w-36 max-w-full min-w-0 shrink-0 gap-2 border-4 border-black bg-white px-3 py-2 font-black uppercase xl:w-44"
+      className="text-mapache-vivid-primary-raspberry ms-auto mb-(--value-gap) flex max-w-36 min-w-[min(100%,7rem)] flex-wrap items-center gap-x-[12px] gap-y-1 border-4 border-black bg-white px-[8px] py-[8px] font-black uppercase xl:m-0 xl:max-w-44 xl:basis-44"
     >
-      <span className="text-right text-xl">
-        {localizedCopy.interfaceCopy.screen.valueLevel(String(level))}
+      <span className="min-w-0 basis-full text-xl">
+        <span className="block w-fit max-w-full min-w-[min(100%,120px)] text-right">
+          {localizedCopy.interfaceCopy.screen.valueLevel(String(level))}
+        </span>
       </span>
       <Progress
         aria-label={localizedCopy.interfaceCopy.screen.xpTowardLevel(
@@ -26,10 +28,10 @@ export default function ValueLevelProgress({ totalXp }: { totalXp: number }) {
         )}
         value={earnedXpTowardNextLevel}
         max={requiredXpForNextLevel}
-        className="h-3 border-2 border-black bg-white"
+        className="h-[clamp(12px,0.75rem,14px)] min-w-0 flex-[1_1_96px] border-2 border-black bg-white"
         indicatorClassName="bg-mapache-vivid-primary-raspberry transition-transform"
       />
-      <span className="text-left text-base">
+      <span className="max-w-full min-w-0 text-base [overflow-wrap:anywhere]">
         {localizedCopy.interfaceCopy.screen.xpFraction(
           String(earnedXpTowardNextLevel),
           String(requiredXpForNextLevel),

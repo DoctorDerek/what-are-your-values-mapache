@@ -85,7 +85,11 @@ test("Tiger and Squirrel play a real choice and keep their row gestures through 
   await page
     .getByRole("button", { name: "Browse All Values", exact: true })
     .tap()
+  const search = page.getByRole("searchbox")
+  await search.fill("fitness")
   await tapTigerTwice(page.locator('[id="all-values-row-pvcs-2011:fitness"]'))
+  await expect(search).toBeFocused()
+  await expect(search).toHaveValue("fitness")
   await page.reload()
   await expect(
     page.getByRole("button", { name: "Battle", exact: true }),

@@ -1,6 +1,7 @@
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import { createSeethingSwarmTypographyOnlyRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import { getValueDisplayName } from "@game/data/src/Value"
+import { ZOO_ANIMALS } from "@game/data/src/ZooAnimals"
 import { createBattleExitResults } from "@game/machines/src/BattleExitResults"
 import {
   applyBattleChoice,
@@ -12,6 +13,7 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import { useState, type ComponentProps } from "react"
 import { describe, expect, it, vi } from "vitest"
 import ResultsPresentation from "@/components/Results"
+import { createSeethingSwarmTestCatalogForAnimals } from "@/components/SeethingSwarmBattleStage.test-fixture"
 
 function Results(
   props: Omit<
@@ -79,9 +81,10 @@ describe("Battle-exit Results presentation", () => {
     }
   })
   it.each(["en", "es-MX"] as const)(
-    "reveals first-results medal images promptly with a stable %s summary",
+    "keeps the animal portrait and %s summary while the first-results medal changes",
     (locale) => {
       vi.useFakeTimers()
+      vi.stubGlobal("IntersectionObserver", undefined)
       try {
         const results = createResults()
         const copy = getLocaleCatalog(locale)
@@ -97,7 +100,9 @@ describe("Battle-exit Results presentation", () => {
           <LocaleProvider locale={locale}>
             <Results
               results={results}
-              runtimeClipCatalog={createSeethingSwarmTypographyOnlyRuntimeClipCatalog()}
+              runtimeClipCatalog={createSeethingSwarmTestCatalogForAnimals(
+                ZOO_ANIMALS.map(({ id }) => id),
+              )}
               shouldReduceMotion={false}
               isMenuOpen={false}
               onOpenMenu={vi.fn()}
@@ -109,6 +114,13 @@ describe("Battle-exit Results presentation", () => {
         const announcement = screen.getByText(summary, { exact: true })
         const row = announcement.closest("li")!
         const slot = row.querySelector("[data-results-medal]")!
+        act(() => vi.advanceTimersByTime(0))
+        const portrait = row.querySelector('[data-value-presentation="animal"]')
+        const animalImage = portrait?.querySelector(
+          '[data-hub-active-clip="true"] img',
+        )
+        expect(animalImage).toBeVisible()
+        expect(portrait?.contains(slot)).toBe(false)
         expect(slot.querySelector("img")).toBeNull()
         for (const [advanceMs, medal] of [
           [50, "bronze"],
@@ -117,6 +129,9 @@ describe("Battle-exit Results presentation", () => {
         ] as const) {
           act(() => vi.advanceTimersByTime(advanceMs))
           expect(row.querySelector("[data-results-medal]")).toBe(slot)
+          expect(
+            portrait?.querySelector('[data-hub-active-clip="true"] img'),
+          ).toBe(animalImage)
           const image = slot.querySelector("img")!
           expect(image).toBeVisible()
           expect(image).toHaveAttribute(
@@ -127,6 +142,7 @@ describe("Battle-exit Results presentation", () => {
         }
         expect(within(row).queryByRole("img")).toBeNull()
       } finally {
+        vi.unstubAllGlobals()
         vi.useRealTimers()
       }
     },

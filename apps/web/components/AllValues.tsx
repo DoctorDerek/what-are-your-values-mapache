@@ -68,6 +68,7 @@ export default function AllValues({
     value: CustomValueDefinition
   } | null>(null)
   const [highlightedValueId] = useState<ValueId | null>(initialValueId ?? null)
+  const revealedInitialValue = useRef(false)
 
   const { existingCustomValues, hasComparisons, visibleValues } = useMemo(
     () =>
@@ -93,7 +94,7 @@ export default function AllValues({
   }, [isNavigationBlocked, onNavigationBlockedChange])
 
   useEffect(() => {
-    if (!highlightedValueId) {
+    if (!highlightedValueId || revealedInitialValue.current) {
       return
     }
 
@@ -101,10 +102,11 @@ export default function AllValues({
       `all-values-row-${highlightedValueId}`,
     )
     if (valueRow instanceof HTMLElement) {
-      valueRow.focus()
+      revealedInitialValue.current = true
+      valueRow.focus({ preventScroll: true })
       valueRow.scrollIntoView({ block: "center" })
     }
-  }, [highlightedValueId, searchQuery, visibleValues.length])
+  }, [highlightedValueId, rankedValues])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -145,7 +147,7 @@ export default function AllValues({
                     ? localization.metadata.languageTag
                     : undefined
                 }
-                className="min-w-0 flex-[1_1_16rem] text-3xl font-black break-words hyphens-auto uppercase [hyphenate-limit-chars:6_3_3] xl:text-4xl"
+                className="min-w-0 text-3xl font-black break-words hyphens-auto uppercase [hyphenate-limit-chars:6_3_3] xl:text-4xl"
               >
                 {getWrappableValueDisplayName(
                   definition,
@@ -162,7 +164,7 @@ export default function AllValues({
           }
           actions={
             definition.kind === "custom" ? (
-              <div className="flex flex-wrap gap-3">
+              <div className="mt-3 flex flex-wrap gap-3">
                 <button
                   id={`edit-${definition.id}`}
                   type="button"
@@ -191,7 +193,7 @@ export default function AllValues({
             ) : null
           }
         >
-          <p className="mt-5 overflow-x-auto overflow-y-auto border-t-4 border-black pt-4 text-xl leading-relaxed font-bold [overflow-wrap:anywhere] break-words whitespace-pre-wrap">
+          <p className="border-t-4 border-black pt-[0.6em] text-xl leading-relaxed font-bold [overflow-wrap:anywhere] whitespace-pre-wrap xl:mt-5">
             “{getValueDisplayDefinition(definition, localization.values)}”
           </p>
         </AllValuesValueRow>
@@ -273,7 +275,7 @@ export default function AllValues({
         aria-label={localizedCopy.interfaceCopy.screen.values}
         tabIndex={0}
         data-controller-scroll
-        className="mx-auto min-h-0 w-full max-w-6xl overflow-y-auto overscroll-contain px-4 py-4 xl:px-8"
+        className="mx-auto min-h-0 w-full max-w-6xl overflow-y-auto overscroll-contain px-[clamp(8px,calc(100%_-_20rem),16px)] py-4 xl:px-8"
       >
         {persistenceIssue ? (
           <div

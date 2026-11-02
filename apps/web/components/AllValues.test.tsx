@@ -6,6 +6,7 @@ import {
   type SeethingSwarmRuntimeClipCatalog,
 } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import {
+  createCanonicalValueId,
   createCustomValueId,
   getValueDisplayDefinition,
   getValueDisplayName,
@@ -467,6 +468,21 @@ describe("All Values Component Integration", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(
       CANONICAL_VALUES.length,
     )
+  })
+
+  it("reveals the requested value without taking focus back when search changes", () => {
+    renderAllValues(undefined, {
+      initialValueId: createCanonicalValueId("pvcs-2011:fitness"),
+    })
+    const row = screen.getByRole("heading", { name: "Fitness" }).closest("li")
+    expect(row).toHaveFocus()
+    const search = screen.getByRole("searchbox")
+    search.focus()
+    for (const value of ["f", "fit", "fitness", "no such value", ""]) {
+      fireEvent.change(search, { target: { value } })
+      expect(search).toHaveFocus()
+      expect(search).toHaveValue(value)
+    }
   })
 
   it("marks the earned Top Five once and closes without changing data", () => {

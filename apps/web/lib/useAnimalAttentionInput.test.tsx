@@ -17,6 +17,22 @@ function AttentionRow({ scope = "control" }: { scope?: "control" | "row" }) {
 }
 
 describe("Shared animal attention input", () => {
+  it("preserves search focus on a primary row press and leaves button and secondary presses alone", () => {
+    render(
+      <>
+        <input type="search" />
+        <AttentionRow scope="row" />
+      </>,
+    )
+    const row = screen.getByRole("region")
+    const action = screen.getByRole("button", { name: "First action" })
+    expect(fireEvent.mouseDown(row)).toBe(true)
+    screen.getByRole("searchbox").focus()
+    expect(fireEvent.mouseDown(row)).toBe(false)
+    expect(fireEvent.mouseDown(action)).toBe(true)
+    expect(fireEvent.mouseDown(row, { button: 2 })).toBe(true)
+  })
+
   it("combines pointer and focus within without restarting on child traversal", () => {
     render(<AttentionRow />)
     const row = screen.getByRole("region", { name: "Animal row" })
