@@ -2,7 +2,10 @@ import {
   createSeethingSwarmAnimalManifest,
   type SeethingSwarmAnimalManifestInput,
 } from "./SeethingSwarmAnimalManifest"
-import { createSeethingSwarmAnimalRegistry } from "./SeethingSwarmAnimalRegistry"
+import {
+  createSeethingSwarmAnimalRegistry,
+  type SeethingSwarmAnimalRegistry,
+} from "./SeethingSwarmAnimalRegistry"
 import {
   createSeethingSwarmLicensedRuntimeClipCatalog,
   type SeethingSwarmRuntimeAssetSource,
@@ -68,7 +71,7 @@ export function createCompleteSeethingSwarmRuntimeClipTestRegistry() {
 }
 
 export function createCompleteSeethingSwarmRuntimeClipTestSources(
-  registry = createCompleteSeethingSwarmRuntimeClipTestRegistry(),
+  registry: SeethingSwarmAnimalRegistry = createCompleteSeethingSwarmRuntimeClipTestRegistry(),
 ) {
   return Object.freeze(
     registry.animals
