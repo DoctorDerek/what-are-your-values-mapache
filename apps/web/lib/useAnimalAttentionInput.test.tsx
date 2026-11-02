@@ -2,11 +2,14 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
 
-function AttentionRow() {
-  const { isAttended, attentionHandlers } = useAnimalAttentionInput()
+function AttentionRow({ scope = "control" }: { scope?: "control" | "row" }) {
+  const { isAttended, tapRequest, attentionHandlers } = useAnimalAttentionInput(
+    undefined,
+    scope,
+  )
   return (
     <section {...attentionHandlers} aria-label="Animal row">
-      <output>{isAttended ? "Attended" : "Calm"}</output>
+      <output data-taps={tapRequest}>{isAttended ? "Attended" : "Calm"}</output>
       <button>First action</button>
       <button>Second action</button>
     </section>
@@ -33,6 +36,39 @@ describe("Shared animal attention input", () => {
     fireEvent.pointerCancel(row)
     expect(screen.getByRole("status")).toHaveTextContent("Calm")
   })
+
+  it.each(["mouse", "pen", "touch"])(
+    "owns completed %s row taps independently of its action buttons",
+    (pointerType) => {
+      render(<AttentionRow scope="row" />)
+      const row = screen.getByRole("region")
+      const output = screen.getByRole("status")
+      const pointer = {
+        pointerType,
+        pointerId: 1,
+        button: 0,
+        clientX: 10,
+        clientY: 10,
+      }
+      for (const target of [row, row]) {
+        fireEvent.pointerDown(target, pointer)
+        fireEvent.pointerUp(target, pointer)
+      }
+      expect(output).toHaveAttribute("data-taps", "2")
+      for (const button of screen.getAllByRole("button")) {
+        fireEvent.pointerDown(button, pointer)
+        fireEvent.pointerUp(button, pointer)
+        fireEvent.click(button)
+      }
+      fireEvent.pointerDown(row, pointer)
+      fireEvent.pointerMove(row, { ...pointer, clientX: 30 })
+      fireEvent.pointerUp(row, pointer)
+      fireEvent.pointerDown(row, pointer)
+      fireEvent.pointerCancel(row, pointer)
+      fireEvent.pointerUp(row, pointer)
+      expect(output).toHaveAttribute("data-taps", "2")
+    },
+  )
 
   it("does not require or manufacture hover for touch input", () => {
     render(<AttentionRow />)

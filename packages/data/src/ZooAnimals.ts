@@ -1,4 +1,4 @@
-const zooAnimalIds = [
+export const CUSTOM_VALUE_ANIMAL_IDS_V1 = Object.freeze([
   "bat",
   "bunnypack",
   "catset/cat01_brown",
@@ -44,6 +44,12 @@ const zooAnimalIds = [
   "raccoonpack",
   "turtle",
   "wolfpack",
+] as const)
+
+const zooAnimalIds = [
+  ...CUSTOM_VALUE_ANIMAL_IDS_V1,
+  "squirrelpack",
+  "tigerpack",
 ] as const
 
 export type ZooAnimalId = (typeof zooAnimalIds)[number]
@@ -53,5 +59,5 @@ export type ZooAnimal = Readonly<{
 }>
 
 export const ZOO_ANIMALS = Object.freeze(
-  zooAnimalIds.map((id) => Object.freeze({ id })),
+  zooAnimalIds.toSorted().map((id) => Object.freeze({ id })),
 )

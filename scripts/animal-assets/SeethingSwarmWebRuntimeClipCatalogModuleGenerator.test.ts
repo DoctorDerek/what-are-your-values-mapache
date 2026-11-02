@@ -8,7 +8,8 @@ import { generateSeethingSwarmWebRuntimeClipCatalogModule } from "./SeethingSwar
 
 describe("SeethingSwarm web runtime clip catalog module generator", () => {
   it("retains every reference pose in the executable generated catalog", () => {
-    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const { outputText } = ts.transpileModule(
       generateSeethingSwarmWebRuntimeClipCatalogModule(catalog),
       {
@@ -25,29 +26,30 @@ describe("SeethingSwarm web runtime clip catalog module generator", () => {
     })
   })
   it("statically binds the complete immutable licensed clip catalog", () => {
-    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const clips = listSeethingSwarmRuntimeClips(catalog)
     const generatedModule =
       generateSeethingSwarmWebRuntimeClipCatalogModule(catalog)
 
-    expect(clips).toHaveLength(775)
+    expect(clips).toHaveLength(802)
     expect(
       generatedModule.match(
         /^import seethingSwarmWebClip\d{4} from "\.\/assets\/.+\.png"$/gm,
       ),
-    ).toHaveLength(775)
+    ).toHaveLength(802)
     expect(
       generatedModule.match(/^        kind: "character",$/gm),
-    ).toHaveLength(774)
+    ).toHaveLength(801)
     expect(
       generatedModule.match(/^        kind: "auxiliary-effect",$/gm),
     ).toHaveLength(1)
     expect(
       generatedModule.match(/^        asset: seethingSwarmWebClip\d{4},$/gm),
-    ).toHaveLength(775)
+    ).toHaveLength(802)
     expect(generatedModule).toContain("seethingSwarmWebClip0000")
-    expect(generatedModule).toContain("seethingSwarmWebClip0774")
-    expect(generatedModule).toContain("characterClipCount: 774")
+    expect(generatedModule).toContain("seethingSwarmWebClip0801")
+    expect(generatedModule).toContain("characterClipCount: 801")
     expect(generatedModule).toContain("auxiliaryEffectClipCount: 1")
     expect(generatedModule).toContain(
       "satisfies SeethingSwarmLicensedRuntimeClipCatalog<StaticImageData>",
@@ -64,7 +66,8 @@ describe("SeethingSwarm web runtime clip catalog module generator", () => {
   })
 
   it("emits syntactically valid and byte-deterministic TypeScript", () => {
-    const { catalog } = createCompleteSeethingSwarmRuntimeClipTestFixture()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const firstModule =
       generateSeethingSwarmWebRuntimeClipCatalogModule(catalog)
     const secondModule =

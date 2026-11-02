@@ -1,3 +1,4 @@
+import { fixtureAnimationCount } from "#game/data/src/SeethingSwarmRuntimeClipCatalog.test-fixture"
 import {
   SEETHING_SWARM_SOURCE_PACKS,
   SEETHING_SWARM_SOURCE_SNAPSHOT,
@@ -35,9 +36,9 @@ function getSourceRelativePath(
 }
 
 function createAnimationLines() {
-  const characterLines = ZOO_ANIMALS.flatMap(({ id }, animalIndex) => {
+  const characterLines = ZOO_ANIMALS.flatMap(({ id }) => {
     const sourceRelativePath = getSourceRelativePath(getSourcePack(id), id)
-    const animationCount = animalIndex === 0 ? 26 : 17
+    const animationCount = fixtureAnimationCount(id)
     return Array.from({ length: animationCount }, (_, animationIndex) => {
       const frameCount = (animationIndex % 8) + 1
       return `${sourceRelativePath}/animation_${animationIndex}.png -> animation_${animationIndex} -> ${frameCount} frames`
@@ -128,11 +129,11 @@ describe("SeethingSwarm registry generator", () => {
       ({ animalId }) => animalId === "frogpack",
     )!
 
-    expect(generated.registry.animals).toHaveLength(45)
+    expect(generated.registry.animals).toHaveLength(47)
     expect(generated.registry.animals.map(({ animalId }) => animalId)).toEqual(
       ZOO_ANIMALS.map(({ id }) => id),
     )
-    expect(generated.registry.characterAnimationCount).toBe(774)
+    expect(generated.registry.characterAnimationCount).toBe(801)
     expect(generated.registry.auxiliaryEffectCount).toBe(1)
     expect(frogpack.animations.fly).toBeUndefined()
     expect(frogpack.auxiliaryEffects?.fly).toEqual({

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto"
 import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { dirname, join, relative } from "node:path"
+import { fixtureAnimationCount } from "#game/data/src/SeethingSwarmRuntimeClipCatalog.test-fixture"
 import { SEETHING_SWARM_SOURCE_SNAPSHOT } from "#game/data/src/SeethingSwarmSourceEvidence"
 import { ZOO_ANIMALS } from "#game/data/src/ZooAnimals"
 import sharp from "sharp"
@@ -98,7 +99,7 @@ export function createSeethingSwarmPresentationRegistryFixture() {
   const selectedPaths: string[] = []
   const allAssetPaths: string[] = []
   const animals = ZOO_ANIMALS.map(({ id }, animalIndex) => {
-    const animationCount = animalIndex === 0 ? 26 : 17
+    const animationCount = fixtureAnimationCount(id)
     const calmAnimationId = id === "bat" ? "idle_upright" : "idle"
     const directory = `pack_${animalIndex.toString().padStart(2, "0")}`
     const selectedPath = `${directory}/calm_${calmAnimationId}_strip4.png`

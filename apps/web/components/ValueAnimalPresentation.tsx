@@ -19,6 +19,7 @@ export default function ValueAnimalPresentation({
   showRank,
   catalog,
   isAttended,
+  tapRequest = 0,
   valuePresentation,
   shouldReduceMotion,
   showAnimal = true,
@@ -28,6 +29,7 @@ export default function ValueAnimalPresentation({
   showRank: boolean
   catalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   isAttended: boolean
+  tapRequest?: number
   valuePresentation: ValueAnimalPresentationData<StaticImageData> | undefined
   shouldReduceMotion: boolean
   showAnimal?: boolean
@@ -103,6 +105,7 @@ export default function ValueAnimalPresentation({
                 geometry={geometry}
                 catalog={catalog}
                 isAttended={isAttended}
+                tapRequest={tapRequest}
                 onLoadError={() => setFailedImagePath(imagePath)}
                 shouldReduceMotion={shouldReduceMotion}
               />

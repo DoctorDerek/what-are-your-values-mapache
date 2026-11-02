@@ -133,6 +133,7 @@ export const SEETHING_SWARM_BATTLE_ANIMATION_POLICIES = Object.freeze([
   defineBattleEligibleAnimationPolicy("liedown_godown", "entry-exit"),
   defineBattleEligibleAnimationPolicy("liedown_idle", "rest"),
   defineBattleEligibleAnimationPolicy("peck", "attack"),
+  defineBattleEligibleAnimationPolicy("roar", "anticipation", "celebration"),
   defineBattleEligibleAnimationPolicy("run", "entry-exit"),
   defineBattleEligibleAnimationPolicy("sit", "rest"),
   defineBattleEligibleAnimationPolicy("sit_blink", "rest"),

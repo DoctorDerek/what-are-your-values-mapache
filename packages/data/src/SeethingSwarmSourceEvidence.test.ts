@@ -31,6 +31,8 @@ const EXPECTED_PACK_IDS = Object.freeze([
   "parrotpack",
   "pigpack",
   "raccoonpack",
+  "squirrelpack",
+  "tigerpack",
   "turtlepack",
   "wolfpack",
 ])
@@ -39,15 +41,15 @@ const EXPECTED_EVIDENCE_FILES = Object.freeze([
   Object.freeze({
     relativePath:
       "seethingswarm_animals_full_animation_list_with_frame_count.txt",
-    sha256: "2C5AFDBBC911F1C94BFAD9499890AC6D3A1BBDB16EC4614AAA8937E0BE5AFF4C",
+    sha256: "068CB81C0A55B01937EB5122AB67EAC87537A0DC9A39FD4D1B9D330D68B21D51",
   }),
   Object.freeze({
     relativePath: "seethingswarm_animals_colors_list.txt",
-    sha256: "7E4E37C4C3E308B7C1D0CF493909ADBF6B3AE347A54E7A18CA205F977FFC8C9E",
+    sha256: "F5E35860055BED865EF9A3363DC0FE35BD273AD749A1D857BB3ED20686707B33",
   }),
   Object.freeze({
     relativePath: "seethingswarm_animals_spritesheet_sizes.txt",
-    sha256: "D06AA917785C577F64D1C0581B4A5D2BEADF87AF5098F40D3FEAA55FE42B59E7",
+    sha256: "6F2775009EFE2D9F972F05A4E509B89796F5EFADEC7887706FC48516EEEA00D6",
   }),
   Object.freeze({
     relativePath: "LICENSE.txt",
@@ -58,15 +60,15 @@ const EXPECTED_EVIDENCE_FILES = Object.freeze([
 describe("SeethingSwarm source evidence", () => {
   it("locks the audited source-snapshot arithmetic and evidence hashes", () => {
     expect(SEETHING_SWARM_SOURCE_SNAPSHOT).toMatchObject({
-      sourceSnapshotId: "seethingswarm-animals:2026-03-15",
-      storefrontReviewedOn: "2026-08-29",
-      packCount: 27,
-      stableAnimalCount: 45,
-      characterAnimationStripCount: 774,
+      sourceSnapshotId: "seethingswarm-animals:2026-11-01",
+      storefrontReviewedOn: "2026-11-01",
+      packCount: 29,
+      stableAnimalCount: 47,
+      characterAnimationStripCount: 801,
       auxiliaryEffectStripCount: 1,
       excludedHumanWeaponStripCount: 102,
-      totalPngStripCount: 877,
-      distinctAnimationIdCount: 86,
+      totalPngStripCount: 904,
+      distinctAnimationIdCount: 87,
     })
     expect(
       SEETHING_SWARM_SOURCE_SNAPSHOT.characterAnimationStripCount +
@@ -78,7 +80,7 @@ describe("SeethingSwarm source evidence", () => {
     )
   })
 
-  it("covers the exact twenty-seven official source packs", () => {
+  it("covers the exact twenty-nine official source packs", () => {
     const packIds = SEETHING_SWARM_SOURCE_PACKS.map(({ packId }) => packId)
 
     expect(SEETHING_SWARM_SOURCE_PACKS).toHaveLength(

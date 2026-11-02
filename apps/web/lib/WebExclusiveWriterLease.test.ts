@@ -12,6 +12,7 @@ const exclusiveLock = Object.freeze({
 
 describe("Web Exclusive Writer Lease", () => {
   afterEach(() => {
+    vi.useRealTimers()
     vi.unstubAllGlobals()
   })
 
@@ -29,20 +30,45 @@ describe("Web Exclusive Writer Lease", () => {
     })
   })
 
-  it("reports contention without waiting or stealing", async () => {
+  it("becomes read-only when the current writer keeps the lock", async () => {
+    vi.useFakeTimers()
     const request = vi.fn<WebExclusiveWriterLockManager["request"]>(
-      async (_name, _options, callback) => callback(null),
+      (_name, { signal }) =>
+        new Promise((_, reject) => {
+          signal.addEventListener("abort", () => reject(signal.reason), {
+            once: true,
+          })
+        }),
     )
-
-    await expect(acquireWebExclusiveWriterLease({ request })).resolves.toEqual({
+    const acquisition = acquireWebExclusiveWriterLease({ request })
+    expect(request).toHaveBeenCalledWith(
+      WEB_EXCLUSIVE_WRITER_LOCK_NAME,
+      { mode: "exclusive", signal: expect.any(AbortSignal) },
+      expect.any(Function),
+    )
+    await vi.runOnlyPendingTimersAsync()
+    await expect(acquisition).resolves.toEqual({
       status: "read-only",
       reason: "lock-unavailable",
     })
-    expect(request).toHaveBeenCalledWith(
-      WEB_EXCLUSIVE_WRITER_LOCK_NAME,
-      { mode: "exclusive", ifAvailable: true },
-      expect.any(Function),
+  })
+
+  it("acquires a just-released writer and clears the deadline once granted", async () => {
+    vi.useFakeTimers()
+    const outgoing = Promise.withResolvers<void>()
+    const request = vi.fn<WebExclusiveWriterLockManager["request"]>(
+      async (_name, _options, callback) => {
+        await outgoing.promise
+        await callback(exclusiveLock)
+      },
     )
+    const acquisition = acquireWebExclusiveWriterLease({ request })
+    outgoing.resolve()
+    const lease = await acquisition
+    if (lease.status !== "writer") throw new Error("Writer handoff failed")
+    await vi.runOnlyPendingTimersAsync()
+    expect(request.mock.calls[0]![1].signal.aborted).toBe(false)
+    lease.release()
   })
 
   it("holds the exclusive lock until its idempotent release is requested", async () => {

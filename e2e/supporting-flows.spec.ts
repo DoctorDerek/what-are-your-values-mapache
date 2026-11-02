@@ -275,6 +275,12 @@ for (const locale of ["en", "es-MX"] as const) {
         actionLines.every((line) => line.length > 1),
         actionLines.join(" / "),
       ).toBe(true)
+      await expect(cancelImport).toBeInViewport({ ratio: 1 })
+      await page.addStyleTag({
+        content: "footer button { letter-spacing: 0.12em; }",
+      })
+      await expectReadableControl(replace)
+      await expect(cancelImport).toBeInViewport({ ratio: 1 })
       const reading = preview.locator("[data-controller-scroll]")
       expect(
         await reading.evaluate((element) => element.clientHeight),

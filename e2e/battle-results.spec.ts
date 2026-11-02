@@ -91,6 +91,19 @@ for (const scale of [100, 200]) {
         }),
       ).toBe(true)
     }
+    if (scale === 200) {
+      await page.addStyleTag({
+        content:
+          "nav button { font-family: Verdana, sans-serif; letter-spacing: 0.12em; }",
+      })
+      await expect(exit).toBeInViewport({ ratio: 1 })
+      await expect(resume).toBeInViewport({ ratio: 1 })
+    }
+    expect(
+      await resume.evaluate(
+        (button) => button.scrollWidth - button.clientWidth,
+      ),
+    ).toBe(0)
     const lines = await resume.evaluate(getRenderedTextLines)
     expect(
       lines.some((line) => line.toLowerCase().includes("combatiendo")),
@@ -101,7 +114,21 @@ for (const scale of [100, 200]) {
     await page.screenshot({
       path: testInfo.outputPath(`results-spanish-${scale}.png`),
     })
-    await resume.click()
+    const scroller = resume.locator(
+      "xpath=ancestor::*[@data-controller-scroll][1]",
+    )
+    await resume.hover()
+    await page.mouse.down()
+    try {
+      await expect(resume).toHaveCSS("translate", "6px 6px")
+      expect(
+        await scroller.evaluate(
+          (element) => element.scrollWidth - element.clientWidth,
+        ),
+      ).toBe(0)
+    } finally {
+      await page.mouse.up()
+    }
     await expect(
       page.getByRole("button", { name: "Detener", exact: true }),
     ).toBeVisible()

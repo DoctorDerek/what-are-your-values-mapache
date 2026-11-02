@@ -430,7 +430,7 @@ export const CREDITS_PRIVACY_INFORMATION_PANEL = Object.freeze({
       kind: "resource",
       title: "SeethingSwarm",
       description:
-        "Creator of the animal pixel art and animations for What Are Your Values, Mapache?",
+        "SeethingSwarm created the game’s animal art and animations, including Squirrelpack and Tigerpack.",
       actionLabel: "Visit SeethingSwarm",
       url: "https://seethingswarm.itch.io/",
     }),

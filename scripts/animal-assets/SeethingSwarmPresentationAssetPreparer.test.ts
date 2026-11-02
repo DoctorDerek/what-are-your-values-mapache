@@ -106,7 +106,7 @@ describe("SeethingSwarm presentation asset preparer", () => {
   })
 
   it(
-    "copies all 775 receipt-verified runtime strips into deterministic platform trees",
+    "copies all 802 receipt-verified runtime strips into deterministic platform trees",
     async () => {
       const paths = await createWorkspace()
       const fixture = await createCompleteCustody(paths)
@@ -126,11 +126,11 @@ describe("SeethingSwarm presentation asset preparer", () => {
         moduleGenerators,
       )
 
-      expect(firstResult).toEqual({ mode: "licensed", assetCount: 775 })
+      expect(firstResult).toEqual({ mode: "licensed", assetCount: 802 })
       expect(secondResult).toEqual(firstResult)
       expect(Object.isFrozen(firstResult)).toBe(true)
-      expect(firstWebFiles).toHaveLength(776)
-      expect(firstNativeFiles).toHaveLength(776)
+      expect(firstWebFiles).toHaveLength(803)
+      expect(firstNativeFiles).toHaveLength(803)
       expect(
         firstWebFiles.filter((relativePath) => relativePath.endsWith(".png")),
       ).toEqual(
@@ -145,9 +145,9 @@ describe("SeethingSwarm presentation asset preparer", () => {
       )
       expect(
         firstWebModule.match(/^import seethingSwarmWebClip/gmu),
-      ).toHaveLength(775)
+      ).toHaveLength(802)
       expect(firstNativeModule.match(/require\("\.\/assets\//gu)).toHaveLength(
-        775,
+        802,
       )
       expect(firstWebModule).not.toContain(paths.repositoryRoot)
       expect(firstNativeModule).not.toContain(paths.repositoryRoot)
@@ -363,10 +363,10 @@ describe("SeethingSwarm presentation asset preparer", () => {
 
     expect(registry).toMatchObject({
       evidenceSnapshotId: SEETHING_SWARM_SOURCE_SNAPSHOT.sourceSnapshotId,
-      characterAnimationCount: 774,
+      characterAnimationCount: 801,
       auxiliaryEffectCount: 1,
     })
-    expect(registry.animals).toHaveLength(45)
+    expect(registry.animals).toHaveLength(47)
     expect(receipt).toEqual(fixture.receipt)
     expect(Object.isFrozen(receipt)).toBe(true)
     expect(Object.isFrozen(receipt.assets)).toBe(true)

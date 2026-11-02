@@ -168,6 +168,7 @@ it("keeps ordinary hurt independently available when a bat lacks required attack
     ]),
     battle: createTestBattle({
       pair: [FIRST_BAT_VALUE_ID, SECOND_BAT_VALUE_ID],
+      customValues: [{ ...CUSTOM_VALUE, id: SECOND_BAT_VALUE_ID }],
     }),
   })
   if (result.mode !== "licensed")
@@ -256,9 +257,11 @@ it("selects stable Hub attention without a scheduler or catalog-order dependence
     selections.every(({ semanticFamily }) => semanticFamily === "anticipation"),
   ).toBe(true)
 })
-const WOLF_VALUE_ID = createCanonicalValueId("pvcs-2011:courage")
+const WOLF_VALUE_ID = createCanonicalValueId("pvcs-2011:justice")
 const FIRST_BAT_VALUE_ID = createCanonicalValueId("pvcs-2011:non-conformity")
-const SECOND_BAT_VALUE_ID = createCanonicalValueId("pvcs-2011:solitude")
+const SECOND_BAT_VALUE_ID = createCustomValueId(
+  "custom:00000000-0000-4000-8000-00000000002f",
+)
 const UNPRESENTED_VALUE_ID = createCanonicalValueId("pvcs-2011:accuracy")
 const CUSTOM_VALUE_ID = createCustomValueId(
   "custom:00000000-0000-4000-8000-000000000001",
@@ -682,6 +685,7 @@ describe("SeethingSwarm battle choreography", () => {
         ]),
         battle: createTestBattle({
           pair: Object.freeze([FIRST_BAT_VALUE_ID, SECOND_BAT_VALUE_ID]),
+          customValues: [{ ...CUSTOM_VALUE, id: SECOND_BAT_VALUE_ID }],
           cycleIndex,
         }),
         catalog,

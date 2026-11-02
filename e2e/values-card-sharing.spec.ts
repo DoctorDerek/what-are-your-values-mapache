@@ -3,6 +3,7 @@ import { expect } from "@playwright/test"
 import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
 import sharp from "sharp"
 import { test } from "./fixtures"
+import { expectRankMedalImage } from "./rank-medal-image"
 import { getRenderedTextLines } from "./visible-text-bounds"
 
 for (const locale of ["en", "es-MX"] as const) {
@@ -42,10 +43,7 @@ for (const locale of ["en", "es-MX"] as const) {
     })
     await homeRank.scrollIntoViewIfNeeded()
     await expect(homeRank).toHaveText("#1")
-    await expect(homeRank.locator("..").locator("img")).toHaveAttribute(
-      "src",
-      /\/gold\.[^/]+\.png$/,
-    )
+    await expectRankMedalImage(homeRank.locator("..").locator("img"), "gold")
     await page.screenshot({ path: testInfo.outputPath("medals-home-320.png") })
     await page
       .getByRole("button", { name: catalog.hub.browse, exact: true })
@@ -75,10 +73,7 @@ for (const locale of ["en", "es-MX"] as const) {
           })),
         )
         .toEqual({ loaded: true, local: true, width: 24, height: 24 })
-      await expect(medal).toHaveAttribute(
-        "src",
-        new RegExp(`/${color}\\.[^/]+\\.png$`),
-      )
+      await expectRankMedalImage(medal, color)
       await row.screenshot({
         path: testInfo.outputPath(`${color}-rank-${rank}-320.png`),
       })

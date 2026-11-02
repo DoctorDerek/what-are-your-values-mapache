@@ -3,12 +3,14 @@ import { getErrorMessage } from "@game/utils/src/Errors"
 export const WEB_EXCLUSIVE_WRITER_LOCK_NAME =
   "what-are-your-values-mapache:player-data-writer" as const
 
+const WRITER_HANDOFF_TIMEOUT_MS = 500
+
 export type WebExclusiveWriterLockManager = {
   readonly request: (
     name: string,
     options: {
       readonly mode: "exclusive"
-      readonly ifAvailable: true
+      readonly signal: AbortSignal
     },
     callback: (lock: Lock | null) => Promise<void>,
   ) => Promise<void>
@@ -41,17 +43,23 @@ export async function acquireWebExclusiveWriterLease(
     })
 
   return new Promise((resolve) => {
+    const controller = new AbortController()
+    const deadline = setTimeout(
+      () => controller.abort(),
+      WRITER_HANDOFF_TIMEOUT_MS,
+    )
     let acquisitionHasSettled = false
     const settleAcquisition = (result: WebExclusiveWriterLeaseResult) => {
       if (acquisitionHasSettled) return
       acquisitionHasSettled = true
+      clearTimeout(deadline)
       resolve(Object.freeze(result))
     }
 
     try {
       const lockRequest = lockManager.request(
         WEB_EXCLUSIVE_WRITER_LOCK_NAME,
-        { mode: "exclusive", ifAvailable: true },
+        { mode: "exclusive", signal: controller.signal },
         async (lock) => {
           if (!lock) {
             settleAcquisition({
@@ -77,6 +85,10 @@ export async function acquireWebExclusiveWriterLease(
       )
 
       void lockRequest.catch((error: unknown) => {
+        if (controller.signal.aborted) {
+          settleAcquisition({ status: "read-only", reason: "lock-unavailable" })
+          return
+        }
         settleAcquisition({
           status: "read-only",
           reason: "lock-request-failed",
