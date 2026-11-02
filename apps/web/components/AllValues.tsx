@@ -68,6 +68,7 @@ export default function AllValues({
     value: CustomValueDefinition
   } | null>(null)
   const [highlightedValueId] = useState<ValueId | null>(initialValueId ?? null)
+  const revealedInitialValue = useRef(false)
 
   const { existingCustomValues, hasComparisons, visibleValues } = useMemo(
     () =>
@@ -93,7 +94,7 @@ export default function AllValues({
   }, [isNavigationBlocked, onNavigationBlockedChange])
 
   useEffect(() => {
-    if (!highlightedValueId) {
+    if (!highlightedValueId || revealedInitialValue.current) {
       return
     }
 
@@ -101,10 +102,11 @@ export default function AllValues({
       `all-values-row-${highlightedValueId}`,
     )
     if (valueRow instanceof HTMLElement) {
-      valueRow.focus()
+      revealedInitialValue.current = true
+      valueRow.focus({ preventScroll: true })
       valueRow.scrollIntoView({ block: "center" })
     }
-  }, [highlightedValueId, searchQuery, visibleValues.length])
+  }, [highlightedValueId, rankedValues])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
