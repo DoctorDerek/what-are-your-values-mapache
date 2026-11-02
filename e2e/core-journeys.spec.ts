@@ -321,23 +321,33 @@ test("a secondary tab stays read-only then inherits released writer ownership", 
   await expect(inheritedTopValue).toContainText("Level 3")
 
   await secondaryPage
-    .getByRole("button", { name: "Battle", exact: true })
+    .getByRole("button", { name: "Add value", exact: true })
     .click()
-  const choiceButtons = secondaryPage.getByRole("button", { name: /^Choose / })
-  await choiceButtons.first().waitFor({ state: "visible" })
-  await expect(
-    secondaryPage.getByRole("main", { name: "Value battle" }),
-  ).toBeVisible()
-  const inheritedPair = await choiceButtons.evaluateAll((buttons) =>
-    buttons.map((button) => button.getAttribute("aria-label")),
+  await secondaryPage
+    .getByLabel("Value name", { exact: true })
+    .fill(example.name)
+  await secondaryPage
+    .getByLabel("Definition", { exact: true })
+    .fill(example.definition)
+  const returnedToHub = secondaryPage.waitForEvent(
+    "framenavigated",
+    (frame) => frame === secondaryPage.mainFrame(),
   )
-
-  await choiceButtons.first().click()
-  await expect
-    .poll(() =>
-      choiceButtons.evaluateAll((buttons) =>
-        buttons.map((button) => button.getAttribute("aria-label")),
-      ),
-    )
-    .not.toEqual(inheritedPair)
+  await secondaryPage.getByRole("button", { name: "Save", exact: true }).click()
+  await expect(
+    secondaryPage.getByText(
+      "Your Custom Values are saved and ready to battle.",
+    ),
+  ).toBeVisible()
+  await returnedToHub
+  await secondaryPage.reload({ waitUntil: "domcontentloaded" })
+  await secondaryPage
+    .getByRole("button", { name: "Browse All Values", exact: true })
+    .click()
+  await secondaryPage
+    .getByRole("searchbox", { name: "Search All Values" })
+    .fill(example.name)
+  await expect(
+    secondaryPage.getByRole("heading", { name: example.name, exact: true }),
+  ).toBeVisible()
 })

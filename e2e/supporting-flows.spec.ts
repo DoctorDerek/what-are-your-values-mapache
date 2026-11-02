@@ -130,6 +130,10 @@ for (const locale of ["en", "es-MX"] as const) {
       await page.screenshot({
         path: testInfo.outputPath("custom-value-short-large-text.png"),
       })
+      const returnedToHub = page.waitForEvent(
+        "framenavigated",
+        (frame) => frame === page.mainFrame(),
+      )
       await save.click()
       await expect(page.getByText(custom.saved, { exact: true })).toBeVisible()
       await expect
@@ -139,7 +143,8 @@ for (const locale of ["en", "es-MX"] as const) {
           ),
         )
         .toBe(false)
-      await page.reload()
+      await returnedToHub
+      await page.reload({ waitUntil: "domcontentloaded" })
       await page.setViewportSize({ width, height: 800 })
       await page
         .getByRole("button", { name: catalog.hub.browse, exact: true })
