@@ -10,7 +10,8 @@ export type WebExclusiveWriterLockManager = {
     name: string,
     options: {
       readonly mode: "exclusive"
-      readonly signal: AbortSignal
+      readonly signal?: AbortSignal
+      readonly ifAvailable?: true
     },
     callback: (lock: Lock | null) => Promise<void>,
   ) => Promise<void>
@@ -42,71 +43,74 @@ export async function acquireWebExclusiveWriterLease(
       reason: "lock-api-unavailable",
     })
 
-  return new Promise((resolve) => {
-    const controller = new AbortController()
-    const deadline = setTimeout(
-      () => controller.abort(),
-      WRITER_HANDOFF_TIMEOUT_MS,
-    )
-    globalThis.window?.addEventListener(
-      "pagehide",
-      (event) => {
-        if (!event.persisted) controller.abort()
-      },
-      { signal: controller.signal },
-    )
-    let acquisitionHasSettled = false
-    const settleAcquisition = (result: WebExclusiveWriterLeaseResult) => {
-      if (acquisitionHasSettled) return
-      acquisitionHasSettled = true
+  const acquisition = Promise.withResolvers<WebExclusiveWriterLeaseResult>()
+  const released = Promise.withResolvers<void>()
+  const lifetime = new AbortController()
+  const queued = new AbortController()
+  const deadline = setTimeout(() => queued.abort(), WRITER_HANDOFF_TIMEOUT_MS)
+  const release = () => lifetime.abort()
+  lifetime.signal.addEventListener(
+    "abort",
+    () => {
       clearTimeout(deadline)
-      if (result.status === "read-only") controller.abort()
-      resolve(Object.freeze(result))
-    }
+      queued.abort()
+      released.resolve()
+    },
+    { once: true },
+  )
+  globalThis.window?.addEventListener(
+    "pagehide",
+    (event) => {
+      if (!event.persisted) release()
+    },
+    { signal: lifetime.signal },
+  )
 
-    try {
-      const lockRequest = lockManager.request(
-        WEB_EXCLUSIVE_WRITER_LOCK_NAME,
-        { mode: "exclusive", signal: controller.signal },
-        (lock) => {
-          if (!lock || controller.signal.aborted) {
-            settleAcquisition({
-              status: "read-only",
-              reason: "lock-unavailable",
-            })
-            return Promise.resolve()
-          }
-
-          const released = new Promise<void>((release) => {
-            controller.signal.addEventListener("abort", () => release(), {
-              once: true,
-            })
-          })
-          settleAcquisition({
-            status: "writer",
-            release: () => controller.abort(),
-          })
-          return released
-        },
+  const hold = (lock: Lock | null) => {
+    clearTimeout(deadline)
+    if (!lock || lifetime.signal.aborted) {
+      acquisition.resolve(
+        Object.freeze({ status: "read-only", reason: "lock-unavailable" }),
       )
+      release()
+      return Promise.resolve()
+    }
+    acquisition.resolve(Object.freeze({ status: "writer", release }))
+    return released.promise
+  }
 
-      void lockRequest.catch((error: unknown) => {
-        if (controller.signal.aborted) {
-          settleAcquisition({ status: "read-only", reason: "lock-unavailable" })
-          return
-        }
-        settleAcquisition({
-          status: "read-only",
-          reason: "lock-request-failed",
-          issue: getErrorMessage(error),
-        })
-      })
+  async function requestWriter(manager: WebExclusiveWriterLockManager) {
+    try {
+      await manager.request(
+        WEB_EXCLUSIVE_WRITER_LOCK_NAME,
+        { mode: "exclusive", signal: queued.signal },
+        hold,
+      )
     } catch (error: unknown) {
-      settleAcquisition({
+      if (!queued.signal.aborted) throw error
+      if (lifetime.signal.aborted) {
+        hold(null)
+        return
+      }
+      // A delayed browser may exceed the queue deadline even when the lock is free.
+      // Let its lock manager distinguish that case from a live competing writer.
+      await manager.request(
+        WEB_EXCLUSIVE_WRITER_LOCK_NAME,
+        { mode: "exclusive", ifAvailable: true },
+        hold,
+      )
+    }
+  }
+
+  void requestWriter(lockManager).catch((error: unknown) => {
+    acquisition.resolve(
+      Object.freeze({
         status: "read-only",
         reason: "lock-request-failed",
         issue: getErrorMessage(error),
-      })
-    }
+      }),
+    )
+    release()
   })
+  return acquisition.promise
 }

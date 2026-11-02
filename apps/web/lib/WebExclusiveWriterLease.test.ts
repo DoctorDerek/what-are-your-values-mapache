@@ -33,12 +33,14 @@ describe("Web Exclusive Writer Lease", () => {
   it("becomes read-only when the current writer keeps the lock", async () => {
     vi.useFakeTimers()
     const request = vi.fn<WebExclusiveWriterLockManager["request"]>(
-      (_name, { signal }) =>
-        new Promise((_, reject) => {
+      async (_name, { signal }, callback) => {
+        if (!signal) return callback(null)
+        await new Promise((_, reject) => {
           signal.addEventListener("abort", () => reject(signal.reason), {
             once: true,
           })
-        }),
+        })
+      },
     )
     const acquisition = acquireWebExclusiveWriterLease({ request })
     expect(request).toHaveBeenCalledWith(
@@ -51,6 +53,30 @@ describe("Web Exclusive Writer Lease", () => {
       status: "read-only",
       reason: "lock-unavailable",
     })
+  })
+
+  it("admits a free writer even if the browser answers after the queue deadline", async () => {
+    vi.useFakeTimers()
+    const request = vi.fn<WebExclusiveWriterLockManager["request"]>(
+      async (_name, options, callback) => {
+        if (options.ifAvailable) return callback(exclusiveLock)
+        await new Promise((_, reject) => {
+          options.signal!.addEventListener(
+            "abort",
+            () => reject(options.signal!.reason),
+            { once: true },
+          )
+        })
+      },
+    )
+    const acquisition = acquireWebExclusiveWriterLease({ request })
+    await vi.runOnlyPendingTimersAsync()
+    const result = await acquisition
+    expect(
+      request.mock.calls.map(([, options]) => options.ifAvailable),
+    ).toEqual([undefined, true])
+    expect(result.status).toBe("writer")
+    if (result.status === "writer") result.release()
   })
 
   it("acquires a just-released writer and clears the deadline once granted", async () => {
@@ -67,7 +93,7 @@ describe("Web Exclusive Writer Lease", () => {
     const lease = await acquisition
     if (lease.status !== "writer") throw new Error("Writer handoff failed")
     await vi.runOnlyPendingTimersAsync()
-    expect(request.mock.calls[0]![1].signal.aborted).toBe(false)
+    expect(request.mock.calls[0]![1].signal!.aborted).toBe(false)
     lease.release()
   })
 
@@ -106,7 +132,7 @@ describe("Web Exclusive Writer Lease", () => {
     )
     const lease = await acquireWebExclusiveWriterLease({ request })
     expect(lease.status).toBe("writer")
-    const signal = request.mock.calls[0]![1].signal
+    const signal = request.mock.calls[0]![1].signal!
     window.dispatchEvent(
       Object.assign(new Event("pagehide"), { persisted: true }),
     )
