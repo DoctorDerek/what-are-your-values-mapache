@@ -67,8 +67,6 @@ export default function PersonalValueRow({
         id={`hub-value-${value.definition.id}-presentation`}
       >
         <ValueAnimalPresentation
-          rank={value.rank}
-          showRank={false}
           surface="card"
           catalog={catalog}
           isAttended={isAttended}

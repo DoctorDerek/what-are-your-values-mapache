@@ -8,6 +8,7 @@ import { getValueRankPresentation } from "@game/data/src/ValueRankMedal"
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import type { ReactNode } from "react"
+import RankMedal from "@/components/RankMedal"
 import ValueAnimalPresentation from "@/components/ValueAnimalPresentation"
 import ValueLevelProgress from "@/components/ValueLevelProgress"
 import useAnimalAttentionInput from "@/lib/useAnimalAttentionInput"
@@ -37,7 +38,7 @@ export default function AllValuesValueRow({
     "row",
   )
   const { definition, rank } = rankedValue
-  const { accessibleLabel } = getValueRankPresentation(
+  const { medal, accessibleLabel } = getValueRankPresentation(
     rank,
     localization.interfaceCopy.rank,
   )
@@ -49,14 +50,27 @@ export default function AllValuesValueRow({
       data-value-row="true"
       {...attentionHandlers}
       className={cx(
-        "text-mapache-vivid-dark min-w-0 border-4 border-black bg-white p-5 shadow-[8px_8px_0px_0px_#000000] outline-none xl:p-7",
+        "text-mapache-vivid-dark @container/value min-w-0 border-4 border-black bg-white p-[8px] shadow-[8px_8px_0px_0px_#000000] outline-none @min-[22rem]/catalog:p-5 xl:p-7",
         isHighlighted && "ring-mapache-vivid-primary-cyan ring-8",
       )}
     >
-      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 xl:gap-5">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-[4px] gap-y-[8px] @min-[18rem]/value:gap-3 xl:gap-5">
+        <div className="order-first contents min-w-0 basis-full items-start justify-between gap-2 @min-[18rem]/value:flex xl:flex-1">
+          <div className="order-first flex min-w-0 basis-full flex-wrap items-baseline gap-2 @min-[18rem]/value:basis-auto">
+            {heading}
+          </div>
+          {hasComparisons && (
+            <span className="order-1 flex shrink-0 items-center gap-[4px]">
+              <span className="sr-only">{accessibleLabel}</span>
+              <span aria-hidden="true" className="bg-mapache-vivid-secondary-purple px-[5px] py-[3px] text-sm leading-none font-black text-white tabular-nums">
+                #{rank}
+              </span>
+              {medal && <RankMedal color={medal.color} />}
+            </span>
+          )}
+        </div>
         <ValueAnimalPresentation
-          rank={rank}
-          showRank={hasComparisons}
+          surface="catalog"
           catalog={runtimeClipCatalog}
           isAttended={isAttended}
           tapRequest={tapRequest}
@@ -66,17 +80,9 @@ export default function AllValuesValueRow({
           )}
           shouldReduceMotion={shouldReduceMotion}
         />
-        {hasComparisons ? (
-          <span className="sr-only">{accessibleLabel}</span>
-        ) : null}
-        <div className="contents xl:flex xl:min-w-0 xl:flex-[1_1_24rem] xl:flex-row-reverse xl:flex-wrap xl:items-center xl:gap-5">
-          <ValueLevelProgress totalXp={rankedValue.progress.totalXp} />
-          <div className="flex w-full min-w-0 basis-full flex-wrap items-center gap-3 xl:w-auto xl:flex-[1_1_16rem] xl:gap-5">
-            {heading}
-          </div>
-        </div>
-        {actions}
+        <ValueLevelProgress totalXp={rankedValue.progress.totalXp} />
       </div>
+      {actions}
       {children}
     </li>
   )

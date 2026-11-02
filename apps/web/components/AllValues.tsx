@@ -145,7 +145,7 @@ export default function AllValues({
                     ? localization.metadata.languageTag
                     : undefined
                 }
-                className="min-w-0 flex-[1_1_16rem] text-3xl font-black break-words hyphens-auto uppercase [hyphenate-limit-chars:6_3_3] xl:text-4xl"
+                className="min-w-0 text-3xl font-black break-words hyphens-auto uppercase [hyphenate-limit-chars:6_3_3] xl:text-4xl"
               >
                 {getWrappableValueDisplayName(
                   definition,
@@ -162,7 +162,7 @@ export default function AllValues({
           }
           actions={
             definition.kind === "custom" ? (
-              <div className="flex flex-wrap gap-3">
+              <div className="mt-3 flex flex-wrap gap-3">
                 <button
                   id={`edit-${definition.id}`}
                   type="button"
@@ -191,7 +191,7 @@ export default function AllValues({
             ) : null
           }
         >
-          <p className="mt-5 overflow-x-auto overflow-y-auto border-t-4 border-black pt-4 text-xl leading-relaxed font-bold [overflow-wrap:anywhere] break-words whitespace-pre-wrap">
+          <p className="mt-[8px] border-t-4 border-black pt-[0.6em] text-xl leading-relaxed font-bold [overflow-wrap:anywhere] whitespace-pre-wrap @min-[18rem]/value:mt-3 xl:mt-5">
             “{getValueDisplayDefinition(definition, localization.values)}”
           </p>
         </AllValuesValueRow>
@@ -222,7 +222,7 @@ export default function AllValues({
     <MapacheScreen
       spacing="safe-area-only"
       viewport="fixed"
-      className="grid grid-rows-[auto_minmax(0,1fr)_auto] text-white"
+      className="@container/catalog grid grid-rows-[auto_minmax(0,1fr)_auto] text-white"
     >
       <header className="bg-mapache-vivid-dark max-h-[40dvh] overflow-y-auto border-b-4 border-black px-4 py-3 xl:px-8">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4">
@@ -273,7 +273,7 @@ export default function AllValues({
         aria-label={localizedCopy.interfaceCopy.screen.values}
         tabIndex={0}
         data-controller-scroll
-        className="mx-auto min-h-0 w-full max-w-6xl overflow-y-auto overscroll-contain px-4 py-4 xl:px-8"
+        className="mx-auto min-h-0 w-full max-w-6xl overflow-y-auto overscroll-contain px-[8px] py-4 @min-[22rem]/catalog:px-4 xl:px-8"
       >
         {persistenceIssue ? (
           <div

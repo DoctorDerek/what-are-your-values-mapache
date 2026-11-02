@@ -140,8 +140,6 @@ function ResultsValueRow({
           </span>
         </span>
         <ValueAnimalPresentation
-          rank={rank}
-          showRank={false}
           catalog={runtimeClipCatalog}
           isAttended={isAttended}
           tapRequest={tapRequest}
