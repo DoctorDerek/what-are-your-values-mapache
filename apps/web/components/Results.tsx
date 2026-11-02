@@ -52,7 +52,10 @@ function ResultsValueRow({
   )
 
   const elementRef = useRef<HTMLLIElement>(null)
-  const { isAttended, attentionHandlers } = useAnimalAttentionInput()
+  const { isAttended, attentionHandlers, tapRequest } = useAnimalAttentionInput(
+    undefined,
+    "row",
+  )
   const [isNearViewport, setIsNearViewport] = useState(false)
   const { value, rank, totalXp } = frameValue
   const { level, earnedXpTowardNextLevel, requiredXpForNextLevel } =
@@ -141,6 +144,7 @@ function ResultsValueRow({
           showRank={false}
           catalog={runtimeClipCatalog}
           isAttended={isAttended}
+          tapRequest={tapRequest}
           valuePresentation={resolveValueAnimalPresentation(
             value.definition,
             runtimeClipCatalog,
@@ -216,6 +220,7 @@ export default function Results({
   const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
   const RESULTS_COPY = localizedCopy.interfaceCopy.results
 
+  const focusFromRowPointer = useRef(false)
   const [isSaveConfirmationVisible, setIsSaveConfirmationVisible] = useState(
     () => getResultsSaveConfirmationRemainingMs(openedAt, Date.now()) > 0,
   )
@@ -358,7 +363,18 @@ export default function Results({
             tabIndex={0}
             onWheelCapture={settleRowPositions}
             onScroll={settleRowPositions}
-            onFocusCapture={settleRowPositions}
+            onPointerDownCapture={(event) => {
+              focusFromRowPointer.current = Boolean(
+                (event.target as Element).closest("[data-results-value]"),
+              )
+            }}
+            onFocusCapture={(event) => {
+              if (
+                !focusFromRowPointer.current ||
+                event.target.matches(":focus-visible")
+              )
+                settleRowPositions()
+            }}
             onKeyDownCapture={settleRowPositions}
           >
             <ol

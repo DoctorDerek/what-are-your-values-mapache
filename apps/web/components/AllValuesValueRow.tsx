@@ -32,7 +32,10 @@ export default function AllValuesValueRow({
   children: ReactNode
 }) {
   const localization = useLocaleCatalog()
-  const { isAttended, attentionHandlers } = useAnimalAttentionInput()
+  const { isAttended, attentionHandlers, tapRequest } = useAnimalAttentionInput(
+    undefined,
+    "row",
+  )
   const { definition, rank } = rankedValue
   const { accessibleLabel } = getValueRankPresentation(
     rank,
@@ -56,6 +59,7 @@ export default function AllValuesValueRow({
           showRank={hasComparisons}
           catalog={runtimeClipCatalog}
           isAttended={isAttended}
+          tapRequest={tapRequest}
           valuePresentation={resolveValueAnimalPresentation(
             definition,
             runtimeClipCatalog,

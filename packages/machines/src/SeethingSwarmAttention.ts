@@ -1,7 +1,8 @@
 export type SeethingSwarmAttentionState = Readonly<{
   isAttended: boolean
   isActive: boolean
-  hasEntered: boolean
+  entries: number
+  tapRequest: number
   alternativeIndex: number
   generation: number
 }>
@@ -10,7 +11,8 @@ export function createSeethingSwarmAttentionState(): SeethingSwarmAttentionState
   return {
     isAttended: false,
     isActive: false,
-    hasEntered: false,
+    entries: 0,
+    tapRequest: 0,
     alternativeIndex: 0,
     generation: 0,
   }
@@ -21,17 +23,26 @@ export function updateSeethingSwarmAttention(
   isAttended: boolean,
   canAnimate: boolean,
   alternativeCount: number,
+  tapRequest = 0,
 ): SeethingSwarmAttentionState {
-  const enters = isAttended && !previous.isAttended && canAnimate
+  const enters =
+    canAnimate &&
+    isAttended &&
+    (!previous.isAttended || tapRequest !== previous.tapRequest)
   const isActive = canAnimate && isAttended && (enters || previous.isActive)
-  if (previous.isAttended === isAttended && previous.isActive === isActive)
+  if (
+    previous.isAttended === isAttended &&
+    previous.isActive === isActive &&
+    previous.tapRequest === tapRequest
+  )
     return previous
   return {
     isAttended,
     isActive,
-    hasEntered: previous.hasEntered || enters,
+    entries: previous.entries + Number(enters),
+    tapRequest,
     alternativeIndex:
-      enters && previous.hasEntered
+      enters && previous.entries > 0
         ? (previous.alternativeIndex + 1) % alternativeCount
         : previous.alternativeIndex,
     generation:
