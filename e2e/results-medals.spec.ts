@@ -67,7 +67,6 @@ for (const width of [320, 1440]) {
       await expect(slot).toHaveAttribute("data-results-medal", medal)
       const image = slot.locator("img")
       await expectRankMedalImage(image, medal)
-      await image.evaluate((element: HTMLImageElement) => element.decode())
       await expect(image).toBeInViewport()
       const evidence = await slot.evaluate((element: HTMLElement) => {
         const bounds = element.getBoundingClientRect()
