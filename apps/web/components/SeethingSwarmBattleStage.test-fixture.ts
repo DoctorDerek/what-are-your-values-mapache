@@ -22,7 +22,7 @@ function getTestAnimationIds(animalId: ZooAnimalId) {
   ]
 }
 
-function createTestClip(animalId: ZooAnimalId, animationId: string) {
+export function createTestClip(animalId: ZooAnimalId, animationId: string) {
   const frameWidth = 32
   const frameHeight = 32
   const frameCount = 4

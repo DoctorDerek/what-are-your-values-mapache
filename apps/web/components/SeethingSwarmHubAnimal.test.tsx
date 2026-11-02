@@ -4,10 +4,70 @@ import { createSeethingSwarmBattleChoreography } from "@game/machines/src/Seethi
 import { fireEvent, render, waitFor } from "@testing-library/react"
 import { StrictMode } from "react"
 import { afterEach, expect, it, vi } from "vitest"
-import { createSeethingSwarmBattleStageTestCatalog } from "@/components/SeethingSwarmBattleStage.test-fixture"
+import {
+  createSeethingSwarmBattleStageTestCatalog,
+  createTestClip,
+} from "@/components/SeethingSwarmBattleStage.test-fixture"
 import SeethingSwarmHubAnimal from "@/components/SeethingSwarmHubAnimal"
 
 afterEach(() => vi.restoreAllMocks())
+
+it("returns Tiger to the next authored calm pose after crouching and roaring", async () => {
+  const battle = {
+    pair: [
+      createCanonicalValueId("pvcs-2011:courage"),
+      createCanonicalValueId("pvcs-2011:mastery"),
+    ] as const,
+    scheduler: createInitialBattleCycle("tiger-row").scheduler,
+  }
+  const base = createSeethingSwarmBattleStageTestCatalog(battle)
+  const tiger = base.animals.find(({ animalId }) => animalId === "tigerpack")!
+  const extra = ["idle_blink", "sit", "crouch"].map((name) =>
+    createTestClip("tigerpack", name),
+  )
+  const catalog = {
+    ...base,
+    characterClipCount: base.characterClipCount + extra.length,
+    animals: base.animals.map((animal) =>
+      animal === tiger
+        ? { ...animal, characterClips: [...animal.characterClips, ...extra] }
+        : animal,
+    ),
+  }
+  const choreography = createSeethingSwarmBattleChoreography({
+    battle,
+    catalog,
+  })
+  if (choreography.mode !== "licensed")
+    throw new Error("Expected licensed fixture")
+  const fighter = choreography.combatants[0]
+  const draw = (tapRequest: number) => (
+    <SeethingSwarmHubAnimal
+      calmClip={fighter.clips.rest.clip}
+      geometry={fighter.geometry}
+      catalog={catalog}
+      isAttended={tapRequest > 0}
+      tapRequest={tapRequest}
+      shouldReduceMotion={false}
+      onLoadError={vi.fn()}
+    />
+  )
+  const { container, rerender } = render(draw(0))
+  const active = () =>
+    container.querySelector<HTMLImageElement>(
+      '[data-hub-active-clip="true"] img',
+    )!
+  for (const [tap, expression, rest] of [
+    [1, "crouch", "idle_blink"],
+    [2, "roar", "sit"],
+  ] as const) {
+    rerender(draw(tap))
+    for (const image of container.querySelectorAll("img")) fireEvent.load(image)
+    await waitFor(() => expect(active().src).toContain(`/${expression}.png`))
+    fireEvent.animationEnd(active())
+    await waitFor(() => expect(active().src).toContain(`/${rest}.png`))
+  }
+})
 
 it("keeps calm while the next attention alternative loads and never advances on completion or held focus", async () => {
   vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockReturnValue(false)

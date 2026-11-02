@@ -70,6 +70,20 @@ describe("Shared animal attention input", () => {
     },
   )
 
+  it("keeps Edit and Delete keyboard events separate from a focused row", () => {
+    render(<AttentionRow scope="row" />)
+    const row = screen.getByRole("region")
+    const status = screen.getByRole("status")
+    for (const action of screen.getAllByRole("button")) {
+      fireEvent.focus(action)
+      fireEvent.keyDown(action, { key: "Enter" })
+      expect(status).toHaveTextContent("Calm")
+    }
+    fireEvent.keyDown(row, { key: "Enter" })
+    expect(status).toHaveTextContent("Attended")
+    expect(status).toHaveAttribute("data-taps", "0")
+  })
+
   it("does not require or manufacture hover for touch input", () => {
     render(<AttentionRow />)
     fireEvent.pointerEnter(screen.getByRole("region"), { pointerType: "touch" })
