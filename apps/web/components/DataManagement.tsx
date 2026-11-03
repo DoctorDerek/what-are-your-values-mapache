@@ -195,7 +195,7 @@ export default function DataManagement({
         <div className="grid grid-cols-1 gap-[20px] xl:grid-cols-2">
           <section
             aria-labelledby="export-data-action"
-            className="flex min-w-0 flex-col border-4 border-black bg-white shadow-[6px_6px_0px_0px_#000000]"
+            className="flex min-w-0 flex-col bg-white shadow-[6px_6px_0px_0px_#000000]"
           >
             <Button
               id="export-data-action"
@@ -204,13 +204,13 @@ export default function DataManagement({
               size="section"
               disabled={isBusy}
               onClick={onExport}
-              className="-mx-1 -mt-1 w-[calc(100%+--spacing(2))] hover:translate-y-0"
+              className="w-full hover:translate-y-0"
             >
               {playerDataPortabilityCopy.exportAction}
             </Button>
             <p
               id="export-data-description"
-              className="text-mapache-vivid-dark p-[20px] font-bold"
+              className="text-mapache-vivid-dark border-x-4 border-b-4 border-black p-5 font-bold"
             >
               {playerDataPortabilityCopy.exportDescription}
             </p>
@@ -218,7 +218,7 @@ export default function DataManagement({
 
           <section
             aria-label={playerDataPortabilityCopy.importTitle}
-            className="flex min-w-0 flex-col border-4 border-black bg-white shadow-[6px_6px_0px_0px_#000000]"
+            className="flex min-w-0 flex-col bg-white shadow-[6px_6px_0px_0px_#000000]"
           >
             <input
               ref={importInputRef}
@@ -241,13 +241,13 @@ export default function DataManagement({
               size="section"
               disabled={isBusy}
               onClick={() => importInputRef.current?.click()}
-              className="-mx-1 -mt-1 w-[calc(100%+--spacing(2))] hover:translate-y-0"
+              className="w-full hover:translate-y-0"
             >
               {playerDataPortabilityCopy.chooseBackupAction}
             </Button>
             <p
               id="import-data-description"
-              className="text-mapache-vivid-dark p-[20px] font-bold"
+              className="text-mapache-vivid-dark border-x-4 border-b-4 border-black p-5 font-bold"
             >
               {playerDataPortabilityCopy.importDescription}
             </p>
