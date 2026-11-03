@@ -11,7 +11,7 @@ type InformationPanelFrameProps = Readonly<{
   title: string
   children: ReactNode
   primaryActionLabel: string
-  onPrimaryAction: () => void
+  onPrimaryAction?: () => void
   isPrimaryActionPending?: boolean
   accessibleCloseLabel?: string
   dialogTitle?: boolean

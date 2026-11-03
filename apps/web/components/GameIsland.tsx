@@ -4,11 +4,11 @@ import type { SupportedLocale } from "@game/data/src/LocaleRegistry"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import LocaleProvider from "@game/utils/src/LocaleContext"
 import dynamic from "next/dynamic"
-import PlayerDataLoading from "@/components/PlayerDataLoading"
+import { RestoringIntroduction } from "@/components/Splash"
 
 const GameClient = dynamic(() => import("@/components/GameClient"), {
   ssr: false,
-  loading: PlayerDataLoading,
+  loading: RestoringIntroduction,
 })
 
 export default function GameIsland({

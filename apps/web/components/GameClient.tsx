@@ -79,13 +79,12 @@ import AllValues from "./AllValues"
 import Crucible from "./Crucible"
 import DataManagement, { type DataManagementActivity } from "./DataManagement"
 import Hub, { HUB_MENU_BUTTON_ID } from "./Hub"
-import PlayerDataLoading from "./PlayerDataLoading"
 import PlayerDataRecovery, {
   type PlayerDataRecoveryActivity,
 } from "./PlayerDataRecovery"
 import Results from "./Results"
 import Settings from "./Settings"
-import Splash from "./Splash"
+import Splash, { RestoringIntroduction } from "@/components/Splash"
 
 const SOURCE_APP_VERSION = packageMetadata.version
 const SOURCE_BUILD =
@@ -612,7 +611,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
             : null
 
   if (state.matches("Hydrating") || state.matches("LoadingProfile")) {
-    return <PlayerDataLoading />
+    return <RestoringIntroduction />
   }
 
   if (state.matches("PersistenceFailure")) {
@@ -1137,7 +1136,7 @@ function GameClientShell({
   const writerLease = useWebExclusiveWriterLease()
   const [sessionRevision, setSessionRevision] = useState(0)
 
-  if (writerLease.status === "checking") return <PlayerDataLoading />
+  if (writerLease.status === "checking") return <RestoringIntroduction />
   if (writerLease.status === "read-only")
     return (
       <div data-game-surface="active">
