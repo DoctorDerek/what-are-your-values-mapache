@@ -1,6 +1,11 @@
 import type { SerwistOptions } from "serwist"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+type ArtworkCacheOptions = {
+  cacheName: string
+  plugins: {cacheKeyWillBeUsed(input:{request: Request}): Promise<Request | string>}[]
+}
+
 const { createSerwist, createCacheFirst, addEventListeners } = vi.hoisted(
   () => {
     const addEventListeners = vi.fn()
@@ -9,7 +14,7 @@ const { createSerwist, createCacheFirst, addEventListeners } = vi.hoisted(
       createSerwist: vi.fn(function (_options: SerwistOptions) {
         return { addEventListeners }
       }),
-      createCacheFirst: vi.fn(function (_options: { cacheName: string }) {}),
+      createCacheFirst: vi.fn(function (_options: ArtworkCacheOptions) {}),
     }
   },
 )
@@ -140,9 +145,7 @@ describe("animal offline cache lifecycle", () => {
 
   it("uses the content hash across deployments and preserves other query fields", async () => {
     await installWorker()
-    const {plugins} = createCacheFirst.mock.calls[0]![0] as {
-      plugins: {cacheKeyWillBeUsed(input:{request: Request}): Promise<Request | string>}[]
-    }
+    const {plugins} = createCacheFirst.mock.calls[0]![0]
     const key = (path: string) => plugins[0]!.cacheKeyWillBeUsed({request:new Request(origin+path)})
     expect(await key(animalPath+"?dpl=after&variant=two")).toBe(origin+animalPath+"?variant=two")
     expect(await key(existingPath+"?dpl=after")).toBe(origin+existingPath)
@@ -150,7 +153,7 @@ describe("animal offline cache lifecycle", () => {
   })
 
   it("carries an on-demand strip acquired under an old deployment into the canonical cache", async () => {
-    runtimeMatch.mockImplementation(async url=>url.endsWith("?dpl=older") ? artwork.clone() : undefined)
+    runtimeMatch.mockImplementation(async url=>url.endsWith("?dpl=older") ? new Response("cached strip") : undefined)
     await installWorker()
     expect(runtimePut).toHaveBeenCalledWith(origin+animalPath,expect.any(Response))
   })

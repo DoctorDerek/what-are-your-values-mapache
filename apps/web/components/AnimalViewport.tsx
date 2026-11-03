@@ -6,7 +6,7 @@ const Visibility = createContext<ObservePortrait | null>(null)
 const portraitMargin = `${SEETHING_SWARM_HUB_TILE_SIZE}px 0px`
 
 export default function AnimalViewport({ children }: { children: ReactNode }) {
-  const [observe] = useState<ObservePortrait>(() => {
+  const [observe] = useState<ObservePortrait>((): ObservePortrait => {
     const subscribers = new Map<Element, (near: boolean) => void>()
     let observer: IntersectionObserver | undefined
     return (element, setNear) => {
