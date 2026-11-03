@@ -248,7 +248,7 @@ describe("GameClient Integration", () => {
 
     render(<GameClient />)
 
-    expect(screen.getByRole("status")).toHaveTextContent("Loading your values…")
+    expect(screen.getByRole("heading", { name: "What Are Your Values, Mapache?" })).toBeVisible()
     expect(
       screen.queryByRole("button", { name: "Start" }),
     ).not.toBeInTheDocument()

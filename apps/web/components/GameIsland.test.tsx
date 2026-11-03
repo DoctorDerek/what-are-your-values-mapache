@@ -23,7 +23,7 @@ vi.mock("next/dynamic", () => ({
 }))
 
 describe("GameIsland", () => {
-  it("uses the same accessible loading surface before the client is available", () => {
+  it("renders the actual introduction before gameplay can accept input", () => {
     render(<GameIsland />)
 
     expect(
@@ -31,13 +31,10 @@ describe("GameIsland", () => {
         name: `Play ${introductionCopy.title}`,
       }),
     ).toHaveClass("min-h-[100dvh]")
-    expect(
-      screen.getByRole("main", { name: "Loading your values…" }),
-    ).toHaveAttribute("aria-busy", "true")
-    expect(screen.queryByRole("heading")).not.toBeInTheDocument()
-    expect(screen.queryByText(introductionCopy.tagline)).not.toBeInTheDocument()
-    expect(screen.getByRole("status")).toHaveTextContent("Loading your values…")
-    expect(screen.getByRole("status")).toHaveAttribute("aria-atomic", "true")
+    expect(screen.getByRole("heading", { name: introductionCopy.title })).toBeVisible()
+    expect(screen.getByText(introductionCopy.tagline)).toBeVisible()
+    expect(screen.queryByRole("button", {name:"Start"})).toBeNull()
+    expect(screen.getByRole("link",{name:"DoctorDerek.com"})).toBeVisible()
   })
 
   it("loads the canonical game client through the isolated boundary", async () => {

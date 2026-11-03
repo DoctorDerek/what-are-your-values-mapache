@@ -202,18 +202,12 @@ test("startup preserves its viewport while client code waits and opens the saved
     const game = page.getByRole("region", {
       name: "Play What Are Your Values, Mapache?",
     })
-    const loading = game.getByRole("main", { name: "Loading your values…" })
-    await expect(loading).toHaveAttribute("aria-busy", "true")
-    await expect
-      .poll(async () => (await loading.boundingBox())?.height)
-      .toBeCloseTo(844, 1)
-    await expect(loading.getByRole("status")).toHaveText("Loading your values…")
-    await expect(loading.getByRole("heading")).toHaveCount(0)
+    const intro = game.getByRole("heading", {name:"What Are Your Values, Mapache?"})
+    await expect(intro).toBeVisible()
+    await expect(game.getByText(/A free game designed to help you find your values/)).toBeInViewport()
+    await expect(game.getByRole("button", {name:"Start", exact:true})).toHaveCount(0)
     await expect(game.locator("noscript")).toBeHidden()
     const beforeStartup = await game.boundingBox()
-    const announcement = await loading.getByRole("status").boundingBox()
-    expect(announcement!.width).toBeLessThanOrEqual(1)
-    expect(announcement!.height).toBeLessThanOrEqual(1)
 
     scriptsAreDelayed = false
     scriptsReady.resolve()
@@ -222,7 +216,7 @@ test("startup preserves its viewport while client code waits and opens the saved
     ).toBeVisible()
     const afterStartup = await game.boundingBox()
     expect(afterStartup).toEqual(beforeStartup)
-    await expect(loading).toHaveCount(0)
+    await expect(intro).toBeVisible()
     const language = game.getByRole("combobox", { name: "Language" })
     await expect(language).toHaveValue("en")
     await expect(language.getByRole("option")).toHaveText([
