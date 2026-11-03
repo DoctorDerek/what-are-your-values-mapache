@@ -90,14 +90,20 @@ describe("first-arrival decoration lifecycle", () => {
       autoplay: true,
     })
     expect(screen.queryByTestId("arrival-raccoon")).toBeNull()
-    act(() => runtime.onAdvance?.({ type: EventType.Advance }))
+    await act(async () => {
+      runtime.onAdvance?.({type: EventType.Advance})
+      await vi.dynamicImportSettled()
+    })
     const runner = screen.getByTestId("arrival-raccoon")
     const image = runner.querySelector("img")!
     expect(runner).toHaveClass("[animation-play-state:paused]")
     expect(image).toHaveAttribute("loading", "eager")
     await act(async () => fireEvent.load(image))
     expect(runner).not.toHaveClass("[animation-play-state:paused]")
-    act(() => runtime.onAdvance?.({ type: EventType.Advance }))
+    await act(async () => {
+      runtime.onAdvance?.({type: EventType.Advance})
+      await vi.dynamicImportSettled()
+    })
     expect(screen.getByTestId("arrival-raccoon")).toBe(runner)
     act(() => runtime.onStop?.({ type: EventType.Stop }))
     expect(screen.queryByTestId("arrival-ice-cream")).toBeNull()
@@ -120,7 +126,10 @@ describe("first-arrival decoration lifecycle", () => {
       if (failure === "runtime") {
         act(() => runtime.onLoadError?.({ type: EventType.LoadError }))
       } else {
-        act(() => runtime.onAdvance?.({ type: EventType.Advance }))
+        await act(async () => {
+      runtime.onAdvance?.({type: EventType.Advance})
+      await vi.dynamicImportSettled()
+    })
         fireEvent.error(
           screen.getByTestId("arrival-raccoon").querySelector("img")!,
         )
@@ -136,7 +145,10 @@ describe("first-arrival decoration lifecycle", () => {
     const props = { onComplete: vi.fn(), onLocaleChange: vi.fn() }
     const { rerender } = render(<Splash {...props} />)
     const runtime = await revealOptionalArt()
-    act(() => runtime.onAdvance?.({ type: EventType.Advance }))
+    await act(async () => {
+      runtime.onAdvance?.({type: EventType.Advance})
+      await vi.dynamicImportSettled()
+    })
     expect(screen.getByTestId("arrival-raccoon")).toBeInTheDocument()
     rerender(<Splash {...props} isPending />)
     expect(screen.queryByTestId("arrival-raccoon")).toBeNull()
