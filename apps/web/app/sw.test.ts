@@ -31,8 +31,9 @@ const existingPath = "/_next/static/media/bat_hurt_strip5.otherhash.png"
 const missingPath = "/_next/static/media/bat_idle_strip4.missinghash.png"
 const legacyRequest = new Request(`${origin}${animalPath}?__WB_REVISION__=old`)
 const artwork = new Response("previously downloaded artwork", { status: 200 })
+const requestedUrl = (key: string | Request) => typeof key === "string" ? key : key.url
 const runtimeMatch = vi.fn(
-  async (_url: string): Promise<Response | undefined> => undefined,
+  async (_url: string | Request): Promise<Response | undefined> => undefined,
 )
 const runtimePut = vi.fn(async (_url: string, _response: Response) => {})
 const legacyMatch = vi.fn(
@@ -48,7 +49,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   installListeners.length = 0
   runtimeMatch.mockImplementation(async (url) =>
-    url.endsWith(existingPath) ? artwork : undefined,
+    requestedUrl(url).endsWith(existingPath) ? artwork : undefined,
   )
   runtimePut.mockResolvedValue(undefined)
   vi.stubGlobal("self", {
@@ -153,7 +154,7 @@ describe("animal offline cache lifecycle", () => {
   })
 
   it("carries an on-demand strip acquired under an old deployment into the canonical cache", async () => {
-    runtimeMatch.mockImplementation(async url=>url.endsWith("?dpl=older") ? new Response("cached strip") : undefined)
+    runtimeMatch.mockImplementation(async url=>requestedUrl(url).endsWith("?dpl=older") ? new Response("cached strip") : undefined)
     await installWorker()
     expect(runtimePut).toHaveBeenCalledWith(origin+animalPath,expect.any(Response))
   })
