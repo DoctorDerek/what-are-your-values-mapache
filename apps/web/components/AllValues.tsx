@@ -275,7 +275,7 @@ export default function AllValues({
         aria-label={localizedCopy.interfaceCopy.screen.values}
         tabIndex={0}
         data-controller-scroll
-        className="mx-auto min-h-0 w-full max-w-6xl overflow-y-auto overscroll-contain px-[clamp(8px,calc(100%_-_20rem),16px)] py-4 xl:px-8"
+        className="mx-auto min-h-0 w-full max-w-6xl overflow-y-auto overscroll-contain px-[min(--spacing(4),2.5%)] py-4 xl:px-8"
       >
         {persistenceIssue ? (
           <div
