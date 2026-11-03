@@ -177,21 +177,24 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         : null,
     [battleProfile],
   )
-  const hasValidatedProfile =
-    state.context.battleProfileStoreState !== null ||
+  const isBattleLikely =
     state.matches("Splash") ||
-    state.matches("InitializingProfile")
+    state.matches("InitializingProfile") ||
+    state.matches("Hub") ||
+    state.matches("Results") ||
+    state.matches("Crucible")
   const isBattlePrepared = usePreparedSeethingSwarmBattle(
-    hasValidatedProfile ? presentedBattle : null,
+    isBattleLikely ? presentedBattle : null,
     SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
   )
+  const isHubImminent = state.matches("InitializingProfile") || state.matches("Results")
   const hubClips = useMemo(
     () =>
-      getHubPreparationClips<StaticImageData>(
+      isHubImminent ? getHubPreparationClips<StaticImageData>(
         rankedValues,
         SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
-      ),
-    [rankedValues],
+      ) : [],
+    [isHubImminent, rankedValues],
   )
   usePreparedSeethingSwarmClips(hubClips)
   const [isBattleRequested, setIsBattleRequested] = useState(false)
