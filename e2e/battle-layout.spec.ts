@@ -158,11 +158,13 @@ for (const viewport of battleViewports) {
   })
 }
 
-for (const [width, height] of [
-  [1280, 800],
-  [1440, 900],
+for (const [width, height, textSize] of [
+  [1280, 800, 100],
+  [1440, 900, 100],
+  [1280, 800, 200],
+  [1440, 900, 200],
 ]) {
-  test(`wide Battle names keep their first line and center across consecutive matchups at ${width}px`, async ({
+  test(`wide Battle names keep their first line and center across consecutive matchups at ${width}px and ${textSize}% text`, async ({
     page,
   }) => {
     test.slow()
@@ -173,6 +175,7 @@ for (const [width, height] of [
       })
     })
     await page.goto("/")
+    await page.addStyleTag({ content: `html { font-size: ${textSize}%; }` })
     await page.getByRole("button", { name: "Start", exact: true }).click()
     await page.getByRole("button", { name: "Battle", exact: true }).click()
     const stage = page.locator("[data-choreography-identity]")
@@ -189,7 +192,11 @@ for (const [width, height] of [
           const title = heading.getBoundingClientRect()
           const choice = heading.closest("button")!.getBoundingClientRect()
           return {
-            firstLine: line.getClientRects()[0].top,
+            firstLine:
+              line.getClientRects()[0].top -
+              heading
+                .closest("[data-choreography-identity]")!
+                .getBoundingClientRect().top,
             centerOffset:
               title.left + title.width / 2 - (choice.left + choice.width / 2),
           }

@@ -90,6 +90,7 @@ export const ValueChoiceCard = forwardRef<
           isEnabled ? "cursor-pointer" : "cursor-default",
         )}
       >
+        {/* Regression guard: the empty grid item anchors the name’s first baseline even when its Level badge wraps above it. */}
         <button
           ref={ref}
           id={choiceId}
@@ -103,7 +104,7 @@ export const ValueChoiceCard = forwardRef<
           aria-describedby={accessibleDefinitionId}
           disabled={!isEnabled}
           onClick={() => onActivate(value.id)}
-          className="row-start-2 w-full min-w-0 shrink-0 cursor-pointer self-start text-center text-[clamp(1.5rem,min(5vw,7dvh),2.5rem)] leading-tight outline-none disabled:cursor-default xl:grid xl:grid-cols-1 xl:items-baseline xl:text-[clamp(2rem,3.25vw,4rem)] xl:before:col-start-1 xl:before:row-start-1 xl:before:h-[3lh]"
+          className="row-start-2 w-full min-w-0 shrink-0 cursor-pointer self-start text-center text-[clamp(1.5rem,min(5vw,7dvh),2.5rem)] leading-tight outline-none disabled:cursor-default xl:grid xl:grid-cols-1 xl:items-baseline xl:text-[clamp(2rem,3.25vw,4rem)] xl:[--choice-side-width:clamp(25%,--spacing(40),50%)] xl:before:col-start-1 xl:before:row-start-1 xl:before:h-[3lh]"
         >
           <span
             aria-hidden="true"
@@ -121,7 +122,7 @@ export const ValueChoiceCard = forwardRef<
               <span
                 aria-hidden="true"
                 className={cx(
-                  "float-left max-w-[45%] min-w-0 border-2 border-transparent py-1 pr-2 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:w-1/4 xl:border-4 xl:py-2 xl:pr-0 xl:text-left xl:text-2xl",
+                  "float-left max-w-[45%] min-w-0 border-2 border-transparent py-1 pr-2 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:w-(--choice-side-width) xl:max-w-none xl:border-4 xl:py-2 xl:pr-0 xl:text-left xl:text-2xl",
                   controlHintContrastClasses,
                 )}
               >
@@ -131,7 +132,7 @@ export const ValueChoiceCard = forwardRef<
             <span
               className={
                 controlHint
-                  ? "float-right ml-2 max-w-[55%] xl:ml-0 xl:w-1/4"
+                  ? "float-right ml-2 max-w-[55%] xl:ml-0 xl:w-(--choice-side-width) xl:max-w-none"
                   : "block xl:float-left xl:w-full"
               }
             >
