@@ -28,7 +28,7 @@ export default function ValueAnimalPresentation({
   shouldReduceMotion: boolean
   surface?: "tile" | "card" | "catalog"
 }) {
-  const {ref: portraitRef, near: isNearViewport} = useAnimalViewport()
+  const { ref: portraitRef, near: isNearViewport } = useAnimalViewport()
   const imagePath =
     valuePresentation.kind === "animal"
       ? valuePresentation.clip.relativePath
