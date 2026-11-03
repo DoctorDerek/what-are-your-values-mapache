@@ -50,27 +50,27 @@ export default function AllValuesValueRow({
       data-value-row="true"
       {...attentionHandlers}
       className={cx(
-        "text-mapache-vivid-dark min-w-0 border-4 border-black bg-white p-[clamp(8px,calc(100%_-_20rem),20px)] shadow-[8px_8px_0px_0px_#000000] outline-none [--value-gap:clamp(8px,calc(100%_-_18rem),12px)] xl:p-7",
+        "text-mapache-vivid-dark @container min-w-0 border-4 border-black bg-white p-[min(--spacing(5),2.5%)] shadow-[8px_8px_0px_0px_#000000] outline-none xl:p-7",
         isHighlighted && "ring-mapache-vivid-primary-cyan ring-8",
       )}
     >
       <div className="flow-root min-w-0 xl:flex xl:items-center xl:gap-5">
         <div
           className={cx(
-            "float-left mb-(--value-gap) flex min-w-0 flex-wrap items-baseline gap-2 xl:m-0 xl:flex-1",
+            "float-left mb-2 flex max-w-full flex-wrap items-baseline gap-2 xl:m-0 xl:min-w-0 xl:flex-1",
             hasComparisons
-              ? "w-[min(100%,max(14rem,calc(100%_-_4.5rem)))]"
+              ? "w-[min(100%,max(--spacing(56),calc(100%_-_--spacing(18))))]"
               : "w-full",
           )}
         >
           {heading}
         </div>
         {hasComparisons && (
-          <span className="float-right mb-(--value-gap) flex shrink-0 items-center gap-[4px] xl:m-0">
+          <span className="float-right mb-2 flex shrink-0 items-center gap-0.5 xl:m-0">
             <span className="sr-only">{accessibleLabel}</span>
             <span
               aria-hidden="true"
-              className="bg-mapache-vivid-secondary-purple px-[5px] py-[3px] text-sm leading-none font-black text-white tabular-nums"
+              className="bg-mapache-vivid-secondary-purple px-0.5 py-1 text-sm leading-none font-black text-white tabular-nums"
             >
               #{rank}
             </span>

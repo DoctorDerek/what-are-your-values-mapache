@@ -90,6 +90,7 @@ export const ValueChoiceCard = forwardRef<
           isEnabled ? "cursor-pointer" : "cursor-default",
         )}
       >
+        {/* Regression guard: the empty grid item anchors the name’s first baseline even when its Level badge wraps above it. */}
         <button
           ref={ref}
           id={choiceId}
@@ -103,7 +104,7 @@ export const ValueChoiceCard = forwardRef<
           aria-describedby={accessibleDefinitionId}
           disabled={!isEnabled}
           onClick={() => onActivate(value.id)}
-          className="row-start-2 w-full min-w-0 shrink-0 cursor-pointer self-start text-center outline-none disabled:cursor-default"
+          className="row-start-2 w-full min-w-0 shrink-0 cursor-pointer self-start text-center text-[clamp(1.5rem,min(5vw,7dvh),2.5rem)] leading-tight outline-none disabled:cursor-default xl:grid xl:grid-cols-1 xl:items-baseline xl:text-[clamp(2rem,3.25vw,4rem)] xl:[--choice-side-width:clamp(25%,--spacing(40),50%)] xl:before:col-start-1 xl:before:row-start-1 xl:before:h-[3lh]"
         >
           <span
             aria-hidden="true"
@@ -116,12 +117,12 @@ export const ValueChoiceCard = forwardRef<
                 : "border-y-(length:--choice-focus-width)",
             )}
           />
-          <div className="flow-root w-full min-w-0">
+          <div className="flow-root w-full min-w-0 xl:col-start-1 xl:row-start-1">
             {controlHint ? (
               <span
                 aria-hidden="true"
                 className={cx(
-                  "float-left max-w-[45%] min-w-0 border-2 border-transparent py-1 pr-2 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:border-4 xl:py-2 xl:pr-5 xl:text-2xl",
+                  "float-left max-w-[45%] min-w-0 border-2 border-transparent py-1 pr-2 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:w-(--choice-side-width) xl:max-w-none xl:border-4 xl:py-2 xl:pr-0 xl:text-left xl:text-2xl",
                   controlHintContrastClasses,
                 )}
               >
@@ -129,14 +130,20 @@ export const ValueChoiceCard = forwardRef<
               </span>
             ) : null}
             <span
-              className={cx(
-                "block w-fit min-w-0 border-2 border-black bg-white px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000]",
+              className={
                 controlHint
-                  ? "float-right ml-2 max-w-[55%] xl:ml-5"
-                  : "mx-auto max-w-full",
-              )}
+                  ? "float-right ml-2 max-w-[55%] xl:ml-0 xl:w-(--choice-side-width) xl:max-w-none"
+                  : "block xl:float-left xl:w-full"
+              }
             >
-              {localizedCopy.interfaceCopy.screen.valueLevel(String(level))}
+              <span
+                className={cx(
+                  "block w-fit max-w-full min-w-0 border-2 border-black bg-white px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000]",
+                  controlHint ? "ml-auto" : "mx-auto",
+                )}
+              >
+                {localizedCopy.interfaceCopy.screen.valueLevel(String(level))}
+              </span>
             </span>
             <h2
               aria-label={displayName}
@@ -145,10 +152,7 @@ export const ValueChoiceCard = forwardRef<
                   ? localizedCopy.metadata.languageTag
                   : undefined
               }
-              className={cx(
-                "mx-auto flow-root w-max max-w-full min-w-[min(100%,12rem)] pt-[clamp(0px,calc(100dvh-430px),0.5rem)] pr-[0.5ch] text-[clamp(1.5rem,min(5vw,7dvh),2.5rem)] leading-tight font-black break-words hyphens-auto text-white drop-shadow-[4px_4px_0px_#000000] [hyphenate-limit-chars:6_3_3] xl:min-w-0 xl:text-[clamp(2rem,3.25vw,4rem)] xl:drop-shadow-[6px_6px_0px_#000000]",
-                Boolean(controlHint) && "xl:clear-none xl:pt-0",
-              )}
+              className="mx-auto flow-root w-max max-w-full min-w-[min(100%,12rem)] pt-[clamp(0px,calc(100dvh-430px),0.5rem)] pr-[0.5ch] leading-tight font-black break-words hyphens-auto text-white drop-shadow-[4px_4px_0px_#000000] [hyphenate-limit-chars:6_3_3] xl:min-w-0 xl:pt-0 xl:pr-0 xl:drop-shadow-[6px_6px_0px_#000000]"
             >
               {getWrappableValueDisplayName(
                 value,
