@@ -27,22 +27,14 @@ test("defers distant roster art and prepares animals when scrolling reaches them
   await page
     .getByRole("button", { name: "Browse All Values", exact: true })
     .click()
-  const rows = page
-    .getByRole("listitem")
-    .filter({ has: page.locator("[data-hub-active-clip]") })
+  const rows = page.locator("li[data-value-row]")
   await expect(rows).toHaveCount(103)
   await expect(
     rows.first().locator('[data-hub-active-clip="true"] [data-playback-ready]'),
   ).toHaveAttribute("data-playback-ready", "true")
-  const rosterSources = await rows
-    .locator("img")
-    .evaluateAll((images: HTMLImageElement[]) =>
-      images.map((image) => image.src),
-    )
-  expect(rosterSources.some((source) => !requestedImages.has(source))).toBe(
-    true,
-  )
   const lastRow = rows.last()
+  await expect(lastRow.locator("[data-hub-active-clip]")).toHaveCount(0)
+  const beforeScroll = new Set(requestedImages)
   await lastRow.scrollIntoViewIfNeeded()
   await expect(
     lastRow.locator('[data-hub-active-clip="true"] [data-playback-ready]'),
@@ -58,6 +50,14 @@ test("defers distant roster art and prepares animals when scrolling reaches them
     )
     .toBe(true)
   await expect(lastRow.locator('[data-hub-active-clip="true"]')).toBeVisible()
+  const loaded = await lastRow
+    .locator("img")
+    .evaluateAll((images: HTMLImageElement[]) =>
+      images.map((image) => image.currentSrc),
+    )
+  expect(loaded.length).toBeGreaterThan(0)
+  expect(loaded.every((url) => requestedImages.has(url))).toBe(true)
+  expect(loaded.some((url) => !beforeScroll.has(url))).toBe(true)
 })
 
 test("prepares before Battle and retains real animals while the next pair loads", async ({

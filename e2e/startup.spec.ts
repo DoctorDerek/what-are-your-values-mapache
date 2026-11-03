@@ -23,6 +23,9 @@ for (const viewport of [
       name: "What Are Your Values, Mapache?",
       exact: true,
     })
+    await expect(title).toBeVisible()
+    await expect(start).toBeEnabled()
+    await page.evaluate(() => document.fonts.ready)
     const expectedTitleLines = viewport.width >= 1280 ? 1 : 2
     const titleGeometry = await title.evaluate((element) => {
       const bounds = element.getBoundingClientRect()

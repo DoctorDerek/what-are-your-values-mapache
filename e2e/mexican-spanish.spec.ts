@@ -205,15 +205,21 @@ test.describe("Spanish static document", () => {
       name: "¿Cuáles son tus valores, Mapache?",
       start_url: "/que-valoras-en-la-vida",
     })
-    const noScriptCopy = page
-      .getByRole("main", { name: "Cargando tus valores…" })
-      .locator("noscript p")
-    await expect(noScriptCopy).toHaveText([
-      "Un juego gratis diseñado para ayudarte a descubrir tus valores de vida. Elige cuál de dos valores te importa más en este momento y mira cómo unos animales adorables se baten en duelo en un juego rápido de batallas automáticas.",
+    const game = page.locator("#game")
+    await expect(
+      game.getByText(
+        "Un juego gratis diseñado para ayudarte a descubrir tus valores de vida. Elige cuál de dos valores te importa más en este momento y mira cómo unos animales adorables se baten en duelo en un juego rápido de batallas automáticas.",
+        { exact: true },
+      ),
+    ).toBeVisible()
+    await expect(game.locator("noscript p")).toHaveText(
       "El juego interactivo requiere JavaScript.",
-    ])
-    for (const paragraph of await noScriptCopy.all())
-      await expect(paragraph).toBeVisible()
+    )
+    await expect(game.locator("noscript p")).toBeVisible()
+    await expect(game.locator("noscript a")).toHaveAttribute(
+      "href",
+      "#introduction",
+    )
     const article = page.getByRole("article")
     await expect(article.locator("dt")).toHaveCount(103)
     await expect(article.locator("dt").first()).toHaveText("Aceptación")
