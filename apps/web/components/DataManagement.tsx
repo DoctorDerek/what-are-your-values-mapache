@@ -204,7 +204,7 @@ export default function DataManagement({
               size="section"
               disabled={isBusy}
               onClick={onExport}
-              className="-mx-[4px] -mt-[4px] w-[calc(100%+8px)]"
+              className="-mx-1 -mt-1 w-[calc(100%+--spacing(2))] hover:translate-y-0"
             >
               {playerDataPortabilityCopy.exportAction}
             </Button>
@@ -241,7 +241,7 @@ export default function DataManagement({
               size="section"
               disabled={isBusy}
               onClick={() => importInputRef.current?.click()}
-              className="-mx-[4px] -mt-[4px] w-[calc(100%+8px)]"
+              className="-mx-1 -mt-1 w-[calc(100%+--spacing(2))] hover:translate-y-0"
             >
               {playerDataPortabilityCopy.chooseBackupAction}
             </Button>
