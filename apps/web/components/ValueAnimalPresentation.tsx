@@ -28,7 +28,7 @@ export default function ValueAnimalPresentation({
   shouldReduceMotion: boolean
   surface?: "tile" | "card" | "catalog"
 }) {
-  const viewport = useAnimalViewport()
+  const {ref: portraitRef, near: isNearViewport} = useAnimalViewport()
   const imagePath =
     valuePresentation.kind === "animal"
       ? valuePresentation.clip.relativePath
@@ -53,7 +53,7 @@ export default function ValueAnimalPresentation({
 
   return (
     <span
-      ref={viewport.ref}
+      ref={portraitRef}
       aria-hidden="true"
       data-value-presentation={valuePresentation.kind}
       className={cx(
@@ -70,7 +70,7 @@ export default function ValueAnimalPresentation({
         )}
         style={portraitStyle}
       >
-        {(viewport.near || isAttended) && !hasImageFailed ? (
+        {(isNearViewport || isAttended) && !hasImageFailed ? (
           <span style={{ width: geometry.width, height: geometry.height }}>
             <SeethingSwarmHubAnimal
               calmClip={valuePresentation.clip}
