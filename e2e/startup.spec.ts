@@ -202,10 +202,16 @@ test("startup preserves its viewport while client code waits and opens the saved
     const game = page.getByRole("region", {
       name: "Play What Are Your Values, Mapache?",
     })
-    const intro = game.getByRole("heading", {name:"What Are Your Values, Mapache?"})
+    const intro = game.getByRole("heading", {
+      name: "What Are Your Values, Mapache?",
+    })
     await expect(intro).toBeVisible()
-    await expect(game.getByText(/A free game designed to help you find your values/)).toBeInViewport()
-    await expect(game.getByRole("button", {name:"Start", exact:true})).toHaveCount(0)
+    await expect(
+      game.getByText(/A free game designed to help you find your values/),
+    ).toBeInViewport()
+    await expect(
+      game.getByRole("button", { name: "Start", exact: true }),
+    ).toHaveCount(0)
     await expect(game.locator("noscript")).toBeHidden()
     const beforeStartup = await game.boundingBox()
 

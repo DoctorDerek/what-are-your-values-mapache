@@ -3,7 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 type ArtworkCacheOptions = {
   cacheName: string
-  plugins: {cacheKeyWillBeUsed(input:{request: Request}): Promise<Request | string>}[]
+  plugins: {
+    cacheKeyWillBeUsed(input: { request: Request }): Promise<Request | string>
+  }[]
 }
 
 const { createSerwist, createCacheFirst, addEventListeners } = vi.hoisted(
@@ -31,7 +33,8 @@ const existingPath = "/_next/static/media/bat_hurt_strip5.otherhash.png"
 const missingPath = "/_next/static/media/bat_idle_strip4.missinghash.png"
 const legacyRequest = new Request(`${origin}${animalPath}?__WB_REVISION__=old`)
 const artwork = new Response("previously downloaded artwork", { status: 200 })
-const requestedUrl = (key: string | Request) => typeof key === "string" ? key : key.url
+const requestedUrl = (key: string | Request) =>
+  typeof key === "string" ? key : key.url
 const runtimeMatch = vi.fn(
   async (_url: string | Request): Promise<Response | undefined> => undefined,
 )
@@ -128,7 +131,9 @@ describe("animal offline cache lifecycle", () => {
     ])
     expect(createCacheFirst).toHaveBeenCalledWith({
       cacheName: "wayvm-animal-strips-v1",
-      plugins: [expect.objectContaining({cacheKeyWillBeUsed: expect.any(Function)})],
+      plugins: [
+        expect.objectContaining({ cacheKeyWillBeUsed: expect.any(Function) }),
+      ],
     })
     expect(addEventListeners).toHaveBeenCalledOnce()
   })
@@ -146,17 +151,27 @@ describe("animal offline cache lifecycle", () => {
 
   it("uses the content hash across deployments and preserves other query fields", async () => {
     await installWorker()
-    const {plugins} = createCacheFirst.mock.calls[0]![0]
-    const key = (path: string) => plugins[0]!.cacheKeyWillBeUsed({request:new Request(origin+path)})
-    expect(await key(animalPath+"?dpl=after&variant=two")).toBe(origin+animalPath+"?variant=two")
-    expect(await key(existingPath+"?dpl=after")).toBe(origin+existingPath)
-    expect((await key(animalPath) as Request).url).toBe(origin+animalPath)
+    const { plugins } = createCacheFirst.mock.calls[0]![0]
+    const key = (path: string) =>
+      plugins[0]!.cacheKeyWillBeUsed({ request: new Request(origin + path) })
+    expect(await key(animalPath + "?dpl=after&variant=two")).toBe(
+      origin + animalPath + "?variant=two",
+    )
+    expect(await key(existingPath + "?dpl=after")).toBe(origin + existingPath)
+    expect(((await key(animalPath)) as Request).url).toBe(origin + animalPath)
   })
 
   it("carries an on-demand strip acquired under an old deployment into the canonical cache", async () => {
-    runtimeMatch.mockImplementation(async url=>requestedUrl(url).endsWith("?dpl=older") ? new Response("cached strip") : undefined)
+    runtimeMatch.mockImplementation(async (url) =>
+      requestedUrl(url).endsWith("?dpl=older")
+        ? new Response("cached strip")
+        : undefined,
+    )
     await installWorker()
-    expect(runtimePut).toHaveBeenCalledWith(origin+animalPath,expect.any(Response))
+    expect(runtimePut).toHaveBeenCalledWith(
+      origin + animalPath,
+      expect.any(Response),
+    )
   })
 
   it("rejects installation when preserving existing artwork fails", async () => {

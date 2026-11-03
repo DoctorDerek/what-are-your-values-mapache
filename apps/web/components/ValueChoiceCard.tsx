@@ -152,7 +152,7 @@ export const ValueChoiceCard = forwardRef<
                   ? localizedCopy.metadata.languageTag
                   : undefined
               }
-              className="mx-auto flow-root w-max max-w-full min-w-[min(100%,12rem)] pt-[clamp(0px,calc(100dvh-430px),0.5rem)] pr-[0.5ch] leading-tight font-black break-words hyphens-auto text-white drop-shadow-[4px_4px_0px_#000000] [hyphenate-limit-chars:6_3_3] xl:@max-sm/choice:clear-both xl:min-w-0 xl:pt-0 xl:pr-0 xl:drop-shadow-[6px_6px_0px_#000000]"
+              className="mx-auto flow-root w-max max-w-full min-w-[min(100%,12rem)] pt-[clamp(0px,calc(100dvh-430px),0.5rem)] pr-[0.5ch] leading-tight font-black break-words hyphens-auto text-white drop-shadow-[4px_4px_0px_#000000] [hyphenate-limit-chars:6_3_3] xl:min-w-0 xl:pt-0 xl:pr-0 xl:drop-shadow-[6px_6px_0px_#000000] xl:@max-sm/choice:clear-both"
             >
               {getWrappableValueDisplayName(
                 value,

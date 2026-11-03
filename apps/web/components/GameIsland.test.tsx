@@ -31,10 +31,12 @@ describe("GameIsland", () => {
         name: `Play ${introductionCopy.title}`,
       }),
     ).toHaveClass("min-h-[100dvh]")
-    expect(screen.getByRole("heading", { name: introductionCopy.title })).toBeVisible()
+    expect(
+      screen.getByRole("heading", { name: introductionCopy.title }),
+    ).toBeVisible()
     expect(screen.getByText(introductionCopy.tagline)).toBeVisible()
-    expect(screen.queryByRole("button", {name:"Start"})).toBeNull()
-    expect(screen.getByRole("link",{name:"DoctorDerek.com"})).toBeVisible()
+    expect(screen.queryByRole("button", { name: "Start" })).toBeNull()
+    expect(screen.getByRole("link", { name: "DoctorDerek.com" })).toBeVisible()
   })
 
   it("loads the canonical game client through the isolated boundary", async () => {

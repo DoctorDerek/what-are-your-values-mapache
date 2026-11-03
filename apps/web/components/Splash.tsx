@@ -16,7 +16,9 @@ import LanguageSelector from "@/components/LanguageSelector"
 import useDeferredFirstArrival from "@/components/useDeferredFirstArrival"
 
 const MapachitoIceCream = lazy(() => import("@/components/MapachitoIceCream"))
-const FirstArrivalRaccoon = lazy(() => import("@/components/FirstArrivalRaccoon"))
+const FirstArrivalRaccoon = lazy(
+  () => import("@/components/FirstArrivalRaccoon"),
+)
 
 export function RestoringIntroduction() {
   const locale = resolveLocale({ routeLocale: useLocalePreference() })
@@ -38,8 +40,11 @@ export default function Splash({
   onLocaleChange?: (locale: SupportedLocale) => void
   onComplete?: () => void
 }) {
-  const { introduction: introductionCopy, firstArrival, interfaceCopy } =
-    getLocaleCatalog(locale)
+  const {
+    introduction: introductionCopy,
+    firstArrival,
+    interfaceCopy,
+  } = getLocaleCatalog(locale)
   const [hasStarted, setHasStarted] = useState(false)
   const [hasFinished, setHasFinished] = useState(false)
   const [hasIceCreamFinished, setHasIceCreamFinished] = useState(false)

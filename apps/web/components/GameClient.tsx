@@ -60,6 +60,7 @@ import SeethingSwarmAssetPreparation, {
   usePreparedSeethingSwarmBattle,
   usePreparedSeethingSwarmClips,
 } from "@/components/SeethingSwarmAssetPreparation"
+import Splash, { RestoringIntroduction } from "@/components/Splash"
 import WebControlsProvider, {
   useWebControllerActions,
 } from "@/components/WebControlsProvider"
@@ -84,7 +85,6 @@ import PlayerDataRecovery, {
 } from "./PlayerDataRecovery"
 import Results from "./Results"
 import Settings from "./Settings"
-import Splash, { RestoringIntroduction } from "@/components/Splash"
 
 const SOURCE_APP_VERSION = packageMetadata.version
 const SOURCE_BUILD =
@@ -187,13 +187,16 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     isBattleLikely ? presentedBattle : null,
     SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
   )
-  const isHubImminent = state.matches("InitializingProfile") || state.matches("Results")
+  const isHubImminent =
+    state.matches("InitializingProfile") || state.matches("Results")
   const hubClips = useMemo(
     () =>
-      isHubImminent ? getHubPreparationClips<StaticImageData>(
-        rankedValues,
-        SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
-      ) : [],
+      isHubImminent
+        ? getHubPreparationClips<StaticImageData>(
+            rankedValues,
+            SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
+          )
+        : [],
     [isHubImminent, rankedValues],
   )
   usePreparedSeethingSwarmClips(hubClips)

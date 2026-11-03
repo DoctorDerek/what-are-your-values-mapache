@@ -35,7 +35,11 @@ function isOnDemandArtwork(url: URL) {
 async function preserveCachedAnimalStrips() {
   const animalCache = await caches.open(animalCacheName)
   for (const cacheName of await caches.keys()) {
-    if (cacheName !== animalCacheName && !cacheName.startsWith("serwist-precache")) continue
+    if (
+      cacheName !== animalCacheName &&
+      !cacheName.startsWith("serwist-precache")
+    )
+      continue
     const precache = await caches.open(cacheName)
     for (const request of await precache.keys()) {
       const url = new URL(request.url)
@@ -82,10 +86,13 @@ const serwist = new Serwist({
       matcher: ({ url }) => isOnDemandArtwork(url),
       handler: new CacheFirst({
         cacheName: animalCacheName,
-        plugins: [{
-          cacheKeyWillBeUsed: async ({ request }) =>
-            getPrecachedDeploymentAsset({ url: new URL(request.url) })[0]?.href ?? request,
-        }],
+        plugins: [
+          {
+            cacheKeyWillBeUsed: async ({ request }) =>
+              getPrecachedDeploymentAsset({ url: new URL(request.url) })[0]
+                ?.href ?? request,
+          },
+        ],
       }),
     },
   ],

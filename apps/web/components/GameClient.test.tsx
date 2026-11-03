@@ -248,7 +248,9 @@ describe("GameClient Integration", () => {
 
     render(<GameClient />)
 
-    expect(screen.getByRole("heading", { name: "What Are Your Values, Mapache?" })).toBeVisible()
+    expect(
+      screen.getByRole("heading", { name: "What Are Your Values, Mapache?" }),
+    ).toBeVisible()
     expect(
       screen.queryByRole("button", { name: "Start" }),
     ).not.toBeInTheDocument()
@@ -422,8 +424,10 @@ describe("GameClient Integration", () => {
 
     durableStoreFailure.readEnabled = false
     fireEvent.click(screen.getByRole("button", { name: "Try Again" }))
-    expect(await screen.findByRole("button", {name:"Start"})).toBeEnabled()
-    expect(screen.getByRole("heading", {name:"What Are Your Values, Mapache?"})).toBeVisible()
+    expect(await screen.findByRole("button", { name: "Start" })).toBeEnabled()
+    expect(
+      screen.getByRole("heading", { name: "What Are Your Values, Mapache?" }),
+    ).toBeVisible()
   })
 
   it("downloads captured unreadable records without claiming they were erased", async () => {
@@ -916,8 +920,10 @@ describe("GameClient Integration", () => {
 
     render(<GameClient />)
 
-    const start = await screen.findByRole("button", {name:"Start"})
-    expect(screen.getByRole("heading", {name:"What Are Your Values, Mapache?"})).toBeVisible()
+    const start = await screen.findByRole("button", { name: "Start" })
+    expect(
+      screen.getByRole("heading", { name: "What Are Your Values, Mapache?" }),
+    ).toBeVisible()
 
     fireEvent.click(start)
 
