@@ -11,6 +11,7 @@ import {
   isChoreographyPrepared,
 } from "@game/machines/src/SeethingSwarmAssetPreparation"
 import { useActorRef, useSelector } from "@xstate/react"
+import AnimalViewport from "@/components/AnimalViewport"
 import Image, { type StaticImageData } from "next/image"
 import {
   createContext,
@@ -40,7 +41,7 @@ export default function SeethingSwarmAssetPreparation({
   const assets = useSelector(actor, (snapshot) => snapshot.context.assets)
   return (
     <PreparationContext value={actor}>
-      <SeethingSwarmBattleVariation>{children}</SeethingSwarmBattleVariation>
+      <AnimalViewport><SeethingSwarmBattleVariation>{children}</SeethingSwarmBattleVariation></AnimalViewport>
       <div hidden aria-hidden="true">
         {[...assets.values()].map(({ clip, generation }) => (
           <Image

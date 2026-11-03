@@ -9,6 +9,7 @@ import { createSeethingSwarmSurfaceGeometry } from "@game/machines/src/SeethingS
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import { useState, type CSSProperties } from "react"
+import { useAnimalViewport } from "@/components/AnimalViewport"
 import { useSeethingSwarmAssetStatus } from "@/components/SeethingSwarmAssetPreparation"
 import SeethingSwarmHubAnimal from "@/components/SeethingSwarmHubAnimal"
 
@@ -18,7 +19,6 @@ export default function ValueAnimalPresentation({
   tapRequest = 0,
   valuePresentation,
   shouldReduceMotion,
-  showAnimal = true,
   surface = "tile",
 }: {
   catalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
@@ -26,9 +26,9 @@ export default function ValueAnimalPresentation({
   tapRequest?: number
   valuePresentation: ValueAnimalPresentationData<StaticImageData>
   shouldReduceMotion: boolean
-  showAnimal?: boolean
   surface?: "tile" | "card" | "catalog"
 }) {
+  const viewport = useAnimalViewport()
   const imagePath =
     valuePresentation.kind === "animal"
       ? valuePresentation.clip.relativePath
@@ -53,6 +53,7 @@ export default function ValueAnimalPresentation({
 
   return (
     <span
+      ref={viewport.ref}
       aria-hidden="true"
       data-value-presentation={valuePresentation.kind}
       className={cx(
@@ -69,7 +70,7 @@ export default function ValueAnimalPresentation({
         )}
         style={portraitStyle}
       >
-        {showAnimal && !hasImageFailed ? (
+        {(viewport.near || isAttended) && !hasImageFailed ? (
           <span style={{ width: geometry.width, height: geometry.height }}>
             <SeethingSwarmHubAnimal
               calmClip={valuePresentation.clip}
