@@ -6,9 +6,13 @@ import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwa
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import type { StaticImageData } from "next/image"
+import dynamic from "next/dynamic"
 import type { Ref } from "react"
-import Heroes99Hero from "@/components/Heroes99Hero"
 import PersonalValueRow from "@/components/PersonalValueRow"
+
+const Heroes99Hero = dynamic(() => import("@/components/Heroes99Hero"), {
+  loading: () => <span aria-hidden className="block h-24 w-full xl:h-32" />,
+})
 
 export default function PersonalValuesCard({
   appearance,
