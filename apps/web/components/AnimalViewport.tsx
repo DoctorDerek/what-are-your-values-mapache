@@ -1,7 +1,9 @@
+import { SEETHING_SWARM_HUB_TILE_SIZE } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react"
 
 type ObservePortrait = (element: Element, setNear: (near: boolean) => void) => (() => void) | undefined
 const Visibility = createContext<ObservePortrait | null>(null)
+const portraitMargin = `${SEETHING_SWARM_HUB_TILE_SIZE}px 0px`
 
 export default function AnimalViewport({ children }: { children: ReactNode }) {
   const [observe] = useState<ObservePortrait>(() => {
@@ -14,7 +16,7 @@ export default function AnimalViewport({ children }: { children: ReactNode }) {
       }
       observer ??= new IntersectionObserver((entries) => {
         for (const entry of entries) subscribers.get(entry.target)?.(entry.isIntersecting)
-      }, { rootMargin: "96px" })
+      }, { rootMargin: portraitMargin, scrollMargin: portraitMargin })
       subscribers.set(element, setNear)
       observer.observe(element)
       return () => {
