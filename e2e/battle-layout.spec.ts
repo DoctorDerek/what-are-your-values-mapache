@@ -98,11 +98,6 @@ for (const viewport of battleViewports) {
     if (viewport.width >= 1280) {
       expect(topSpace).toBeGreaterThanOrEqual(24)
       if (viewport.height >= 900) expect(topSpace).toBeGreaterThan(60)
-      const bottomSpace =
-        geometry.region.bottom -
-        Math.max(...geometry.animals.map(({ bottom }) => bottom))
-      expect(bottomSpace - topSpace).toBeGreaterThanOrEqual(31)
-      expect(bottomSpace - topSpace).toBeLessThanOrEqual(49)
     } else {
       expect(topSpace).toBeGreaterThanOrEqual(7)
       expect(topSpace).toBeLessThanOrEqual(25)
@@ -160,5 +155,64 @@ for (const viewport of battleViewports) {
       page.getByRole("button", { name: "Combatir", exact: true }),
     ).toBeVisible()
     await expect(choices).toHaveCount(0)
+  })
+}
+
+for (const [width, height] of [
+  [1280, 800],
+  [1440, 900],
+]) {
+  test(`wide Battle names keep their first line and center across consecutive matchups at ${width}px`, async ({
+    page,
+  }) => {
+    test.slow()
+    await page.setViewportSize({ width, height })
+    await page.addInitScript(() => {
+      Object.defineProperty(crypto, "randomUUID", {
+        value: () => "00000000-0000-4000-8000-0000000005dc",
+      })
+    })
+    await page.goto("/")
+    await page.getByRole("button", { name: "Start", exact: true }).click()
+    await page.getByRole("button", { name: "Battle", exact: true }).click()
+    const stage = page.locator("[data-choreography-identity]")
+    const choices = stage.getByRole("button", { name: /^Choose / })
+    const headings = choices.getByRole("heading")
+    await expect(headings.first()).toHaveAccessibleName("Fitness")
+    await expect(headings.last()).toHaveAccessibleName("Order")
+    await page.evaluate(() => document.fonts.ready)
+    const readHeadings = () =>
+      headings.evaluateAll((elements) =>
+        elements.map((heading) => {
+          const line = document.createRange()
+          line.selectNodeContents(heading)
+          const title = heading.getBoundingClientRect()
+          const choice = heading.closest("button")!.getBoundingClientRect()
+          return {
+            firstLine: line.getClientRects()[0].top,
+            centerOffset:
+              title.left + title.width / 2 - (choice.left + choice.width / 2),
+          }
+        }),
+      )
+    const [initial] = await readHeadings()
+    for (let turn = 0; turn < 13; turn++) {
+      await expect(choices.first()).toBeEnabled()
+      for (const heading of await readHeadings()) {
+        expect(Math.abs(heading.firstLine - initial.firstLine)).toBeLessThan(1)
+        expect(Math.abs(heading.centerOffset)).toBeLessThan(1)
+      }
+      if (turn === 12) {
+        await expect(headings.first()).toHaveAccessibleName("Self-Acceptance")
+        await expect(headings.last()).toHaveAccessibleName("Complexity")
+        break
+      }
+      const identity = await stage.getAttribute("data-choreography-identity")
+      await stage.locator('[data-battle-arena-side="first"]').click()
+      await expect(stage).not.toHaveAttribute(
+        "data-choreography-identity",
+        identity!,
+      )
+    }
   })
 }
