@@ -47,10 +47,13 @@ const installListeners: ((event: {
   waitUntil: (promise: Promise<unknown>) => void
 }) => void)[] = []
 
+const activateListeners: typeof installListeners = []
+
 beforeEach(() => {
   vi.resetModules()
   vi.clearAllMocks()
   installListeners.length = 0
+  activateListeners.length = 0
   runtimeMatch.mockImplementation(async (url) =>
     requestedUrl(url).endsWith(existingPath) ? artwork : undefined,
   )
@@ -84,6 +87,7 @@ beforeEach(() => {
       listener: (typeof installListeners)[number],
     ) => {
       if (type === "install") installListeners.push(listener)
+      if (type === "activate") activateListeners.push(listener)
     },
   })
   vi.stubGlobal("caches", {
@@ -168,6 +172,11 @@ describe("animal offline cache lifecycle", () => {
         : undefined,
     )
     await installWorker()
+    runtimePut.mockClear()
+    const activated: Promise<unknown>[] = []
+    for (const listener of activateListeners)
+      listener({ waitUntil: (task) => activated.push(task) })
+    await Promise.all(activated)
     expect(runtimePut).toHaveBeenCalledWith(
       origin + animalPath,
       expect.any(Response),
