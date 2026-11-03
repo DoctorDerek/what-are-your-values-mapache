@@ -58,7 +58,9 @@ export default function AllValuesValueRow({
         <div
           className={cx(
             "float-left mb-2 flex max-w-full flex-wrap items-baseline gap-2 xl:m-0 xl:min-w-0 xl:flex-1",
-            hasComparisons ? "w-fit min-w-[min(100%,--spacing(56))]" : "w-full",
+            hasComparisons
+              ? "w-[min(100%,max(--spacing(56),calc(100%_-_--spacing(18))))]"
+              : "w-full",
           )}
         >
           {heading}
@@ -68,7 +70,7 @@ export default function AllValuesValueRow({
             <span className="sr-only">{accessibleLabel}</span>
             <span
               aria-hidden="true"
-              className="bg-mapache-vivid-secondary-purple px-1 py-1 text-sm leading-none font-black text-white tabular-nums"
+              className="bg-mapache-vivid-secondary-purple px-0.5 py-1 text-sm leading-none font-black text-white tabular-nums"
             >
               #{rank}
             </span>

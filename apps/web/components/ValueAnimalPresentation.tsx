@@ -59,7 +59,7 @@ export default function ValueAnimalPresentation({
         "relative flex flex-none items-center",
         surface === "tile" && "bg-white shadow-[inset_0_0_0_4px_#000000]",
         surface === "catalog" &&
-          "float-left clear-left mr-1 mb-2 border-4 border-black bg-white xl:m-0",
+          "float-left clear-left mr-0.5 mb-2 border-4 border-black bg-white xl:m-0",
       )}
     >
       <span
