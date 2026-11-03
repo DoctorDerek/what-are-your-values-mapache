@@ -169,7 +169,7 @@ export default function SeethingSwarmHubAnimal({
                 setFailedPaths(
                   (previous) => new Set([...previous, clip.relativePath]),
                 )
-                if (clip.relativePath === calmClip.relativePath) onLoadError()
+                if (clip.relativePath === initialCalmClip.relativePath && !isReady(retainedClip.relativePath)) onLoadError()
               }}
               onPlaybackComplete={
                 visible &&
