@@ -35,12 +35,13 @@ function isOnDemandArtwork(url: URL) {
 async function preserveCachedAnimalStrips() {
   const animalCache = await caches.open(animalCacheName)
   for (const cacheName of await caches.keys()) {
-    if (!cacheName.startsWith("serwist-precache")) continue
+    if (cacheName !== animalCacheName && !cacheName.startsWith("serwist-precache")) continue
     const precache = await caches.open(cacheName)
     for (const request of await precache.keys()) {
       const url = new URL(request.url)
       if (!isOnDemandArtwork(url)) continue
       url.searchParams.delete("__WB_REVISION__")
+      url.searchParams.delete("dpl")
       if (await animalCache.match(url.href)) continue
       const response = await precache.match(request)
       if (response?.ok) await animalCache.put(url.href, response)
@@ -49,6 +50,10 @@ async function preserveCachedAnimalStrips() {
 }
 
 self.addEventListener("install", (event) => {
+  event.waitUntil(preserveCachedAnimalStrips())
+})
+
+self.addEventListener("activate", (event) => {
   event.waitUntil(preserveCachedAnimalStrips())
 })
 
@@ -75,7 +80,13 @@ const serwist = new Serwist({
     },
     {
       matcher: ({ url }) => isOnDemandArtwork(url),
-      handler: new CacheFirst({ cacheName: animalCacheName }),
+      handler: new CacheFirst({
+        cacheName: animalCacheName,
+        plugins: [{
+          cacheKeyWillBeUsed: async ({ request }) =>
+            getPrecachedDeploymentAsset({ url: new URL(request.url) })[0]?.href ?? request,
+        }],
+      }),
     },
   ],
   precacheOptions: {
