@@ -103,7 +103,7 @@ export const ValueChoiceCard = forwardRef<
           aria-describedby={accessibleDefinitionId}
           disabled={!isEnabled}
           onClick={() => onActivate(value.id)}
-          className="row-start-2 w-full min-w-0 shrink-0 cursor-pointer self-start text-center text-[clamp(1.5rem,min(5vw,7dvh),2.5rem)] leading-tight outline-none disabled:cursor-default xl:grid xl:grid-cols-1 xl:items-baseline xl:text-[clamp(2rem,3.25vw,4rem)] xl:before:col-start-1 xl:before:row-start-1 xl:before:h-[2lh]"
+          className="row-start-2 w-full min-w-0 shrink-0 cursor-pointer self-start text-center text-[clamp(1.5rem,min(5vw,7dvh),2.5rem)] leading-tight outline-none disabled:cursor-default xl:grid xl:grid-cols-1 xl:items-baseline xl:text-[clamp(2rem,3.25vw,4rem)] xl:before:col-start-1 xl:before:row-start-1 xl:before:h-[3lh]"
         >
           <span
             aria-hidden="true"
@@ -151,7 +151,7 @@ export const ValueChoiceCard = forwardRef<
                   ? localizedCopy.metadata.languageTag
                   : undefined
               }
-              className="mx-auto flow-root w-max max-w-full min-w-[min(100%,12rem)] pt-[clamp(0px,calc(100dvh-430px),0.5rem)] pr-[0.5ch] leading-tight font-black break-words hyphens-auto text-white drop-shadow-[4px_4px_0px_#000000] [hyphenate-limit-chars:6_3_3] xl:min-w-0 xl:pr-0 xl:pt-0 xl:drop-shadow-[6px_6px_0px_#000000]"
+              className="mx-auto flow-root w-max max-w-full min-w-[min(100%,12rem)] pt-[clamp(0px,calc(100dvh-430px),0.5rem)] pr-[0.5ch] leading-tight font-black break-words hyphens-auto text-white drop-shadow-[4px_4px_0px_#000000] [hyphenate-limit-chars:6_3_3] xl:min-w-0 xl:pt-0 xl:pr-0 xl:drop-shadow-[6px_6px_0px_#000000]"
             >
               {getWrappableValueDisplayName(
                 value,
