@@ -117,6 +117,8 @@ function InformationPanelFrame({
       </div>
 
       <footer
+        inert={!onPrimaryAction}
+        aria-hidden={onPrimaryAction ? undefined : true}
         className={cx(
           "relative z-20 border-black",
           isIntroduction
