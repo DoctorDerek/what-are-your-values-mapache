@@ -269,6 +269,35 @@ test("startup preserves its viewport while client code waits and opens the saved
   }
 })
 
+for (const width of [390, 1440]) {
+  test(`the running raccoon never widens the introduction at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 800 })
+    await page.goto("/")
+    const crossing = page.getByTestId("arrival-raccoon")
+    await crossing.waitFor({ state: "attached", timeout: 20_000 })
+    const maxOverflow = await crossing.evaluate(async (runner) => {
+      const scrollport = runner.closest("header")
+      if (!scrollport) throw new Error("Missing introduction scrollport")
+      let excess = scrollport.scrollWidth - scrollport.clientWidth
+      // Exercise a narrower scrollport even when the browser overlays its scrollbars.
+      scrollport.style.maxInlineSize = "calc(100% - 1rem)"
+      while (runner.isConnected) {
+        excess = Math.max(
+          excess,
+          scrollport.scrollWidth - scrollport.clientWidth,
+        )
+        await new Promise<void>((resolve) =>
+          requestAnimationFrame(() => resolve()),
+        )
+      }
+      return excess
+    })
+    expect(maxOverflow).toBe(0)
+  })
+}
+
 test("first arrival uses the wide composition and completes a full raccoon crossing", async ({
   page,
 }) => {
