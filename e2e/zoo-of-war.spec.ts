@@ -86,9 +86,23 @@ test("prepares before Battle and retains real animals while the next pair loads"
     const battle = page.getByRole("main", { name: "Value battle" })
     await expect(battle).toHaveCount(0)
     await preparing.click()
-    await page.getByRole("button", { name: "Battle", exact: true }).click()
     releaseAll = true
     await Promise.all(heldRoutes.splice(0).map((route) => route.continue()))
+    const preparedStrips = page.locator('div[hidden] img[src*="_strip"]')
+    await expect(preparedStrips.first()).toBeAttached()
+    await preparedStrips.evaluateAll(async (images: HTMLImageElement[]) => {
+      await Promise.all(images.map((image) => image.decode()))
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      )
+    })
+    const startBattle = page.getByRole("button", {
+      name: "Battle",
+      exact: true,
+    })
+    await expect(startBattle).toHaveAttribute("aria-busy", "false")
+    await expect(battle).toHaveCount(0)
+    await startBattle.click()
     const stage = battle.locator("[data-choreography-identity]")
     await expect(stage).toHaveAttribute("data-battle-stage-mode", "licensed")
     await expect(
