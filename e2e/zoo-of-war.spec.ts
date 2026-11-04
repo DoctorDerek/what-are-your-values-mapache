@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page, type Route } from "@playwright/test"
+import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
 import { test } from "./fixtures"
 import { installVisibleTextBounds } from "./visible-text-bounds"
 
@@ -180,6 +181,52 @@ test("prepares before Battle and retains real animals while the next pair loads"
     releaseAll = true
     await Promise.all(heldRoutes.splice(0).map((route) => route.continue()))
   }
+})
+
+test("failed battle art falls back and preserves one choice after reopening", async ({
+  page,
+}) => {
+  const copy = getLocaleCatalog("en").interfaceCopy
+  await page.emulateMedia({ reducedMotion: "reduce" })
+  await page.route(/_strip\d+\.[^/]+\.png(?:\?|$)/, (route) => route.abort())
+  const failedStrip = page.waitForEvent("requestfailed", (request) =>
+    /_strip\d+\./.test(request.url()),
+  )
+  await page.goto("/")
+  await page.getByRole("button", { name: "Start", exact: true }).click()
+  await failedStrip
+  await page.getByRole("button", { name: "Battle", exact: true }).click()
+  const battle = page.getByRole("main", { name: "Value battle" })
+  await expect(battle.locator("[data-placeholder-playback]")).toHaveCount(2)
+  await battle
+    .getByRole("button", { name: /^Choose / })
+    .first()
+    .click()
+  await expect(battle.getByRole("button", { name: /^Undo/ })).toBeEnabled()
+
+  await page.reload()
+  await page
+    .getByRole("button", { name: copy.menu.openAction, exact: true })
+    .click()
+  await page
+    .getByRole("button", { name: copy.portability.screenTitle, exact: true })
+    .click()
+  const downloaded = page.waitForEvent("download")
+  await page
+    .getByRole("button", { name: copy.portability.exportAction, exact: true })
+    .click()
+  const backup = await (await downloaded).path()
+  if (!backup) throw new Error("The exported backup is unavailable")
+  await page
+    .getByLabel(copy.screen.chooseBackup, { exact: true })
+    .setInputFiles(backup)
+  const preview = page.getByRole("region", {
+    name: copy.portability.importPreviewTitle,
+  })
+  const count = preview
+    .locator("dt")
+    .filter({ hasText: copy.portability.preview.totalComparisons })
+  await expect(count.locator("+ dd")).toHaveText("1")
 })
 
 interface CompletedAnimalClip {
