@@ -30,6 +30,48 @@ declare global {
   }
 }
 
+test("Tiger and Squirrel fit the battle scrollport at double text size", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 844 })
+  await page.emulateMedia({ reducedMotion: "reduce" })
+  await page.addInitScript(() => {
+    Object.defineProperty(crypto, "randomUUID", {
+      value: () => "00000000-0000-4000-8000-0000000005dc",
+    })
+  })
+  await page.goto("/que-valoras-en-la-vida")
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = "200%"
+  })
+  await page.getByRole("button", { name: "Empezar", exact: true }).click()
+  await page.getByRole("button", { name: "Combatir", exact: true }).click()
+  const choices = page.getByRole("region", { name: "Opciones de la batalla" })
+  await choices.evaluate((element) => {
+    // Reserve a scrollbar gutter on browsers that normally overlay it.
+    if (element.clientWidth === element.offsetWidth)
+      element.style.maxInlineSize = "calc(100% - 0.5rem)"
+  })
+  await expect
+    .poll(() =>
+      choices.evaluate((element) => {
+        const left = element.getBoundingClientRect().left + element.clientLeft
+        const right = left + element.clientWidth
+        return ["tigerpack", "squirrelpack"].every((animal) => {
+          const fighter = element.querySelector(
+            '[data-combatant-side][data-animal-id="' + animal + '"]',
+          )
+          const painted = fighter && window.getPaintedAnimalBounds(fighter)
+          return painted && painted.left >= left && painted.right <= right
+        })
+      }),
+    )
+    .toBe(true)
+  expect(await choices.evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(
+    0,
+  )
+})
+
 for (const width of [320, 390, 1280]) {
   test(`Personal Hub preserves the complete ranking before and after comparisons at ${width}px`, async ({
     page,
