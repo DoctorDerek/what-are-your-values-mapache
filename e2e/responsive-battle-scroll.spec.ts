@@ -48,7 +48,7 @@ test("Tiger and Squirrel fit the battle scrollport at double text size", async (
   await page.getByRole("button", { name: "Combatir", exact: true }).click()
   const choices = page.getByRole("region", { name: "Opciones de la batalla" })
   await choices.evaluate((element) => {
-    // Reserve a scrollbar gutter on browsers that normally overlay it.
+    // ONE-TIME EXCEPTION: Overlay scrollbars need a reserved gutter in this test.
     if (element.clientWidth === element.offsetWidth)
       element.style.maxInlineSize = "calc(100% - 0.5rem)"
   })
