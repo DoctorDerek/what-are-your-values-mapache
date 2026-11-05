@@ -769,9 +769,9 @@ describe("GameClient Integration", () => {
       render(<GameClient />)
       fireEvent.click(await screen.findByRole("button", { name: "Start" }))
       fireEvent.click(await screen.findByRole("button", { name: "Battle" }))
-      const winnerCard = (await screen.findByText("[1 / A]")).closest("button")
-      if (!winnerCard)
-        throw new Error("The recovery test winner is unavailable")
+      const winnerCard = await screen.findByRole("button", {
+        name: /Choice 1\.$/,
+      })
 
       durableStoreFailure.writeEnabled = true
       fireEvent.click(winnerCard)
@@ -857,10 +857,11 @@ describe("GameClient Integration", () => {
     expect(await screen.findByText("Not ranked yet")).toBeVisible()
     fireEvent.click(screen.getByRole("button", { name: "Battle" }))
 
-    const winnerIndicator = await screen.findByText("[1 / A]")
-    const winnerCard = winnerIndicator.closest("button")
-    const winnerName = winnerCard?.querySelector("h2")?.textContent
-    if (!winnerCard || !winnerName) {
+    const winnerCard = await screen.findByRole("button", {
+      name: /Choice 1\.$/,
+    })
+    const winnerName = winnerCard.querySelector("h2")?.textContent
+    if (!winnerName) {
       throw new Error("The projected winner card is unavailable")
     }
 
@@ -895,10 +896,9 @@ describe("GameClient Integration", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     fireEvent.click(await screen.findByRole("button", { name: "Battle" }))
 
-    const winnerCard = (await screen.findByText("[1 / A]")).closest("button")
-    if (!winnerCard) {
-      throw new Error("The projected winner card is unavailable")
-    }
+    const winnerCard = await screen.findByRole("button", {
+      name: /Choice 1\.$/,
+    })
     fireEvent.click(winnerCard)
 
     const undoButton = await screen.findByRole("button", { name: "Undo" })
@@ -1349,8 +1349,9 @@ describe("GameClient Integration", () => {
     expect(await screen.findByRole("button", { name: "Menu" })).toHaveFocus()
 
     fireEvent.click(screen.getByRole("button", { name: "Battle" }))
-    const winnerCard = (await screen.findByText("[1 / A]")).closest("button")
-    if (!winnerCard) throw new Error("Achievement test winner is unavailable")
+    const winnerCard = await screen.findByRole("button", {
+      name: /Choice 1\.$/,
+    })
     fireEvent.click(winnerCard)
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Undo" })).toBeEnabled(),
@@ -1375,8 +1376,9 @@ describe("GameClient Integration", () => {
     render(<GameClient />)
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     fireEvent.click(await screen.findByRole("button", { name: "Battle" }))
-    const winnerCard = (await screen.findByText("[1 / A]")).closest("button")
-    if (!winnerCard) throw new Error("Banner test winner is unavailable")
+    const winnerCard = await screen.findByRole("button", {
+      name: /Choice 1\.$/,
+    })
     fireEvent.click(winnerCard)
 
     await waitFor(() =>
@@ -1424,9 +1426,9 @@ describe("GameClient Integration", () => {
     render(<GameClient />)
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     fireEvent.click(await screen.findByRole("button", { name: "Battle" }))
-    const winnerCard = (await screen.findByText("[1 / A]")).closest("button")
-    if (!winnerCard)
-      throw new Error("Invariant banner test winner is unavailable")
+    const winnerCard = await screen.findByRole("button", {
+      name: /Choice 1\.$/,
+    })
 
     const brokenProjection = vi
       .spyOn(AchievementPresentation, "projectAchievementCatalog")
@@ -1451,9 +1453,9 @@ describe("GameClient Integration", () => {
     render(<GameClient />)
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     fireEvent.click(await screen.findByRole("button", { name: "Battle" }))
-    const winnerCard = (await screen.findByText("[1 / A]")).closest("button")
-    if (!winnerCard)
-      throw new Error("Banner recovery test winner is unavailable")
+    const winnerCard = await screen.findByRole("button", {
+      name: /Choice 1\.$/,
+    })
     fireEvent.click(winnerCard)
     await screen.findByRole("heading", { name: "First Battle" })
 
@@ -1879,8 +1881,9 @@ describe("GameClient Integration", () => {
     render(<GameClient />)
     fireEvent.click(await screen.findByRole("button", { name: "Start" }))
     fireEvent.click(await screen.findByRole("button", { name: "Battle" }))
-    const winnerCard = (await screen.findByText("[1 / A]")).closest("button")
-    if (!winnerCard) throw new Error("The reset test winner is unavailable")
+    const winnerCard = await screen.findByRole("button", {
+      name: /Choice 1\.$/,
+    })
     fireEvent.click(winnerCard)
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Undo" })).toBeEnabled(),
