@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "imports": {
-    "#game/data/*": "./packages/data/*.ts"
+    "#game/data/*": "./packages/data/*.ts",
+    "#game/machines/*": "./packages/machines/*.ts"
   },
   "engines": {
     "node": "^24"
