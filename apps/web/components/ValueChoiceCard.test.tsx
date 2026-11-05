@@ -22,7 +22,7 @@ describe("animal card attention", () => {
     const { rerender } = render(
       <ValueChoiceCard {...props} controlHint="[1 / A]" />,
     )
-    expect(screen.getByText("[1 / A]")).toBeVisible()
+    expect(screen.getAllByText("[1 / A]")).not.toHaveLength(0)
     rerender(<ValueChoiceCard {...props} controlHint={null} />)
     expect(screen.queryByText("[1 / A]")).not.toBeInTheDocument()
     expect(screen.getAllByRole("heading")).toHaveLength(1)

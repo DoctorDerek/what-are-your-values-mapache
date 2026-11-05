@@ -537,14 +537,14 @@ for (const viewport of [
         .toBe(true)
       await expect(choice).toHaveAccessibleName(originalChoice!)
       await expect(undoAction).toBeDisabled()
-      const level = choice.getByText(/^Level \d+$/)
+      const level = choice.getByText(/^Level \d+$/).filter({ visible: true })
       await expect(level).toBeVisible()
       await expectCompleteBattleTextReachable(level)
     }
     const surfaceBoundsBeforeFocus = await battle.boundingBox()
     for (const choice of await choices.all())
       await expectCompleteBattleTextReachable(
-        choice.getByText(/^\[\d \/ [A-Z]\]$/),
+        choice.getByText(/^\[\d \/ [A-Z]\]$/).filter({ visible: true }),
       )
     await content.focus()
     await page.keyboard.press("Home")
@@ -612,7 +612,9 @@ for (const viewport of [
     const beforeMousePress = await readChoiceGeometry()
     await page.mouse.down()
     for (const choice of await choices.all())
-      await expect(choice.getByText(/^\[\d \/ [A-Z]\]$/)).toBeVisible()
+      await expect(
+        choice.getByText(/^\[\d \/ [A-Z]\]$/).filter({ visible: true }),
+      ).toBeVisible()
     expect(await readChoiceGeometry()).toEqual(beforeMousePress)
     await page.mouse.up()
     await expect(

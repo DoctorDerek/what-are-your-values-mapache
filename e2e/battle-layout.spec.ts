@@ -93,6 +93,7 @@ for (const viewport of battleViewports) {
     const level = await choiceButtons
       .first()
       .getByText(/^Nivel \d+$/)
+      .filter({ visible: true })
       .boundingBox()
     const topSpace = level!.y - geometry.region.top
     if (viewport.width >= 1280) {
