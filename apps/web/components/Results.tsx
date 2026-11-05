@@ -51,12 +51,10 @@ function ResultsValueRow({
     [localizedCopy.metadata.languageTag],
   )
 
-  const elementRef = useRef<HTMLLIElement>(null)
   const { isAttended, attentionHandlers, tapRequest } = useAnimalAttentionInput(
     undefined,
     "row",
   )
-  const [isNearViewport, setIsNearViewport] = useState(false)
   const { value, rank, totalXp } = frameValue
   const { level, earnedXpTowardNextLevel, requiredXpForNextLevel } =
     getLevelProgressFromXP(totalXp)
@@ -80,24 +78,8 @@ function ResultsValueRow({
     gridRow: value.exitRank,
   }
 
-  useEffect(() => {
-    const element = elementRef.current
-    if (!element) return
-    if (typeof IntersectionObserver === "undefined") {
-      const timer = window.setTimeout(() => setIsNearViewport(true), 0)
-      return () => window.clearTimeout(timer)
-    }
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsNearViewport(entry.isIntersecting),
-      { rootMargin: "96px" },
-    )
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [])
-
   return (
     <li
-      ref={elementRef}
       {...attentionHandlers}
       style={rowStyle}
       data-results-value={value.definition.id}
@@ -148,7 +130,6 @@ function ResultsValueRow({
             runtimeClipCatalog,
           )}
           shouldReduceMotion={shouldReduceMotion}
-          showAnimal={isNearViewport}
         />
         <div className="min-w-0 flex-1 basis-24 [overflow-wrap:anywhere]">
           <div className="flex flex-wrap items-baseline justify-between gap-x-2">

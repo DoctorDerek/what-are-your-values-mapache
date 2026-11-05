@@ -23,6 +23,9 @@ for (const viewport of [
       name: "What Are Your Values, Mapache?",
       exact: true,
     })
+    await expect(title).toBeVisible()
+    await expect(start).toBeEnabled()
+    await page.evaluate(() => document.fonts.ready)
     const expectedTitleLines = viewport.width >= 1280 ? 1 : 2
     const titleGeometry = await title.evaluate((element) => {
       const bounds = element.getBoundingClientRect()
@@ -202,18 +205,18 @@ test("startup preserves its viewport while client code waits and opens the saved
     const game = page.getByRole("region", {
       name: "Play What Are Your Values, Mapache?",
     })
-    const loading = game.getByRole("main", { name: "Loading your values…" })
-    await expect(loading).toHaveAttribute("aria-busy", "true")
-    await expect
-      .poll(async () => (await loading.boundingBox())?.height)
-      .toBeCloseTo(844, 1)
-    await expect(loading.getByRole("status")).toHaveText("Loading your values…")
-    await expect(loading.getByRole("heading")).toHaveCount(0)
+    const intro = game.getByRole("heading", {
+      name: "What Are Your Values, Mapache?",
+    })
+    await expect(intro).toBeVisible()
+    await expect(
+      game.getByText(/A free game designed to help you find your values/),
+    ).toBeInViewport()
+    await expect(
+      game.getByRole("button", { name: "Start", exact: true }),
+    ).toHaveCount(0)
     await expect(game.locator("noscript")).toBeHidden()
     const beforeStartup = await game.boundingBox()
-    const announcement = await loading.getByRole("status").boundingBox()
-    expect(announcement!.width).toBeLessThanOrEqual(1)
-    expect(announcement!.height).toBeLessThanOrEqual(1)
 
     scriptsAreDelayed = false
     scriptsReady.resolve()
@@ -222,7 +225,7 @@ test("startup preserves its viewport while client code waits and opens the saved
     ).toBeVisible()
     const afterStartup = await game.boundingBox()
     expect(afterStartup).toEqual(beforeStartup)
-    await expect(loading).toHaveCount(0)
+    await expect(intro).toBeVisible()
     const language = game.getByRole("combobox", { name: "Language" })
     await expect(language).toHaveValue("en")
     await expect(language.getByRole("option")).toHaveText([
@@ -265,6 +268,35 @@ test("startup preserves its viewport while client code waits and opens the saved
     await page.unrouteAll({ behavior: "wait" })
   }
 })
+
+for (const width of [390, 1440]) {
+  test(`the running raccoon never widens the introduction at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 800 })
+    await page.goto("/")
+    const crossing = page.getByTestId("arrival-raccoon")
+    await crossing.waitFor({ state: "attached", timeout: 20_000 })
+    const maxOverflow = await crossing.evaluate(async (runner) => {
+      const scrollport = runner.closest("header")
+      if (!scrollport) throw new Error("Missing introduction scrollport")
+      let excess = scrollport.scrollWidth - scrollport.clientWidth
+      // Exercise a narrower scrollport even when the browser overlays its scrollbars.
+      scrollport.style.maxInlineSize = "calc(100% - 1rem)"
+      while (runner.isConnected) {
+        excess = Math.max(
+          excess,
+          scrollport.scrollWidth - scrollport.clientWidth,
+        )
+        await new Promise<void>((resolve) =>
+          requestAnimationFrame(() => resolve()),
+        )
+      }
+      return excess
+    })
+    expect(maxOverflow).toBe(0)
+  })
+}
 
 test("first arrival uses the wide composition and completes a full raccoon crossing", async ({
   page,

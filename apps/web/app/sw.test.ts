@@ -1,6 +1,13 @@
 import type { SerwistOptions } from "serwist"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+type ArtworkCacheOptions = {
+  cacheName: string
+  plugins: {
+    cacheKeyWillBeUsed(input: { request: Request }): Promise<Request | string>
+  }[]
+}
+
 const { createSerwist, createCacheFirst, addEventListeners } = vi.hoisted(
   () => {
     const addEventListeners = vi.fn()
@@ -9,7 +16,7 @@ const { createSerwist, createCacheFirst, addEventListeners } = vi.hoisted(
       createSerwist: vi.fn(function (_options: SerwistOptions) {
         return { addEventListeners }
       }),
-      createCacheFirst: vi.fn(function (_options: { cacheName: string }) {}),
+      createCacheFirst: vi.fn(function (_options: ArtworkCacheOptions) {}),
     }
   },
 )
@@ -26,8 +33,10 @@ const existingPath = "/_next/static/media/bat_hurt_strip5.otherhash.png"
 const missingPath = "/_next/static/media/bat_idle_strip4.missinghash.png"
 const legacyRequest = new Request(`${origin}${animalPath}?__WB_REVISION__=old`)
 const artwork = new Response("previously downloaded artwork", { status: 200 })
+const requestedUrl = (key: string | Request) =>
+  typeof key === "string" ? key : key.url
 const runtimeMatch = vi.fn(
-  async (_url: string): Promise<Response | undefined> => undefined,
+  async (_url: string | Request): Promise<Response | undefined> => undefined,
 )
 const runtimePut = vi.fn(async (_url: string, _response: Response) => {})
 const legacyMatch = vi.fn(
@@ -38,12 +47,15 @@ const installListeners: ((event: {
   waitUntil: (promise: Promise<unknown>) => void
 }) => void)[] = []
 
+const activateListeners: typeof installListeners = []
+
 beforeEach(() => {
   vi.resetModules()
   vi.clearAllMocks()
   installListeners.length = 0
+  activateListeners.length = 0
   runtimeMatch.mockImplementation(async (url) =>
-    url.endsWith(existingPath) ? artwork : undefined,
+    requestedUrl(url).endsWith(existingPath) ? artwork : undefined,
   )
   runtimePut.mockResolvedValue(undefined)
   vi.stubGlobal("self", {
@@ -75,6 +87,7 @@ beforeEach(() => {
       listener: (typeof installListeners)[number],
     ) => {
       if (type === "install") installListeners.push(listener)
+      if (type === "activate") activateListeners.push(listener)
     },
   })
   vi.stubGlobal("caches", {
@@ -86,6 +99,7 @@ beforeEach(() => {
     open: async (name: string) =>
       name === "wayvm-animal-strips-v1"
         ? {
+            keys: async () => [new Request(`${origin}${animalPath}?dpl=older`)],
             match: runtimeMatch,
             put: runtimePut,
           }
@@ -121,6 +135,9 @@ describe("animal offline cache lifecycle", () => {
     ])
     expect(createCacheFirst).toHaveBeenCalledWith({
       cacheName: "wayvm-animal-strips-v1",
+      plugins: [
+        expect.objectContaining({ cacheKeyWillBeUsed: expect.any(Function) }),
+      ],
     })
     expect(addEventListeners).toHaveBeenCalledOnce()
   })
@@ -133,6 +150,36 @@ describe("animal offline cache lifecycle", () => {
     )
     expect(await runtimePut.mock.calls[0]?.[1].text()).toBe(
       "previously downloaded artwork",
+    )
+  })
+
+  it("uses the content hash across deployments and preserves other query fields", async () => {
+    await installWorker()
+    const { plugins } = createCacheFirst.mock.calls[0]![0]
+    const key = (path: string) =>
+      plugins[0]!.cacheKeyWillBeUsed({ request: new Request(origin + path) })
+    expect(await key(animalPath + "?dpl=after&variant=two")).toBe(
+      origin + animalPath + "?variant=two",
+    )
+    expect(await key(existingPath + "?dpl=after")).toBe(origin + existingPath)
+    expect(((await key(animalPath)) as Request).url).toBe(origin + animalPath)
+  })
+
+  it("carries an on-demand strip acquired under an old deployment into the canonical cache", async () => {
+    runtimeMatch.mockImplementation(async (url) =>
+      requestedUrl(url).endsWith("?dpl=older")
+        ? new Response("cached strip")
+        : undefined,
+    )
+    await installWorker()
+    runtimePut.mockClear()
+    const activated: Promise<unknown>[] = []
+    for (const listener of activateListeners)
+      listener({ waitUntil: (task) => activated.push(task) })
+    await Promise.all(activated)
+    expect(runtimePut).toHaveBeenCalledWith(
+      origin + animalPath,
+      expect.any(Response),
     )
   })
 

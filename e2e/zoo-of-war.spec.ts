@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page, type Route } from "@playwright/test"
+import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
 import { test } from "./fixtures"
 import { installVisibleTextBounds } from "./visible-text-bounds"
 
@@ -27,22 +28,14 @@ test("defers distant roster art and prepares animals when scrolling reaches them
   await page
     .getByRole("button", { name: "Browse All Values", exact: true })
     .click()
-  const rows = page
-    .getByRole("listitem")
-    .filter({ has: page.locator("[data-hub-active-clip]") })
+  const rows = page.locator("li[data-value-row]")
   await expect(rows).toHaveCount(103)
   await expect(
     rows.first().locator('[data-hub-active-clip="true"] [data-playback-ready]'),
   ).toHaveAttribute("data-playback-ready", "true")
-  const rosterSources = await rows
-    .locator("img")
-    .evaluateAll((images: HTMLImageElement[]) =>
-      images.map((image) => image.src),
-    )
-  expect(rosterSources.some((source) => !requestedImages.has(source))).toBe(
-    true,
-  )
   const lastRow = rows.last()
+  await expect(lastRow.locator("[data-hub-active-clip]")).toHaveCount(0)
+  const beforeScroll = new Set(requestedImages)
   await lastRow.scrollIntoViewIfNeeded()
   await expect(
     lastRow.locator('[data-hub-active-clip="true"] [data-playback-ready]'),
@@ -58,6 +51,14 @@ test("defers distant roster art and prepares animals when scrolling reaches them
     )
     .toBe(true)
   await expect(lastRow.locator('[data-hub-active-clip="true"]')).toBeVisible()
+  const loaded = await lastRow
+    .locator("img")
+    .evaluateAll((images: HTMLImageElement[]) =>
+      images.map((image) => image.currentSrc),
+    )
+  expect(loaded.length).toBeGreaterThan(0)
+  expect(loaded.every((url) => requestedImages.has(url))).toBe(true)
+  expect(loaded.some((url) => !beforeScroll.has(url))).toBe(true)
 })
 
 test("prepares before Battle and retains real animals while the next pair loads", async ({
@@ -86,9 +87,23 @@ test("prepares before Battle and retains real animals while the next pair loads"
     const battle = page.getByRole("main", { name: "Value battle" })
     await expect(battle).toHaveCount(0)
     await preparing.click()
-    await page.getByRole("button", { name: "Battle", exact: true }).click()
     releaseAll = true
     await Promise.all(heldRoutes.splice(0).map((route) => route.continue()))
+    const preparedStrips = page.locator('div[hidden] img[src*="_strip"]')
+    await expect(preparedStrips.first()).toBeAttached()
+    await preparedStrips.evaluateAll(async (images: HTMLImageElement[]) => {
+      await Promise.all(images.map((image) => image.decode()))
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      )
+    })
+    const startBattle = page.getByRole("button", {
+      name: "Battle",
+      exact: true,
+    })
+    await expect(startBattle).toHaveAttribute("aria-busy", "false")
+    await expect(battle).toHaveCount(0)
+    await startBattle.click()
     const stage = battle.locator("[data-choreography-identity]")
     await expect(stage).toHaveAttribute("data-battle-stage-mode", "licensed")
     await expect(
@@ -166,6 +181,52 @@ test("prepares before Battle and retains real animals while the next pair loads"
     releaseAll = true
     await Promise.all(heldRoutes.splice(0).map((route) => route.continue()))
   }
+})
+
+test("failed battle art falls back and preserves one choice after reopening", async ({
+  page,
+}) => {
+  const copy = getLocaleCatalog("en").interfaceCopy
+  await page.emulateMedia({ reducedMotion: "reduce" })
+  await page.route(/_strip\d+\.[^/]+\.png(?:\?|$)/, (route) => route.abort())
+  const failedStrip = page.waitForEvent("requestfailed", (request) =>
+    /_strip\d+\./.test(request.url()),
+  )
+  await page.goto("/")
+  await page.getByRole("button", { name: "Start", exact: true }).click()
+  await failedStrip
+  await page.getByRole("button", { name: "Battle", exact: true }).click()
+  const battle = page.getByRole("main", { name: "Value battle" })
+  await expect(battle.locator("[data-placeholder-playback]")).toHaveCount(2)
+  await battle
+    .getByRole("button", { name: /^Choose / })
+    .first()
+    .click()
+  await expect(battle.getByRole("button", { name: /^Undo/ })).toBeEnabled()
+
+  await page.reload()
+  await page
+    .getByRole("button", { name: copy.menu.openAction, exact: true })
+    .click()
+  await page
+    .getByRole("button", { name: copy.portability.screenTitle, exact: true })
+    .click()
+  const downloaded = page.waitForEvent("download")
+  await page
+    .getByRole("button", { name: copy.portability.exportAction, exact: true })
+    .click()
+  const backup = await (await downloaded).path()
+  if (!backup) throw new Error("The exported backup is unavailable")
+  await page
+    .getByLabel(copy.screen.chooseBackup, { exact: true })
+    .setInputFiles(backup)
+  const preview = page.getByRole("region", {
+    name: copy.portability.importPreviewTitle,
+  })
+  const count = preview
+    .locator("dt")
+    .filter({ hasText: copy.portability.preview.totalComparisons })
+  await expect(count.locator("+ dd")).toHaveText("1")
 })
 
 interface CompletedAnimalClip {

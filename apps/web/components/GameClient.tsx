@@ -60,6 +60,7 @@ import SeethingSwarmAssetPreparation, {
   usePreparedSeethingSwarmBattle,
   usePreparedSeethingSwarmClips,
 } from "@/components/SeethingSwarmAssetPreparation"
+import Splash, { RestoringIntroduction } from "@/components/Splash"
 import WebControlsProvider, {
   useWebControllerActions,
 } from "@/components/WebControlsProvider"
@@ -79,13 +80,11 @@ import AllValues from "./AllValues"
 import Crucible from "./Crucible"
 import DataManagement, { type DataManagementActivity } from "./DataManagement"
 import Hub, { HUB_MENU_BUTTON_ID } from "./Hub"
-import PlayerDataLoading from "./PlayerDataLoading"
 import PlayerDataRecovery, {
   type PlayerDataRecoveryActivity,
 } from "./PlayerDataRecovery"
 import Results from "./Results"
 import Settings from "./Settings"
-import Splash from "./Splash"
 
 const SOURCE_APP_VERSION = packageMetadata.version
 const SOURCE_BUILD =
@@ -178,21 +177,27 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
         : null,
     [battleProfile],
   )
-  const hasValidatedProfile =
-    state.context.battleProfileStoreState !== null ||
+  const isBattleLikely =
     state.matches("Splash") ||
-    state.matches("InitializingProfile")
+    state.matches("InitializingProfile") ||
+    state.matches("Hub") ||
+    state.matches("Results") ||
+    state.matches("Crucible")
   const isBattlePrepared = usePreparedSeethingSwarmBattle(
-    hasValidatedProfile ? presentedBattle : null,
+    isBattleLikely ? presentedBattle : null,
     SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
   )
+  const isHubImminent =
+    state.matches("InitializingProfile") || state.matches("Results")
   const hubClips = useMemo(
     () =>
-      getHubPreparationClips<StaticImageData>(
-        rankedValues,
-        SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
-      ),
-    [rankedValues],
+      isHubImminent
+        ? getHubPreparationClips<StaticImageData>(
+            rankedValues,
+            SEETHING_SWARM_WEB_RUNTIME_CLIP_CATALOG,
+          )
+        : [],
+    [isHubImminent, rankedValues],
   )
   usePreparedSeethingSwarmClips(hubClips)
   const [isBattleRequested, setIsBattleRequested] = useState(false)
@@ -612,7 +617,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
             : null
 
   if (state.matches("Hydrating") || state.matches("LoadingProfile")) {
-    return <PlayerDataLoading />
+    return <RestoringIntroduction />
   }
 
   if (state.matches("PersistenceFailure")) {
@@ -1137,7 +1142,7 @@ function GameClientShell({
   const writerLease = useWebExclusiveWriterLease()
   const [sessionRevision, setSessionRevision] = useState(0)
 
-  if (writerLease.status === "checking") return <PlayerDataLoading />
+  if (writerLease.status === "checking") return <RestoringIntroduction />
   if (writerLease.status === "read-only")
     return (
       <div data-game-surface="active">

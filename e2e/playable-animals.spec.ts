@@ -96,3 +96,34 @@ test("Tiger and Squirrel play a real choice and keep their row gestures through 
   ).toBeVisible()
   await expect(page.locator('[id="hub-value-pvcs-2011:fitness"]')).toBeVisible()
 })
+
+test("an unavailable optional Tiger blink preserves the already decoded portrait", async ({
+  page,
+}) => {
+  await page.route(/tiger_idle_blink_strip\d+\./, (route) => route.abort())
+  await page.goto("/")
+  await page.getByRole("button", { name: "Start", exact: true }).tap()
+  await page
+    .getByRole("button", { name: "Browse All Values", exact: true })
+    .tap()
+  await page.getByRole("searchbox").fill("fitness")
+  const row = page.locator('[id="all-values-row-pvcs-2011:fitness"]')
+  const pose = row.locator('[data-hub-active-clip="true"] img')
+  await expect(pose).toHaveAttribute("src", /tiger_idle_strip/)
+  await expect
+    .poll(() => pose.evaluate((image: HTMLImageElement) => image.naturalWidth))
+    .toBeGreaterThan(0)
+  const failure = page.waitForEvent("requestfailed", (req) =>
+    req.url().includes("tiger_idle_blink_strip"),
+  )
+  await row.tap()
+  await failure
+  await expect(pose).toBeVisible()
+  await expect(pose).not.toHaveAttribute("src", /idle_blink/)
+  await expect
+    .poll(() => pose.evaluate((image: HTMLImageElement) => image.naturalWidth))
+    .toBeGreaterThan(0)
+  await expect(
+    row.getByRole("heading", { name: "Fitness", exact: true }),
+  ).toBeVisible()
+})

@@ -11,7 +11,7 @@ import type { DurableStoreAdapter } from "@game/machines/src/DurableStoreAdapter
 import { prepareWayvmDownload } from "@game/machines/src/PlayerDataPortabilityActors"
 import LocaleProvider from "@game/utils/src/LocaleContext"
 import { useCallback, useEffect, useState } from "react"
-import PlayerDataLoading from "@/components/PlayerDataLoading"
+import { RestoringIntroduction } from "@/components/Splash"
 import WebWriterConflict from "@/components/WebWriterConflict"
 import { downloadPlayerDataFile } from "@/lib/PlayerDataFiles"
 import packageMetadata from "@/package.json"
@@ -54,7 +54,7 @@ export default function ReadOnlyGameClient({
     }
   }, [durableStore, routeLocale])
 
-  if (locale === null) return <PlayerDataLoading />
+  if (locale === null) return <RestoringIntroduction />
   return (
     <LocaleProvider locale={locale}>
       <div lang={getLocaleCatalog(locale).metadata.languageTag}>

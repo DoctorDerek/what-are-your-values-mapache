@@ -32,16 +32,27 @@ function isOnDemandArtwork(url: URL) {
   )
 }
 
-async function preserveCachedAnimalStrips() {
+async function preserveCachedAnimalStrips(source: "install" | "activate") {
   const animalCache = await caches.open(animalCacheName)
-  for (const cacheName of await caches.keys()) {
-    if (!cacheName.startsWith("serwist-precache")) continue
-    const precache = await caches.open(cacheName)
+  const cacheNames =
+    source === "activate"
+      ? [animalCacheName]
+      : (await caches.keys()).filter((name) =>
+          name.startsWith("serwist-precache"),
+        )
+  for (const cacheName of cacheNames) {
+    const precache =
+      cacheName === animalCacheName ? animalCache : await caches.open(cacheName)
     for (const request of await precache.keys()) {
       const url = new URL(request.url)
       if (!isOnDemandArtwork(url)) continue
       url.searchParams.delete("__WB_REVISION__")
-      if (await animalCache.match(url.href)) continue
+      url.searchParams.delete("dpl")
+      if (
+        (cacheName === animalCacheName && url.href === request.url) ||
+        (await animalCache.match(url.href))
+      )
+        continue
       const response = await precache.match(request)
       if (response?.ok) await animalCache.put(url.href, response)
     }
@@ -49,7 +60,11 @@ async function preserveCachedAnimalStrips() {
 }
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(preserveCachedAnimalStrips())
+  event.waitUntil(preserveCachedAnimalStrips("install"))
+})
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(preserveCachedAnimalStrips("activate"))
 })
 
 const serwist = new Serwist({
@@ -75,7 +90,16 @@ const serwist = new Serwist({
     },
     {
       matcher: ({ url }) => isOnDemandArtwork(url),
-      handler: new CacheFirst({ cacheName: animalCacheName }),
+      handler: new CacheFirst({
+        cacheName: animalCacheName,
+        plugins: [
+          {
+            cacheKeyWillBeUsed: async ({ request }) =>
+              getPrecachedDeploymentAsset({ url: new URL(request.url) })[0]
+                ?.href ?? request,
+          },
+        ],
+      }),
     },
   ],
   precacheOptions: {

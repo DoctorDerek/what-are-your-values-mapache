@@ -248,7 +248,9 @@ describe("GameClient Integration", () => {
 
     render(<GameClient />)
 
-    expect(screen.getByRole("status")).toHaveTextContent("Loading your values…")
+    expect(
+      screen.getByRole("heading", { name: "What Are Your Values, Mapache?" }),
+    ).toBeVisible()
     expect(
       screen.queryByRole("button", { name: "Start" }),
     ).not.toBeInTheDocument()
@@ -422,10 +424,9 @@ describe("GameClient Integration", () => {
 
     durableStoreFailure.readEnabled = false
     fireEvent.click(screen.getByRole("button", { name: "Try Again" }))
+    expect(await screen.findByRole("button", { name: "Start" })).toBeEnabled()
     expect(
-      await screen.findByRole("heading", {
-        name: "What Are Your Values, Mapache?",
-      }),
+      screen.getByRole("heading", { name: "What Are Your Values, Mapache?" }),
     ).toBeVisible()
   })
 
@@ -919,13 +920,12 @@ describe("GameClient Integration", () => {
 
     render(<GameClient />)
 
+    const start = await screen.findByRole("button", { name: "Start" })
     expect(
-      await screen.findByRole("heading", {
-        name: "What Are Your Values, Mapache?",
-      }),
+      screen.getByRole("heading", { name: "What Are Your Values, Mapache?" }),
     ).toBeVisible()
 
-    fireEvent.click(screen.getByRole("button", { name: "Start" }))
+    fireEvent.click(start)
 
     expect(
       await screen.findByRole("heading", {

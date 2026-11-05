@@ -21,6 +21,7 @@ import {
   type ReactNode,
 } from "react"
 import type { ActorRefFrom } from "xstate"
+import AnimalViewport from "@/components/AnimalViewport"
 import SeethingSwarmBattleVariation, {
   useSeethingSwarmProjectedBattle,
 } from "@/components/SeethingSwarmBattleVariation"
@@ -40,7 +41,9 @@ export default function SeethingSwarmAssetPreparation({
   const assets = useSelector(actor, (snapshot) => snapshot.context.assets)
   return (
     <PreparationContext value={actor}>
-      <SeethingSwarmBattleVariation>{children}</SeethingSwarmBattleVariation>
+      <AnimalViewport>
+        <SeethingSwarmBattleVariation>{children}</SeethingSwarmBattleVariation>
+      </AnimalViewport>
       <div hidden aria-hidden="true">
         {[...assets.values()].map(({ clip, generation }) => (
           <Image

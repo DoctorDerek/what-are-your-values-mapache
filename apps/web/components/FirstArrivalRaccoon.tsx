@@ -33,7 +33,7 @@ export default function FirstArrivalRaccoon({
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute bottom-3 left-1/2 w-screen -translate-x-1/2 overflow-hidden"
+      className="pointer-events-none absolute inset-x-0 bottom-3 overflow-hidden"
       style={style}
     >
       <div

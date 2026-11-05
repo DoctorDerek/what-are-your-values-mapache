@@ -11,7 +11,7 @@ type InformationPanelFrameProps = Readonly<{
   title: string
   children: ReactNode
   primaryActionLabel: string
-  onPrimaryAction: () => void
+  onPrimaryAction?: () => void
   isPrimaryActionPending?: boolean
   accessibleCloseLabel?: string
   dialogTitle?: boolean
@@ -117,6 +117,8 @@ function InformationPanelFrame({
       </div>
 
       <footer
+        inert={!onPrimaryAction}
+        aria-hidden={onPrimaryAction ? undefined : true}
         className={cx(
           "relative z-20 border-black",
           isIntroduction

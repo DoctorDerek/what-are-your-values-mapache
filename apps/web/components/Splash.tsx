@@ -3,18 +3,27 @@
 import { FIRST_ARRIVAL_PRESENTATION } from "@game/data/src/FirstArrivalPresentation"
 import {
   DEFAULT_LOCALE,
+  resolveLocale,
   type SupportedLocale,
 } from "@game/data/src/LocaleRegistry"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
+import { useLocalePreference } from "@game/utils/src/LocaleContext"
 import RenderRecoveryBoundary from "@game/utils/src/RenderRecoveryBoundary"
 import Image from "next/image"
 import { lazy, Suspense, useCallback, useState } from "react"
-import FirstArrivalRaccoon from "@/components/FirstArrivalRaccoon"
 import InformationPanel from "@/components/InformationPanel"
 import LanguageSelector from "@/components/LanguageSelector"
 import useDeferredFirstArrival from "@/components/useDeferredFirstArrival"
 
 const MapachitoIceCream = lazy(() => import("@/components/MapachitoIceCream"))
+const FirstArrivalRaccoon = lazy(
+  () => import("@/components/FirstArrivalRaccoon"),
+)
+
+export function RestoringIntroduction() {
+  const locale = resolveLocale({ routeLocale: useLocalePreference() })
+  return <Splash locale={locale} isPending />
+}
 
 export default function Splash({
   notice = null,
@@ -28,11 +37,14 @@ export default function Splash({
   isPending?: boolean
   locale?: SupportedLocale
   shouldReduceMotion?: boolean
-  onLocaleChange: (locale: SupportedLocale) => void
-  onComplete: () => void
+  onLocaleChange?: (locale: SupportedLocale) => void
+  onComplete?: () => void
 }) {
-  const { introduction: introductionCopy, firstArrival } =
-    getLocaleCatalog(locale)
+  const {
+    introduction: introductionCopy,
+    firstArrival,
+    interfaceCopy,
+  } = getLocaleCatalog(locale)
   const [hasStarted, setHasStarted] = useState(false)
   const [hasFinished, setHasFinished] = useState(false)
   const [hasIceCreamFinished, setHasIceCreamFinished] = useState(false)
@@ -57,7 +69,11 @@ export default function Splash({
       ))}
       titleDecoration={
         shouldPlay &&
-        hasStarted && <FirstArrivalRaccoon onComplete={handleFinished} />
+        hasStarted && (
+          <Suspense fallback={null}>
+            <FirstArrivalRaccoon onComplete={handleFinished} />
+          </Suspense>
+        )
       }
       decoration={
         shouldPlay &&
@@ -82,7 +98,7 @@ export default function Splash({
         <LanguageSelector
           locale={locale}
           disabled={isPending}
-          onLocaleChange={onLocaleChange}
+          onLocaleChange={(value) => onLocaleChange?.(value)}
         />
       }
       afterActions={
@@ -134,6 +150,14 @@ export default function Splash({
             {paragraph}
           </p>
         ))}
+        {!onComplete && (
+          <noscript>
+            <p>{interfaceCopy.screen.javascriptRequired}</p>
+            <a href="#introduction" className="underline">
+              {interfaceCopy.screen.readIntroduction}
+            </a>
+          </noscript>
+        )}
       </div>
     </InformationPanel>
   )
