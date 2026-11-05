@@ -1,4 +1,10 @@
 import { expect } from "@playwright/test"
+import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
+import { createInitialPlayerData } from "#game/machines/src/PlayerData"
+import {
+  createWayvmExport,
+  serializeWayvmExport,
+} from "#game/machines/src/WayvmExport"
 import { test } from "./fixtures"
 import { getRenderedTextLines } from "./visible-text-bounds"
 
@@ -93,6 +99,7 @@ for (const viewport of battleViewports) {
     const level = await choiceButtons
       .first()
       .getByText(/^Nivel \d+$/)
+      .filter({ visible: true })
       .boundingBox()
     const topSpace = level!.y - geometry.region.top
     if (viewport.width >= 1280) {
@@ -156,6 +163,150 @@ for (const viewport of battleViewports) {
     ).toBeVisible()
     await expect(choices).toHaveCount(0)
   })
+}
+
+for (const locale of ["en", "es-MX"] as const) {
+  for (const [width, height, textSize] of [
+    [320, 640, 200],
+    [390, 844, 100],
+    [1279, 800, 100],
+    [1280, 800, 100],
+    [1440, 900, 100],
+    [1280, 800, 200],
+  ]) {
+    test(`${locale} Battle names remain aligned with earned Levels at ${width}px and ${textSize}% text`, async ({
+      page,
+    }, testInfo) => {
+      test.slow()
+      const copy = getLocaleCatalog(locale)
+      const createdAt = "2026-11-04T12:00:00.000Z"
+      const initial = createInitialPlayerData({
+        schedulerSeed: "00000000-0000-4000-8000-0000000005dc",
+        createdAt,
+        locale,
+      })
+      const backup = await createWayvmExport({
+        exportedAt: createdAt,
+        sourceAppVersion: "layout-regression",
+        sourceBuild: "earned-levels",
+        playerData: {
+          ...initial,
+          settings: { ...initial.settings, controlHints: "always" },
+          profile: {
+            ...initial.profile,
+            progressById: new Map(
+              [...initial.profile.progressById].map(([id, progress]) => [
+                id,
+                {
+                  ...progress,
+                  totalXp: [
+                    "pvcs-2011:fitness",
+                    "pvcs-2011:genuineness",
+                  ].includes(id)
+                    ? 200
+                    : 0,
+                },
+              ]),
+            ),
+          },
+        },
+      })
+      await page.setViewportSize({ width, height })
+      await page.goto(copy.metadata.webPath)
+      await page
+        .getByRole("button", {
+          name: copy.introduction.startAction,
+          exact: true,
+        })
+        .click()
+      await page
+        .getByRole("button", {
+          name: copy.interfaceCopy.menu.openAction,
+          exact: true,
+        })
+        .click()
+      await page
+        .getByRole("button", {
+          name: copy.interfaceCopy.portability.screenTitle,
+          exact: true,
+        })
+        .click()
+      await page
+        .getByLabel(copy.interfaceCopy.screen.chooseBackup, { exact: true })
+        .setInputFiles({
+          name: "earned-levels.json",
+          mimeType: "application/json",
+          buffer: Buffer.from(serializeWayvmExport(backup)),
+        })
+      await page
+        .getByRole("button", {
+          name: copy.interfaceCopy.portability.importReplaceAction,
+          exact: true,
+        })
+        .click()
+      await page
+        .getByRole("button", { name: copy.hub.battle, exact: true })
+        .click()
+      await page.addStyleTag({ content: `html { font-size: ${textSize}%; }` })
+      await page.evaluate(() => document.fonts.ready)
+      const stage = page.locator("[data-choreography-identity]")
+      const choices = stage.locator("[data-value-card] button")
+      await expect(
+        choices
+          .getByText(copy.interfaceCopy.screen.valueLevel("111"), {
+            exact: true,
+          })
+          .filter({ visible: true }),
+      ).not.toHaveCount(0)
+      let firstLine: number | undefined
+      for (let turn = 0; turn < 5; turn++) {
+        await expect(choices.first()).toBeEnabled()
+        const headings = await choices
+          .getByRole("heading")
+          .evaluateAll((elements) =>
+            elements.map((heading) => {
+              const range = new Range()
+              range.selectNodeContents(heading)
+              const title = heading.getBoundingClientRect()
+              const choice = heading.closest("button")!.getBoundingClientRect()
+              return {
+                top:
+                  range.getClientRects()[0].top -
+                  heading
+                    .closest("[data-choreography-identity]")!
+                    .getBoundingClientRect().top,
+                center:
+                  title.left + title.width / 2 - choice.left - choice.width / 2,
+                definitionGap:
+                  heading
+                    .closest("[data-value-card]")!
+                    .querySelector("p")!
+                    .getBoundingClientRect().top - title.bottom,
+              }
+            }),
+          )
+        firstLine ??= headings[0].top
+        expect(Math.abs(headings[0].top - headings[1].top)).toBeLessThan(1)
+        for (const heading of headings) {
+          expect(Math.abs(heading.center)).toBeLessThan(1)
+          expect(heading.definitionGap).toBeGreaterThanOrEqual(0)
+          if (width >= 1280)
+            expect(Math.abs(heading.top - firstLine)).toBeLessThan(1)
+        }
+        if (turn === 1)
+          await page.screenshot({
+            path: testInfo.outputPath("earned-levels.png"),
+          })
+        if (turn === 4) break
+        const identity = await stage.getAttribute("data-choreography-identity")
+        await page.keyboard.press("1")
+        await expect(stage).not.toHaveAttribute(
+          "data-choreography-identity",
+          identity!,
+        )
+      }
+    })
+  }
 }
 
 for (const [width, height, textSize] of [

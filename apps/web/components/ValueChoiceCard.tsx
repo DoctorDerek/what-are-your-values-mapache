@@ -63,6 +63,26 @@ export const ValueChoiceCard = forwardRef<
     : "text-white drop-shadow-[1px_1px_0px_#000000]"
   const accessibleDefinitionId = useId()
   const choiceId = useId()
+  const levelBadge = (
+    <span
+      className={cx(
+        "block w-fit max-w-full min-w-0 border-2 border-black bg-white px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000]",
+        controlHint ? "ml-auto" : "mx-auto",
+      )}
+    >
+      {localizedCopy.interfaceCopy.screen.valueLevel(String(level))}
+    </span>
+  )
+  const hintLabel = (
+    <span
+      className={cx(
+        "block min-w-0 border-2 border-transparent py-1 pr-2 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:border-4 xl:py-2 xl:pr-0 xl:text-left xl:text-2xl",
+        controlHintContrastClasses,
+      )}
+    >
+      {controlHint}
+    </span>
+  )
 
   return (
     <div
@@ -104,7 +124,7 @@ export const ValueChoiceCard = forwardRef<
           aria-describedby={accessibleDefinitionId}
           disabled={!isEnabled}
           onClick={() => onActivate(value.id)}
-          className="row-start-2 w-full min-w-0 shrink-0 cursor-pointer self-start text-center text-[clamp(1.5rem,min(5vw,7dvh),2.5rem)] leading-tight outline-none disabled:cursor-default xl:grid xl:grid-cols-1 xl:items-baseline xl:text-[clamp(2rem,3.25vw,4rem)] xl:[--choice-side-width:clamp(25%,--spacing(40),50%)] xl:before:col-start-1 xl:before:row-start-1 xl:before:h-[3lh]"
+          className="row-span-2 row-start-2 grid w-full min-w-0 shrink-0 cursor-pointer grid-cols-1 grid-rows-subgrid items-start self-stretch text-center text-[clamp(1.5rem,min(5vw,7dvh),2.5rem)] leading-tight outline-none disabled:cursor-default xl:row-end-auto xl:grid-rows-none xl:items-baseline xl:self-start xl:text-[clamp(2rem,3.25vw,4rem)] xl:[--choice-side-width:clamp(25%,--spacing(40),50%)] xl:before:col-start-1 xl:before:row-start-1 xl:before:h-[3lh]"
         >
           <span
             aria-hidden="true"
@@ -117,32 +137,39 @@ export const ValueChoiceCard = forwardRef<
                 : "border-y-(length:--choice-focus-width)",
             )}
           />
-          <div className="flow-root w-full min-w-0 xl:col-start-1 xl:row-start-1">
-            {controlHint ? (
+          <div className="contents w-full min-w-0 xl:col-start-1 xl:row-start-1 xl:flow-root">
+            <span className="col-start-1 row-start-1 flex min-w-0 flex-wrap items-start justify-between gap-x-2 xl:contents">
+              {controlHint ? (
+                <span
+                  aria-hidden="true"
+                  className="max-w-full min-w-0 xl:float-left xl:grid xl:w-(--choice-side-width) xl:max-w-none"
+                >
+                  <span className="xl:col-start-1 xl:row-start-1">
+                    {hintLabel}
+                  </span>
+                  <span className="hidden xl:invisible xl:col-start-1 xl:row-start-1 xl:block">
+                    {levelBadge}
+                  </span>
+                </span>
+              ) : null}
               <span
-                aria-hidden="true"
-                className={cx(
-                  "float-left max-w-[45%] min-w-0 border-2 border-transparent py-1 pr-2 text-center text-sm font-black [overflow-wrap:anywhere] uppercase xl:w-(--choice-side-width) xl:max-w-none xl:border-4 xl:py-2 xl:pr-0 xl:text-left xl:text-2xl",
-                  controlHintContrastClasses,
-                )}
+                className={
+                  controlHint
+                    ? "ml-auto max-w-full xl:float-right xl:ml-0 xl:grid xl:w-(--choice-side-width) xl:max-w-none"
+                    : "block w-full xl:float-left"
+                }
               >
-                {controlHint}
-              </span>
-            ) : null}
-            <span
-              className={
-                controlHint
-                  ? "float-right ml-2 max-w-[55%] xl:ml-0 xl:w-(--choice-side-width) xl:max-w-none"
-                  : "block xl:float-left xl:w-full"
-              }
-            >
-              <span
-                className={cx(
-                  "block w-fit max-w-full min-w-0 border-2 border-black bg-white px-2 py-1 text-sm font-black [overflow-wrap:anywhere] text-black shadow-[3px_3px_0px_0px_#000000] xl:border-4 xl:px-4 xl:py-2 xl:text-2xl xl:shadow-[6px_6px_0px_0px_#000000]",
-                  controlHint ? "ml-auto" : "mx-auto",
-                )}
-              >
-                {localizedCopy.interfaceCopy.screen.valueLevel(String(level))}
+                {controlHint ? (
+                  <span
+                    aria-hidden="true"
+                    className="hidden xl:invisible xl:col-start-1 xl:row-start-1 xl:block"
+                  >
+                    {hintLabel}
+                  </span>
+                ) : null}
+                <span className="xl:col-start-1 xl:row-start-1">
+                  {levelBadge}
+                </span>
               </span>
             </span>
             <h2
@@ -152,7 +179,7 @@ export const ValueChoiceCard = forwardRef<
                   ? localizedCopy.metadata.languageTag
                   : undefined
               }
-              className="mx-auto flow-root w-max max-w-full min-w-[min(100%,12rem)] pt-[clamp(0px,calc(100dvh-430px),0.5rem)] pr-[0.5ch] leading-tight font-black break-words hyphens-auto text-white drop-shadow-[4px_4px_0px_#000000] [hyphenate-limit-chars:6_3_3] xl:pt-0 xl:pr-0 xl:drop-shadow-[6px_6px_0px_#000000]"
+              className="col-start-1 row-start-2 mx-auto flow-root w-full max-w-full min-w-[min(100%,12rem)] pt-[clamp(0px,calc(100dvh-430px),0.5rem)] pr-[0.5ch] leading-tight font-black break-words hyphens-auto text-white drop-shadow-[4px_4px_0px_#000000] [hyphenate-limit-chars:6_3_3] xl:w-max xl:pt-0 xl:pr-0 xl:drop-shadow-[6px_6px_0px_#000000]"
             >
               {getWrappableValueDisplayName(
                 value,
@@ -167,7 +194,7 @@ export const ValueChoiceCard = forwardRef<
           tabIndex={0}
           data-controller-scroll
           onKeyDown={handleBattleReadingKeyDown}
-          className="row-start-4 mx-auto max-h-full min-h-0 w-full max-w-2xl self-start overflow-y-auto overscroll-contain border-2 border-white/20 bg-black/40 px-[min(0.75rem,3%)] py-[clamp(4px,calc(100dvh-430px),0.5rem)] text-(length:--battle-definition-font-size) leading-snug font-bold [overflow-wrap:anywhere] break-words hyphens-auto whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white xl:p-6 xl:leading-relaxed"
+          className="row-start-4 mx-auto mt-[clamp(4px,calc(100dvh-430px),0.5rem)] max-h-full min-h-0 w-full max-w-2xl self-start overflow-y-auto overscroll-contain border-2 border-white/20 bg-black/40 px-[min(0.75rem,3%)] py-[clamp(4px,calc(100dvh-430px),0.5rem)] text-(length:--battle-definition-font-size) leading-snug font-bold [overflow-wrap:anywhere] break-words hyphens-auto whitespace-pre-wrap text-white drop-shadow-[2px_2px_0px_#000000] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white xl:mt-0 xl:p-6 xl:leading-relaxed"
         >
           “{getValueDisplayDefinition(value, localizedCopy.values)}”
         </p>
