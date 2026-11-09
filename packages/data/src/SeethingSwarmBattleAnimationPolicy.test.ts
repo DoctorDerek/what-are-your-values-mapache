@@ -82,6 +82,13 @@ const EXPECTED_SOURCE_ANIMATION_IDS = Object.freeze([
   "soar",
   "soar_call",
   "stand",
+  "stand_attack01",
+  "stand_attack02",
+  "stand_go_down",
+  "stand_go_up",
+  "stand_idle",
+  "stand_idle_blink",
+  "stand_roar",
   "swim",
   "swim_forward",
   "swim_idle",
@@ -93,6 +100,7 @@ const EXPECTED_SOURCE_ANIMATION_IDS = Object.freeze([
   "takeoff",
   "unhide",
   "walk",
+  "wakeup",
   "wallclimb",
   "wallgrab",
 ])
@@ -118,6 +126,7 @@ const EXPECTED_ENVIRONMENT_GATED_ANIMATION_IDS = Object.freeze([
   "swimattackup",
   "swimforward",
   "swimidle",
+  "wakeup",
   "wallclimb",
   "wallgrab",
 ])
@@ -153,7 +162,7 @@ describe("SeethingSwarm battle animation policy", () => {
       ]),
     )
 
-    expect(policiesByUsageKind["battle-eligible"]).toHaveLength(64)
+    expect(policiesByUsageKind["battle-eligible"]).toHaveLength(71)
     expect(
       policiesByUsageKind["environment-gated"].map(
         ({ animationId }) => animationId,

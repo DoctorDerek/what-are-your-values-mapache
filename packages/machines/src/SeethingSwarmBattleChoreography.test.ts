@@ -151,10 +151,14 @@ it("applies each variant's approved role pools rather than unrelated catalog cli
       expect(profile.attention).toContain(clips.anticipation.clip.animationId)
       expect(profile.attack).toContain(clips.attack.clip.animationId)
       expect(clips.attack.clip.animationId).not.toBe("attack_air")
-      expect(clips.reaction.clip.animationId).toBe("hurt")
+      expect(profile.reaction).toContain(clips.reaction.clip.animationId)
       expect(profile.celebration).toContain(clips.flourish.clip.animationId)
       for (const selection of Object.values(clips)) {
-        if (selection.sequence.length > 1)
+        if (
+          selection.sequence.length > 1 &&
+          (selection.role !== "attack" ||
+            result.combatants[0].locomotion.animationId === "fly_forward")
+        )
           expect(selection.sequence.at(-1)).toBe(clips.rest.clip)
       }
     }

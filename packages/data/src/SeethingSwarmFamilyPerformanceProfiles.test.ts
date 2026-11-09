@@ -32,13 +32,13 @@ describe("approved SeethingSwarm family profiles", () => {
       }
     },
   )
-  it("covers the 29 source families and resolves all 47 variants through their source owner", () => {
-    expect(SEETHING_SWARM_FAMILY_PERFORMANCE_PROFILES).toHaveLength(29)
+  it("covers the 30 source families and resolves all 48 variants through their source owner", () => {
+    expect(SEETHING_SWARM_FAMILY_PERFORMANCE_PROFILES).toHaveLength(30)
     expect(
       new Set(
         SEETHING_SWARM_FAMILY_PERFORMANCE_PROFILES.map(({ packId }) => packId),
       ).size,
-    ).toBe(29)
+    ).toBe(30)
     let variants = 0
     for (const pack of SEETHING_SWARM_SOURCE_PACKS) {
       for (const animalId of pack.animalIds) {
@@ -51,6 +51,7 @@ describe("approved SeethingSwarm family profiles", () => {
           profile.locomotion,
           profile.attack,
           profile.celebration,
+          profile.reaction,
         ]) {
           expect(pool.length).toBeGreaterThan(0)
           expect(new Set(pool).size).toBe(pool.length)
@@ -59,7 +60,7 @@ describe("approved SeethingSwarm family profiles", () => {
         variants += 1
       }
     }
-    expect(variants).toBe(47)
+    expect(variants).toBe(48)
   })
 
   it("uses expressive blinking rather than fear for bunny and turtle attention", () => {

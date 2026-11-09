@@ -47,6 +47,11 @@ describe("SeethingSwarm complete source sequences", () => {
     ["attack_air", ["takeoff", "attack_air", "fall", "land"]],
     ["land_upright", ["fly_forward", "land_upright"]],
     ["liedown_idle", ["liedown_godown", "liedown_idle", "liedown_getup"]],
+    ["stand_idle", ["stand_go_up", "stand_idle", "stand_go_down"]],
+    ["stand_idle_blink", ["stand_go_up", "stand_idle_blink", "stand_go_down"]],
+    ["stand_roar", ["stand_go_up", "stand_roar", "stand_go_down"]],
+    ["stand_attack01", ["stand_go_up", "stand_attack01", "stand_go_down"]],
+    ["stand_attack02", ["stand_go_up", "stand_attack02", "stand_go_down"]],
   ] as const)(
     "resolves %s only with all authored partners",
     (animationId, expected) => {
