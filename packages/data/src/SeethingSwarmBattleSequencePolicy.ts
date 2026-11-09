@@ -14,6 +14,18 @@ function defineSequenceRecipe(
 }
 
 export const SEETHING_SWARM_BATTLE_SEQUENCE_RECIPES = Object.freeze([
+  ...([
+    "stand_idle",
+    "stand_idle_blink",
+    "stand_roar",
+    "stand_attack01",
+    "stand_attack02",
+  ] as const).map((animationId) =>
+    defineSequenceRecipe(
+      [animationId],
+      ["stand_go_up", animationId, "stand_go_down"],
+    ),
+  ),
   defineSequenceRecipe(["hide", "unhide"], ["hide", "unhide"]),
   defineSequenceRecipe(["jump"], ["jump", "fall", "land"]),
   defineSequenceRecipe(["fall"], ["jump", "fall", "land"]),

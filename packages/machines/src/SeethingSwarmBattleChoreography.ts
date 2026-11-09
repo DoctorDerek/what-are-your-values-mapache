@@ -165,7 +165,7 @@ function classifyBattleEligibleClips<PlatformAsset>(
       profile.attack.filter((animationId) => animationId !== "attack_air"),
     ],
     ["celebration", profile.celebration],
-    ["reaction", ["hurt"]],
+    ["reaction", profile.reaction],
   ] as const
   const battleEligibleClips: ClassifiedBattleEligibleClip<PlatformAsset>[] = []
   for (const clip of animal.characterClips)
@@ -311,7 +311,7 @@ function createLicensedBattleCombatant<PlatformAsset>({
     role: "entry",
     restClip: rest.clip,
   })
-  const attack = selectClip("attack", rest.clip)
+  const attack = selectClip("attack")
   const attackSequence =
     locomotion.clip.animationId === "fly_forward"
       ? Object.freeze([
