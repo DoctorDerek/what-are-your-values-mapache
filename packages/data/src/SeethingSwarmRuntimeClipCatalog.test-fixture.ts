@@ -15,6 +15,7 @@ import { ZOO_ANIMALS, type ZooAnimalId } from "./ZooAnimals"
 
 export function fixtureAnimationCount(id: ZooAnimalId) {
   if (id === "bat") return 26
+  if (id === "bearpack") return 20
   if (id === "squirrelpack") return 12
   if (id === "tigerpack") return 15
   return 17
@@ -128,7 +129,10 @@ export function createCompleteSeethingSwarmRuntimeClipTestFixture(
 ) {
   const current = createCompleteSeethingSwarmRuntimeClipTestRegistry()
   const animals = current.animals.filter(
-    ({ animalId }) => animalId !== "squirrelpack" && animalId !== "tigerpack",
+    ({ animalId }) =>
+      animalId !== "bearpack" &&
+      animalId !== "squirrelpack" &&
+      animalId !== "tigerpack",
   )
   const registry =
     snapshot === "current"

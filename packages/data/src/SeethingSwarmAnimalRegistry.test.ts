@@ -94,7 +94,7 @@ describe("SeethingSwarm animal registry", () => {
     expect(registry.animals.map(({ animalId }) => animalId)).toEqual(
       ZOO_ANIMALS.map(({ id }) => id),
     )
-    expect(registry.characterAnimationCount).toBe(801)
+    expect(registry.characterAnimationCount).toBe(821)
     expect(registry.auxiliaryEffectCount).toBe(1)
   })
 
@@ -136,7 +136,7 @@ describe("SeethingSwarm animal registry", () => {
         ...manifests.slice(0, -1),
         manifests[0]!,
       ]),
-    ).toThrow("Invalid SeethingSwarm registry animal at position 46")
+    ).toThrow("Invalid SeethingSwarm registry animal at position 47")
     expect(() =>
       createSeethingSwarmAnimalRegistry(
         replaceManifest(manifests, 0, unknownAnimalManifest),
@@ -177,7 +177,7 @@ describe("SeethingSwarm animal registry", () => {
       createSeethingSwarmAnimalRegistry(
         replaceManifest(manifests, 0, incompleteAnimationManifest),
       ),
-    ).toThrow("Invalid SeethingSwarm character animation count: 800")
+    ).toThrow("Invalid SeethingSwarm character animation count: 820")
     expect(() =>
       createSeethingSwarmAnimalRegistry(
         replaceManifest(manifests, frogpackAnimalIndex, missingEffectManifest),
