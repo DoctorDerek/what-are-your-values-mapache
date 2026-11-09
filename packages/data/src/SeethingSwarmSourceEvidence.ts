@@ -1,6 +1,6 @@
 import type { ZooAnimalId } from "./ZooAnimals"
 
-const SOURCE_SNAPSHOT_ID = "seethingswarm-animals:2026-11-01"
+const SOURCE_SNAPSHOT_ID = "seethingswarm-animals:2026-11-09"
 
 export type SeethingSwarmSourceEvidenceFile = Readonly<{
   relativePath: string
@@ -51,26 +51,26 @@ function defineSourcePack(
 
 export const SEETHING_SWARM_SOURCE_SNAPSHOT = Object.freeze({
   sourceSnapshotId: SOURCE_SNAPSHOT_ID,
-  storefrontReviewedOn: "2026-11-01",
-  packCount: 29,
-  stableAnimalCount: 47,
-  characterAnimationStripCount: 801,
+  storefrontReviewedOn: "2026-11-09",
+  packCount: 30,
+  stableAnimalCount: 48,
+  characterAnimationStripCount: 821,
   auxiliaryEffectStripCount: 1,
   excludedHumanWeaponStripCount: 102,
-  totalPngStripCount: 904,
-  distinctAnimationIdCount: 87,
+  totalPngStripCount: 924,
+  distinctAnimationIdCount: 95,
   evidenceFiles: Object.freeze([
     defineEvidenceFile(
       "seethingswarm_animals_full_animation_list_with_frame_count.txt",
-      "068CB81C0A55B01937EB5122AB67EAC87537A0DC9A39FD4D1B9D330D68B21D51",
+      "1AA43BAF60269569EEFE5D0ED00B74DEC627A96D9DE91A6E68261BC1ECB049CA",
     ),
     defineEvidenceFile(
       "seethingswarm_animals_colors_list.txt",
-      "F5E35860055BED865EF9A3363DC0FE35BD273AD749A1D857BB3ED20686707B33",
+      "E670191995A100C891D573D33679CAE4D7AB09F055A0F405A8354B86A8A492E4",
     ),
     defineEvidenceFile(
       "seethingswarm_animals_spritesheet_sizes.txt",
-      "6F2775009EFE2D9F972F05A4E509B89796F5EFADEC7887706FC48516EEEA00D6",
+      "912A384B5A61B9F08D392C20DEF1EA6EA08D5808F7C864D810393D3687CC043C",
     ),
     defineEvidenceFile(
       "LICENSE.txt",
@@ -81,6 +81,7 @@ export const SEETHING_SWARM_SOURCE_SNAPSHOT = Object.freeze({
 
 export const SEETHING_SWARM_SOURCE_PACKS = Object.freeze([
   defineSourcePack("batpack", "Batpack", "bat_spritesheets", ["bat"]),
+  defineSourcePack("bearpack", "Bearpack", "bearpack_spritesheets", ["bearpack"]),
   defineSourcePack("bunnypack", "Bunnypack", "bunnypack_spritesheets", [
     "bunnypack",
   ]),
