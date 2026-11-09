@@ -81,7 +81,9 @@ export const SEETHING_SWARM_SOURCE_SNAPSHOT = Object.freeze({
 
 export const SEETHING_SWARM_SOURCE_PACKS = Object.freeze([
   defineSourcePack("batpack", "Batpack", "bat_spritesheets", ["bat"]),
-  defineSourcePack("bearpack", "Bearpack", "bearpack_spritesheets", ["bearpack"]),
+  defineSourcePack("bearpack", "Bearpack", "bearpack_spritesheets", [
+    "bearpack",
+  ]),
   defineSourcePack("bunnypack", "Bunnypack", "bunnypack_spritesheets", [
     "bunnypack",
   ]),
