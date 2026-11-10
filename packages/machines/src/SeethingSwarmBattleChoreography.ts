@@ -15,6 +15,7 @@ import type {
   SeethingSwarmRuntimeCharacterClip,
   SeethingSwarmRuntimeClipCatalog,
 } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import { isSeethingSwarmStrikeCompatible } from "@game/data/src/SeethingSwarmStrikeSpacing"
 import type { ValueId } from "@game/data/src/Value"
 import type { ZooAnimalId } from "@game/data/src/ZooAnimals"
 import type { PresentedBattle } from "./CombatMachine"
@@ -165,7 +166,7 @@ function classifyBattleEligibleClips<PlatformAsset>(
       profile.attack.filter((animationId) => animationId !== "attack_air"),
     ],
     ["celebration", profile.celebration],
-    ["reaction", ["hurt"]],
+    ["reaction", profile.reaction],
   ] as const
   const battleEligibleClips: ClassifiedBattleEligibleClip<PlatformAsset>[] = []
   for (const clip of animal.characterClips)
@@ -275,16 +276,26 @@ function selectBattleClip<PlatformAsset>({
 function createLicensedBattleCombatant<PlatformAsset>({
   catalog,
   combatant,
+  opponentId,
   ordinals,
   side,
 }: {
   readonly catalog: SeethingSwarmLicensedRuntimeClipCatalog<PlatformAsset>
   readonly combatant: SeethingSwarmBattleCombatant
+  readonly opponentId: ZooAnimalId
   readonly ordinals: SeethingSwarmRoleOrdinals
   readonly side: SeethingSwarmBattleCombatantSide
 }) {
   const animal = resolveRuntimeAnimalClips(catalog, combatant.animalId)
-  const battleEligibleClips = classifyBattleEligibleClips(animal)
+  const battleEligibleClips = classifyBattleEligibleClips(animal).filter(
+    ({ clip, policy }) =>
+      !policy.semanticFamilies.includes("attack") ||
+      isSeethingSwarmStrikeCompatible(
+        combatant.animalId,
+        opponentId,
+        clip.animationId,
+      ),
+  )
   const selectClip = (
     role: SeethingSwarmVariedRole,
     restClip?: SeethingSwarmRuntimeCharacterClip<PlatformAsset>,
@@ -311,7 +322,7 @@ function createLicensedBattleCombatant<PlatformAsset>({
     role: "entry",
     restClip: rest.clip,
   })
-  const attack = selectClip("attack", rest.clip)
+  const attack = selectClip("attack")
   const attackSequence =
     locomotion.clip.animationId === "fly_forward"
       ? Object.freeze([
@@ -422,6 +433,7 @@ export function createSeethingSwarmBattleChoreography<PlatformAsset>({
       createLicensedBattleCombatant({
         catalog,
         combatant: firstCombatant,
+        opponentId: secondCombatant.animalId,
         ordinals:
           ordinals?.get(firstCombatant.animalId) ??
           INITIAL_SEETHING_SWARM_ROLE_ORDINALS,
@@ -430,6 +442,7 @@ export function createSeethingSwarmBattleChoreography<PlatformAsset>({
       createLicensedBattleCombatant({
         catalog,
         combatant: secondCombatant,
+        opponentId: firstCombatant.animalId,
         ordinals:
           ordinals?.get(secondCombatant.animalId) ??
           INITIAL_SEETHING_SWARM_ROLE_ORDINALS,

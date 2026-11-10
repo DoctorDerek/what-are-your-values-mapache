@@ -77,7 +77,7 @@ describe("SeethingSwarm runtime clip catalog", () => {
       ),
     ).toThrow("SeethingSwarm reference pose exceeds clip bounds for bat")
   })
-  it("resolves all 801 canonical character clips and the Frog effect", () => {
+  it("resolves all 821 canonical character clips and the Frog effect", () => {
     const { registry, catalog } =
       createCompleteSeethingSwarmRuntimeClipTestFixture("current")
     const resolvedCharacterClips = registry.animals.flatMap((animal) =>
@@ -97,17 +97,17 @@ describe("SeethingSwarm runtime clip catalog", () => {
 
     expect(catalog.mode).toBe("licensed")
     expect(catalog.evidenceSnapshotId).toBe(registry.evidenceSnapshotId)
-    expect(catalog.animals).toHaveLength(47)
-    expect(catalog.characterClipCount).toBe(801)
+    expect(catalog.animals).toHaveLength(48)
+    expect(catalog.characterClipCount).toBe(821)
     expect(catalog.auxiliaryEffectClipCount).toBe(1)
-    expect(resolvedCharacterClips).toHaveLength(801)
+    expect(resolvedCharacterClips).toHaveLength(821)
     expect(
       new Set(
         resolvedCharacterClips.map(
           ({ animalId, animationId }) => `${animalId}:${animationId}`,
         ),
       ).size,
-    ).toBe(801)
+    ).toBe(821)
     expect(frogEffect).toMatchObject({
       kind: "auxiliary-effect",
       animalId: "frogpack",
@@ -221,11 +221,11 @@ describe("SeethingSwarm runtime clip catalog", () => {
 
     expect(() =>
       createSeethingSwarmLicensedRuntimeClipCatalog(
-        { ...registry, characterAnimationCount: 800 },
+        { ...registry, characterAnimationCount: 820 },
         sources,
       ),
     ).toThrow(
-      "Invalid SeethingSwarm runtime character clip count: expected 800, received 801",
+      "Invalid SeethingSwarm runtime character clip count: expected 820, received 821",
     )
     expect(() =>
       createSeethingSwarmLicensedRuntimeClipCatalog(

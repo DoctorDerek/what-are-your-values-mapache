@@ -4,7 +4,7 @@ import { VALUE_TO_ANIMAL_MAP } from "./ValueToAnimalMap"
 import { ZOO_ANIMALS } from "./ZooAnimals"
 
 const canonicalAnimalMapContentHash =
-  "d6f1e608c2985912c7ed0293d9bbe53df43f33b45d40346bb2936b7af3e6b020"
+  "8b39570a23434cb373f7c4d729f40a198e73c6eef3d809b7909823c447309e38"
 
 const retiredZooAnimalIds: readonly string[] = Object.freeze([
   "batpack",
@@ -66,6 +66,12 @@ describe("canonical value-to-animal mapping", () => {
   })
 
   it.each([
+    ["caring", "bearpack"],
+    ["independence", "bearpack"],
+    ["protect", "bearpack"],
+    ["provide", "bearpack"],
+    ["stability", "catset/cat01_brown"],
+    ["power", "wolfpack"],
     ["diligence", "squirrelpack"],
     ["order", "squirrelpack"],
     ["practicality", "squirrelpack"],
@@ -91,8 +97,8 @@ describe("canonical value-to-animal mapping", () => {
     const documentedAnimalIds = ZOO_ANIMALS.map(({ id }) => id)
     const mappedAnimalIds = VALUE_TO_ANIMAL_MAP.map(({ animalId }) => animalId)
 
-    expect(ZOO_ANIMALS).toHaveLength(47)
-    expect(new Set(documentedAnimalIds).size).toBe(47)
+    expect(ZOO_ANIMALS).toHaveLength(48)
+    expect(new Set(documentedAnimalIds).size).toBe(48)
     expect([...new Set(mappedAnimalIds)].sort()).toEqual(
       [...documentedAnimalIds].sort(),
     )

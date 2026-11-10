@@ -1,7 +1,7 @@
 import { expect, type Locator } from "@playwright/test"
 import { test } from "./fixtures"
 
-test("Reduced Motion keeps both new animals in their calm first frame on row taps", async ({
+test("Reduced Motion keeps added animals in their calm first frame on row taps", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" })
@@ -10,12 +10,15 @@ test("Reduced Motion keeps both new animals in their calm first frame on row tap
   await page
     .getByRole("button", { name: "Browse All Values", exact: true })
     .tap()
-  for (const value of ["order", "fitness"]) {
+  for (const value of ["order", "fitness", "caring"]) {
     const row = page.locator(`[id="all-values-row-pvcs-2011:${value}"]`)
     await row.scrollIntoViewIfNeeded()
     const visible = row.locator('[data-hub-active-clip="true"]')
     const sprite = visible.locator("img")
-    await expect(sprite).toHaveAttribute("src", /(?:squirrel|tiger)_idle_strip/)
+    await expect(sprite).toHaveAttribute(
+      "src",
+      /(?:squirrel|tiger|bear)_idle_strip/,
+    )
     const path = await sprite.getAttribute("src")
     await row.tap()
     await expect(sprite).toHaveAttribute("src", path!)
@@ -25,6 +28,59 @@ test("Reduced Motion keeps both new animals in their calm first frame on row tap
     )
     await expect(sprite).toHaveCSS("animation-name", "none")
   }
+})
+
+test("Bear varies complete attacks and preserves the next usable comparison", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(crypto, "randomUUID", {
+      value: () => "00000000-0000-4000-8000-00000000046e",
+    })
+  })
+  await page.goto("/")
+  await page.getByRole("button", { name: "Start", exact: true }).tap()
+  await page.getByRole("button", { name: "Battle", exact: true }).tap()
+  const stage = page.locator("[data-choreography-identity]")
+  const identity = await stage.getAttribute("data-choreography-identity")
+  const attacks = ["bite", "stand_attack01", "stand_attack02"]
+  for (const attack of attacks) {
+    const bear = stage.locator('[data-combatant-side="first"]')
+    await expect(bear).toHaveAttribute("data-animal-id", "bearpack")
+    await stage.locator('[data-battle-arena-side="first"]').tap()
+    const sprite = bear.locator('[data-battle-active-clip="true"] img')
+    await expect(sprite).toHaveAttribute(
+      "src",
+      new RegExp(`bear_${attack}_strip`),
+    )
+    await expect
+      .poll(() =>
+        sprite.evaluate(
+          (image: HTMLImageElement) => image.complete && image.naturalWidth > 0,
+        ),
+      )
+      .toBe(true)
+    if (attack.startsWith("stand_"))
+      await expect(sprite).toHaveAttribute("src", /bear_stand_go_down_strip/)
+    await expect(stage).not.toHaveAttribute(
+      "data-choreography-identity",
+      identity!,
+    )
+    await expect(
+      page.getByRole("button", { name: "Undo", exact: true }),
+    ).toBeEnabled()
+    if (attack !== attacks.at(-1)) {
+      await page.getByRole("button", { name: "Undo", exact: true }).tap()
+      await expect(stage).toHaveAttribute(
+        "data-choreography-identity",
+        identity!,
+      )
+    }
+  }
+  await page.getByRole("button", { name: "Stop", exact: true }).tap()
+  await expect(
+    page.getByRole("heading", { name: "Results", exact: true }),
+  ).toBeVisible()
 })
 
 test.use({

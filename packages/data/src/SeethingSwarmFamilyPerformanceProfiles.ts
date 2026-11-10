@@ -11,6 +11,7 @@ export type SeethingSwarmFamilyPerformanceProfile = Readonly<{
   locomotion: AnimationPool
   attack: AnimationPool
   celebration: AnimationPool
+  reaction: AnimationPool
 }>
 
 function defineProfile(
@@ -20,6 +21,7 @@ function defineProfile(
   locomotion: AnimationPool,
   attack: AnimationPool,
   celebration: AnimationPool,
+  reaction: AnimationPool = ["hurt"],
 ): SeethingSwarmFamilyPerformanceProfile {
   return Object.freeze({
     packId,
@@ -28,10 +30,19 @@ function defineProfile(
     locomotion: Object.freeze(locomotion),
     attack: Object.freeze(attack),
     celebration: Object.freeze(celebration),
+    reaction: Object.freeze(reaction),
   })
 }
 
 export const SEETHING_SWARM_FAMILY_PERFORMANCE_PROFILES = Object.freeze([
+  defineProfile(
+    "bearpack",
+    ["idle", "idle_blink"],
+    ["stand_idle_blink", "roar", "stand_idle", "stand_roar"],
+    ["run"],
+    ["bite", "stand_attack01", "stand_attack02"],
+    ["roar", "jump", "stand_roar"],
+  ),
   defineProfile(
     "batpack",
     ["idle_upright", "idle_upright_blink"],
@@ -255,6 +266,7 @@ export const SEETHING_SWARM_FAMILY_PERFORMANCE_PROFILES = Object.freeze([
     ["walk", "run"],
     ["attack"],
     ["jump"],
+    ["hurt", "hide"],
   ),
   defineProfile(
     "wolfpack",

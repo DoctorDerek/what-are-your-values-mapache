@@ -1,9 +1,39 @@
 import { describe, expect, it, vi } from "vitest"
 import * as familyProfiles from "./SeethingSwarmFamilyPerformanceProfiles"
-import { resolveSeethingSwarmStrikeSpacing } from "./SeethingSwarmStrikeSpacing"
+import {
+  isSeethingSwarmStrikeCompatible,
+  resolveSeethingSwarmStrikeSpacing,
+} from "./SeethingSwarmStrikeSpacing"
 import { ZOO_ANIMALS } from "./ZooAnimals"
 
 describe("Squirrel and Tiger strike spacing", () => {
+  it("supplies measured Bear contact for every compatible family strike", () => {
+    for (const { id } of ZOO_ANIMALS) {
+      const attacks = familyProfiles
+        .resolveSeethingSwarmFamilyPerformanceProfile(id)
+        .attack.filter((attack) => attack !== "attack_air")
+      for (const attack of attacks) {
+        const incoming = resolveSeethingSwarmStrikeSpacing(
+          id,
+          "bearpack",
+          attack,
+        )
+        expect(incoming?.impact).toBeGreaterThan(0)
+        expect(incoming?.windup).toBeGreaterThanOrEqual(incoming!.impact)
+      }
+      for (const attack of ["bite", "stand_attack01", "stand_attack02"]) {
+        const outgoing = resolveSeethingSwarmStrikeSpacing(
+          "bearpack",
+          id,
+          attack,
+        )
+        if (isSeethingSwarmStrikeCompatible("bearpack", id, attack)) {
+          expect(outgoing?.impact).toBeGreaterThan(0)
+          expect(outgoing?.windup).toBeGreaterThanOrEqual(outgoing!.impact)
+        } else expect(outgoing).toBeUndefined()
+      }
+    }
+  })
   it("uses each attacker's own contact pose in the same matchup", () => {
     expect(
       resolveSeethingSwarmStrikeSpacing("squirrelpack", "tigerpack", "attack"),

@@ -129,11 +129,11 @@ describe("SeethingSwarm registry generator", () => {
       ({ animalId }) => animalId === "frogpack",
     )!
 
-    expect(generated.registry.animals).toHaveLength(47)
+    expect(generated.registry.animals).toHaveLength(48)
     expect(generated.registry.animals.map(({ animalId }) => animalId)).toEqual(
       ZOO_ANIMALS.map(({ id }) => id),
     )
-    expect(generated.registry.characterAnimationCount).toBe(801)
+    expect(generated.registry.characterAnimationCount).toBe(821)
     expect(generated.registry.auxiliaryEffectCount).toBe(1)
     expect(frogpack.animations.fly).toBeUndefined()
     expect(frogpack.auxiliaryEffects?.fly).toEqual({

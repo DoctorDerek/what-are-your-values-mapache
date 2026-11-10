@@ -2,6 +2,9 @@ import { resolveSeethingSwarmFamilyPerformanceProfile } from "./SeethingSwarmFam
 import type { SeethingSwarmRuntimeCharacterClip } from "./SeethingSwarmRuntimeClipCatalog"
 
 const INSPECTED_ATTACK_CONTACTS = [
+  ["bearpack", "bite", 8, 4],
+  ["bearpack", "stand_attack01", 7, 4],
+  ["bearpack", "stand_attack02", 7, 4],
   ["batpack", "attack", 7, 2],
   ["bunnypack", "attack", 6, 3],
   ["catset", "attack", 7, 1],

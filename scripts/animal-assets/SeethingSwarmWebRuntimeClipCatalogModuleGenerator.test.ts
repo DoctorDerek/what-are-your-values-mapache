@@ -32,24 +32,24 @@ describe("SeethingSwarm web runtime clip catalog module generator", () => {
     const generatedModule =
       generateSeethingSwarmWebRuntimeClipCatalogModule(catalog)
 
-    expect(clips).toHaveLength(802)
+    expect(clips).toHaveLength(822)
     expect(
       generatedModule.match(
         /^import seethingSwarmWebClip\d{4} from "\.\/assets\/.+\.png"$/gm,
       ),
-    ).toHaveLength(802)
+    ).toHaveLength(822)
     expect(
       generatedModule.match(/^        kind: "character",$/gm),
-    ).toHaveLength(801)
+    ).toHaveLength(821)
     expect(
       generatedModule.match(/^        kind: "auxiliary-effect",$/gm),
     ).toHaveLength(1)
     expect(
       generatedModule.match(/^        asset: seethingSwarmWebClip\d{4},$/gm),
-    ).toHaveLength(802)
+    ).toHaveLength(822)
     expect(generatedModule).toContain("seethingSwarmWebClip0000")
-    expect(generatedModule).toContain("seethingSwarmWebClip0801")
-    expect(generatedModule).toContain("characterClipCount: 801")
+    expect(generatedModule).toContain("seethingSwarmWebClip0821")
+    expect(generatedModule).toContain("characterClipCount: 821")
     expect(generatedModule).toContain("auxiliaryEffectClipCount: 1")
     expect(generatedModule).toContain(
       "satisfies SeethingSwarmLicensedRuntimeClipCatalog<StaticImageData>",

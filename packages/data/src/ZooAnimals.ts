@@ -48,6 +48,7 @@ export const CUSTOM_VALUE_ANIMAL_IDS_V1 = Object.freeze([
 
 const zooAnimalIds = [
   ...CUSTOM_VALUE_ANIMAL_IDS_V1,
+  "bearpack",
   "squirrelpack",
   "tigerpack",
 ] as const
