@@ -1,0 +1,11 @@
+--- a/build/normalize.js
++++ b/build/normalize.js
+@@ -33,7 +33,7 @@
+   return data;
+ }
+ function _deepmerge() {
+-  const data = _interopRequireDefault(require('deepmerge'));
++  const data = _interopRequireDefault(require('@fastify/deepmerge')({ symbols: true }));
+   _deepmerge = function () {
+     return data;
+   };

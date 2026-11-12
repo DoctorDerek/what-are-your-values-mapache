@@ -5,6 +5,8 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  query-string@7.1.3>decode-uri-component: 0.5.1
+  jest-config@29.7.0>deepmerge: '-'
   brace-expansion@<1.1.21: 1.1.21
   brace-expansion@>=5.0.0 <5.0.12: 5.0.12
   nanoid@<3.3.18: 3.3.18
@@ -27,8 +29,12 @@ overrides:
   vite@>=8 <8.1.6: 8.1.6
   zod@>=4 <4.6.7: 4.6.7
 
+packageExtensionsChecksum: sha256-nNhkKZPo8gb2FD4ISn51RvnPWosV/aSDOnGs0X+euSk=
+
 patchedDependencies:
+  decode-uri-component@0.5.1: 137924859be3e13225bc9eabd9cfb87245d70bdf30689b2c5ed5c8d3196f9f6b
   happy-dom@21.0.4: 8c3b6455ba1d42538a419540d4b879d7046e05e91c82f91320e6cafd74ab5d07
+  jest-config@29.7.0: 36828f7143cf0e69f856a00d78c5dd72714b5408f04490d0e28a22caac59d0c9
 
 importers:
 
@@ -1281,6 +1287,9 @@ packages:
   '@expo/xcpretty@4.4.4':
     resolution: {integrity: sha512-4aQzz9vgxcNXFfo/iyNgDDYfsU5XGKKxWxZopw0cVotHiW+U8IJbIxMaxsINs6bHhtkG3StKNPcOrn3eBuxKPw==}
     hasBin: true
+
+  '@fastify/deepmerge@3.2.4':
+    resolution: {integrity: sha512-kc8GQq5gX9RRhw0rov3DMrN8wS8yRlxJRdDzsYwwdBV/wazuVgc/1K7CKL90tlvu3RlHan6Y0R0aE3nJtBz2eQ==}
 
   '@floating-ui/core@1.8.0':
     resolution: {integrity: sha512-0CIZ5itps/8x7BG8dEIhs53BvCUH2PCoogtakwRTut+Arm58sJooJ0AuZhLw2HJYIR5cMLNPBSS728sPho2khQ==}
@@ -3963,9 +3972,9 @@ packages:
   decimal.js@10.6.0:
     resolution: {integrity: sha512-YpgQiITW3JXGntzdUmyUR1V812Hn8T1YVXhCu+wO3OpS4eU9l4YdD3qjyiKdV6mvV29zapkMeD390UVEf2lkUg==}
 
-  decode-uri-component@0.2.2:
-    resolution: {integrity: sha512-FqUYQ+8o158GyGTrMFJms9qh3CqTKvAqgqsTnkLI8sKu0028orqBhxNMFkFen0zGyg6epACD32pjVk58ngIErQ==}
-    engines: {node: '>=0.10'}
+  decode-uri-component@0.5.1:
+    resolution: {integrity: sha512-vWHQkXgg2cE3BB4rR0c+PYw9BCQzLoNIRMI7AunIkZst74tw/vpPp7VLoYtsR/cy1f55g3XDWUslfeCZjiZJyA==}
+    engines: {node: '>=14.16'}
 
   dedent@1.7.2:
     resolution: {integrity: sha512-WzMx3mW98SN+zn3hgemf4OzdmyNhhhKz5Ay0pUfQiMQ3e1g+xmTJWp/pKdwKVXhdSkAEGIIzqeuWrL3mV/AXbA==}
@@ -3977,10 +3986,6 @@ packages:
 
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
-
-  deepmerge@4.3.1:
-    resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
-    engines: {node: '>=0.10.0'}
 
   defaults@1.0.4:
     resolution: {integrity: sha512-eFuaLoy/Rxalv2kr+lqMlUnrDWV+3j4pljOIJgLIhI058IQfWJ7vXhyEIHu+HtC738klGALYxOKDO0bQP3tg8A==}
@@ -8323,6 +8328,8 @@ snapshots:
       chalk: 4.1.2
       js-yaml: 4.3.2
 
+  '@fastify/deepmerge@3.2.4': {}
+
   '@floating-ui/core@1.8.0':
     dependencies:
       '@floating-ui/utils': 0.2.12
@@ -8510,7 +8517,7 @@ snapshots:
       exit: 0.1.2
       graceful-fs: 4.2.11
       jest-changed-files: 29.7.0
-      jest-config: 29.7.0(@types/node@24.13.3)(supports-color@8.1.1)
+      jest-config: 29.7.0(patch_hash=36828f7143cf0e69f856a00d78c5dd72714b5408f04490d0e28a22caac59d0c9)(@types/node@24.13.3)(supports-color@8.1.1)
       jest-haste-map: 29.7.0
       jest-message-util: 29.7.0
       jest-regex-util: 29.6.3
@@ -10986,7 +10993,7 @@ snapshots:
       chalk: 4.1.2
       exit: 0.1.2
       graceful-fs: 4.2.11
-      jest-config: 29.7.0(@types/node@24.13.3)(supports-color@8.1.1)
+      jest-config: 29.7.0(patch_hash=36828f7143cf0e69f856a00d78c5dd72714b5408f04490d0e28a22caac59d0c9)(@types/node@24.13.3)(supports-color@8.1.1)
       jest-util: 29.7.0
       prompts: 2.4.2
     transitivePeerDependencies:
@@ -11061,13 +11068,11 @@ snapshots:
 
   decimal.js@10.6.0: {}
 
-  decode-uri-component@0.2.2: {}
+  decode-uri-component@0.5.1(patch_hash=137924859be3e13225bc9eabd9cfb87245d70bdf30689b2c5ed5c8d3196f9f6b): {}
 
   dedent@1.7.2: {}
 
   deep-is@0.1.4: {}
-
-  deepmerge@4.3.1: {}
 
   defaults@1.0.4:
     dependencies:
@@ -12404,7 +12409,7 @@ snapshots:
       create-jest: 29.7.0(@types/node@24.13.3)(supports-color@8.1.1)
       exit: 0.1.2
       import-local: 3.2.0
-      jest-config: 29.7.0(@types/node@24.13.3)(supports-color@8.1.1)
+      jest-config: 29.7.0(patch_hash=36828f7143cf0e69f856a00d78c5dd72714b5408f04490d0e28a22caac59d0c9)(@types/node@24.13.3)(supports-color@8.1.1)
       jest-util: 29.7.0
       jest-validate: 29.7.0
       yargs: 17.7.3
@@ -12414,15 +12419,15 @@ snapshots:
       - supports-color
       - ts-node
 
-  jest-config@29.7.0(@types/node@24.13.3)(supports-color@8.1.1):
+  jest-config@29.7.0(patch_hash=36828f7143cf0e69f856a00d78c5dd72714b5408f04490d0e28a22caac59d0c9)(@types/node@24.13.3)(supports-color@8.1.1):
     dependencies:
       '@babel/core': 7.29.7(supports-color@8.1.1)
+      '@fastify/deepmerge': 3.2.4
       '@jest/test-sequencer': 29.7.0
       '@jest/types': 29.6.3
       babel-jest: 29.7.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1)
       chalk: 4.1.2
       ci-info: 3.9.0
-      deepmerge: 4.3.1
       glob: 7.2.3
       graceful-fs: 4.2.11
       jest-circus: 29.7.0(supports-color@8.1.1)
@@ -13569,7 +13574,7 @@ snapshots:
 
   query-string@7.1.3:
     dependencies:
-      decode-uri-component: 0.2.2
+      decode-uri-component: 0.5.1(patch_hash=137924859be3e13225bc9eabd9cfb87245d70bdf30689b2c5ed5c8d3196f9f6b)
       filter-obj: 1.1.0
       split-on-first: 1.1.0
       strict-uri-encode: 2.0.0
