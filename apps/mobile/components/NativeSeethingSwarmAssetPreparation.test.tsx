@@ -17,7 +17,7 @@ import NativeSeethingSwarmAssetPreparation, {
 const battle = {
   pair: [
     createCanonicalValueId("pvcs-2011:mastery"),
-    createCanonicalValueId("pvcs-2011:courage"),
+    createCanonicalValueId("pvcs-2011:justice"),
   ] as const,
   scheduler: createSchedulerRestorePoint({
     activeDeck: createActiveDeck([]),

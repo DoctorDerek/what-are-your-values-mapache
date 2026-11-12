@@ -29,7 +29,7 @@ import NativeSeethingSwarmBattleVariation from "@/components/NativeSeethingSwarm
 
 const pair = [
   createCanonicalValueId("pvcs-2011:mastery"),
-  createCanonicalValueId("pvcs-2011:courage"),
+  createCanonicalValueId("pvcs-2011:justice"),
 ] as const
 const scheduler = createSchedulerRestorePoint({
   activeDeck: createActiveDeck([]),

@@ -17,7 +17,14 @@ import {
 import { createInMemoryDurableStore } from "@game/machines/src/InMemoryDurableStore"
 import { DELETE_ALL_DATA_ACKNOWLEDGMENT } from "@game/machines/src/PlayerDataReset"
 import { createWayvmExportV1TestVector } from "@game/machines/src/WayvmExportV1TestVector"
-import { beforeEach, describe, expect, it, jest } from "@jest/globals"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from "@jest/globals"
 import {
   act,
   fireEvent,
@@ -100,6 +107,10 @@ beforeEach(() => {
   })
 })
 
+afterEach(() => {
+  jest.useRealTimers()
+})
+
 async function openMenuDestination(
   user: ReturnType<typeof userEvent.setup>,
   destinationLabel: string,
@@ -128,6 +139,7 @@ function getOpenDialog(label: string) {
 
 describe("NativeGameClient Menu navigation", () => {
   it("routes hardware Back through overlays and secondary parents, then permits Hub departure", async () => {
+    jest.useFakeTimers()
     let hardwareBack:
       Parameters<typeof BackHandler.addEventListener>[1] | undefined
     const remove = jest.fn()
@@ -175,7 +187,7 @@ describe("NativeGameClient Menu navigation", () => {
     expect(await pressBack()).toBe(true)
     await screen.findByRole("button", { name: "Battle" })
     expect(await pressBack()).toBe(false)
-    unmount()
+    await unmount()
     expect(remove).toHaveBeenCalled()
   })
   it.each(["Menu", "Achievements"])(
