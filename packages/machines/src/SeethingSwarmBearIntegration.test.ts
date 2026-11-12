@@ -1,5 +1,8 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
-import type { SeethingSwarmLicensedRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import type {
+  SeethingSwarmLicensedRuntimeClipCatalog,
+  SeethingSwarmReferencePose,
+} from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import { createCanonicalValueId } from "@game/data/src/Value"
 import { describe, expect, it } from "vitest"
 import { createSchedulerRestorePoint } from "./PairScheduler"
@@ -64,7 +67,7 @@ const animals = definitions.map(([animalId, animations]) => ({
     frameIndex: 0,
     bounds: { left: 9, top: 19, width: 48, height: 34 },
     anchor: { x: 33, y: 53 },
-  },
+  } satisfies SeethingSwarmReferencePose,
   auxiliaryEffectClips: [],
   characterClips: animations.map((animationId) => ({
     kind: "character" as const,
