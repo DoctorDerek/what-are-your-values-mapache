@@ -215,6 +215,7 @@ export default function CustomValueInvitation({
         }}
       >
         <DialogContent
+          placement="reachable"
           aria-describedby={undefined}
           className="grid-rows-[minmax(0,1fr)_auto]"
           onCloseAutoFocus={(event) => {
@@ -222,10 +223,11 @@ export default function CustomValueInvitation({
             document.getElementById("hub-custom-value-name")?.focus()
           }}
         >
-          <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain p-4">
+          <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain p-[16px]">
             <DialogTitle>{leaveCopy.keepTitle}</DialogTitle>
             <Button
               wrap
+              size="confirmation"
               variant="outline"
               className="w-full"
               disabled={authoring.isBusy}
