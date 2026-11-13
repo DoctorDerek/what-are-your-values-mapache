@@ -11,6 +11,7 @@ import { useEffect, useRef } from "react"
 import CustomValueFieldFeedback from "@/components/CustomValueFieldFeedback"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import useFocusedFormFieldReveal from "@/lib/useFocusedFormFieldReveal"
 
 export default function CustomValueDraftEditor({
   draft,
@@ -27,11 +28,13 @@ export default function CustomValueDraftEditor({
   const copy = localizedCopy.interfaceCopy.customValues
 
   const nameRef = useRef<HTMLInputElement>(null)
+  const formRef = useFocusedFormFieldReveal()
   useEffect(() => {
     nameRef.current?.focus()
   }, [])
   return (
     <form
+      ref={formRef}
       id="hub-custom-value-editor"
       aria-label={copy.editorTitle}
       className="grid grid-cols-1 gap-3 xl:grid-cols-[1fr_2fr]"

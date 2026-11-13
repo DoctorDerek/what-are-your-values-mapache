@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useWebControllerActions } from "@/components/WebControlsProvider"
+import useFocusedFormFieldReveal from "@/lib/useFocusedFormFieldReveal"
 
 export default function CustomValueEditor({
   value,
@@ -54,6 +55,7 @@ export default function CustomValueEditor({
     backRequestId,
   })
   const headingRef = useRef<HTMLHeadingElement>(null)
+  const formRef = useFocusedFormFieldReveal()
   const nameRef = useRef<HTMLInputElement>(null)
   const isDeleting = action === "delete"
   const isReview = isDeleting || editor.isReviewing
@@ -90,6 +92,7 @@ export default function CustomValueEditor({
       className="flex justify-center"
     >
       <form
+        ref={formRef}
         aria-labelledby="custom-value-editor-title"
         className="flex min-h-0 w-full max-w-3xl flex-col border-4 border-black bg-white text-black shadow-[8px_8px_0px_0px_#000000]"
         onSubmit={(event) => {
