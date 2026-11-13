@@ -74,16 +74,19 @@ for (const locale of ["en", "es-MX"] as const) {
         const keep = button(copy.dressingRoom.keepEditing, dialog)
         const save = button(copy.dressingRoom.saveReturn, dialog)
         const discard = button(copy.dressingRoom.discard, dialog)
+        const footer = dialog.getByRole("contentinfo")
         for (const action of [keep, save]) {
           await expect(action).toBeInViewport({ ratio: 1 })
           await expectCompleteWords(action)
           await action.click({ trial: true })
         }
-        const before = await save.boundingBox()
-        if (!before) throw new Error("Expected the save action")
+        const saveBounds = await save.boundingBox()
+        const footerBounds = await footer.boundingBox()
+        if (!saveBounds || !footerBounds)
+          throw new Error("Expected the save action and its footer")
         if (viewport.width < 1280)
           expect(
-            viewport.height - before.y - before.height / 2,
+            viewport.height - saveBounds.y - saveBounds.height / 2,
           ).toBeGreaterThan(95)
         else {
           const bounds = await dialog.boundingBox()
@@ -99,7 +102,7 @@ for (const locale of ["en", "es-MX"] as const) {
         await discard.scrollIntoViewIfNeeded()
         await expectCompleteWords(discard)
         await discard.click({ trial: true })
-        expect(await save.boundingBox()).toEqual(before)
+        expect(await footer.boundingBox()).toEqual(footerBounds)
         await keep.click()
         if (flow === "appearance") {
           await expect(button(copy.heroChoices.outfit("17"))).toHaveAttribute(
