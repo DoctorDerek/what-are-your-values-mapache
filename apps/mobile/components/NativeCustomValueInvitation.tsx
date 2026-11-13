@@ -280,7 +280,9 @@ export default function NativeCustomValueInvitation({
         visible={authoring.leaveTarget !== null}
         onShow={Keyboard.dismiss}
         onKeepEditing={authoring.keepEditing}
-        onDiscard={() => authoring.discardAndExit(authoring.leaveTarget ?? "home")}
+        onDiscard={() =>
+          authoring.discardAndExit(authoring.leaveTarget ?? "home")
+        }
         onSave={authoring.saveAdditions}
         discardDisabled={authoring.isBusy}
         saveDisabled={!authoring.canApply || authoring.isBusy}

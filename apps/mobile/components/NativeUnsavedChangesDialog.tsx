@@ -40,7 +40,13 @@ export default function NativeUnsavedChangesDialog({
       onShow={onShow}
       onRequestClose={onKeepEditing}
     >
-      <MapacheScreen className={cx("items-center justify-end bg-black/70 xl:justify-center", edgeSpacing === "compact" ? "p-3 xl:pb-3" : "p-4 xl:pb-4", "pb-[min(64px,max(16px,8vh))]")}>
+      <MapacheScreen
+        className={cx(
+          "items-center justify-end bg-black/70 xl:justify-center",
+          edgeSpacing === "compact" ? "p-3 xl:pb-3" : "p-4 xl:pb-4",
+          "pb-[min(64px,max(16px,8vh))]",
+        )}
+      >
         <View
           accessibilityViewIsModal
           role="dialog"
@@ -50,19 +56,41 @@ export default function NativeUnsavedChangesDialog({
             contentClassName,
           )}
         >
-          <ScrollView className="min-h-0 shrink" contentContainerClassName="gap-4 p-[16px]" keyboardShouldPersistTaps="handled">
-            <Text accessibilityRole="header" className={cx("font-black text-black", titleClassName)}>
+          <ScrollView
+            className="min-h-0 shrink"
+            contentContainerClassName="gap-4 p-[16px]"
+            keyboardShouldPersistTaps="handled"
+          >
+            <Text
+              accessibilityRole="header"
+              className={cx("font-black text-black", titleClassName)}
+            >
               {copy.keepTitle}
             </Text>
-            <Button size="compact" variant="outline" disabled={discardDisabled} onPress={onDiscard}>
+            <Button
+              size="compact"
+              variant="outline"
+              disabled={discardDisabled}
+              onPress={onDiscard}
+            >
               <Text>{copy.discard}</Text>
             </Button>
           </ScrollView>
           <View className="shrink-0 flex-row flex-wrap gap-3 border-t-4 border-black p-3 pb-5">
-            <Button size="compact" className="basis-readable-action min-w-0 flex-1" variant="secondary" onPress={onKeepEditing}>
+            <Button
+              size="compact"
+              className="basis-readable-action min-w-0 flex-1"
+              variant="secondary"
+              onPress={onKeepEditing}
+            >
               <Text>{copy.keepEditing}</Text>
             </Button>
-            <Button size="compact" className="basis-readable-action min-w-0 flex-1" disabled={saveDisabled} onPress={onSave}>
+            <Button
+              size="compact"
+              className="basis-readable-action min-w-0 flex-1"
+              disabled={saveDisabled}
+              onPress={onSave}
+            >
               <Text>{copy.saveReturn}</Text>
             </Button>
           </View>
