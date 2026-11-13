@@ -43,6 +43,34 @@ function queueDrafts() {
   }
 }
 describe("Hub custom-value invitation", () => {
+  it("reveals its focused field on viewport changes without changing the draft or scrolling a confirmation", () => {
+    const { props, unmount } = setup()
+    fill("Patient craftsmanship", "to make useful things with care")
+    const definition = screen.getByLabelText("Definition")
+    const reveal = vi.spyOn(definition, "scrollIntoView")
+    definition.focus()
+    fireEvent(window, new Event("resize"))
+    expect(reveal).toHaveBeenCalledExactlyOnceWith({
+      block: "nearest",
+      inline: "nearest",
+      behavior: "instant",
+    })
+    expect(definition).toHaveFocus()
+    expect(definition).toHaveValue("to make useful things with care")
+    expect(props.onApply).not.toHaveBeenCalled()
+    click("Back")
+    screen.getByRole("button", { name: "Keep editing" }).focus()
+    fireEvent(window, new Event("resize"))
+    expect(reveal).toHaveBeenCalledTimes(1)
+    click("Keep editing")
+    expect(screen.getByLabelText("Value name")).toHaveValue(
+      "Patient craftsmanship",
+    )
+    unmount()
+    fireEvent(window, new Event("resize"))
+    expect(reveal).toHaveBeenCalledTimes(1)
+    reveal.mockRestore()
+  })
   it("keeps the untouched Home free of a second authoring entry point", () => {
     const { props, rerender } = setup(0)
     expect(screen.queryByRole("complementary")).not.toBeInTheDocument()
