@@ -33,6 +33,25 @@ async function fill(name: string, definition: string) {
 }
 
 describe("native inline custom-value authoring", () => {
+  it("keeps an incomplete draft through hardware Back without enabling Save and return", async () => {
+    const props = options()
+    const { container } = await render(
+      <NativeCustomValueInvitation {...props} saveIssue={null} />,
+    )
+    await fill("Patient craftsmanship", "")
+    await press("Back")
+    expect(
+      screen.getByRole("button", { name: "Save and return" }),
+    ).toBeDisabled()
+    const [modal] = container.queryAll(({ type }) => type === "Modal")
+    expect(modal).toBeDefined()
+    await fireEvent(modal, "requestClose")
+    expect(screen.getByLabelText("Value name")).toHaveDisplayValue(
+      "Patient craftsmanship",
+    )
+    expect(props.onApply).not.toHaveBeenCalled()
+    expect(props.onExit).not.toHaveBeenCalled()
+  })
   it("opens blank and keeps the instructional example non-interactive", async () => {
     const props = options()
     const { container } = await render(
