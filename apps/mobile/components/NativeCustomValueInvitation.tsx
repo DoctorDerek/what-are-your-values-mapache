@@ -13,13 +13,13 @@ import { useEffect, useRef, type ReactNode } from "react"
 import {
   Keyboard,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   ScrollView,
   TextInput,
   View,
 } from "react-native"
 import NativeCustomValueFieldFeedback from "@/components/NativeCustomValueFieldFeedback"
+import NativeUnsavedChangesDialog from "@/components/NativeUnsavedChangesDialog"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 
@@ -276,60 +276,16 @@ export default function NativeCustomValueInvitation({
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-      <Modal
+      <NativeUnsavedChangesDialog
         visible={authoring.leaveTarget !== null}
-        transparent
         onShow={Keyboard.dismiss}
-        onRequestClose={authoring.keepEditing}
-      >
-        <View
-          accessibilityViewIsModal
-          className="flex-1 justify-center bg-black/70 p-4"
-        >
-          <View className="max-h-full border-4 border-black bg-white">
-            <ScrollView
-              className="shrink"
-              contentContainerClassName="gap-4 p-4"
-              keyboardShouldPersistTaps="handled"
-            >
-              <Text
-                accessibilityRole="header"
-                className="text-xl font-black text-black"
-              >
-                {leaveCopy.keepTitle}
-              </Text>
-              <Button
-                size="compact"
-                variant="outline"
-                disabled={authoring.isBusy}
-                onPress={() =>
-                  authoring.discardAndExit(authoring.leaveTarget ?? "home")
-                }
-              >
-                <Text>{leaveCopy.discard}</Text>
-              </Button>
-            </ScrollView>
-            <View className="shrink-0 flex-row flex-wrap gap-3 border-t-4 border-black p-3 pb-5">
-              <Button
-                size="compact"
-                className="basis-readable-action min-w-0 flex-1"
-                variant="secondary"
-                onPress={authoring.keepEditing}
-              >
-                <Text>{leaveCopy.keepEditing}</Text>
-              </Button>
-              <Button
-                size="compact"
-                className="basis-readable-action min-w-0 flex-1"
-                disabled={!authoring.canApply || authoring.isBusy}
-                onPress={authoring.saveAdditions}
-              >
-                <Text>{leaveCopy.saveReturn}</Text>
-              </Button>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        onKeepEditing={authoring.keepEditing}
+        onDiscard={() => authoring.discardAndExit(authoring.leaveTarget ?? "home")}
+        onSave={authoring.saveAdditions}
+        discardDisabled={authoring.isBusy}
+        saveDisabled={!authoring.canApply || authoring.isBusy}
+        titleClassName="text-xl"
+      />
     </>
   )
 }

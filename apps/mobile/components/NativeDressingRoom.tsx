@@ -17,10 +17,11 @@ import type { avatarMachine } from "@game/machines/src/AvatarMachine"
 import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { cx } from "classix"
 import { useMemo, useState } from "react"
-import { Image, Modal, Pressable, ScrollView, View } from "react-native"
+import { Image, Pressable, ScrollView, View } from "react-native"
 import type { ActorRefFrom } from "xstate"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeHeroes99Hero from "@/components/NativeHeroes99Hero"
+import NativeUnsavedChangesDialog from "@/components/NativeUnsavedChangesDialog"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 import { HEROES99_ASSETS } from "@/generated/heroes99/Heroes99Assets"
@@ -299,57 +300,16 @@ export default function NativeDressingRoom({
           <Text>{DRESSING_ROOM_COPY.shareAction}</Text>
         </Button>
       </View>
-      <Modal
-        transparent
+      <NativeUnsavedChangesDialog
         visible={state.matches("ConfirmingLeave")}
         animationType={shouldReduceMotion ? "none" : "fade"}
-        onRequestClose={() => actor.send({ type: "AVATAR.KEEP_EDITING" })}
-      >
-        <MapacheScreen className="items-center justify-center bg-black/70 p-3">
-          <View
-            accessibilityViewIsModal
-            role="dialog"
-            accessibilityLabel={DRESSING_ROOM_COPY.keepTitle}
-            className="max-h-full w-full max-w-lg border-4 border-black bg-white"
-          >
-            <ScrollView
-              className="shrink"
-              contentContainerClassName="gap-4 p-4"
-            >
-              <Text
-                accessibilityRole="header"
-                className="text-2xl font-black text-black"
-              >
-                {DRESSING_ROOM_COPY.keepTitle}
-              </Text>
-              <Button
-                size="compact"
-                variant="outline"
-                onPress={() => actor.send({ type: "AVATAR.CANCEL" })}
-              >
-                <Text>{DRESSING_ROOM_COPY.discard}</Text>
-              </Button>
-            </ScrollView>
-            <View className="shrink-0 flex-row flex-wrap gap-3 border-t-4 border-black p-3 pb-5">
-              <Button
-                size="compact"
-                className="basis-readable-action min-w-0 flex-1"
-                variant="secondary"
-                onPress={() => actor.send({ type: "AVATAR.KEEP_EDITING" })}
-              >
-                <Text>{DRESSING_ROOM_COPY.keepEditing}</Text>
-              </Button>
-              <Button
-                size="compact"
-                className="basis-readable-action min-w-0 flex-1"
-                onPress={() => actor.send({ type: "AVATAR.SAVE" })}
-              >
-                <Text>{DRESSING_ROOM_COPY.saveReturn}</Text>
-              </Button>
-            </View>
-          </View>
-        </MapacheScreen>
-      </Modal>
+        onKeepEditing={() => actor.send({ type: "AVATAR.KEEP_EDITING" })}
+        onDiscard={() => actor.send({ type: "AVATAR.CANCEL" })}
+        onSave={() => actor.send({ type: "AVATAR.SAVE" })}
+        titleClassName="text-2xl"
+        contentClassName="max-w-lg"
+        edgeSpacing="compact"
+      />
     </MapacheScreen>
   )
 }
