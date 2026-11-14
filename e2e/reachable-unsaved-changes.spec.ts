@@ -2,6 +2,8 @@ import { expect, type Locator } from "@playwright/test"
 import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
 import { test } from "./fixtures"
 
+test.use({ serviceWorkers: "block" })
+
 async function expectCompleteWords(action: Locator) {
   expect(
     await action.evaluate((node) => {
@@ -53,7 +55,12 @@ for (const locale of ["en", "es-MX"] as const) {
       })
       const buttons = matches.getByRole("button")
       expect(await buttons.count()).toBeGreaterThan(10)
-      const footer = page.getByRole("contentinfo")
+      const footer = page.locator("footer").filter({
+        has: page.getByRole("button", {
+          name: copy.customValues.apply,
+          exact: true,
+        }),
+      })
       const footerBounds = await footer.boundingBox()
       await buttons.first().scrollIntoViewIfNeeded()
       await expectCompleteWords(buttons.first())
@@ -208,8 +215,8 @@ for (const locale of ["en", "es-MX"] as const) {
   }
   test(`${locale} constrained authoring keeps keyboard-focused fields and actions visible`, async ({
     page,
-  }) => {
-    await page.setViewportSize({ width: 390, height: 420 })
+  }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(catalog.metadata.webPath)
     await page
       .getByRole("button", {
@@ -220,40 +227,111 @@ for (const locale of ["en", "es-MX"] as const) {
     await page
       .getByRole("button", { name: catalog.hub.add, exact: true })
       .click()
+    const customName = "Patient craftsmanship"
     await page
       .getByLabel(copy.customValues.name, { exact: true })
-      .fill("Patient craftsmanship")
-    const field = page.getByLabel(copy.customValues.definition, { exact: true })
-    const value = "to make useful things with care"
-    await field.fill(value)
-    await page.getByLabel(copy.customValues.name, { exact: true }).focus()
-    await page.keyboard.press("Tab")
-    await expect
-      .poll(() =>
-        field.evaluate((node: HTMLTextAreaElement) => {
-          const bounds = node.getBoundingClientRect()
-          return (
-            document.activeElement === node &&
-            node.contains(
-              document.elementFromPoint(
-                bounds.x + bounds.width / 2,
-                bounds.y + bounds.height / 2,
-              ),
-            )
-          )
-        }),
+      .fill(customName)
+    let definition = "to make useful things with care"
+    await page
+      .getByLabel(copy.customValues.definition, { exact: true })
+      .fill(definition)
+    for (const stage of ["add", "edit"] as const) {
+      const name = page.getByLabel(
+        stage === "add" ? copy.customValues.name : copy.screen.valueName,
+        { exact: true },
       )
-      .toBe(true)
-    await expect(field).toHaveValue(value)
-    expect(
-      await field.evaluate((node: HTMLTextAreaElement) => node.selectionStart),
-    ).toBe(value.length)
-    await field.press("End")
-    await field.press("!")
-    await expect(field).toHaveValue(value + "!")
-    for (const action of [copy.customValues.back, copy.customValues.apply])
-      await expect(
-        page.getByRole("button", { name: action, exact: true }),
-      ).toBeInViewport({ ratio: 1 })
+      const field = page.getByLabel(
+        stage === "add" ? copy.customValues.definition : copy.screen.definition,
+        { exact: true },
+      )
+      await field.focus()
+      await page.setViewportSize({ width: 390, height: 420 })
+      await expect(field).toBeFocused()
+      await expect(field).toBeInViewport({ ratio: 1 })
+      await name.focus()
+      await page.keyboard.press("Tab")
+      await expect(field).toBeFocused()
+      await expect(field).toBeInViewport({ ratio: 1 })
+      await expect(field).toHaveValue(definition)
+      await field.press("ControlOrMeta+End")
+      expect(
+        await field.evaluate(
+          (node: HTMLTextAreaElement) => node.selectionStart,
+        ),
+      ).toBe(definition.length)
+      await field.press("!")
+      definition += "!"
+      await expect(field).toHaveValue(definition)
+      const saveLabel =
+        stage === "add" ? copy.customValues.apply : copy.screen.reviewUpdate
+      const backLabel =
+        stage === "add" ? copy.customValues.back : copy.screen.cancel
+      const save = page.getByRole("button", { name: saveLabel, exact: true })
+      const footer = page.locator("footer").filter({ has: save })
+      const footerBounds = await footer.boundingBox()
+      await page.screenshot({
+        path: testInfo.outputPath(`${stage}-focused-field.png`),
+      })
+      const port =
+        stage === "add"
+          ? page
+              .getByRole("complementary")
+              .locator("fieldset > [data-controller-scroll]")
+          : page.getByRole("form").locator("[data-controller-scroll]")
+      const bounds = await port.boundingBox()
+      expect(bounds).not.toBeNull()
+      await page.mouse.move(
+        bounds!.x + 4,
+        bounds!.y + Math.min(100, bounds!.height / 2),
+      )
+      await page.mouse.wheel(0, 2000)
+      await expect
+        .poll(() => port.evaluate((node) => node.scrollTop))
+        .toBeGreaterThan(0)
+      if (stage === "add") {
+        await expect
+          .poll(async () => {
+            await page.mouse.wheel(0, 400)
+            return port.evaluate(
+              (node) => node.scrollHeight - node.clientHeight - node.scrollTop,
+            )
+          })
+          .toBeLessThanOrEqual(1)
+        await expect(
+          page
+            .getByRole("region", { name: copy.screen.saveCustomValues })
+            .getByRole("listitem")
+            .last(),
+        ).toBeInViewport({ ratio: 1 })
+      }
+      await expect(field).toBeFocused()
+      await expect(field).toHaveValue(definition)
+      expect(await footer.boundingBox()).toEqual(footerBounds)
+      for (const action of [backLabel, saveLabel])
+        await expect(
+          page.getByRole("button", { name: action, exact: true }),
+        ).toBeInViewport({ ratio: 1 })
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollHeight <= innerHeight,
+        ),
+      ).toBe(true)
+      if (stage === "add") {
+        await save.click()
+        await page.setViewportSize({ width: 390, height: 844 })
+        await page
+          .getByRole("button", { name: catalog.hub.browse, exact: true })
+          .click()
+        await page
+          .getByRole("searchbox", {
+            name: copy.screen.searchAllValues,
+            exact: true,
+          })
+          .fill(customName)
+        await page
+          .getByRole("button", { name: copy.screen.edit, exact: true })
+          .click()
+      }
+    }
   })
 }
