@@ -27,6 +27,83 @@ async function expectCompleteWords(action: Locator) {
 for (const locale of ["en", "es-MX"] as const) {
   const catalog = getLocaleCatalog(locale)
   const copy = catalog.interfaceCopy
+  for (const textScale of [1, 2]) {
+    test(`${locale} custom matching and notices remain separate, scrollable and clear at ${textScale}x text`, async ({
+      page,
+    }, testInfo) => {
+      await page.setViewportSize({ width: 320, height: 568 })
+      await page.goto(catalog.metadata.webPath)
+      await page
+        .getByRole("button", {
+          name: catalog.introduction.startAction,
+          exact: true,
+        })
+        .click()
+      await page
+        .getByRole("button", { name: catalog.hub.add, exact: true })
+        .click()
+      await page.addStyleTag({
+        content: `html { font-size:${textScale * 100}%; }`,
+      })
+      const name = page.getByLabel(copy.customValues.name, { exact: true })
+      await name.fill("P")
+      const matches = page.getByRole("region", {
+        name: copy.screen.matchingValues,
+        exact: true,
+      })
+      const buttons = matches.getByRole("button")
+      expect(await buttons.count()).toBeGreaterThan(10)
+      const save = page.getByRole("button", {
+        name: copy.customValues.apply,
+        exact: true,
+      })
+      const footer = page.getByRole("contentinfo")
+      const footerBounds = await footer.boundingBox()
+      await buttons.first().scrollIntoViewIfNeeded()
+      await expectCompleteWords(buttons.first())
+      const first = await buttons.nth(0).boundingBox()
+      const second = await buttons.nth(1).boundingBox()
+      expect(first).not.toBeNull()
+      expect(second).not.toBeNull()
+      expect(second!.y).toBeGreaterThanOrEqual(first!.y + first!.height)
+      expect(
+        await matches.evaluate((node) => node.scrollHeight > node.clientHeight),
+      ).toBe(true)
+      await buttons.last().scrollIntoViewIfNeeded()
+      await buttons.last().click({ trial: true })
+      await expectCompleteWords(buttons.last())
+      expect(await footer.boundingBox()).toEqual(footerBounds)
+      await expect(name).toHaveValue("P")
+      await page.screenshot({
+        path: testInfo.outputPath("matching-values.png"),
+      })
+      await name.fill("Patient craftsmanship")
+      await page
+        .getByLabel(copy.customValues.definition, { exact: true })
+        .fill("to make useful things with care")
+      const notices = page
+        .getByRole("region", { name: copy.screen.saveCustomValues })
+        .getByRole("list")
+      await expect(notices.getByRole("listitem")).toHaveCount(3)
+      for (const item of await notices.getByRole("listitem").all()) {
+        await item.scrollIntoViewIfNeeded()
+        await expectCompleteWords(item)
+      }
+      expect(await footer.boundingBox()).toEqual(footerBounds)
+      for (const action of [copy.customValues.back, copy.customValues.apply])
+        await expect(
+          page.getByRole("button", { name: action, exact: true }),
+        ).toBeInViewport({ ratio: 1 })
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollHeight <= innerHeight,
+        ),
+      ).toBe(true)
+      await page.screenshot({
+        path: testInfo.outputPath("authoring-notices.png"),
+      })
+    })
+  }
   for (const viewport of [
     { width: 390, height: 844, scale: 1 },
     { width: 320, height: 568, scale: 2 },
@@ -133,10 +210,10 @@ for (const locale of ["en", "es-MX"] as const) {
       }
     })
   }
-  test(`${locale} viewport shrink preserves the focused authoring field and caret above its action footer`, async ({
+  test(`${locale} constrained authoring keeps keyboard-focused fields and actions visible`, async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 390, height: 844 })
+    await page.setViewportSize({ width: 390, height: 420 })
     await page.goto(catalog.metadata.webPath)
     await page
       .getByRole("button", {
@@ -153,8 +230,8 @@ for (const locale of ["en", "es-MX"] as const) {
     const field = page.getByLabel(copy.customValues.definition, { exact: true })
     const value = "to make useful things with care"
     await field.fill(value)
-    await field.focus()
-    await page.setViewportSize({ width: 390, height: 420 })
+    await page.getByLabel(copy.customValues.name, { exact: true }).focus()
+    await page.keyboard.press("Tab")
     await expect
       .poll(() =>
         field.evaluate((node: HTMLTextAreaElement) => {

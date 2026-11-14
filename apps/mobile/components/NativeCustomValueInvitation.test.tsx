@@ -33,6 +33,22 @@ async function fill(name: string, definition: string) {
 }
 
 describe("native inline custom-value authoring", () => {
+  it("keeps the three notices readable as separate items without saving", async () => {
+    const props = options()
+    await render(<NativeCustomValueInvitation {...props} saveIssue={null} />)
+    expect(screen.getAllByRole("listitem")).toHaveLength(2)
+    expect(
+      screen.queryByText(CUSTOM_VALUE_INVITATION_COPY.unsaved),
+    ).not.toBeOnTheScreen()
+    await fill("Patient craftsmanship", "to make useful things with care")
+    expect(screen.getAllByRole("listitem")).toHaveLength(3)
+    for (const notice of [
+      ...CUSTOM_VALUE_INVITATION_COPY.consequences,
+      CUSTOM_VALUE_INVITATION_COPY.unsaved,
+    ])
+      expect(screen.getByText(notice)).toBeOnTheScreen()
+    expect(props.onApply).not.toHaveBeenCalled()
+  })
   it("keeps an incomplete draft through hardware Back without enabling Save and return", async () => {
     const props = options()
     const { container } = await render(

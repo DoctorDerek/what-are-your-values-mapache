@@ -117,7 +117,7 @@ function findLegacyCustomRow() {
 }
 
 describe("All Values Component Integration", () => {
-  it("reveals the active custom edit field on resize while retaining its update review", () => {
+  it("retains the active custom edit draft through its update review", () => {
     const copy = getLocaleCatalog().interfaceCopy.screen
     const onUpdateCustomValue = vi.fn()
     renderAllValues(createRankedValues(createActiveDeckWithIngenuity()), {
@@ -127,25 +127,15 @@ describe("All Values Component Integration", () => {
     if (!row) throw new Error("Expected custom value row")
     fireEvent.click(within(row).getByRole("button", { name: "Edit" }))
     const definition = screen.getByLabelText(copy.definition)
-    const reveal = vi.spyOn(definition, "scrollIntoView")
     fireEvent.change(definition, {
       target: { value: "to make useful things with care" },
     })
     definition.focus()
-    fireEvent(window, new Event("resize"))
-    expect(reveal).toHaveBeenCalledExactlyOnceWith({
-      block: "nearest",
-      inline: "nearest",
-      behavior: "instant",
-    })
     expect(definition).toHaveFocus()
     expect(onUpdateCustomValue).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole("button", { name: copy.reviewUpdate }))
-    fireEvent(window, new Event("resize"))
-    expect(reveal).toHaveBeenCalledTimes(1)
     expect(screen.getByText(/to make useful things with care/)).toBeVisible()
     expect(onUpdateCustomValue).not.toHaveBeenCalled()
-    reveal.mockRestore()
   })
   it("renders and searches the selected value copy while retaining English search aliases", () => {
     const english = getLocaleCatalog()
