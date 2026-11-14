@@ -1,0 +1,25 @@
+{
+  "name": "@game/ui",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./src/ButtonAppearance": "./src/ButtonAppearance.ts",
+    "./src/TextFieldAppearance": "./src/TextFieldAppearance.ts",
+    "./src/CustomValueAuthoringAction": "./src/CustomValueAuthoringAction.tsx",
+    "./src/CustomValueInvitationParts": "./src/CustomValueInvitationParts.ts",
+    "./src/CustomValueDraftEditorView": "./src/CustomValueDraftEditorView.tsx",
+    "./src/CustomValueInvitationView": "./src/CustomValueInvitationView.tsx"
+  },
+  "dependencies": {
+    "@game/data": "workspace:*",
+    "class-variance-authority": "^0.7.1",
+    "classix": "^2"
+  },
+  "peerDependencies": {
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "typescript": "^6"
+  }
+}

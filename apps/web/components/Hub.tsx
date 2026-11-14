@@ -1,22 +1,16 @@
 "use client"
 
-import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
 import type { ImportConfirmation } from "@game/data/src/ImportConfirmation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import useHubCustomValueAuthoring, {
+  type HubCustomValueInvitation,
+} from "@game/data/src/useHubCustomValueAuthoring"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
-import type { ValueId } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-  type Ref,
-} from "react"
+import { useEffect, useRef, type ReactNode, type Ref } from "react"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
 import MapacheScreen from "@/components/MapacheScreen"
 import PersonalValuesCard from "@/components/PersonalValuesCard"
@@ -44,19 +38,7 @@ export default function Hub({
   onCustomize,
   onShare,
 }: {
-  customValueInvitation?: {
-    editorRequestId?: number
-    backRequestId?: number
-    initialName?: string
-    deckRevision: number
-    isSaving: boolean
-    saveIssue: string | null
-    onApply: (drafts: readonly CustomValueDraft[]) => void
-    onExport: () => Promise<void>
-    onNavigationBlockedChange: (blocked: boolean) => void
-    onClosed: () => void
-    onOpenMatchingValue: (valueId: ValueId) => void
-  }
+  customValueInvitation?: HubCustomValueInvitation
   isBattlePending?: boolean
   appearance: Heroes99Appearance
   rankedValues: readonly RankedValue[]
@@ -83,20 +65,16 @@ export default function Hub({
   const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
   const VALUES_CARD_COPY = localizedCopy.card
 
-  const [isDraftNavigationBlocked, setIsDraftNavigationBlocked] =
-    useState(false)
-  const [menuRequestId, setMenuRequestId] = useState(0)
-  const isNavigationBlocked =
-    isDraftNavigationBlocked || customValueInvitation?.isSaving === true
-  const onNavigationBlockedChange =
-    customValueInvitation?.onNavigationBlockedChange
-  const handleDraftNavigationBlockedChange = useCallback(
-    (blocked: boolean) => {
-      setIsDraftNavigationBlocked(blocked)
-      onNavigationBlockedChange?.(blocked)
-    },
-    [onNavigationBlockedChange],
-  )
+  const {
+    isDraftActive: isDraftNavigationBlocked,
+    isNavigationBlocked,
+    invitationProps,
+    onMenu,
+  } = useHubCustomValueAuthoring({
+    invitation: customValueInvitation,
+    rankedValues,
+    onOpenMenu,
+  })
   const wasDraftActive = useRef(false)
   useEffect(() => {
     if (wasDraftActive.current && !isDraftNavigationBlocked) {
@@ -139,11 +117,7 @@ export default function Hub({
           variant="secondary"
           size="sm"
           textCase="normal-case"
-          onClick={() =>
-            isDraftNavigationBlocked
-              ? setMenuRequestId((id) => id + 1)
-              : onOpenMenu()
-          }
+          onClick={onMenu}
           disabled={customValueInvitation?.isSaving}
           className="ml-auto max-xl:px-[12px] max-xl:py-[8px]"
         >
@@ -177,29 +151,11 @@ export default function Hub({
         }
       >
         {!isDraftNavigationBlocked && header}
-        {customValueInvitation && (
+        {invitationProps && (
           <CustomValueInvitation
+            {...invitationProps}
             header={header}
             rankedValues={rankedValues}
-            deckRevision={customValueInvitation.deckRevision}
-            editorRequestId={customValueInvitation.editorRequestId}
-            backRequestId={customValueInvitation.backRequestId}
-            menuRequestId={menuRequestId}
-            initialName={customValueInvitation.initialName}
-            existingCustomValues={rankedValues.flatMap(({ definition }) =>
-              definition.kind === "custom" ? [definition] : [],
-            )}
-            isSaving={customValueInvitation.isSaving}
-            saveIssue={customValueInvitation.saveIssue}
-            onApply={customValueInvitation.onApply}
-            onExport={customValueInvitation.onExport}
-            onNavigationBlockedChange={handleDraftNavigationBlockedChange}
-            onExit={(target) => {
-              customValueInvitation.onClosed()
-              if (target === "menu") onOpenMenu()
-              else if (typeof target === "object")
-                customValueInvitation.onOpenMatchingValue(target.valueId)
-            }}
           />
         )}
         {!isDraftNavigationBlocked && (

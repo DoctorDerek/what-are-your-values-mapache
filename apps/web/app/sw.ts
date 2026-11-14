@@ -3,7 +3,7 @@
 
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist"
 import { CacheFirst, NetworkFirst, Serwist } from "serwist"
-import { getPrecachedDeploymentAsset } from "../lib/PrecachedDeploymentAsset"
+import { getPrecachedDeploymentAsset } from "@/lib/PrecachedDeploymentAsset"
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {

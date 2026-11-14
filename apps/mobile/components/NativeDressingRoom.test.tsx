@@ -72,6 +72,22 @@ async function mountEditor(reduceMotion = false) {
 }
 
 describe("native Dressing Room", () => {
+  it("keeps the selected appearance when hardware Back closes the unsaved-change dialog", async () => {
+    const { actor, store, container } = await mountEditor()
+    const before = await store.readAll()
+    await fireEvent.press(screen.getByRole("button", { name: "Skin 6" }))
+    await fireEvent.press(screen.getByRole("button", { name: "Back" }))
+    const [modal] = container.queryAll(({ type }) => type === "Modal")
+    expect(modal).toBeDefined()
+    await fireEvent(modal, "requestClose")
+    expect(actor.getSnapshot().context.draft.skinPalette).toBe(6)
+    expect(actor.getSnapshot().status).toBe("active")
+    expect(
+      screen.queryByRole("button", { name: "Keep editing" }),
+    ).not.toBeOnTheScreen()
+    expect(await store.readAll()).toEqual(before)
+    actor.stop()
+  })
   it("shares the current appearance draft without saving or closing the editor", async () => {
     const { actor, store, onShare } = await mountEditor()
     const before = await store.readAll()

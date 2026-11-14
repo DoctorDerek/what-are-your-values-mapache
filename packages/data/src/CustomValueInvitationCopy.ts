@@ -12,8 +12,10 @@ export const CUSTOM_VALUE_INVITATION_COPY = Object.freeze({
   drafts: "Values to add",
   another: "Add another",
   discardUnfinished: "Discard unfinished edit",
-  consequences:
-    "New values start at Level 1 with 0 XP. Existing values keep their progress. Adding values restarts battle matching and clears Undo and Redo. Your settings and achievements stay unchanged.",
+  consequences: Object.freeze([
+    "New values start at Level 1 with 0 XP. Existing values keep their progress.",
+    "Adding values restarts battle matching and clears Undo and Redo. Your settings and achievements stay unchanged.",
+  ]),
   export: "Export Data",
   exporting: "Preparing export…",
   apply: "Save",

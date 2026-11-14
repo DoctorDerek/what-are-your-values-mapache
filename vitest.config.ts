@@ -1,11 +1,8 @@
-import { fileURLToPath } from "node:url"
 import { configDefaults, defineConfig } from "vitest/config"
 
 export default defineConfig({
   resolve: {
-    alias: {
-      "@": fileURLToPath(new URL("./apps/web", import.meta.url)),
-    },
+    tsconfigPaths: true,
   },
   test: {
     environment: "happy-dom",
@@ -21,7 +18,7 @@ export default defineConfig({
       include: [
         "apps/web/{app,components,lib}/**/*.{ts,tsx}",
         "apps/mobile/lib/**/*.ts",
-        "packages/*/src/**/*.ts",
+        "packages/*/src/**/*.{ts,tsx}",
         "scripts/animal-assets/**/*.ts",
       ],
       exclude: ["**/*.test.{ts,tsx}"],

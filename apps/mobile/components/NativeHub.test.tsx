@@ -173,6 +173,36 @@ function createHubCallbacks() {
 }
 
 describe("NativeHub", () => {
+  it("routes Menu from the open empty editor through the shared close acknowledgment", async () => {
+    const callbacks = createHubCallbacks()
+    const onClosed = jest.fn()
+    await render(
+      <NativeHub
+        {...callbacks}
+        {...animalPresentationProps}
+        dataNotice={null}
+        rankedValues={createUnplayedRankedValues()}
+        customValueInvitation={{
+          editorRequestId: 1,
+          deckRevision: 0,
+          isSaving: false,
+          saveIssue: null,
+          onApply: jest.fn(),
+          onExport: jest
+            .fn<CustomValueAuthoringOptions["onExport"]>()
+            .mockResolvedValue(undefined),
+          onNavigationBlockedChange: jest.fn(),
+          onClosed,
+          onOpenMatchingValue: jest.fn(),
+        }}
+      />,
+    )
+    await fireEvent.press(screen.getByRole("button", { name: "Menu" }))
+    expect(onClosed).toHaveBeenCalledTimes(1)
+    expect(callbacks.onOpenMenu).toHaveBeenCalledTimes(1)
+    expect(screen.queryByLabelText("Value name")).not.toBeOnTheScreen()
+  })
+
   it("retains one working header while entering and leaving the separate draft editor", async () => {
     const callbacks = createHubCallbacks()
     const onClosed = jest.fn()

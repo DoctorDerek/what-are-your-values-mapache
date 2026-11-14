@@ -1,5 +1,6 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
 import { DEFAULT_HEROES99_APPEARANCE } from "@game/data/src/Heroes99Appearance"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
 import {
   createSeethingSwarmTypographyOnlyRuntimeClipCatalog,
   type SeethingSwarmRuntimeClipCatalog,
@@ -24,6 +25,7 @@ import {
   createInitialBattleCycle,
 } from "@game/machines/src/BattleCycle"
 import { projectScheduledPair } from "@game/machines/src/PairScheduler"
+import LocaleProvider from "@game/utils/src/LocaleContext"
 import {
   fireEvent,
   render,
@@ -136,6 +138,93 @@ function getHubPresentation(name: string) {
 
 describe("Hub Component Integration", () => {
   afterEach(() => vi.restoreAllMocks())
+
+  it.each(["en", "es-MX"] as const)(
+    "routes %s authoring exits through the real Hub without losing pending text",
+    async (locale) => {
+      const catalog = getLocaleCatalog(locale)
+      const copy = catalog.interfaceCopy
+      const cycle = createInitialBattleCycle("hub-shared-authoring-navigation")
+      const rankedValues = rankValues(cycle.activeDeck, cycle.progressById)
+      const pets = rankedValues.find(
+        ({ definition }) =>
+          definition.kind === "canonical" && definition.englishName === "Pets",
+      )!
+      const invitation = {
+        editorRequestId: 1,
+        deckRevision: 0,
+        isSaving: false,
+        saveIssue: null,
+        onApply: vi.fn(),
+        onExport: vi.fn(async () => {}),
+        onNavigationBlockedChange: vi.fn(),
+        onClosed: vi.fn(),
+        onOpenMatchingValue: vi.fn(),
+      }
+      const props = {
+        ...animalPresentationProps,
+        rankedValues,
+        dataNotice: null,
+        onBrowseAllValues: vi.fn(),
+        onAddCustomValue: vi.fn(),
+        onOpenMenu: vi.fn(),
+        onStartBattle: vi.fn(),
+      }
+      const { rerender } = render(
+        <LocaleProvider locale={locale}>
+          <Hub {...props} customValueInvitation={invitation} />
+        </LocaleProvider>,
+      )
+      const menu = () =>
+        screen.getByRole("button", { name: copy.menu.openAction })
+      fireEvent.change(screen.getByLabelText(copy.customValues.name), {
+        target: { value: "P" },
+      })
+      fireEvent.click(menu())
+      const confirmation = within(await screen.findByRole("dialog"))
+      expect(invitation.onClosed).not.toHaveBeenCalled()
+      expect(props.onOpenMenu).not.toHaveBeenCalled()
+      fireEvent.click(
+        confirmation.getByRole("button", {
+          name: copy.dressingRoom.keepEditing,
+        }),
+      )
+      expect(screen.getByLabelText(copy.customValues.name)).toHaveValue("P")
+      const matches = within(
+        screen.getByRole("region", { name: copy.screen.matchingValues }),
+      )
+      fireEvent.click(
+        matches.getByRole("button", {
+          name: copy.screen.openValue(
+            getValueDisplayName(pets.definition, catalog.values),
+          ),
+        }),
+      )
+      fireEvent.click(
+        within(screen.getByRole("dialog")).getByRole("button", {
+          name: copy.dressingRoom.discard,
+        }),
+      )
+      expect(invitation.onClosed).toHaveBeenCalledTimes(1)
+      expect(invitation.onOpenMatchingValue).toHaveBeenCalledExactlyOnceWith(
+        pets.definition.id,
+      )
+      expect(props.onOpenMenu).not.toHaveBeenCalled()
+      expect(invitation.onApply).not.toHaveBeenCalled()
+      rerender(
+        <LocaleProvider locale={locale}>
+          <Hub
+            {...props}
+            customValueInvitation={{ ...invitation, editorRequestId: 2 }}
+          />
+        </LocaleProvider>,
+      )
+      fireEvent.click(menu())
+      await waitFor(() => expect(props.onOpenMenu).toHaveBeenCalledTimes(1))
+      expect(invitation.onClosed).toHaveBeenCalledTimes(2)
+      expect(invitation.onOpenMatchingValue).toHaveBeenCalledTimes(1)
+    },
+  )
 
   it("keeps draft authoring separate and returns focus to the lower Home action", async () => {
     const battleCycle = createInitialBattleCycle("hub-authoring-layout")

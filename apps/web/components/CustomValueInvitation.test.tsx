@@ -1,8 +1,14 @@
+import { createActiveDeck } from "@game/data/src/ActiveDeck"
 import {
   CUSTOM_VALUE_INVITATION_COPY as copy,
   CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
 } from "@game/data/src/CustomValueInvitationCopy"
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
+import { getValueDisplayName } from "@game/data/src/Value"
+import { createInitialValueProgress } from "@game/data/src/ValueProgress"
+import { rankValues } from "@game/data/src/ValueRanking"
+import LocaleProvider from "@game/utils/src/LocaleContext"
+import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
 
@@ -43,6 +49,72 @@ function queueDrafts() {
   }
 }
 describe("Hub custom-value invitation", () => {
+  it.each(["en", "es-MX"] as const)(
+    "keeps %s matching controls separate and guards navigation without saving a draft",
+    (locale) => {
+      const localization = getLocaleCatalog(locale)
+      const deck = createActiveDeck([])
+      const rankedValues = rankValues(deck, createInitialValueProgress(deck))
+      const pets = rankedValues.find(
+        ({ definition }) =>
+          definition.kind === "canonical" && definition.englishName === "Pets",
+      )!
+      const onExit = vi.fn()
+      const onApply = vi.fn()
+      render(
+        <LocaleProvider locale={locale}>
+          <CustomValueInvitation
+            editorRequestId={1}
+            existingCustomValues={[]}
+            deckRevision={0}
+            isSaving={false}
+            saveIssue={null}
+            onApply={onApply}
+            onExit={onExit}
+            onExport={vi.fn(async () => {})}
+            onNavigationBlockedChange={vi.fn()}
+            rankedValues={rankedValues}
+          />
+        </LocaleProvider>,
+      )
+      fireEvent.change(
+        screen.getByLabelText(localization.interfaceCopy.customValues.name),
+        { target: { value: "P" } },
+      )
+      const matching = within(
+        screen.getByRole("region", {
+          name: localization.interfaceCopy.screen.matchingValues,
+        }),
+      )
+      expect(matching.getAllByRole("button").length).toBeGreaterThan(10)
+      const openPets = localization.interfaceCopy.screen.openValue(
+        getValueDisplayName(pets.definition, localization.values),
+      )
+      fireEvent.click(matching.getByRole("button", { name: openPets }))
+      expect(onExit).not.toHaveBeenCalled()
+      const review = within(screen.getByRole("dialog"))
+      fireEvent.click(
+        review.getByRole("button", {
+          name: localization.interfaceCopy.dressingRoom.keepEditing,
+        }),
+      )
+      expect(
+        screen.getByLabelText(localization.interfaceCopy.customValues.name),
+      ).toHaveValue("P")
+      expect(onApply).not.toHaveBeenCalled()
+    },
+  )
+  it("groups progress, matching and pending-save notices into separate list items", () => {
+    const { props } = setup()
+    for (const consequence of copy.consequences)
+      expect(screen.getByText(consequence).closest("li")).not.toBeNull()
+    expect(screen.queryByText(copy.unsaved)).not.toBeInTheDocument()
+    fill("Patient craftsmanship", "to make useful things with care")
+    const pending = screen.getByText(copy.unsaved).closest("li")
+    expect(pending).not.toBeNull()
+    expect(pending!.parentElement!.children).toHaveLength(3)
+    expect(props.onApply).not.toHaveBeenCalled()
+  })
   it("keeps the untouched Home free of a second authoring entry point", () => {
     const { props, rerender } = setup(0)
     expect(screen.queryByRole("complementary")).not.toBeInTheDocument()
@@ -126,6 +198,34 @@ describe("Hub custom-value invitation", () => {
     expect(screen.getByLabelText("Value name")).toHaveValue("My direction")
     expect(screen.getByLabelText("Definition")).toHaveValue("My own meaning.")
   })
+  it.each(["Value name", "Definition"])(
+    "does not steal %s focus when a delayed dialog close finishes",
+    (fieldLabel) => {
+      vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+      try {
+        const { props } = setup()
+        fill("Patient craftsmanship", "to make useful things with care")
+        click("Back")
+        fireEvent.click(
+          within(screen.getByRole("dialog")).getByRole("button", {
+            name: "Keep editing",
+          }),
+        )
+        const field = screen.getByLabelText(fieldLabel)
+        act(() => {
+          field.focus()
+          vi.runOnlyPendingTimers()
+        })
+        expect(field).toHaveFocus()
+        fireEvent.change(field, { target: { value: "" } })
+        expect(field).toHaveValue("")
+        expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
+        expect(props.onApply).not.toHaveBeenCalled()
+      } finally {
+        vi.useRealTimers()
+      }
+    },
+  )
   it("starts a requested original value with the unmatched search name", () => {
     render(
       <CustomValueInvitation

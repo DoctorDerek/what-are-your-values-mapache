@@ -29,6 +29,7 @@
     "@game/design-tokens": "workspace:*",
     "@game/machines": "workspace:*",
     "@game/utils": "workspace:*",
+    "@game/ui": "workspace:*",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@rive-app/react-native": "^0.5.4",
     "@rn-primitives/slot": "^1",

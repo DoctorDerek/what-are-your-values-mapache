@@ -1,12 +1,12 @@
 "use client"
 
-import { getErrorMessage } from "@game/utils/src/Errors"
-import { useEffect, useEffectEvent, useRef, useState } from "react"
 import {
   validateCustomValueBatch,
   type CustomValueDraft,
-} from "./CustomValueDraft"
-import type { CustomValueDefinition, ValueId } from "./Value"
+} from "@game/data/src/CustomValueDraft"
+import type { CustomValueDefinition, ValueId } from "@game/data/src/Value"
+import { getErrorMessage } from "@game/utils/src/Errors"
+import { useEffect, useEffectEvent, useRef, useState } from "react"
 
 type DraftEntry = CustomValueDraft & Readonly<{ key: number }>
 type ExitTarget = "home" | "menu" | Readonly<{ valueId: ValueId }>
@@ -102,10 +102,11 @@ export default function useCustomValueAuthoring({
     if (hasChanges) setLeaveTarget(target)
     else discardAndExit(target)
   }
-  const handleBackRequest = useEffectEvent(() => {
+  function back() {
     if (leaveTarget !== null) setLeaveTarget(null)
     else requestExit()
-  })
+  }
+  const handleBackRequest = useEffectEvent(back)
   const handleMenuRequest = useEffectEvent(() => requestExit("menu"))
   useEffect(() => {
     if (previousBackRequest.current === backRequestId) return
@@ -191,6 +192,7 @@ export default function useCustomValueAuthoring({
     leaveTarget,
     setEditorDraft,
     requestExit,
+    back,
     discardAndExit,
     saveAdditions,
     queueDraft,

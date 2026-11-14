@@ -29,8 +29,8 @@ import { Directory, File, Paths } from "expo-file-system"
 import { isAvailableAsync, shareAsync } from "expo-sharing"
 import { Image, Platform } from "react-native"
 import { HEROES99_ASSETS } from "@/generated/heroes99/Heroes99Assets"
+import { composeNativeHeroes99 } from "@/lib/ComposeNativeHeroes99"
 import { FLUENT_MEDAL_ARTWORK } from "@/lib/FluentMedalArtwork"
-import { composeNativeHeroes99 } from "./ComposeNativeHeroes99"
 
 async function loadImage(uri: string, signal: AbortSignal) {
   const data = await Skia.Data.fromURI(uri)
