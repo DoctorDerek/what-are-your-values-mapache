@@ -1,7 +1,7 @@
 import * as DocumentPicker from "expo-document-picker"
 import { File, Paths } from "expo-file-system"
 import * as Sharing from "expo-sharing"
-import { createNativePlayerDataFileAdapter } from "./NativePlayerDataFiles"
+import { createNativePlayerDataFileAdapter } from "@/lib/NativePlayerDataFiles"
 
 const JSON_MIME_TYPE = "application/json"
 

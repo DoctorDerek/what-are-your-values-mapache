@@ -5,12 +5,12 @@ import type { PlayerDataResetReview as PlayerDataResetReviewState } from "@game/
 import type { WayvmImportPreview } from "@game/machines/src/WayvmImportPreview"
 import { useEffect, useRef } from "react"
 import MapacheScreen from "@/components/MapacheScreen"
-import { WAYVM_IMPORT_FILE_ACCEPT } from "@/lib/PlayerDataFiles"
-import PlayerDataImportPreview from "./PlayerDataImportPreview"
+import PlayerDataImportPreview from "@/components/PlayerDataImportPreview"
 import PlayerDataRecoveryActions, {
   playerDataRecoveryActionIds,
-} from "./PlayerDataRecoveryActions"
-import PlayerDataResetReview from "./PlayerDataResetReview"
+} from "@/components/PlayerDataRecoveryActions"
+import PlayerDataResetReview from "@/components/PlayerDataResetReview"
+import { WAYVM_IMPORT_FILE_ACCEPT } from "@/lib/PlayerDataFiles"
 
 export type PlayerDataRecoveryActivity = string
 

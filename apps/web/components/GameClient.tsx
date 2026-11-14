@@ -49,17 +49,30 @@ import {
   useState,
   type MouseEvent,
 } from "react"
+import AchievementBanner from "@/components/AchievementBanner"
+import Achievements from "@/components/Achievements"
+import AllValues from "@/components/AllValues"
 import Controls from "@/components/Controls"
+import Crucible from "@/components/Crucible"
+import DataManagement, {
+  type DataManagementActivity,
+} from "@/components/DataManagement"
 import GameSession from "@/components/GameSession"
+import Hub, { HUB_MENU_BUTTON_ID } from "@/components/Hub"
 import { ReopenedInformationPanel } from "@/components/InformationPanel"
 import InformationPanelContent from "@/components/InformationPanelContent"
+import PlayerDataRecovery, {
+  type PlayerDataRecoveryActivity,
+} from "@/components/PlayerDataRecovery"
 import ProductMenu from "@/components/ProductMenu"
 import ReadOnlyGameClient from "@/components/ReadOnlyGameClient"
+import Results from "@/components/Results"
 import RuntimeRecovery from "@/components/RuntimeRecovery"
 import SeethingSwarmAssetPreparation, {
   usePreparedSeethingSwarmBattle,
   usePreparedSeethingSwarmClips,
 } from "@/components/SeethingSwarmAssetPreparation"
+import Settings from "@/components/Settings"
 import Splash, { RestoringIntroduction } from "@/components/Splash"
 import WebControlsProvider, {
   useWebControllerActions,
@@ -74,17 +87,6 @@ import useWebExclusiveWriterLease from "@/lib/useWebExclusiveWriterLease"
 import useWebSemanticBack from "@/lib/useWebSemanticBack"
 import { activateWebControllerMenu } from "@/lib/WebControllerFocus"
 import packageMetadata from "@/package.json"
-import AchievementBanner from "./AchievementBanner"
-import Achievements from "./Achievements"
-import AllValues from "./AllValues"
-import Crucible from "./Crucible"
-import DataManagement, { type DataManagementActivity } from "./DataManagement"
-import Hub, { HUB_MENU_BUTTON_ID } from "./Hub"
-import PlayerDataRecovery, {
-  type PlayerDataRecoveryActivity,
-} from "./PlayerDataRecovery"
-import Results from "./Results"
-import Settings from "./Settings"
 
 const SOURCE_APP_VERSION = packageMetadata.version
 const SOURCE_BUILD =
