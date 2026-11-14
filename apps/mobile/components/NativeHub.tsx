@@ -2,12 +2,13 @@ import type { Heroes99Appearance } from "@game/data/src/Heroes99Appearance"
 import { projectHubValues } from "@game/data/src/HubValueProjection"
 import type { ImportConfirmation } from "@game/data/src/ImportConfirmation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
-import type { CustomValueAuthoringOptions } from "@game/data/src/useCustomValueAuthoring"
+import useHubCustomValueAuthoring, {
+  type HubCustomValueInvitation,
+} from "@game/data/src/useHubCustomValueAuthoring"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
-import type { ValueId } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { cx } from "classix"
-import { useCallback, useState, type ReactNode } from "react"
+import type { ReactNode } from "react"
 import { ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeCustomValueInvitation from "@/components/NativeCustomValueInvitation"
@@ -34,14 +35,7 @@ export default function NativeHub({
   onCustomize,
   onShare,
 }: {
-  customValueInvitation?: Omit<
-    CustomValueAuthoringOptions,
-    "existingCustomValues" | "onExit"
-  > & {
-    saveIssue: string | null
-    onClosed: () => void
-    onOpenMatchingValue: (valueId: ValueId) => void
-  }
+  customValueInvitation?: HubCustomValueInvitation
   appearance: Heroes99Appearance
   isBattlePending?: boolean
   rankedValues: readonly RankedValue[]
@@ -65,16 +59,12 @@ export default function NativeHub({
   const presentationLoadingCopy = localizedCopy.interfaceCopy.loading
   const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
   const VALUES_CARD_COPY = localizedCopy.card
-  const [isDraftActive, setIsDraftActive] = useState(false)
-  const [menuRequestId, setMenuRequestId] = useState(0)
-  const onNavigationBlockedChange =
-    customValueInvitation?.onNavigationBlockedChange
-  const handleDraftNavigationBlockedChange = useCallback(
-    (blocked: boolean) => {
-      setIsDraftActive(blocked)
-      onNavigationBlockedChange?.(blocked)
+  const { isDraftActive, invitationProps, onMenu } = useHubCustomValueAuthoring(
+    {
+      invitation: customValueInvitation,
+      rankedValues,
+      onOpenMenu,
     },
-    [onNavigationBlockedChange],
   )
 
   const { hasComparisons, visibleValues, topFive, remainingValues } =
@@ -120,9 +110,7 @@ export default function NativeHub({
           size="compact"
           variant="secondary"
           disabled={customValueInvitation?.isSaving}
-          onPress={() =>
-            isDraftActive ? setMenuRequestId((id) => id + 1) : onOpenMenu()
-          }
+          onPress={onMenu}
         >
           <Text>{PRODUCT_MENU_COPY.openAction}</Text>
         </Button>
@@ -141,22 +129,11 @@ export default function NativeHub({
   return (
     <MapacheScreen>
       <View className="min-h-0 flex-1 items-center gap-4 p-4 xl:gap-5 xl:p-6">
-        {customValueInvitation && (
+        {invitationProps && (
           <NativeCustomValueInvitation
-            {...customValueInvitation}
+            {...invitationProps}
             header={header}
             rankedValues={rankedValues}
-            menuRequestId={menuRequestId}
-            existingCustomValues={rankedValues.flatMap(({ definition }) =>
-              definition.kind === "custom" ? [definition] : [],
-            )}
-            onNavigationBlockedChange={handleDraftNavigationBlockedChange}
-            onExit={(target) => {
-              customValueInvitation.onClosed()
-              if (target === "menu") onOpenMenu()
-              else if (typeof target === "object")
-                customValueInvitation.onOpenMatchingValue(target.valueId)
-            }}
           />
         )}
         {!isDraftActive && (
