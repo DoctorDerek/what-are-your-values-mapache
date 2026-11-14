@@ -249,6 +249,8 @@ for (const locale of ["en", "es-MX"] as const) {
       await expect(field).toBeFocused()
       await expect(field).toBeInViewport({ ratio: 1 })
       await name.focus()
+      await expect(name).toBeFocused()
+      await expect(name).toBeInViewport({ ratio: 1 })
       await page.keyboard.press("Tab")
       await expect(field).toBeFocused()
       await expect(field).toBeInViewport({ ratio: 1 })
