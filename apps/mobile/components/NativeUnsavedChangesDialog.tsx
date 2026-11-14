@@ -1,7 +1,12 @@
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { cx } from "classix"
-import type { ComponentProps, ReactElement } from "react"
-import { Modal, ScrollView, View } from "react-native"
+import {
+  useEffect,
+  useRef,
+  type ComponentProps,
+  type ReactElement,
+} from "react"
+import { Modal, Platform, ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
@@ -20,6 +25,7 @@ export default function NativeUnsavedChangesDialog({
   edgeSpacing = "standard",
   discardAction,
   primaryActions,
+  onRestoreFocus,
 }: {
   visible: boolean
   animationType?: ComponentProps<typeof Modal>["animationType"]
@@ -49,6 +55,12 @@ export default function NativeUnsavedChangesDialog({
     }
 )) {
   const copy = useLocaleCatalog().interfaceCopy.dressingRoom
+  const wasVisible = useRef(visible)
+  useEffect(() => {
+    const hasDismissed = wasVisible.current && !visible
+    wasVisible.current = visible
+    if (hasDismissed && Platform.OS !== "ios") onRestoreFocus?.()
+  }, [visible, onRestoreFocus])
   return (
     <Modal
       transparent
@@ -56,6 +68,7 @@ export default function NativeUnsavedChangesDialog({
       animationType={animationType}
       onShow={onShow}
       onRequestClose={onKeepEditing}
+      onDismiss={onRestoreFocus}
     >
       <MapacheScreen
         className={cx(
