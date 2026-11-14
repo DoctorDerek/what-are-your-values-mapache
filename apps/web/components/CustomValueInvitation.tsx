@@ -5,11 +5,13 @@ import CustomValueInvitationView, {
   type CustomValueInvitationProps,
 } from "@game/ui/src/CustomValueInvitationView"
 import { cx } from "classix"
+import type { StaticImageData } from "next/image"
 import CustomValueDraftEditor from "@/components/CustomValueDraftEditor"
+import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useWebControllerActions } from "@/components/WebControlsProvider"
 
-const parts: CustomValueInvitationParts = {
+const parts: CustomValueInvitationParts<StaticImageData> = {
   Surface: function AuthoringSurface({
     children,
     footer,
@@ -50,20 +52,12 @@ const parts: CustomValueInvitationParts = {
     <div className={className}>{children}</div>
   ),
   Editor: CustomValueDraftEditor,
-  MatchingValues: ({ children, className, contentClassName, label }) => (
-    <section
-      className={cx(
-        "overflow-y-auto overscroll-contain",
-        className,
-        contentClassName,
-      )}
-      aria-label={label}
-      data-controller-scroll
-      tabIndex={0}
-    >
+  MatchingValues: ({ children, className, label }) => (
+    <section className={className} aria-label={label}>
       {children}
     </section>
   ),
+  MatchingAnimal: SeethingSwarmAnimal,
   Section: ({ children, className, label }) => (
     <section aria-label={label} className={className}>
       {children}
@@ -76,8 +70,10 @@ const parts: CustomValueInvitationParts = {
     <ul className={className}>{children}</ul>
   ),
   Draft: ({ children, className }) => <li className={className}>{children}</li>,
-  DraftTitle: ({ children, className }) => (
-    <h3 className={className}>{children}</h3>
+  DraftTitle: ({ children, className, accessibilityLabel }) => (
+    <h3 className={className} aria-label={accessibilityLabel}>
+      {children}
+    </h3>
   ),
   DraftDefinition: ({ children, className }) => (
     <p className={className}>{children}</p>
@@ -174,7 +170,7 @@ const parts: CustomValueInvitationParts = {
 }
 
 export default function CustomValueInvitation(
-  props: CustomValueInvitationProps,
+  props: CustomValueInvitationProps<StaticImageData>,
 ) {
   return <CustomValueInvitationView {...props} parts={parts} />
 }

@@ -8,7 +8,8 @@
     "./src/CustomValueAuthoringAction": "./src/CustomValueAuthoringAction.tsx",
     "./src/CustomValueInvitationParts": "./src/CustomValueInvitationParts.ts",
     "./src/CustomValueDraftEditorView": "./src/CustomValueDraftEditorView.tsx",
-    "./src/CustomValueInvitationView": "./src/CustomValueInvitationView.tsx"
+    "./src/CustomValueInvitationView": "./src/CustomValueInvitationView.tsx",
+    "./src/CustomValueMatches": "./src/CustomValueMatches.tsx"
   },
   "dependencies": {
     "@game/data": "workspace:*",

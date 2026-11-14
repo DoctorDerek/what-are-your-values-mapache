@@ -154,6 +154,8 @@ export default function Hub({
         {invitationProps && (
           <CustomValueInvitation
             {...invitationProps}
+            runtimeClipCatalog={runtimeClipCatalog}
+            shouldReduceMotion={shouldReduceMotion}
             header={header}
             rankedValues={rankedValues}
           />

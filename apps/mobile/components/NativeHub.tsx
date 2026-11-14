@@ -132,6 +132,8 @@ export default function NativeHub({
         {invitationProps && (
           <NativeCustomValueInvitation
             {...invitationProps}
+            runtimeClipCatalog={runtimeClipCatalog}
+            shouldReduceMotion={shouldReduceMotion}
             header={header}
             rankedValues={rankedValues}
           />

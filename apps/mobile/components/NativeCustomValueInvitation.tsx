@@ -16,6 +16,7 @@ import {
   TextInput,
   View,
 } from "react-native"
+import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
 import NativeUnsavedChangesDialog from "@/components/NativeUnsavedChangesDialog"
 import { Text } from "@/components/ui/text"
 
@@ -83,7 +84,7 @@ const editorParts: CustomValueDraftEditorParts = {
   ),
 }
 
-const parts: CustomValueInvitationParts = {
+const parts: CustomValueInvitationParts<number> = {
   Surface: ({
     children,
     footer,
@@ -119,17 +120,12 @@ const parts: CustomValueInvitationParts = {
   Editor: (props) => (
     <CustomValueDraftEditorView {...props} parts={editorParts} />
   ),
-  MatchingValues: ({ children, className, contentClassName, label }) => (
-    <ScrollView
-      accessibilityLabel={label}
-      className={cx("shrink-0 grow-0", className)}
-      contentContainerClassName={contentClassName}
-      keyboardShouldPersistTaps="handled"
-      nestedScrollEnabled
-    >
+  MatchingValues: ({ children, className, label }) => (
+    <View accessibilityLabel={label} className={className}>
       {children}
-    </ScrollView>
+    </View>
   ),
+  MatchingAnimal: NativeSeethingSwarmAnimal,
   Section: ({ children, className, label }) => (
     <View accessibilityLabel={label} className={className}>
       {children}
@@ -150,8 +146,13 @@ const parts: CustomValueInvitationParts = {
       {children}
     </View>
   ),
-  DraftTitle: ({ children, className }) => (
-    <Text accessibilityRole="header" className={className}>
+  DraftTitle: ({ children, className, accessibilityLabel }) => (
+    <Text
+      accessibilityRole="header"
+      accessibilityLabel={accessibilityLabel}
+      android_hyphenationFrequency="normal"
+      className={className}
+    >
       {children}
     </Text>
   ),
@@ -239,7 +240,7 @@ const parts: CustomValueInvitationParts = {
 }
 
 export default function NativeCustomValueInvitation(
-  props: CustomValueInvitationProps,
+  props: CustomValueInvitationProps<number>,
 ) {
   return <CustomValueInvitationView {...props} parts={parts} />
 }
