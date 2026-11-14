@@ -641,7 +641,6 @@ function NativeGameClientContent({
             saveIssue: state.context.persistenceIssue,
             onNavigationBlockedChange: setIsCustomValueDraftActive,
             onClosed: () => setCustomValueBuilderRequestId(0),
-            onOpenMatchingValue: (valueId) => openAllValues({ valueId }),
             onApply: (drafts) => {
               setCustomValueBuilderRequestId(0)
               send({ type: "HUB.CUSTOM_VALUES_APPLY_REQUESTED", drafts })

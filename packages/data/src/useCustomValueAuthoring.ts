@@ -4,12 +4,12 @@ import {
   validateCustomValueBatch,
   type CustomValueDraft,
 } from "@game/data/src/CustomValueDraft"
-import type { CustomValueDefinition, ValueId } from "@game/data/src/Value"
+import type { CustomValueDefinition } from "@game/data/src/Value"
 import { getErrorMessage } from "@game/utils/src/Errors"
 import { useEffect, useEffectEvent, useRef, useState } from "react"
 
 type DraftEntry = CustomValueDraft & Readonly<{ key: number }>
-type ExitTarget = "home" | "menu" | Readonly<{ valueId: ValueId }>
+type ExitTarget = "home" | "menu"
 const EMPTY_DRAFT: CustomValueDraft = Object.freeze({
   name: "",
   definition: "",

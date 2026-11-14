@@ -1,5 +1,4 @@
 import type { CustomValueAuthoringOptions } from "@game/data/src/useCustomValueAuthoring"
-import type { ValueId } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { useCallback, useState } from "react"
 
@@ -9,7 +8,6 @@ export type HubCustomValueInvitation = Omit<
 > & {
   saveIssue: string | null
   onClosed: () => void
-  onOpenMatchingValue: (valueId: ValueId) => void
 }
 
 export default function useHubCustomValueAuthoring({
@@ -55,8 +53,6 @@ export default function useHubCustomValueAuthoring({
           onExit: (target) => {
             invitation.onClosed()
             if (target === "menu") onOpenMenu()
-            else if (typeof target === "object")
-              invitation.onOpenMatchingValue(target.valueId)
           },
         }
       : undefined,
