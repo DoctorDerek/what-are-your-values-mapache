@@ -5,6 +5,7 @@
   "exports": {
     "./src/ButtonAppearance": "./src/ButtonAppearance.ts",
     "./src/TextFieldAppearance": "./src/TextFieldAppearance.ts",
+    "./src/CustomValueAuthoringAction": "./src/CustomValueAuthoringAction.tsx",
     "./src/CustomValueInvitationParts": "./src/CustomValueInvitationParts.ts",
     "./src/CustomValueDraftEditorView": "./src/CustomValueDraftEditorView.tsx",
     "./src/CustomValueInvitationView": "./src/CustomValueInvitationView.tsx"

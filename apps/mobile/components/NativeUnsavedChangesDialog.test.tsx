@@ -17,6 +17,7 @@ describe("native unsaved-change focus restoration", () => {
       const props = {
         onKeepEditing,
         onRestoreFocus,
+        title: "Keep these pending values?",
         titleClassName: "text-xl",
         discardAction: <Text>Discard action</Text>,
         primaryActions: <Text>Safe actions</Text>,
@@ -25,6 +26,9 @@ describe("native unsaved-change focus restoration", () => {
         <NativeUnsavedChangesDialog {...props} visible />,
       )
       const [modal] = container.queryAll((node) => node.type === "Modal")
+      expect(
+        screen.getByRole("header", { name: props.title }),
+      ).toBeOnTheScreen()
       expect(modal).toBeDefined()
       const acknowledgeNativeDismissal: unknown = modal.props.onDismiss
       if (typeof acknowledgeNativeDismissal !== "function")

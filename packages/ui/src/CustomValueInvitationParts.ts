@@ -16,7 +16,16 @@ export type AuthoringActionProps = {
   variant: "default" | "secondary" | "outline" | "link"
   location: "matching" | "inline" | "footer" | "discard" | "decision"
 }
+export type AuthoringActionControlProps = Omit<
+  AuthoringActionProps,
+  "location"
+> & {
+  size: "confirmation" | "default" | "sm"
+  className: string
+  textClassName: string
+}
 export type AuthoringFieldControlProps = {
+  className: string
   field: AuthoringField
   label: string
   hint: string
@@ -38,8 +47,8 @@ export type CustomValueDraftEditorParts = {
   Label: ComponentType<AuthoringChildren & { field: AuthoringField }>
   Control: ComponentType<AuthoringFieldControlProps>
   Feedback: ComponentType<AuthoringChildren & { field: AuthoringField }>
-  FeedbackCounter: ComponentType<{ children: string }>
-  FeedbackError: ComponentType<{ children: string }>
+  FeedbackCounter: ComponentType<AuthoringChildren>
+  FeedbackError: ComponentType<AuthoringChildren>
 }
 export type CustomValueDraftEditorProps = {
   draft: CustomValueDraft
@@ -60,25 +69,35 @@ export type CustomValueInvitationParts = {
     disabled: boolean
     isConfirming: boolean
     onBack: () => void
+    className: string
+    contentClassName: string
   }>
   Panel: ComponentType<AuthoringChildren>
   Editor: ComponentType<CustomValueDraftEditorProps>
-  MatchingValues: ComponentType<AuthoringChildren & { label: string }>
+  MatchingValues: ComponentType<
+    AuthoringChildren & { label: string; contentClassName: string }
+  >
   Section: ComponentType<AuthoringChildren & { label: string }>
   Heading: ComponentType<AuthoringChildren>
   DraftList: ComponentType<AuthoringChildren>
-  Draft: ComponentType<AuthoringChildren & { name: string; definition: string }>
+  Draft: ComponentType<AuthoringChildren>
+  DraftTitle: ComponentType<AuthoringChildren>
+  DraftDefinition: ComponentType<AuthoringChildren>
   ActionRow: ComponentType<AuthoringChildren>
-  Action: ComponentType<AuthoringActionProps>
+  Action: ComponentType<AuthoringActionControlProps>
   NoticeList: ComponentType<AuthoringChildren>
-  Notice: ComponentType<{ children: string }>
-  Footer: ComponentType<AuthoringChildren>
-  Status: ComponentType<{ children: string; isError?: boolean }>
+  Notice: ComponentType<AuthoringChildren>
+  Footer: ComponentType<AuthoringChildren & { contentClassName: string }>
+  Status: ComponentType<AuthoringChildren & { isError?: boolean }>
   Confirmation: ComponentType<{
     open: boolean
     onKeepEditing: () => void
     onRestoreFocus: () => void
     title: string
+    frameClassName: string
+    titleClassName: string
+    readingClassName: string
+    footerClassName: string
     discard: ReactElement
     actions: ReactElement
   }>

@@ -301,6 +301,7 @@ export default function NativeDressingRoom({
         </Button>
       </View>
       <NativeUnsavedChangesDialog
+        title={DRESSING_ROOM_COPY.keepTitle}
         visible={state.matches("ConfirmingLeave")}
         animationType={shouldReduceMotion ? "none" : "fade"}
         onKeepEditing={() => actor.send({ type: "AVATAR.KEEP_EDITING" })}

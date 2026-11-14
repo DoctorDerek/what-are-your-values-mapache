@@ -6,8 +6,6 @@ import type {
   CustomValueDraftEditorProps,
 } from "@game/ui/src/CustomValueInvitationParts"
 import { cx } from "classix"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 
 const parts: CustomValueDraftEditorParts = {
   Form: ({ children, className, label, onSubmit }) => (
@@ -40,6 +38,7 @@ const parts: CustomValueDraftEditorParts = {
     </label>
   ),
   Control: ({
+    className,
     field,
     value,
     invalid,
@@ -48,7 +47,7 @@ const parts: CustomValueDraftEditorParts = {
     inputRef,
     onChange,
   }) => {
-    const Component = field === "name" ? Input : Textarea
+    const Component = field === "name" ? "input" : "textarea"
     return (
       <Component
         ref={(input: HTMLInputElement | HTMLTextAreaElement | null) =>
@@ -62,8 +61,8 @@ const parts: CustomValueDraftEditorParts = {
           )
         }
         id={`hub-custom-value-${field}`}
-        variant="compact"
-        className="scroll-my-[12px]"
+        data-slot={field === "name" ? "input" : "textarea"}
+        className={cx("scroll-my-[12px]", className)}
         value={value}
         disabled={disabled}
         aria-describedby={describedBy}
@@ -78,11 +77,11 @@ const parts: CustomValueDraftEditorParts = {
       {children}
     </div>
   ),
-  FeedbackCounter: ({ children }) => (
-    <span className="text-sm font-bold">{children}</span>
+  FeedbackCounter: ({ children, className }) => (
+    <span className={className}>{children}</span>
   ),
-  FeedbackError: ({ children }) => (
-    <span role="alert" className="text-sm font-black text-black">
+  FeedbackError: ({ children, className }) => (
+    <span role="alert" className={className}>
       {children}
     </span>
   ),

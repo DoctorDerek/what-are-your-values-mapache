@@ -8,6 +8,13 @@
   flex-basis: fontScale(112);
 }
 
+@utility basis-readable-decision {
+  flex-basis: fontScale(128);
+  @variant xl {
+    flex-basis: fontScale(144);
+  }
+}
+
 @utility basis-readable-setting {
   flex-basis: fontScale(288);
 }

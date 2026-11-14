@@ -21,6 +21,10 @@ export default function NativeUnsavedChangesDialog({
   discardDisabled = false,
   saveDisabled = false,
   titleClassName,
+  title,
+  frameClassName = "border-4 border-black bg-white",
+  readingClassName = "gap-4 p-[16px]",
+  footerClassName = "shrink-0 flex-row flex-wrap gap-3 border-t-4 border-black p-3 pb-5",
   contentClassName,
   edgeSpacing = "standard",
   discardAction,
@@ -32,6 +36,10 @@ export default function NativeUnsavedChangesDialog({
   onShow?: ComponentProps<typeof Modal>["onShow"]
   onKeepEditing: () => void
   titleClassName: string
+  title: string
+  frameClassName?: string
+  readingClassName?: string
+  footerClassName?: string
   contentClassName?: string
   edgeSpacing?: "compact" | "standard"
 } & (
@@ -80,22 +88,23 @@ export default function NativeUnsavedChangesDialog({
         <View
           accessibilityViewIsModal
           role="dialog"
-          accessibilityLabel={copy.keepTitle}
+          accessibilityLabel={title}
           className={cx(
-            "max-h-full min-h-0 w-full shrink border-4 border-black bg-white",
+            "max-h-full min-h-0 w-full shrink",
+            frameClassName,
             contentClassName,
           )}
         >
           <ScrollView
             className="min-h-0 shrink"
-            contentContainerClassName="gap-4 p-[16px]"
+            contentContainerClassName={readingClassName}
             keyboardShouldPersistTaps="handled"
           >
             <Text
               accessibilityRole="header"
               className={cx("font-black text-black", titleClassName)}
             >
-              {copy.keepTitle}
+              {title}
             </Text>
             {discardAction ?? (
               <Button
@@ -108,7 +117,7 @@ export default function NativeUnsavedChangesDialog({
               </Button>
             )}
           </ScrollView>
-          <View className="shrink-0 flex-row flex-wrap gap-3 border-t-4 border-black p-3 pb-5">
+          <View className={footerClassName}>
             {primaryActions ?? (
               <>
                 <Button

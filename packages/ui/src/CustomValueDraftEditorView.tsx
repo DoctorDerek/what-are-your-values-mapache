@@ -9,6 +9,10 @@ import type {
   CustomValueDraftEditorParts,
   CustomValueDraftEditorProps,
 } from "@game/ui/src/CustomValueInvitationParts"
+import {
+  inputVariants,
+  textareaVariants,
+} from "@game/ui/src/TextFieldAppearance"
 import { cx } from "classix"
 
 export default function CustomValueDraftEditorView({
@@ -43,10 +47,12 @@ export default function CustomValueDraftEditorView({
         if (validation.isValid) onSubmit()
       }}
     >
-      <Heading className="w-full text-xl font-black uppercase">
+      <Heading className="text-mapache-vivid-dark w-full text-xl font-black uppercase">
         {copy.editorTitle}
       </Heading>
-      <Example className="w-full text-sm leading-5">{copy.example}</Example>
+      <Example className="text-mapache-vivid-dark w-full text-sm leading-5">
+        {copy.example}
+      </Example>
       {(["name", "definition"] as const).map((field) => {
         const fieldValidation = validation[field]
         const validationMessage = fieldValidation.validationCode
@@ -62,10 +68,13 @@ export default function CustomValueDraftEditorView({
               field === "name" ? "xl:flex-1" : "xl:flex-[2]",
             )}
           >
-            <Label field={field} className="font-bold">
+            <Label field={field} className="text-mapache-vivid-dark font-bold">
               {copy[field]}
             </Label>
             <Control
+              className={(field === "name" ? inputVariants : textareaVariants)({
+                variant: "compact",
+              })}
               field={field}
               label={copy[field]}
               hint={copy.example}
@@ -87,7 +96,7 @@ export default function CustomValueDraftEditorView({
               field={field}
               className="flex flex-row flex-wrap items-start justify-between gap-2"
             >
-              <FeedbackCounter>
+              <FeedbackCounter className="text-mapache-vivid-dark text-sm font-bold">
                 {localization.interfaceCopy.screen.characterCount(
                   String(fieldValidation.graphemeCount),
                   String(
@@ -98,7 +107,9 @@ export default function CustomValueDraftEditorView({
                 )}
               </FeedbackCounter>
               {draft[field].length > 0 && validationMessage && (
-                <FeedbackError>{validationMessage}</FeedbackError>
+                <FeedbackError className="text-sm font-black text-black">
+                  {validationMessage}
+                </FeedbackError>
               )}
             </Feedback>
           </FieldGroup>

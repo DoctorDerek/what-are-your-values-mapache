@@ -7,6 +7,7 @@ import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { getValueDisplayName } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
 import { findRankedValueNameMatches } from "@game/data/src/ValueSearch"
+import Action from "@game/ui/src/CustomValueAuthoringAction"
 import type {
   AuthoringInputHandle,
   CustomValueInvitationParts,
@@ -60,8 +61,9 @@ export default function CustomValueInvitationView({
     Heading,
     DraftList,
     Draft,
+    DraftTitle,
+    DraftDefinition,
     ActionRow,
-    Action,
     NoticeList,
     Notice,
     Footer,
@@ -71,16 +73,28 @@ export default function CustomValueInvitationView({
   if (!authoring.isActive) return null
   return (
     <Surface
+      className="text-mapache-vivid-dark flex min-h-0 w-full max-w-7xl min-w-0 flex-1 flex-col self-center"
+      contentClassName="flex grow flex-col gap-4"
       title={screenCopy.addOwnValues}
       disabled={authoring.isBusy}
       isConfirming={authoring.leaveTarget !== null}
       onBack={authoring.back}
       footer={
-        <Footer>
-          {options.isSaving && <Status>{copy.saving}</Status>}
-          {issue && <Status isError>{issue}</Status>}
+        <Footer
+          className="max-h-1/2 shrink-0 border-4 border-black bg-white"
+          contentClassName="p-[12px] pb-[20px] xl:px-5"
+        >
+          {options.isSaving && (
+            <Status className="text-mapache-vivid-dark">{copy.saving}</Status>
+          )}
+          {issue && (
+            <Status isError className="text-mapache-vivid-dark mb-3 font-bold">
+              {issue}
+            </Status>
+          )}
           <ActionRow className="flex flex-row flex-wrap gap-3">
             <Action
+              Control={parts.Action}
               variant="outline"
               location="footer"
               disabled={authoring.isBusy}
@@ -89,6 +103,7 @@ export default function CustomValueInvitationView({
               {copy.back}
             </Action>
             <Action
+              Control={parts.Action}
               variant="default"
               location="footer"
               disabled={authoring.isBusy || !authoring.canApply}
@@ -103,10 +118,15 @@ export default function CustomValueInvitationView({
         <Confirmation
           open={authoring.leaveTarget !== null}
           title={leaveCopy.keepTitle}
+          frameClassName="max-w-2xl border-4 border-black bg-white shadow-[12px_12px_0px_0px_#000000] xl:max-w-3xl"
+          titleClassName="text-4xl leading-tight font-black wrap-anywhere uppercase xl:text-5xl"
+          readingClassName="flex flex-col gap-4 p-[16px]"
+          footerClassName="flex shrink-0 flex-row flex-wrap gap-[12px] border-t-4 border-black p-[12px] pb-[20px]"
           onKeepEditing={authoring.keepEditing}
           onRestoreFocus={restoreAuthoringFocus}
           discard={
             <Action
+              Control={parts.Action}
               variant="outline"
               location="discard"
               disabled={authoring.isBusy}
@@ -120,6 +140,7 @@ export default function CustomValueInvitationView({
           actions={
             <>
               <Action
+                Control={parts.Action}
                 variant="secondary"
                 location="decision"
                 disabled={false}
@@ -128,6 +149,7 @@ export default function CustomValueInvitationView({
                 {leaveCopy.keepEditing}
               </Action>
               <Action
+                Control={parts.Action}
                 variant="default"
                 location="decision"
                 disabled={!authoring.canApply || authoring.isBusy}
@@ -159,10 +181,12 @@ export default function CustomValueInvitationView({
         {matchingValues.length > 0 && (
           <MatchingValues
             label={screenCopy.matchingValues}
-            className="gap-2 p-[4px]"
+            className="mt-3 max-h-[min(12rem,35vh)]"
+            contentClassName="flex flex-col gap-2 p-1"
           >
             {matchingValues.map(({ definition }) => (
               <Action
+                Control={parts.Action}
                 key={definition.id}
                 variant="link"
                 location="matching"
@@ -183,16 +207,26 @@ export default function CustomValueInvitationView({
             label={copy.drafts}
             className="mt-4 flex flex-col gap-3 border-t-2 border-black pt-3"
           >
-            <Heading className="font-bold">{copy.drafts}</Heading>
-            <DraftList>
-              {authoring.drafts.map((draft) => (
+            <Heading className="text-mapache-vivid-dark font-bold">
+              {copy.drafts}
+            </Heading>
+            <DraftList className="flex flex-col">
+              {authoring.drafts.map((draft, index) => (
                 <Draft
                   key={draft.key}
-                  name={draft.name}
-                  definition={draft.definition}
+                  className={
+                    index === 0 ? "py-2" : "border-t border-black/20 py-2"
+                  }
                 >
+                  <DraftTitle className="text-mapache-vivid-dark font-bold wrap-anywhere">
+                    {draft.name}
+                  </DraftTitle>
+                  <DraftDefinition className="text-mapache-vivid-dark wrap-anywhere">
+                    {draft.definition}
+                  </DraftDefinition>
                   <ActionRow className="flex flex-row flex-wrap gap-3">
                     <Action
+                      Control={parts.Action}
                       variant="link"
                       location="inline"
                       disabled={
@@ -204,6 +238,7 @@ export default function CustomValueInvitationView({
                       {copy.edit}
                     </Action>
                     <Action
+                      Control={parts.Action}
                       variant="link"
                       location="inline"
                       disabled={
@@ -226,6 +261,7 @@ export default function CustomValueInvitationView({
         >
           <ActionRow className="flex flex-row flex-wrap gap-3">
             <Action
+              Control={parts.Action}
               variant="outline"
               location="inline"
               disabled={authoring.isBusy || !authoring.editorValidation.isValid}
@@ -237,6 +273,7 @@ export default function CustomValueInvitationView({
               {copy.another}
             </Action>
             <Action
+              Control={parts.Action}
               variant="link"
               location="inline"
               disabled={authoring.isBusy}
@@ -246,6 +283,7 @@ export default function CustomValueInvitationView({
             </Action>
             {authoring.hasUnfinishedDraft && authoring.drafts.length > 0 && (
               <Action
+                Control={parts.Action}
                 variant="link"
                 location="inline"
                 disabled={authoring.isBusy}
@@ -256,6 +294,7 @@ export default function CustomValueInvitationView({
             )}
             {authoring.hasChanges && (
               <Action
+                Control={parts.Action}
                 variant="link"
                 location="inline"
                 disabled={authoring.isBusy}
@@ -265,9 +304,14 @@ export default function CustomValueInvitationView({
               </Action>
             )}
           </ActionRow>
-          <NoticeList>
+          <NoticeList className="flex flex-col gap-3">
             {notices.map((notice) => (
-              <Notice key={notice}>{notice}</Notice>
+              <Notice
+                key={notice}
+                className="text-mapache-vivid-dark text-sm leading-relaxed"
+              >
+                {notice}
+              </Notice>
             ))}
           </NoticeList>
         </Section>

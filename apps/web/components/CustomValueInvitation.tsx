@@ -6,7 +6,6 @@ import CustomValueInvitationView, {
 } from "@game/ui/src/CustomValueInvitationView"
 import { cx } from "classix"
 import CustomValueDraftEditor from "@/components/CustomValueDraftEditor"
-import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useWebControllerActions } from "@/components/WebControlsProvider"
 
@@ -18,6 +17,8 @@ const parts: CustomValueInvitationParts = {
     title,
     disabled,
     onBack,
+    className,
+    contentClassName,
   }) {
     useWebControllerActions(1, (command) => {
       if (command !== "back" && command !== "cancel") return false
@@ -27,7 +28,7 @@ const parts: CustomValueInvitationParts = {
     return (
       <aside
         aria-label={title}
-        className="text-mapache-vivid-dark flex min-h-0 w-full max-w-7xl min-w-0 flex-1 flex-col [&_button]:max-w-full"
+        className={cx("[&_button]:max-w-full", className)}
       >
         <fieldset
           disabled={disabled}
@@ -37,9 +38,7 @@ const parts: CustomValueInvitationParts = {
             className="min-h-0 flex-1 snap-y snap-proximity scroll-py-[12px] overflow-y-auto overscroll-contain"
             data-controller-scroll
           >
-            <div className="flex min-h-full flex-col gap-[16px]">
-              {children}
-            </div>
+            <div className={cx("min-h-full", contentClassName)}>{children}</div>
           </div>
           {footer}
         </fieldset>
@@ -51,11 +50,12 @@ const parts: CustomValueInvitationParts = {
     <div className={className}>{children}</div>
   ),
   Editor: CustomValueDraftEditor,
-  MatchingValues: ({ children, className, label }) => (
+  MatchingValues: ({ children, className, contentClassName, label }) => (
     <section
       className={cx(
-        "mt-3 grid max-h-[min(12rem,35dvh)] overflow-y-auto overscroll-contain",
+        "overflow-y-auto overscroll-contain",
         className,
+        contentClassName,
       )}
       aria-label={label}
       data-controller-scroll
@@ -72,15 +72,15 @@ const parts: CustomValueInvitationParts = {
   Heading: ({ children, className }) => (
     <h2 className={className}>{children}</h2>
   ),
-  DraftList: ({ children }) => (
-    <ul className="divide-y divide-black/20">{children}</ul>
+  DraftList: ({ children, className }) => (
+    <ul className={className}>{children}</ul>
   ),
-  Draft: ({ children, name, definition }) => (
-    <li className="py-2">
-      <h3 className="font-bold wrap-anywhere">{name}</h3>
-      <p className="wrap-anywhere">{definition}</p>
-      {children}
-    </li>
+  Draft: ({ children, className }) => <li className={className}>{children}</li>,
+  DraftTitle: ({ children, className }) => (
+    <h3 className={className}>{children}</h3>
+  ),
+  DraftDefinition: ({ children, className }) => (
+    <p className={className}>{children}</p>
   ),
   ActionRow: ({ children, className }) => (
     <div className={className}>{children}</div>
@@ -88,56 +88,45 @@ const parts: CustomValueInvitationParts = {
   Action: ({
     children,
     variant,
-    location,
+    size,
+    className,
+    textClassName,
     disabled,
     accessibilityLabel,
     onActivate,
   }) => (
-    <Button
+    <button
       type="button"
-      variant={variant}
-      size={
-        location === "discard"
-          ? "confirmation"
-          : location === "decision"
-            ? "default"
-            : "sm"
-      }
-      align={location === "matching" ? "start" : "center"}
-      wrap
+      data-slot="button"
+      data-variant={variant}
+      data-size={size}
       disabled={disabled}
       aria-label={accessibilityLabel}
       onClick={onActivate}
-      typographyClassName={
-        location === "decision"
-          ? "text-base leading-tight xl:text-lg"
-          : undefined
-      }
+      className={cx(className, textClassName)}
+    >
+      {children}
+    </button>
+  ),
+  NoticeList: ({ children, className }) => (
+    <ul className={cx("list-disc pl-[20px]", className)}>{children}</ul>
+  ),
+  Notice: ({ children, className }) => (
+    <li className={className}>{children}</li>
+  ),
+  Footer: ({ children, className, contentClassName }) => (
+    <footer
       className={cx(
-        location === "footer" && "min-w-0 flex-[1_1_7rem] wrap-anywhere",
-        location === "discard" && "w-full",
-        location === "decision" && "min-w-0 flex-1 basis-[8em]",
+        "scroll-py-[12px] overflow-y-auto [&_button]:scroll-my-[12px]",
+        className,
+        contentClassName,
       )}
     >
       {children}
-    </Button>
-  ),
-  NoticeList: ({ children }) => (
-    <ul className="list-disc space-y-3 pl-[20px] text-sm leading-relaxed">
-      {children}
-    </ul>
-  ),
-  Notice: ({ children }) => <li>{children}</li>,
-  Footer: ({ children }) => (
-    <footer className="max-h-1/2 shrink-0 scroll-py-[12px] overflow-y-auto border-4 border-black bg-white p-[12px] pb-[20px] xl:px-5 [&_button]:scroll-my-[12px]">
-      {children}
     </footer>
   ),
-  Status: ({ children, isError }) => (
-    <p
-      role={isError ? "alert" : "status"}
-      className={isError ? "mb-3 font-bold" : undefined}
-    >
+  Status: ({ children, className, isError }) => (
+    <p role={isError ? "alert" : "status"} className={className}>
       {children}
     </p>
   ),
@@ -146,6 +135,10 @@ const parts: CustomValueInvitationParts = {
     onKeepEditing,
     onRestoreFocus,
     title,
+    frameClassName,
+    titleClassName,
+    readingClassName,
+    footerClassName,
     discard,
     actions,
   }) => (
@@ -156,21 +149,25 @@ const parts: CustomValueInvitationParts = {
       }}
     >
       <DialogContent
+        variant="panel"
         placement="reachable"
         aria-describedby={undefined}
-        className="grid-rows-[minmax(0,1fr)_auto]"
+        className={cx("grid grid-rows-[minmax(0,1fr)_auto]", frameClassName)}
         onCloseAutoFocus={(event) => {
           event.preventDefault()
           onRestoreFocus()
         }}
       >
-        <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain p-[16px]">
-          <DialogTitle>{title}</DialogTitle>
+        <div
+          className={cx(
+            "min-h-0 overflow-y-auto overscroll-contain",
+            readingClassName,
+          )}
+        >
+          <DialogTitle className={titleClassName}>{title}</DialogTitle>
           {discard}
         </div>
-        <footer className="flex shrink-0 flex-wrap gap-[12px] border-t-4 border-black p-[12px] pb-[20px]">
-          {actions}
-        </footer>
+        <footer className={footerClassName}>{actions}</footer>
       </DialogContent>
     </Dialog>
   ),
