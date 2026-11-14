@@ -29,11 +29,19 @@ async function expectCompleteWords(action: Locator) {
 for (const locale of ["en", "es-MX"] as const) {
   const catalog = getLocaleCatalog(locale)
   const copy = catalog.interfaceCopy
-  for (const textScale of [1, 2]) {
-    test(`${locale} custom matching and notices remain separate, scrollable and clear at ${textScale}x text`, async ({
+  for (const viewport of [
+    { width: 320, height: 568, scale: 1 },
+    { width: 320, height: 568, scale: 2 },
+    { width: 1440, height: 900, scale: 1 },
+    { width: 1440, height: 900, scale: 2 },
+  ]) {
+    test(`${locale} custom matching and notices remain separate, scrollable and clear at ${viewport.width}px and ${viewport.scale}x text`, async ({
       page,
     }, testInfo) => {
-      await page.setViewportSize({ width: 320, height: 568 })
+      await page.setViewportSize({
+        width: viewport.width,
+        height: viewport.height,
+      })
       await page.goto(catalog.metadata.webPath)
       await page
         .getByRole("button", {
@@ -45,7 +53,7 @@ for (const locale of ["en", "es-MX"] as const) {
         .getByRole("button", { name: catalog.hub.add, exact: true })
         .click()
       await page.addStyleTag({
-        content: `html { font-size:${textScale * 100}%; }`,
+        content: `html { font-size:${viewport.scale * 100}%; }`,
       })
       const name = page.getByLabel(copy.customValues.name, { exact: true })
       await name.fill("P")
@@ -53,8 +61,16 @@ for (const locale of ["en", "es-MX"] as const) {
         name: copy.screen.matchingValues,
         exact: true,
       })
-      const buttons = matches.getByRole("button")
-      expect(await buttons.count()).toBeGreaterThan(10)
+      const rows = matches.getByRole("listitem")
+      expect(await rows.count()).toBeGreaterThan(10)
+      await expect(
+        matches.getByRole("heading", {
+          name: copy.screen.matchingValues,
+          exact: true,
+        }),
+      ).toBeVisible()
+      await expect(matches.getByRole("button")).toHaveCount(0)
+      await expect(matches.getByRole("link")).toHaveCount(0)
       const footer = page.locator("footer").filter({
         has: page.getByRole("button", {
           name: copy.customValues.apply,
@@ -62,19 +78,64 @@ for (const locale of ["en", "es-MX"] as const) {
         }),
       })
       const footerBounds = await footer.boundingBox()
-      await buttons.first().scrollIntoViewIfNeeded()
-      await expectCompleteWords(buttons.first())
-      const first = await buttons.nth(0).boundingBox()
-      const second = await buttons.nth(1).boundingBox()
+      await rows.first().scrollIntoViewIfNeeded()
+      const animal = rows.first().locator("[data-animal-id]")
+      if (await animal.count()) {
+        await expect(animal).toHaveAttribute("data-playback-mode", "static")
+        await expect(animal).toHaveAttribute("data-playback-ready", "true")
+        expect(
+          await animal.evaluate((node) =>
+            node
+              .getAnimations({ subtree: true })
+              .some((animation) => animation.playState === "running"),
+          ),
+        ).toBe(false)
+        if (viewport.scale === 1) {
+          const animalBounds = await animal.boundingBox()
+          const titleBounds = await rows
+            .first()
+            .getByRole("heading")
+            .boundingBox()
+          expect(animalBounds).not.toBeNull()
+          expect(titleBounds).not.toBeNull()
+          expect(titleBounds!.x).toBeGreaterThanOrEqual(
+            animalBounds!.x + animalBounds!.width,
+          )
+          expect(titleBounds!.y).toBeLessThan(
+            animalBounds!.y + animalBounds!.height,
+          )
+          expect(titleBounds!.y + titleBounds!.height).toBeGreaterThan(
+            animalBounds!.y,
+          )
+        }
+      }
+      await page.screenshot({
+        path: testInfo.outputPath("matching-values-first.png"),
+      })
+      const first = await rows.nth(0).boundingBox()
+      const second = await rows.nth(1).boundingBox()
       expect(first).not.toBeNull()
       expect(second).not.toBeNull()
       expect(second!.y).toBeGreaterThanOrEqual(first!.y + first!.height)
       expect(
-        await matches.evaluate((node) => node.scrollHeight > node.clientHeight),
+        await matches.evaluate(
+          (node) => node.scrollHeight <= node.clientHeight + 1,
+        ),
       ).toBe(true)
-      await buttons.last().scrollIntoViewIfNeeded()
-      await buttons.last().click({ trial: true })
-      await expectCompleteWords(buttons.last())
+      const reading = page
+        .locator("[data-controller-scroll]")
+        .filter({ has: matches })
+      await expect(reading).toHaveCount(1)
+      expect(
+        await reading.evaluate((node) => node.scrollHeight > node.clientHeight),
+      ).toBe(true)
+      await rows.last().scrollIntoViewIfNeeded()
+      await expect(rows.last()).toBeInViewport()
+      await rows.last().click()
+      await expect(page.getByRole("dialog")).toHaveCount(0)
+      const names = rows.getByRole("heading")
+      expect(await names.count()).toBe(await rows.count())
+      expect(await rows.last().locator("p").textContent()).toMatch(/^“.+”$/u)
       expect(await footer.boundingBox()).toEqual(footerBounds)
       await expect(name).toHaveValue("P")
       await page.screenshot({
