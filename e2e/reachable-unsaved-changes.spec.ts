@@ -53,10 +53,6 @@ for (const locale of ["en", "es-MX"] as const) {
       })
       const buttons = matches.getByRole("button")
       expect(await buttons.count()).toBeGreaterThan(10)
-      const save = page.getByRole("button", {
-        name: copy.customValues.apply,
-        exact: true,
-      })
       const footer = page.getByRole("contentinfo")
       const footerBounds = await footer.boundingBox()
       await buttons.first().scrollIntoViewIfNeeded()
