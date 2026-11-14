@@ -11,7 +11,6 @@ import { useEffect, useRef } from "react"
 import CustomValueFieldFeedback from "@/components/CustomValueFieldFeedback"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import useFocusedFormFieldReveal from "@/lib/useFocusedFormFieldReveal"
 
 export default function CustomValueDraftEditor({
   draft,
@@ -28,13 +27,11 @@ export default function CustomValueDraftEditor({
   const copy = localizedCopy.interfaceCopy.customValues
 
   const nameRef = useRef<HTMLInputElement>(null)
-  const formRef = useFocusedFormFieldReveal()
   useEffect(() => {
     nameRef.current?.focus()
   }, [])
   return (
     <form
-      ref={formRef}
       id="hub-custom-value-editor"
       aria-label={copy.editorTitle}
       className="grid grid-cols-1 gap-3 xl:grid-cols-[1fr_2fr]"
@@ -58,6 +55,7 @@ export default function CustomValueDraftEditor({
         </label>
         <Input
           variant="compact"
+          className="scroll-my-[12px]"
           ref={nameRef}
           id="hub-custom-value-name"
           value={draft.name}
@@ -82,6 +80,7 @@ export default function CustomValueDraftEditor({
         <Textarea
           rows={2}
           variant="compact"
+          className="scroll-my-[12px]"
           id="hub-custom-value-definition"
           value={draft.definition}
           onChange={(event) =>

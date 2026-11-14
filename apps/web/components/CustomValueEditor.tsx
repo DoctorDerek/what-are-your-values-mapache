@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useWebControllerActions } from "@/components/WebControlsProvider"
-import useFocusedFormFieldReveal from "@/lib/useFocusedFormFieldReveal"
 
 export default function CustomValueEditor({
   value,
@@ -55,7 +54,6 @@ export default function CustomValueEditor({
     backRequestId,
   })
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const formRef = useFocusedFormFieldReveal()
   const nameRef = useRef<HTMLInputElement>(null)
   const isDeleting = action === "delete"
   const isReview = isDeleting || editor.isReviewing
@@ -92,7 +90,6 @@ export default function CustomValueEditor({
       className="flex justify-center"
     >
       <form
-        ref={formRef}
         aria-labelledby="custom-value-editor-title"
         className="flex min-h-0 w-full max-w-3xl flex-col border-4 border-black bg-white text-black shadow-[8px_8px_0px_0px_#000000]"
         onSubmit={(event) => {
@@ -105,7 +102,7 @@ export default function CustomValueEditor({
         <section
           data-controller-scroll
           tabIndex={0}
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 xl:p-6"
+          className="min-h-0 flex-1 scroll-py-[12px] overflow-y-auto overscroll-contain p-4 xl:p-6"
         >
           <h1
             id="custom-value-editor-title"
@@ -167,7 +164,7 @@ export default function CustomValueEditor({
                 }
                 aria-describedby="custom-value-edit-name-feedback"
                 variant="emphasized"
-                className="mb-3"
+                className="mb-3 scroll-my-[12px]"
               />
               <CustomValueFieldFeedback
                 id="custom-value-edit-name-feedback"
@@ -198,6 +195,7 @@ export default function CustomValueEditor({
                 aria-describedby="custom-value-edit-definition-feedback"
                 rows={4}
                 variant="emphasized"
+                className="scroll-my-[12px]"
               />
               <CustomValueFieldFeedback
                 id="custom-value-edit-definition-feedback"
