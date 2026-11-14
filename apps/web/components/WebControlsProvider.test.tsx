@@ -314,6 +314,8 @@ describe("scoped controller input", () => {
   it("retains a controller-dismissed custom draft and prevents cancellation during save", () => {
     const apply = vi.fn()
     const props = {
+      runtimeClipCatalog: { mode: "typography-only" } as const,
+      shouldReduceMotion: false,
       editorRequestId: 1,
       deckRevision: 0,
       existingCustomValues: [],

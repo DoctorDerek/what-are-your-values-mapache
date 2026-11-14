@@ -4,7 +4,10 @@ import {
   CUSTOM_VALUE_AUTHORING_EXAMPLE as example,
 } from "@game/data/src/CustomValueInvitationCopy"
 import { getLocaleCatalog } from "@game/data/src/LocalizationCatalog"
-import { getValueDisplayName } from "@game/data/src/Value"
+import {
+  getValueDisplayDefinition,
+  getValueDisplayName,
+} from "@game/data/src/Value"
 import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues } from "@game/data/src/ValueRanking"
 import LocaleProvider from "@game/utils/src/LocaleContext"
@@ -14,6 +17,8 @@ import CustomValueInvitation from "@/components/CustomValueInvitation"
 
 function setup(editorRequestId = 1) {
   const props = {
+    runtimeClipCatalog: { mode: "typography-only" } as const,
+    shouldReduceMotion: false,
     editorRequestId,
     deckRevision: 0,
     existingCustomValues: [],
@@ -50,7 +55,7 @@ function queueDrafts() {
 }
 describe("Hub custom-value invitation", () => {
   it.each(["en", "es-MX"] as const)(
-    "keeps %s matching controls separate and guards navigation without saving a draft",
+    "shows %s matching information without navigation or saving a draft",
     (locale) => {
       const localization = getLocaleCatalog(locale)
       const deck = createActiveDeck([])
@@ -64,6 +69,8 @@ describe("Hub custom-value invitation", () => {
       render(
         <LocaleProvider locale={locale}>
           <CustomValueInvitation
+            runtimeClipCatalog={{ mode: "typography-only" }}
+            shouldReduceMotion={false}
             editorRequestId={1}
             existingCustomValues={[]}
             deckRevision={0}
@@ -86,18 +93,18 @@ describe("Hub custom-value invitation", () => {
           name: localization.interfaceCopy.screen.matchingValues,
         }),
       )
-      expect(matching.getAllByRole("button").length).toBeGreaterThan(10)
-      const openPets = localization.interfaceCopy.screen.openValue(
-        getValueDisplayName(pets.definition, localization.values),
-      )
-      fireEvent.click(matching.getByRole("button", { name: openPets }))
+      expect(matching.getAllByRole("listitem").length).toBeGreaterThan(10)
+      expect(matching.queryByRole("button")).not.toBeInTheDocument()
+      expect(matching.queryByRole("link")).not.toBeInTheDocument()
+      const petsName = getValueDisplayName(pets.definition, localization.values)
+      fireEvent.click(matching.getByRole("heading", { name: petsName }))
+      expect(
+        matching.getByText(
+          `“${getValueDisplayDefinition(pets.definition, localization.values)}”`,
+        ),
+      ).toBeVisible()
       expect(onExit).not.toHaveBeenCalled()
-      const review = within(screen.getByRole("dialog"))
-      fireEvent.click(
-        review.getByRole("button", {
-          name: localization.interfaceCopy.dressingRoom.keepEditing,
-        }),
-      )
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
       expect(
         screen.getByLabelText(localization.interfaceCopy.customValues.name),
       ).toHaveValue("P")
@@ -229,6 +236,8 @@ describe("Hub custom-value invitation", () => {
   it("starts a requested original value with the unmatched search name", () => {
     render(
       <CustomValueInvitation
+        runtimeClipCatalog={{ mode: "typography-only" }}
+        shouldReduceMotion={false}
         existingCustomValues={[]}
         deckRevision={0}
         isSaving={false}
