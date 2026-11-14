@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "@game/design-tokens/mapachito-vivid.css";
 
+@source "../../../packages/ui/src";
+
 @font-face {
   font-family: "WAYVM Condensed";
   src: url("/fonts/Anton-Latin.woff2") format("woff2");

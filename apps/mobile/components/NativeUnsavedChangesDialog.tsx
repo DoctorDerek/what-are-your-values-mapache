@@ -1,6 +1,6 @@
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import { cx } from "classix"
-import type { ComponentProps } from "react"
+import type { ComponentProps, ReactElement } from "react"
 import { Modal, ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import { Button } from "@/components/ui/button"
@@ -18,19 +18,36 @@ export default function NativeUnsavedChangesDialog({
   titleClassName,
   contentClassName,
   edgeSpacing = "standard",
+  discardAction,
+  primaryActions,
 }: {
   visible: boolean
   animationType?: ComponentProps<typeof Modal>["animationType"]
   onShow?: ComponentProps<typeof Modal>["onShow"]
-  onDiscard: () => void
   onKeepEditing: () => void
-  onSave: () => void
-  discardDisabled?: boolean
-  saveDisabled?: boolean
   titleClassName: string
   contentClassName?: string
   edgeSpacing?: "compact" | "standard"
-}) {
+} & (
+  | {
+      discardAction: ReactElement
+      primaryActions: ReactElement
+      onDiscard?: never
+      onSave?: never
+      discardDisabled?: never
+      saveDisabled?: never
+      onRestoreFocus: () => void
+    }
+  | {
+      discardAction?: never
+      primaryActions?: never
+      onDiscard: () => void
+      onSave: () => void
+      discardDisabled?: boolean
+      saveDisabled?: boolean
+      onRestoreFocus?: () => void
+    }
+)) {
   const copy = useLocaleCatalog().interfaceCopy.dressingRoom
   return (
     <Modal
@@ -67,32 +84,38 @@ export default function NativeUnsavedChangesDialog({
             >
               {copy.keepTitle}
             </Text>
-            <Button
-              size="compact"
-              variant="outline"
-              disabled={discardDisabled}
-              onPress={onDiscard}
-            >
-              <Text>{copy.discard}</Text>
-            </Button>
+            {discardAction ?? (
+              <Button
+                size="compact"
+                variant="outline"
+                disabled={discardDisabled}
+                onPress={onDiscard}
+              >
+                <Text>{copy.discard}</Text>
+              </Button>
+            )}
           </ScrollView>
           <View className="shrink-0 flex-row flex-wrap gap-3 border-t-4 border-black p-3 pb-5">
-            <Button
-              size="compact"
-              className="basis-readable-action min-w-0 flex-1"
-              variant="secondary"
-              onPress={onKeepEditing}
-            >
-              <Text>{copy.keepEditing}</Text>
-            </Button>
-            <Button
-              size="compact"
-              className="basis-readable-action min-w-0 flex-1"
-              disabled={saveDisabled}
-              onPress={onSave}
-            >
-              <Text>{copy.saveReturn}</Text>
-            </Button>
+            {primaryActions ?? (
+              <>
+                <Button
+                  size="compact"
+                  className="basis-readable-action min-w-0 flex-1"
+                  variant="secondary"
+                  onPress={onKeepEditing}
+                >
+                  <Text>{copy.keepEditing}</Text>
+                </Button>
+                <Button
+                  size="compact"
+                  className="basis-readable-action min-w-0 flex-1"
+                  disabled={saveDisabled}
+                  onPress={onSave}
+                >
+                  <Text>{copy.saveReturn}</Text>
+                </Button>
+              </>
+            )}
           </View>
         </View>
       </MapacheScreen>

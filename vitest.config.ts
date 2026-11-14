@@ -21,7 +21,7 @@ export default defineConfig({
       include: [
         "apps/web/{app,components,lib}/**/*.{ts,tsx}",
         "apps/mobile/lib/**/*.ts",
-        "packages/*/src/**/*.ts",
+        "packages/*/src/**/*.{ts,tsx}",
         "scripts/animal-assets/**/*.ts",
       ],
       exclude: ["**/*.test.{ts,tsx}"],

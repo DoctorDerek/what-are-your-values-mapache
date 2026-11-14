@@ -102,10 +102,11 @@ export default function useCustomValueAuthoring({
     if (hasChanges) setLeaveTarget(target)
     else discardAndExit(target)
   }
-  const handleBackRequest = useEffectEvent(() => {
+  function back() {
     if (leaveTarget !== null) setLeaveTarget(null)
     else requestExit()
-  })
+  }
+  const handleBackRequest = useEffectEvent(back)
   const handleMenuRequest = useEffectEvent(() => requestExit("menu"))
   useEffect(() => {
     if (previousBackRequest.current === backRequestId) return
@@ -191,6 +192,7 @@ export default function useCustomValueAuthoring({
     leaveTarget,
     setEditorDraft,
     requestExit,
+    back,
     discardAndExit,
     saveAdditions,
     queueDraft,

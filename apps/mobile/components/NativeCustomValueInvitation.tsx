@@ -1,15 +1,12 @@
-import {
-  CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES,
-  CUSTOM_VALUE_NAME_MAX_GRAPHEMES,
-} from "@game/data/src/CustomValueValidation"
-import useCustomValueAuthoring, {
-  type CustomValueAuthoringOptions,
-} from "@game/data/src/useCustomValueAuthoring"
-import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
-import { getValueDisplayName } from "@game/data/src/Value"
-import type { RankedValue } from "@game/data/src/ValueRanking"
-import { findRankedValueNameMatches } from "@game/data/src/ValueSearch"
-import { useEffect, useRef, type ReactNode } from "react"
+import CustomValueDraftEditorView from "@game/ui/src/CustomValueDraftEditorView"
+import type {
+  CustomValueDraftEditorParts,
+  CustomValueInvitationParts,
+} from "@game/ui/src/CustomValueInvitationParts"
+import CustomValueInvitationView, {
+  type CustomValueInvitationProps,
+} from "@game/ui/src/CustomValueInvitationView"
+import { cx } from "classix"
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -18,46 +15,83 @@ import {
   TextInput,
   View,
 } from "react-native"
-import NativeCustomValueFieldFeedback from "@/components/NativeCustomValueFieldFeedback"
 import NativeUnsavedChangesDialog from "@/components/NativeUnsavedChangesDialog"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 
-export default function NativeCustomValueInvitation({
-  saveIssue,
-  rankedValues = [],
-  header,
-  ...options
-}: CustomValueAuthoringOptions & {
-  saveIssue: string | null
-  rankedValues?: readonly RankedValue[]
-  header?: ReactNode
-}) {
-  const localization = useLocaleCatalog()
-  const copy = localization.interfaceCopy.customValues
-  const leaveCopy = localization.interfaceCopy.dressingRoom
-  const authoring = useCustomValueAuthoring(options)
-  const notices = authoring.hasChanges
-    ? [...copy.consequences, copy.unsaved]
-    : copy.consequences
-  const matchingValues = findRankedValueNameMatches(
-    rankedValues,
-    authoring.editorDraft.name,
-    localization.values,
-  )
-  const nameInput = useRef<TextInput>(null)
-  const definitionInput = useRef<TextInput>(null)
-  useEffect(() => {
-    if (authoring.isOpen) nameInput.current?.focus()
-  }, [options.editorRequestId, authoring.isOpen])
-  if (!authoring.isActive) return null
-  return (
+const editorParts: CustomValueDraftEditorParts = {
+  Form: ({ children, className }) => (
+    <View className={className}>{children}</View>
+  ),
+  Heading: ({ children, className }) => (
+    <Text accessibilityRole="header" className={cx("text-black", className)}>
+      {children}
+    </Text>
+  ),
+  Example: ({ children, className }) => (
+    <Text className={cx("text-black", className)}>{children}</Text>
+  ),
+  FieldGroup: ({ children, className }) => (
+    <View className={className}>{children}</View>
+  ),
+  Label: ({ children, className }) => (
+    <Text className={cx("text-black", className)}>{children}</Text>
+  ),
+  Control: ({
+    field,
+    label,
+    hint,
+    value,
+    invalid,
+    disabled,
+    inputRef,
+    onChange,
+    onNext,
+  }) => (
+    <TextInput
+      ref={inputRef}
+      accessibilityLabel={label}
+      accessibilityHint={field === "name" ? hint : undefined}
+      aria-invalid={invalid}
+      className={cx(
+        "border-4 border-black bg-white p-2 text-base font-bold text-black",
+        field === "name" ? "min-h-12" : "min-h-24",
+      )}
+      editable={!disabled}
+      autoCapitalize={field === "name" ? "words" : "sentences"}
+      returnKeyType={field === "name" ? "next" : undefined}
+      onSubmitEditing={field === "name" ? onNext : undefined}
+      multiline={field === "definition"}
+      textAlignVertical="top"
+      value={value}
+      onChangeText={onChange}
+    />
+  ),
+  Feedback: ({ children, className }) => (
+    <View className={className}>{children}</View>
+  ),
+  FeedbackCounter: ({ children }) => (
+    <Text className="text-sm font-bold text-black">{children}</Text>
+  ),
+  FeedbackError: ({ children }) => (
+    <Text
+      accessibilityLiveRegion="polite"
+      accessibilityRole="alert"
+      className="min-w-0 flex-1 text-right text-sm font-black text-red-700"
+    >
+      {children}
+    </Text>
+  ),
+}
+
+const parts: CustomValueInvitationParts = {
+  Surface: ({ children, footer, confirmation, isConfirming }) => (
     <>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        accessibilityElementsHidden={authoring.leaveTarget !== null}
+        accessibilityElementsHidden={isConfirming}
         importantForAccessibility={
-          authoring.leaveTarget !== null ? "no-hide-descendants" : "auto"
+          isConfirming ? "no-hide-descendants" : "auto"
         }
         className="min-h-0 w-full max-w-7xl flex-1 self-center"
       >
@@ -66,259 +100,121 @@ export default function NativeCustomValueInvitation({
           contentContainerClassName="grow gap-4"
           keyboardShouldPersistTaps="handled"
         >
-          {header}
-          <View className="grow gap-3 border-4 border-b-0 border-black bg-white p-3 xl:p-5">
-            <Text
-              accessibilityRole="header"
-              className="text-xl font-black text-black uppercase"
-            >
-              {copy.editorTitle}
-            </Text>
-            <Text className="text-sm text-black">{copy.example}</Text>
-            <Text className="font-bold text-black">{copy.name}</Text>
-            <TextInput
-              ref={nameInput}
-              accessibilityLabel={copy.name}
-              accessibilityHint={copy.example}
-              aria-invalid={
-                authoring.editorDraft.name.length > 0 &&
-                authoring.editorValidation.name.validationCode !== null
-              }
-              className="min-h-12 border-4 border-black bg-white p-2 text-base font-bold text-black"
-              editable={!authoring.isBusy}
-              autoCapitalize="words"
-              returnKeyType="next"
-              onSubmitEditing={() => definitionInput.current?.focus()}
-              value={authoring.editorDraft.name}
-              onChangeText={(name) =>
-                authoring.setEditorDraft({ ...authoring.editorDraft, name })
-              }
-            />
-            <NativeCustomValueFieldFeedback
-              field="name"
-              maximumGraphemeCount={CUSTOM_VALUE_NAME_MAX_GRAPHEMES}
-              showValidationMessage={authoring.editorDraft.name.length > 0}
-              validation={authoring.editorValidation.name}
-            />
-            <Text className="font-bold text-black">{copy.definition}</Text>
-            <TextInput
-              ref={definitionInput}
-              accessibilityLabel={copy.definition}
-              aria-invalid={
-                authoring.editorDraft.definition.length > 0 &&
-                authoring.editorValidation.definition.validationCode !== null
-              }
-              className="min-h-24 border-4 border-black bg-white p-2 text-base font-bold text-black"
-              editable={!authoring.isBusy}
-              multiline
-              textAlignVertical="top"
-              value={authoring.editorDraft.definition}
-              onChangeText={(definition) =>
-                authoring.setEditorDraft({
-                  ...authoring.editorDraft,
-                  definition,
-                })
-              }
-            />
-            <NativeCustomValueFieldFeedback
-              field="definition"
-              maximumGraphemeCount={CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES}
-              showValidationMessage={
-                authoring.editorDraft.definition.length > 0
-              }
-              validation={authoring.editorValidation.definition}
-            />
-            {matchingValues.length > 0 && (
-              <ScrollView
-                accessibilityLabel={
-                  localization.interfaceCopy.screen.matchingValues
-                }
-                className="max-h-[min(12rem,35vh)] shrink-0 grow-0"
-                contentContainerClassName="gap-2 p-[4px]"
-                keyboardShouldPersistTaps="handled"
-                nestedScrollEnabled
-              >
-                {matchingValues.map(({ definition }) => (
-                  <Button
-                    key={definition.id}
-                    variant="outline"
-                    size="compact"
-                    disabled={authoring.isBusy}
-                    onPress={() =>
-                      authoring.requestExit({ valueId: definition.id })
-                    }
-                  >
-                    <Text>
-                      {localization.interfaceCopy.screen.openValue(
-                        getValueDisplayName(definition, localization.values),
-                      )}
-                    </Text>
-                  </Button>
-                ))}
-              </ScrollView>
-            )}
-            {authoring.drafts.length > 0 && (
-              <View className="gap-3 border-t-2 border-black pt-3">
-                <Text
-                  accessibilityRole="header"
-                  className="font-bold text-black"
-                >
-                  {copy.drafts}
-                </Text>
-                {authoring.drafts.map((draft) => (
-                  <View key={draft.key} className="gap-2">
-                    <Text className="font-bold text-black">{draft.name}</Text>
-                    <Text className="text-black">{draft.definition}</Text>
-                    <View className="flex-row flex-wrap gap-3">
-                      <Button
-                        variant="outline"
-                        size="compact"
-                        disabled={
-                          authoring.isBusy || authoring.hasUnfinishedDraft
-                        }
-                        accessibilityLabel={localization.interfaceCopy.screen.editValue(
-                          draft.name,
-                        )}
-                        onPress={() => authoring.editDraft(draft)}
-                      >
-                        <Text>{copy.edit}</Text>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="compact"
-                        disabled={
-                          authoring.isBusy || authoring.editingKey === draft.key
-                        }
-                        accessibilityLabel={localization.interfaceCopy.screen.removeDraft(
-                          draft.name,
-                        )}
-                        onPress={() => authoring.removeDraft(draft.key)}
-                      >
-                        <Text>{copy.remove}</Text>
-                      </Button>
-                    </View>
-                  </View>
-                ))}
-              </View>
-            )}
-            <View className="gap-3 border-t-2 border-black pt-3">
-              <View className="flex-row flex-wrap gap-3">
-                <Button
-                  variant="outline"
-                  size="compact"
-                  disabled={
-                    authoring.isBusy || !authoring.editorValidation.isValid
-                  }
-                  onPress={() => {
-                    authoring.queueDraft()
-                    nameInput.current?.focus()
-                  }}
-                >
-                  <Text>{copy.another}</Text>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="compact"
-                  disabled={authoring.isBusy}
-                  onPress={authoring.exportData}
-                >
-                  <Text>
-                    {authoring.isExporting ? copy.exporting : copy.export}
-                  </Text>
-                </Button>
-                {authoring.hasUnfinishedDraft &&
-                  authoring.drafts.length > 0 && (
-                    <Button
-                      variant="outline"
-                      size="compact"
-                      disabled={authoring.isBusy}
-                      onPress={authoring.discardUnfinished}
-                    >
-                      <Text>{copy.discardUnfinished}</Text>
-                    </Button>
-                  )}
-                {authoring.hasChanges && (
-                  <Button
-                    variant="outline"
-                    size="compact"
-                    disabled={authoring.isBusy}
-                    onPress={() => authoring.requestExit()}
-                  >
-                    <Text>{leaveCopy.discard}</Text>
-                  </Button>
-                )}
-              </View>
-              <View role="list" className="gap-3">
-                {notices.map((notice) => (
-                  <View
-                    key={notice}
-                    role="listitem"
-                    accessible
-                    className="flex-row items-start gap-2"
-                  >
-                    <Text
-                      accessible={false}
-                      className="text-sm leading-relaxed text-black"
-                    >
-                      •
-                    </Text>
-                    <Text className="min-w-0 flex-1 text-sm leading-relaxed text-black">
-                      {notice}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          </View>
+          {children}
         </ScrollView>
-        <ScrollView
-          className="max-h-1/2 shrink-0 grow-0 border-4 border-black bg-white"
-          contentContainerClassName="gap-3 p-3 pb-5"
-          keyboardShouldPersistTaps="handled"
-        >
-          {options.isSaving && (
-            <Text accessibilityLiveRegion="polite" className="text-black">
-              {copy.saving}
-            </Text>
-          )}
-          {(saveIssue || authoring.exportIssue) && (
-            <Text accessibilityRole="alert" className="font-bold text-black">
-              {saveIssue || authoring.exportIssue}
-            </Text>
-          )}
-          <View className="flex-row flex-wrap gap-3">
-            <Button
-              className="basis-readable-action min-w-0 shrink grow"
-              size="compact"
-              variant="outline"
-              disabled={authoring.isBusy}
-              onPress={() => authoring.requestExit()}
-            >
-              <Text>{copy.back}</Text>
-            </Button>
-            <Button
-              className="basis-readable-action min-w-0 shrink grow"
-              size="compact"
-              disabled={authoring.isBusy || !authoring.canApply}
-              onPress={authoring.saveAdditions}
-            >
-              <Text>{copy.apply}</Text>
-            </Button>
-          </View>
-        </ScrollView>
+        {footer}
       </KeyboardAvoidingView>
-      <NativeUnsavedChangesDialog
-        visible={authoring.leaveTarget !== null}
-        onShow={Keyboard.dismiss}
-        onKeepEditing={authoring.keepEditing}
-        onDiscard={() =>
-          authoring.discardAndExit(authoring.leaveTarget ?? "home")
-        }
-        onSave={authoring.saveAdditions}
-        discardDisabled={authoring.isBusy}
-        saveDisabled={!authoring.canApply || authoring.isBusy}
-        titleClassName="text-xl"
-      />
+      {confirmation}
     </>
-  )
+  ),
+  Panel: ({ children, className }) => (
+    <View className={className}>{children}</View>
+  ),
+  Editor: (props) => (
+    <CustomValueDraftEditorView {...props} parts={editorParts} />
+  ),
+  MatchingValues: ({ children, className, label }) => (
+    <ScrollView
+      accessibilityLabel={label}
+      className="mt-3 max-h-[min(12rem,35vh)] shrink-0 grow-0"
+      contentContainerClassName={className}
+      keyboardShouldPersistTaps="handled"
+      nestedScrollEnabled
+    >
+      {children}
+    </ScrollView>
+  ),
+  Section: ({ children, className, label }) => (
+    <View accessibilityLabel={label} className={className}>
+      {children}
+    </View>
+  ),
+  Heading: ({ children, className }) => (
+    <Text accessibilityRole="header" className={cx("text-black", className)}>
+      {children}
+    </Text>
+  ),
+  DraftList: ({ children }) => <View className="gap-3">{children}</View>,
+  Draft: ({ children, name, definition }) => (
+    <View className="gap-2 py-2">
+      <Text className="font-bold text-black">{name}</Text>
+      <Text className="text-black">{definition}</Text>
+      {children}
+    </View>
+  ),
+  ActionRow: ({ children, className }) => (
+    <View className={className}>{children}</View>
+  ),
+  Action: ({
+    children,
+    variant,
+    location,
+    disabled,
+    accessibilityLabel,
+    onActivate,
+  }) => (
+    <Button
+      variant={variant === "link" ? "outline" : variant}
+      size="compact"
+      disabled={disabled}
+      accessibilityLabel={accessibilityLabel}
+      onPress={onActivate}
+      className={cx(
+        location === "footer" && "basis-readable-action min-w-0 shrink grow",
+        location === "decision" && "basis-readable-action min-w-0 flex-1",
+      )}
+    >
+      <Text>{children}</Text>
+    </Button>
+  ),
+  NoticeList: ({ children }) => (
+    <View role="list" className="gap-3">
+      {children}
+    </View>
+  ),
+  Notice: ({ children }) => (
+    <View role="listitem" accessible className="flex-row items-start gap-2">
+      <Text accessible={false} className="text-sm leading-relaxed text-black">
+        •
+      </Text>
+      <Text className="min-w-0 flex-1 text-sm leading-relaxed text-black">
+        {children}
+      </Text>
+    </View>
+  ),
+  Footer: ({ children }) => (
+    <ScrollView
+      className="max-h-1/2 shrink-0 grow-0 border-4 border-black bg-white"
+      contentContainerClassName="gap-3 p-3 pb-5"
+      keyboardShouldPersistTaps="handled"
+    >
+      {children}
+    </ScrollView>
+  ),
+  Status: ({ children, isError }) => (
+    <Text
+      accessibilityRole={isError ? "alert" : undefined}
+      accessibilityLiveRegion={isError ? undefined : "polite"}
+      className={cx("text-black", isError && "font-bold")}
+    >
+      {children}
+    </Text>
+  ),
+  Confirmation: ({ open, onKeepEditing, onRestoreFocus, discard, actions }) => (
+    <NativeUnsavedChangesDialog
+      visible={open}
+      onShow={Keyboard.dismiss}
+      onKeepEditing={onKeepEditing}
+      titleClassName="text-xl"
+      discardAction={discard}
+      primaryActions={actions}
+      onRestoreFocus={onRestoreFocus}
+    />
+  ),
+}
+
+export default function NativeCustomValueInvitation(
+  props: CustomValueInvitationProps,
+) {
+  return <CustomValueInvitationView {...props} parts={parts} />
 }
