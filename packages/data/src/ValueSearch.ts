@@ -5,8 +5,8 @@ import {
   type CanonicalValueId,
   type LocalizedValueCopy,
   type ValueId,
-} from "./Value"
-import type { RankedValue } from "./ValueRanking"
+} from "@game/data/src/Value"
+import type { RankedValue } from "@game/data/src/ValueRanking"
 
 export function filterRankedValuesByQuery(
   rankedValues: readonly RankedValue[],

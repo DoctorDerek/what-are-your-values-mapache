@@ -1,12 +1,12 @@
 "use client"
 
-import { getErrorMessage } from "@game/utils/src/Errors"
-import { useEffect, useEffectEvent, useRef, useState } from "react"
 import {
   validateCustomValueBatch,
   type CustomValueDraft,
-} from "./CustomValueDraft"
-import type { CustomValueDefinition, ValueId } from "./Value"
+} from "@game/data/src/CustomValueDraft"
+import type { CustomValueDefinition, ValueId } from "@game/data/src/Value"
+import { getErrorMessage } from "@game/utils/src/Errors"
+import { useEffect, useEffectEvent, useRef, useState } from "react"
 
 type DraftEntry = CustomValueDraft & Readonly<{ key: number }>
 type ExitTarget = "home" | "menu" | Readonly<{ valueId: ValueId }>

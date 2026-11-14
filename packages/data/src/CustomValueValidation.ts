@@ -1,10 +1,10 @@
-import { countGraphemes } from "unicode-segmenter/grapheme"
-import { CANONICAL_VALUES } from "./CanonicalValues"
+import { CANONICAL_VALUES } from "@game/data/src/CanonicalValues"
 import {
   normalizeValueNameForComparison,
   type CustomValueDefinition,
   type CustomValueId,
-} from "./Value"
+} from "@game/data/src/Value"
+import { countGraphemes } from "unicode-segmenter/grapheme"
 
 export const CUSTOM_VALUE_NAME_MAX_GRAPHEMES = 60
 export const CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES = 280

@@ -1,8 +1,8 @@
-import { validateCustomValueDraft } from "./CustomValueValidation"
+import { validateCustomValueDraft } from "@game/data/src/CustomValueValidation"
 import {
   normalizeValueNameForComparison,
   type CustomValueDefinition,
-} from "./Value"
+} from "@game/data/src/Value"
 
 export type CustomValueDraft = Readonly<{ name: string; definition: string }>
 
