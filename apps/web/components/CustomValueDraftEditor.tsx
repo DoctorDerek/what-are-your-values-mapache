@@ -5,6 +5,7 @@ import type {
   CustomValueDraftEditorParts,
   CustomValueDraftEditorProps,
 } from "@game/ui/src/CustomValueInvitationParts"
+import { cx } from "classix"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
@@ -31,7 +32,7 @@ const parts: CustomValueDraftEditorParts = {
     </p>
   ),
   FieldGroup: ({ children, className }) => (
-    <div className={className}>{children}</div>
+    <div className={cx("focus-within:snap-center", className)}>{children}</div>
   ),
   Label: ({ children, className, field }) => (
     <label htmlFor={`hub-custom-value-${field}`} className={className}>

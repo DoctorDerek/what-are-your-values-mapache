@@ -34,7 +34,7 @@ const parts: CustomValueInvitationParts = {
           className="flex min-h-0 min-w-0 flex-1 flex-col"
         >
           <div
-            className="min-h-0 flex-1 scroll-py-[12px] overflow-y-auto overscroll-contain"
+            className="min-h-0 flex-1 snap-y snap-proximity scroll-py-[12px] overflow-y-auto overscroll-contain"
             data-controller-scroll
           >
             <div className="flex min-h-full flex-col gap-[16px]">
