@@ -385,6 +385,9 @@ importers:
       '@game/data':
         specifier: workspace:*
         version: link:../data
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
       classix:
         specifier: ^2
         version: 2.2.19
