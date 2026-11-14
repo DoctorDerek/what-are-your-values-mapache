@@ -34,6 +34,11 @@ export default function CustomValueInvitationView({
   const nameInput = useRef<AuthoringInputHandle | null>(null)
   const definitionInput = useRef<AuthoringInputHandle | null>(null)
   const focusName = () => nameInput.current?.focus()
+  const restoreAuthoringFocus = () => {
+    if (nameInput.current?.isFocused() || definitionInput.current?.isFocused())
+      return
+    focusName()
+  }
   useEffect(() => {
     if (authoring.isOpen) nameInput.current?.focus()
   }, [options.editorRequestId, authoring.isOpen])
@@ -99,7 +104,7 @@ export default function CustomValueInvitationView({
           open={authoring.leaveTarget !== null}
           title={leaveCopy.keepTitle}
           onKeepEditing={authoring.keepEditing}
-          onRestoreFocus={focusName}
+          onRestoreFocus={restoreAuthoringFocus}
           discard={
             <Action
               variant="outline"

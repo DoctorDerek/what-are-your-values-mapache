@@ -8,7 +8,7 @@ import { getValueDisplayName } from "@game/data/src/Value"
 import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues } from "@game/data/src/ValueRanking"
 import LocaleProvider from "@game/utils/src/LocaleContext"
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
 
@@ -198,6 +198,34 @@ describe("Hub custom-value invitation", () => {
     expect(screen.getByLabelText("Value name")).toHaveValue("My direction")
     expect(screen.getByLabelText("Definition")).toHaveValue("My own meaning.")
   })
+  it.each(["Value name", "Definition"])(
+    "does not steal %s focus when a delayed dialog close finishes",
+    (fieldLabel) => {
+      vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+      try {
+        const { props } = setup()
+        fill("Patient craftsmanship", "to make useful things with care")
+        click("Back")
+        fireEvent.click(
+          within(screen.getByRole("dialog")).getByRole("button", {
+            name: "Keep editing",
+          }),
+        )
+        const field = screen.getByLabelText(fieldLabel)
+        act(() => {
+          field.focus()
+          vi.runOnlyPendingTimers()
+        })
+        expect(field).toHaveFocus()
+        fireEvent.change(field, { target: { value: "" } })
+        expect(field).toHaveValue("")
+        expect(screen.getByRole("button", { name: "Save" })).toBeDisabled()
+        expect(props.onApply).not.toHaveBeenCalled()
+      } finally {
+        vi.useRealTimers()
+      }
+    },
+  )
   it("starts a requested original value with the unmatched search name", () => {
     render(
       <CustomValueInvitation

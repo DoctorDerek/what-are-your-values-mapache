@@ -2,7 +2,10 @@ import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import type { CustomValueDraftValidation } from "@game/data/src/CustomValueValidation"
 import type { ComponentType, ReactElement, ReactNode, RefCallback } from "react"
 
-export type AuthoringInputHandle = Readonly<{ focus: () => void }>
+export type AuthoringInputHandle = Readonly<{
+  focus: () => void
+  isFocused: () => boolean
+}>
 export type AuthoringField = "name" | "definition"
 export type AuthoringChildren = { children: ReactNode; className?: string }
 export type AuthoringActionProps = {

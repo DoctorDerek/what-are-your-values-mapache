@@ -51,7 +51,16 @@ const parts: CustomValueDraftEditorParts = {
     const Component = field === "name" ? Input : Textarea
     return (
       <Component
-        ref={inputRef}
+        ref={(input: HTMLInputElement | HTMLTextAreaElement | null) =>
+          inputRef(
+            input
+              ? {
+                  focus: () => input.focus(),
+                  isFocused: () => document.activeElement === input,
+                }
+              : null,
+          )
+        }
         id={`hub-custom-value-${field}`}
         variant="compact"
         className="scroll-my-[12px]"
