@@ -27,6 +27,9 @@ export default function CustomValueInvitation({
   const copy = localization.interfaceCopy.customValues
   const leaveCopy = localization.interfaceCopy.dressingRoom
   const authoring = useCustomValueAuthoring(options)
+  const notices = authoring.hasChanges
+    ? [...copy.consequences, copy.unsaved]
+    : copy.consequences
   const matchingValues = findRankedValueNameMatches(
     rankedValues,
     authoring.editorDraft.name,
@@ -54,7 +57,7 @@ export default function CustomValueInvitation({
         className="flex min-h-0 min-w-0 flex-1 flex-col"
       >
         <div
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+          className="min-h-0 flex-1 scroll-py-[12px] overflow-y-auto overscroll-contain"
           data-controller-scroll
         >
           <div className="flex min-h-full flex-col gap-[16px]">
@@ -68,13 +71,16 @@ export default function CustomValueInvitation({
               />
               {matchingValues.length > 0 && (
                 <section
-                  className="mt-3 space-y-2"
+                  className="mt-3 grid max-h-[min(12rem,35dvh)] gap-2 overflow-y-auto overscroll-contain p-[4px]"
                   aria-label={localization.interfaceCopy.screen.matchingValues}
+                  data-controller-scroll
+                  tabIndex={0}
                 >
                   {matchingValues.map(({ definition }) => (
                     <Button
                       key={definition.id}
                       variant="link"
+                      align="start"
                       wrap
                       onClick={() =>
                         authoring.requestExit({ valueId: definition.id })
@@ -135,7 +141,6 @@ export default function CustomValueInvitation({
                 className="mt-4 space-y-3 border-t-2 border-black pt-3"
                 aria-label={localization.interfaceCopy.screen.saveCustomValues}
               >
-                <p className="text-sm">{copy.consequences}</p>
                 <div className="flex flex-wrap gap-3">
                   <Button
                     size="sm"
@@ -172,9 +177,11 @@ export default function CustomValueInvitation({
                     </Button>
                   )}
                 </div>
-                {authoring.hasChanges && (
-                  <p className="text-sm">{copy.unsaved}</p>
-                )}
+                <ul className="list-disc space-y-3 pl-[20px] text-sm leading-relaxed">
+                  {notices.map((notice) => (
+                    <li key={notice}>{notice}</li>
+                  ))}
+                </ul>
               </section>
             </div>
           </div>

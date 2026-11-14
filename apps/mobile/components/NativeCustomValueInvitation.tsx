@@ -37,6 +37,9 @@ export default function NativeCustomValueInvitation({
   const copy = localization.interfaceCopy.customValues
   const leaveCopy = localization.interfaceCopy.dressingRoom
   const authoring = useCustomValueAuthoring(options)
+  const notices = authoring.hasChanges
+    ? [...copy.consequences, copy.unsaved]
+    : copy.consequences
   const matchingValues = findRankedValueNameMatches(
     rankedValues,
     authoring.editorDraft.name,
@@ -125,23 +128,35 @@ export default function NativeCustomValueInvitation({
               }
               validation={authoring.editorValidation.definition}
             />
-            {matchingValues.map(({ definition }) => (
-              <Button
-                key={definition.id}
-                variant="outline"
-                size="compact"
-                disabled={authoring.isBusy}
-                onPress={() =>
-                  authoring.requestExit({ valueId: definition.id })
+            {matchingValues.length > 0 && (
+              <ScrollView
+                accessibilityLabel={
+                  localization.interfaceCopy.screen.matchingValues
                 }
+                className="max-h-[min(12rem,35vh)] shrink-0 grow-0"
+                contentContainerClassName="gap-2 p-[4px]"
+                keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled
               >
-                <Text>
-                  {localization.interfaceCopy.screen.openValue(
-                    getValueDisplayName(definition, localization.values),
-                  )}
-                </Text>
-              </Button>
-            ))}
+                {matchingValues.map(({ definition }) => (
+                  <Button
+                    key={definition.id}
+                    variant="outline"
+                    size="compact"
+                    disabled={authoring.isBusy}
+                    onPress={() =>
+                      authoring.requestExit({ valueId: definition.id })
+                    }
+                  >
+                    <Text>
+                      {localization.interfaceCopy.screen.openValue(
+                        getValueDisplayName(definition, localization.values),
+                      )}
+                    </Text>
+                  </Button>
+                ))}
+              </ScrollView>
+            )}
             {authoring.drafts.length > 0 && (
               <View className="gap-3 border-t-2 border-black pt-3">
                 <Text
@@ -187,7 +202,6 @@ export default function NativeCustomValueInvitation({
               </View>
             )}
             <View className="gap-3 border-t-2 border-black pt-3">
-              <Text className="text-sm text-black">{copy.consequences}</Text>
               <View className="flex-row flex-wrap gap-3">
                 <Button
                   variant="outline"
@@ -234,9 +248,26 @@ export default function NativeCustomValueInvitation({
                   </Button>
                 )}
               </View>
-              {authoring.hasChanges && (
-                <Text className="text-sm text-black">{copy.unsaved}</Text>
-              )}
+              <View role="list" className="gap-3">
+                {notices.map((notice) => (
+                  <View
+                    key={notice}
+                    role="listitem"
+                    accessible
+                    className="flex-row items-start gap-2"
+                  >
+                    <Text
+                      accessible={false}
+                      className="text-sm leading-relaxed text-black"
+                    >
+                      •
+                    </Text>
+                    <Text className="min-w-0 flex-1 text-sm leading-relaxed text-black">
+                      {notice}
+                    </Text>
+                  </View>
+                ))}
+              </View>
             </View>
           </View>
         </ScrollView>
