@@ -1,0 +1,21 @@
+{
+  "name": "@game/ui",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./src/CustomValueInvitationParts": "./src/CustomValueInvitationParts.ts",
+    "./src/CustomValueDraftEditorView": "./src/CustomValueDraftEditorView.tsx",
+    "./src/CustomValueInvitationView": "./src/CustomValueInvitationView.tsx"
+  },
+  "dependencies": {
+    "@game/data": "workspace:*",
+    "classix": "^2"
+  },
+  "peerDependencies": {
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "typescript": "^6"
+  }
+}

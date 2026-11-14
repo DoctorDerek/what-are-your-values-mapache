@@ -1,263 +1,183 @@
 "use client"
 
-import useCustomValueAuthoring, {
-  type CustomValueAuthoringOptions,
-} from "@game/data/src/useCustomValueAuthoring"
-import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
-import { getValueDisplayName } from "@game/data/src/Value"
-import type { RankedValue } from "@game/data/src/ValueRanking"
-import { findRankedValueNameMatches } from "@game/data/src/ValueSearch"
-import { useEffect, type ReactNode } from "react"
+import type { CustomValueInvitationParts } from "@game/ui/src/CustomValueInvitationParts"
+import CustomValueInvitationView, {
+  type CustomValueInvitationProps,
+} from "@game/ui/src/CustomValueInvitationView"
+import { cx } from "classix"
 import CustomValueDraftEditor from "@/components/CustomValueDraftEditor"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useWebControllerActions } from "@/components/WebControlsProvider"
 
-export default function CustomValueInvitation({
-  saveIssue,
-  rankedValues = [],
-  header,
-  ...options
-}: CustomValueAuthoringOptions & {
-  saveIssue: string | null
-  rankedValues?: readonly RankedValue[]
-  header?: ReactNode
-}) {
-  const localization = useLocaleCatalog()
-  const copy = localization.interfaceCopy.customValues
-  const leaveCopy = localization.interfaceCopy.dressingRoom
-  const authoring = useCustomValueAuthoring(options)
-  const matchingValues = findRankedValueNameMatches(
-    rankedValues,
-    authoring.editorDraft.name,
-    localization.values,
-  )
-  useEffect(() => {
-    if (authoring.isOpen)
-      document.getElementById("hub-custom-value-name")?.focus()
-  }, [options.editorRequestId, authoring.isOpen])
-  useWebControllerActions(1, (command) => {
-    if (!authoring.isActive || (command !== "back" && command !== "cancel"))
-      return false
-    if (authoring.leaveTarget) authoring.keepEditing()
-    else authoring.requestExit()
-    return true
-  })
-  if (!authoring.isActive) return null
-  return (
-    <aside
-      aria-label={localization.interfaceCopy.screen.addOwnValues}
-      className="text-mapache-vivid-dark flex min-h-0 w-full max-w-7xl min-w-0 flex-1 flex-col [&_button]:max-w-full"
-    >
-      <fieldset
-        disabled={authoring.isBusy}
-        className="flex min-h-0 min-w-0 flex-1 flex-col"
+const parts: CustomValueInvitationParts = {
+  Surface: function AuthoringSurface({
+    children,
+    footer,
+    confirmation,
+    title,
+    disabled,
+    onBack,
+  }) {
+    useWebControllerActions(1, (command) => {
+      if (command !== "back" && command !== "cancel") return false
+      onBack()
+      return true
+    })
+    return (
+      <aside
+        aria-label={title}
+        className="text-mapache-vivid-dark flex min-h-0 w-full max-w-7xl min-w-0 flex-1 flex-col [&_button]:max-w-full"
       >
-        <div
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
-          data-controller-scroll
+        <fieldset
+          disabled={disabled}
+          className="flex min-h-0 min-w-0 flex-1 flex-col"
         >
-          <div className="flex min-h-full flex-col gap-[16px]">
-            {header}
-            <div className="flex-1 border-4 border-b-0 border-black bg-white p-3 xl:p-5">
-              <CustomValueDraftEditor
-                draft={authoring.editorDraft}
-                validation={authoring.editorValidation}
-                onChange={authoring.setEditorDraft}
-                onSubmit={authoring.saveAdditions}
-              />
-              {matchingValues.length > 0 && (
-                <section
-                  className="mt-3 space-y-2"
-                  aria-label={localization.interfaceCopy.screen.matchingValues}
-                >
-                  {matchingValues.map(({ definition }) => (
-                    <Button
-                      key={definition.id}
-                      variant="link"
-                      wrap
-                      onClick={() =>
-                        authoring.requestExit({ valueId: definition.id })
-                      }
-                    >
-                      {localization.interfaceCopy.screen.openValue(
-                        getValueDisplayName(definition, localization.values),
-                      )}
-                    </Button>
-                  ))}
-                </section>
-              )}
-              {authoring.drafts.length > 0 && (
-                <section
-                  className="mt-4 space-y-3 border-t-2 border-black pt-3"
-                  aria-labelledby="custom-drafts-heading"
-                >
-                  <h2 id="custom-drafts-heading" className="font-bold">
-                    {copy.drafts}
-                  </h2>
-                  <ul className="divide-y divide-black/20">
-                    {authoring.drafts.map((draft) => (
-                      <li key={draft.key} className="py-2">
-                        <h3 className="font-bold wrap-anywhere">
-                          {draft.name}
-                        </h3>
-                        <p className="wrap-anywhere">{draft.definition}</p>
-                        <div className="flex flex-wrap gap-3">
-                          <Button
-                            variant="link"
-                            wrap
-                            disabled={authoring.hasUnfinishedDraft}
-                            aria-label={localization.interfaceCopy.screen.editValue(
-                              draft.name,
-                            )}
-                            onClick={() => authoring.editDraft(draft)}
-                          >
-                            {copy.edit}
-                          </Button>
-                          <Button
-                            variant="link"
-                            wrap
-                            disabled={authoring.editingKey === draft.key}
-                            aria-label={localization.interfaceCopy.screen.removeDraft(
-                              draft.name,
-                            )}
-                            onClick={() => authoring.removeDraft(draft.key)}
-                          >
-                            {copy.remove}
-                          </Button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-              <section
-                className="mt-4 space-y-3 border-t-2 border-black pt-3"
-                aria-label={localization.interfaceCopy.screen.saveCustomValues}
-              >
-                <p className="text-sm">{copy.consequences}</p>
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    wrap
-                    disabled={!authoring.editorValidation.isValid}
-                    onClick={() => {
-                      authoring.queueDraft()
-                      document.getElementById("hub-custom-value-name")?.focus()
-                    }}
-                  >
-                    {copy.another}
-                  </Button>
-                  <Button variant="link" wrap onClick={authoring.exportData}>
-                    {authoring.isExporting ? copy.exporting : copy.export}
-                  </Button>
-                  {authoring.hasUnfinishedDraft &&
-                    authoring.drafts.length > 0 && (
-                      <Button
-                        variant="link"
-                        wrap
-                        onClick={authoring.discardUnfinished}
-                      >
-                        {copy.discardUnfinished}
-                      </Button>
-                    )}
-                  {authoring.hasChanges && (
-                    <Button
-                      variant="link"
-                      wrap
-                      onClick={() => authoring.requestExit()}
-                    >
-                      {leaveCopy.discard}
-                    </Button>
-                  )}
-                </div>
-                {authoring.hasChanges && (
-                  <p className="text-sm">{copy.unsaved}</p>
-                )}
-              </section>
+          <div
+            className="min-h-0 flex-1 snap-y snap-proximity scroll-py-[12px] overflow-y-auto overscroll-contain"
+            data-controller-scroll
+          >
+            <div className="flex min-h-full flex-col gap-[16px]">
+              {children}
             </div>
           </div>
-        </div>
-        <footer className="max-h-1/2 shrink-0 scroll-py-[12px] overflow-y-auto border-4 border-black bg-white p-[12px] pb-[20px] xl:px-5 [&_button]:scroll-my-[12px]">
-          {options.isSaving && <p role="status">{copy.saving}</p>}
-          {(saveIssue || authoring.exportIssue) && (
-            <p role="alert" className="mb-3 font-bold">
-              {saveIssue || authoring.exportIssue}
-            </p>
-          )}
-          <div className="flex flex-wrap gap-3">
-            <Button
-              size="sm"
-              wrap
-              variant="outline"
-              className="min-w-0 flex-[1_1_7rem] wrap-anywhere"
-              onClick={() => authoring.requestExit()}
-            >
-              {copy.back}
-            </Button>
-            <Button
-              size="sm"
-              wrap
-              className="min-w-0 flex-[1_1_7rem] wrap-anywhere"
-              disabled={!authoring.canApply}
-              onClick={authoring.saveAdditions}
-            >
-              {copy.apply}
-            </Button>
-          </div>
-        </footer>
-      </fieldset>
-      <Dialog
-        open={authoring.leaveTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) authoring.keepEditing()
+          {footer}
+        </fieldset>
+        {confirmation}
+      </aside>
+    )
+  },
+  Panel: ({ children, className }) => (
+    <div className={className}>{children}</div>
+  ),
+  Editor: CustomValueDraftEditor,
+  MatchingValues: ({ children, className, label }) => (
+    <section
+      className={cx(
+        "mt-3 grid max-h-[min(12rem,35dvh)] overflow-y-auto overscroll-contain",
+        className,
+      )}
+      aria-label={label}
+      data-controller-scroll
+      tabIndex={0}
+    >
+      {children}
+    </section>
+  ),
+  Section: ({ children, className, label }) => (
+    <section aria-label={label} className={className}>
+      {children}
+    </section>
+  ),
+  Heading: ({ children, className }) => (
+    <h2 className={className}>{children}</h2>
+  ),
+  DraftList: ({ children }) => (
+    <ul className="divide-y divide-black/20">{children}</ul>
+  ),
+  Draft: ({ children, name, definition }) => (
+    <li className="py-2">
+      <h3 className="font-bold wrap-anywhere">{name}</h3>
+      <p className="wrap-anywhere">{definition}</p>
+      {children}
+    </li>
+  ),
+  ActionRow: ({ children, className }) => (
+    <div className={className}>{children}</div>
+  ),
+  Action: ({
+    children,
+    variant,
+    location,
+    disabled,
+    accessibilityLabel,
+    onActivate,
+  }) => (
+    <Button
+      type="button"
+      variant={variant}
+      size={
+        location === "discard"
+          ? "confirmation"
+          : location === "decision"
+            ? "default"
+            : "sm"
+      }
+      align={location === "matching" ? "start" : "center"}
+      wrap
+      disabled={disabled}
+      aria-label={accessibilityLabel}
+      onClick={onActivate}
+      typographyClassName={
+        location === "decision"
+          ? "text-base leading-tight xl:text-lg"
+          : undefined
+      }
+      className={cx(
+        location === "footer" && "min-w-0 flex-[1_1_7rem] wrap-anywhere",
+        location === "discard" && "w-full",
+        location === "decision" && "min-w-0 flex-1 basis-[8em]",
+      )}
+    >
+      {children}
+    </Button>
+  ),
+  NoticeList: ({ children }) => (
+    <ul className="list-disc space-y-3 pl-[20px] text-sm leading-relaxed">
+      {children}
+    </ul>
+  ),
+  Notice: ({ children }) => <li>{children}</li>,
+  Footer: ({ children }) => (
+    <footer className="max-h-1/2 shrink-0 scroll-py-[12px] overflow-y-auto border-4 border-black bg-white p-[12px] pb-[20px] xl:px-5 [&_button]:scroll-my-[12px]">
+      {children}
+    </footer>
+  ),
+  Status: ({ children, isError }) => (
+    <p
+      role={isError ? "alert" : "status"}
+      className={isError ? "mb-3 font-bold" : undefined}
+    >
+      {children}
+    </p>
+  ),
+  Confirmation: ({
+    open,
+    onKeepEditing,
+    onRestoreFocus,
+    title,
+    discard,
+    actions,
+  }) => (
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onKeepEditing()
+      }}
+    >
+      <DialogContent
+        placement="reachable"
+        aria-describedby={undefined}
+        className="grid-rows-[minmax(0,1fr)_auto]"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault()
+          onRestoreFocus()
         }}
       >
-        <DialogContent
-          aria-describedby={undefined}
-          className="grid-rows-[minmax(0,1fr)_auto]"
-          onCloseAutoFocus={(event) => {
-            event.preventDefault()
-            document.getElementById("hub-custom-value-name")?.focus()
-          }}
-        >
-          <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain p-4">
-            <DialogTitle>{leaveCopy.keepTitle}</DialogTitle>
-            <Button
-              wrap
-              variant="outline"
-              className="w-full"
-              disabled={authoring.isBusy}
-              onClick={() =>
-                authoring.discardAndExit(authoring.leaveTarget ?? "home")
-              }
-            >
-              {leaveCopy.discard}
-            </Button>
-          </div>
-          <footer className="flex shrink-0 flex-wrap gap-[12px] border-t-4 border-black p-[12px] pb-[20px]">
-            <Button
-              wrap
-              variant="secondary"
-              typographyClassName="text-base leading-tight xl:text-lg"
-              className="min-w-0 flex-1 basis-[8em]"
-              onClick={authoring.keepEditing}
-            >
-              {leaveCopy.keepEditing}
-            </Button>
-            <Button
-              wrap
-              typographyClassName="text-base leading-tight xl:text-lg"
-              className="min-w-0 flex-1 basis-[8em]"
-              disabled={!authoring.canApply || authoring.isBusy}
-              onClick={authoring.saveAdditions}
-            >
-              {leaveCopy.saveReturn}
-            </Button>
-          </footer>
-        </DialogContent>
-      </Dialog>
-    </aside>
-  )
+        <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain p-[16px]">
+          <DialogTitle>{title}</DialogTitle>
+          {discard}
+        </div>
+        <footer className="flex shrink-0 flex-wrap gap-[12px] border-t-4 border-black p-[12px] pb-[20px]">
+          {actions}
+        </footer>
+      </DialogContent>
+    </Dialog>
+  ),
+}
+
+export default function CustomValueInvitation(
+  props: CustomValueInvitationProps,
+) {
+  return <CustomValueInvitationView {...props} parts={parts} />
 }

@@ -14,8 +14,10 @@ export const MEXICAN_SPANISH_CUSTOMIZATION_COPY: Pick<
     drafts: "Valores por agregar",
     another: "Agregar otro",
     discardUnfinished: "Descartar edición sin terminar",
-    consequences:
-      "Los valores nuevos empiezan en el nivel 1 con 0 XP. Los valores existentes conservan su progreso. Agregar valores reinicia el emparejamiento de las batallas y borra los historiales de Deshacer y Rehacer. Tu configuración y tus logros no cambian.",
+    consequences: [
+      "Los valores nuevos empiezan en el nivel 1 con 0 XP. Los valores existentes conservan su progreso.",
+      "Agregar valores reinicia el emparejamiento de las batallas y borra los historiales de Deshacer y Rehacer. Tu configuración y tus logros no cambian.",
+    ],
     export: "Exportar datos",
     exporting: "Preparando exportación…",
     apply: "Guardar",

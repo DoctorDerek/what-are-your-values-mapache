@@ -14,6 +14,7 @@
     "@game/data": "workspace:*",
     "@game/design-tokens": "workspace:*",
     "@game/utils": "workspace:*",
+    "@game/ui": "workspace:*",
     "@game/machines": "workspace:*",
     "@rive-app/react-canvas-lite": "^4",
     "@vercel/analytics": "^2",

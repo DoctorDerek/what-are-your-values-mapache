@@ -25,6 +25,7 @@ const buttonVariants = cva(
       },
       size: {
         default: "min-h-11 border-4 px-[20px] py-[12px]",
+        confirmation: "min-h-11 border-4 px-[12px] py-[12px]",
         sm: "min-h-10 border-4 px-[12px] py-[8px]",
         lg: "min-h-14 border-4 px-[24px] py-[16px]",
         arrival:
@@ -60,6 +61,7 @@ const buttonTypographyVariants = cva("", {
   variants: {
     size: {
       default: "text-lg",
+      confirmation: "text-lg",
       sm: "text-base",
       lg: "text-2xl",
       arrival: "text-2xl",

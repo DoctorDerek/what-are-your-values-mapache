@@ -102,7 +102,7 @@ export default function CustomValueEditor({
         <section
           data-controller-scroll
           tabIndex={0}
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 xl:p-6"
+          className="min-h-0 flex-1 snap-y snap-proximity scroll-py-[12px] overflow-y-auto overscroll-contain p-4 xl:p-6"
         >
           <h1
             id="custom-value-editor-title"
@@ -145,64 +145,69 @@ export default function CustomValueEditor({
             </div>
           ) : (
             <>
-              <label
-                htmlFor="custom-value-edit-name"
-                className="mb-3 block text-xl font-black uppercase"
-              >
-                {copy.valueName}
-              </label>
-              <Input
-                ref={nameRef}
-                id="custom-value-edit-name"
-                value={editor.name}
-                disabled={isPersistencePending}
-                onChange={(event) => editor.setName(event.target.value)}
-                onBlur={() => editor.setIsNameTouched(true)}
-                aria-invalid={
-                  editor.isNameTouched &&
-                  editor.validation.name.validationCode !== null
-                }
-                aria-describedby="custom-value-edit-name-feedback"
-                variant="emphasized"
-                className="mb-3"
-              />
-              <CustomValueFieldFeedback
-                id="custom-value-edit-name-feedback"
-                field="name"
-                validation={editor.validation.name}
-                maximumGraphemeCount={CUSTOM_VALUE_NAME_MAX_GRAPHEMES}
-                showValidationMessage={
-                  editor.isNameTouched ||
-                  editor.validation.name.validationCode === "duplicate_name"
-                }
-              />
-              <label
-                htmlFor="custom-value-edit-definition"
-                className="mt-4 mb-3 block text-xl font-black uppercase"
-              >
-                {copy.definition}
-              </label>
-              <Textarea
-                id="custom-value-edit-definition"
-                value={editor.definition}
-                disabled={isPersistencePending}
-                onChange={(event) => editor.setDefinition(event.target.value)}
-                onBlur={() => editor.setIsDefinitionTouched(true)}
-                aria-invalid={
-                  editor.isDefinitionTouched &&
-                  editor.validation.definition.validationCode !== null
-                }
-                aria-describedby="custom-value-edit-definition-feedback"
-                rows={4}
-                variant="emphasized"
-              />
-              <CustomValueFieldFeedback
-                id="custom-value-edit-definition-feedback"
-                field="definition"
-                validation={editor.validation.definition}
-                maximumGraphemeCount={CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES}
-                showValidationMessage={editor.isDefinitionTouched}
-              />
+              <div className="flow-root focus-within:snap-center">
+                <label
+                  htmlFor="custom-value-edit-name"
+                  className="mb-3 block text-xl font-black uppercase"
+                >
+                  {copy.valueName}
+                </label>
+                <Input
+                  ref={nameRef}
+                  id="custom-value-edit-name"
+                  value={editor.name}
+                  disabled={isPersistencePending}
+                  onChange={(event) => editor.setName(event.target.value)}
+                  onBlur={() => editor.setIsNameTouched(true)}
+                  aria-invalid={
+                    editor.isNameTouched &&
+                    editor.validation.name.validationCode !== null
+                  }
+                  aria-describedby="custom-value-edit-name-feedback"
+                  variant="emphasized"
+                  className="mb-3 scroll-my-[12px]"
+                />
+                <CustomValueFieldFeedback
+                  id="custom-value-edit-name-feedback"
+                  field="name"
+                  validation={editor.validation.name}
+                  maximumGraphemeCount={CUSTOM_VALUE_NAME_MAX_GRAPHEMES}
+                  showValidationMessage={
+                    editor.isNameTouched ||
+                    editor.validation.name.validationCode === "duplicate_name"
+                  }
+                />
+              </div>
+              <div className="flow-root focus-within:snap-center">
+                <label
+                  htmlFor="custom-value-edit-definition"
+                  className="mt-4 mb-3 block text-xl font-black uppercase"
+                >
+                  {copy.definition}
+                </label>
+                <Textarea
+                  id="custom-value-edit-definition"
+                  value={editor.definition}
+                  disabled={isPersistencePending}
+                  onChange={(event) => editor.setDefinition(event.target.value)}
+                  onBlur={() => editor.setIsDefinitionTouched(true)}
+                  aria-invalid={
+                    editor.isDefinitionTouched &&
+                    editor.validation.definition.validationCode !== null
+                  }
+                  aria-describedby="custom-value-edit-definition-feedback"
+                  rows={4}
+                  variant="emphasized"
+                  className="scroll-my-[12px]"
+                />
+                <CustomValueFieldFeedback
+                  id="custom-value-edit-definition-feedback"
+                  field="definition"
+                  validation={editor.validation.definition}
+                  maximumGraphemeCount={CUSTOM_VALUE_DEFINITION_MAX_GRAPHEMES}
+                  showValidationMessage={editor.isDefinitionTouched}
+                />
+              </div>
             </>
           )}
         </section>

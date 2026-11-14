@@ -278,11 +278,12 @@ export default function DressingRoom({
         }}
       >
         <DialogContent
+          placement="reachable"
           aria-describedby={undefined}
           className="grid-rows-[minmax(0,1fr)_auto]"
         >
           <div
-            className="min-h-0 space-y-4 overflow-y-auto overscroll-contain p-4"
+            className="min-h-0 space-y-4 overflow-y-auto overscroll-contain p-[16px]"
             data-controller-scroll
             tabIndex={0}
           >
@@ -291,8 +292,9 @@ export default function DressingRoom({
             </DialogTitle>
             <Button
               variant="outline"
+              size="confirmation"
               wrap
-              className="w-full [overflow-wrap:anywhere] hyphens-auto"
+              className="w-full"
               onClick={() => actor.send({ type: "AVATAR.CANCEL" })}
             >
               {DRESSING_ROOM_COPY.discard}

@@ -2,6 +2,8 @@
 @import "uniwind";
 @import "@game/design-tokens/mapachito-vivid.css";
 
+@source "../../packages/ui/src";
+
 @utility basis-readable-action {
   flex-basis: fontScale(112);
 }
