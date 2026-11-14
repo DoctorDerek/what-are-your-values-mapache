@@ -1,5 +1,6 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
 import { CUSTOM_VALUE_INVITATION_COPY } from "@game/data/src/CustomValueInvitationCopy"
+import { createCompleteSeethingSwarmRuntimeClipTestFixture } from "@game/data/src/SeethingSwarmRuntimeClipCatalog.test-fixture"
 import type { CustomValueAuthoringOptions } from "@game/data/src/useCustomValueAuthoring"
 import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues } from "@game/data/src/ValueRanking"
@@ -11,6 +12,8 @@ import NativeCustomValueInvitation from "@/components/NativeCustomValueInvitatio
 
 function options() {
   return {
+    runtimeClipCatalog: { mode: "typography-only" } as const,
+    shouldReduceMotion: false,
     editorRequestId: 1,
     deckRevision: 0,
     existingCustomValues: [],
@@ -33,6 +36,49 @@ async function fill(name: string, definition: string) {
 }
 
 describe("native inline custom-value authoring", () => {
+  it("keeps static matching animals decorative and preserves authoring after an image error", async () => {
+    const props = options()
+    const { catalog } =
+      createCompleteSeethingSwarmRuntimeClipTestFixture("current")
+    const deck = createActiveDeck([])
+    const rankedValues = rankValues(deck, createInitialValueProgress(deck))
+    const runtimeClipCatalog = {
+      ...catalog,
+      animals: catalog.animals.map((animal) => ({
+        ...animal,
+        characterClips: animal.characterClips.map((clip) => ({
+          ...clip,
+          asset: 1,
+        })),
+        auxiliaryEffectClips: animal.auxiliaryEffectClips.map((clip) => ({
+          ...clip,
+          asset: 1,
+        })),
+      })),
+    }
+    await render(
+      <NativeCustomValueInvitation
+        {...props}
+        rankedValues={rankedValues}
+        runtimeClipCatalog={runtimeClipCatalog}
+        saveIssue={null}
+      />,
+    )
+    await fill("Accept", "to welcome my own experiences")
+    expect(screen.getByRole("header", { name: "Acceptance" })).toBeOnTheScreen()
+    const images = screen.getAllByTestId(
+      "seething-swarm-animal-catset-cat04_light_gray-image",
+      { includeHiddenElements: true },
+    )
+    expect(images).toHaveLength(2)
+    for (const image of images) await fireEvent(image, "error")
+    expect(screen.getByText("“to accept myself as I am”")).toBeOnTheScreen()
+    await press("Save")
+    expect(props.onApply).toHaveBeenCalledWith([
+      { name: "Accept", definition: "to welcome my own experiences" },
+    ])
+    expect(props.onExit).not.toHaveBeenCalled()
+  })
   it("keeps the three notices readable as separate items without saving", async () => {
     const props = options()
     await render(<NativeCustomValueInvitation {...props} saveIssue={null} />)
@@ -240,14 +286,10 @@ describe("native inline custom-value authoring", () => {
     expect(screen.getByRole("button", { name: "Save" })).toBeEnabled()
   })
 
-  it("finds localized names and preserves the draft when opening an existing match", async () => {
+  it("shows localized matching definitions without navigation and preserves the draft", async () => {
     const props = options()
     const deck = createActiveDeck([])
     const rankedValues = rankValues(deck, createInitialValueProgress(deck))
-    const health = rankedValues.find(
-      ({ definition }) =>
-        definition.kind === "canonical" && definition.englishName === "Health",
-    )!
     await render(
       <LocaleProvider locale="es-MX">
         <NativeCustomValueInvitation
@@ -261,9 +303,22 @@ describe("native inline custom-value authoring", () => {
       screen.getByLabelText("Nombre del valor"),
       "Salud",
     )
-    await press("Abrir Salud")
+    expect(
+      screen.getByRole("header", { name: "Valores coincidentes" }),
+    ).toBeOnTheScreen()
+    expect(screen.getByRole("header", { name: "Salud" })).toBeOnTheScreen()
+    expect(
+      screen.getByText("“tener bienestar físico y buena salud”"),
+    ).toBeOnTheScreen()
+    expect(
+      screen.queryByRole("button", { name: "Abrir Salud" }),
+    ).not.toBeOnTheScreen()
+    expect(screen.getByLabelText("Nombre del valor")).toHaveDisplayValue(
+      "Salud",
+    )
     expect(props.onExit).not.toHaveBeenCalled()
+    await press("Volver")
     await press("Descartar cambios")
-    expect(props.onExit).toHaveBeenCalledWith({ valueId: health.definition.id })
+    expect(props.onExit).toHaveBeenCalledWith("home")
   })
 })

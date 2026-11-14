@@ -193,7 +193,6 @@ describe("NativeHub", () => {
             .mockResolvedValue(undefined),
           onNavigationBlockedChange: jest.fn(),
           onClosed,
-          onOpenMatchingValue: jest.fn(),
         }}
       />,
     )
@@ -224,7 +223,6 @@ describe("NativeHub", () => {
             .mockResolvedValue(undefined),
           onNavigationBlockedChange: jest.fn(),
           onClosed,
-          onOpenMatchingValue: jest.fn(),
         }}
       />,
     )
