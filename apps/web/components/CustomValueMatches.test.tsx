@@ -5,7 +5,13 @@ import {
 } from "@game/data/src/Value"
 import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues } from "@game/data/src/ValueRanking"
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
 import { createSeethingSwarmTestCatalogForAnimals } from "@/components/SeethingSwarmBattleStage.test-fixture"
@@ -32,8 +38,8 @@ function options(customValues: readonly CustomValueDefinition[] = []) {
 
 describe("custom-value matching presentation", () => {
   it.each([false, true])(
-    "keeps associated animals decorative and static with reduced motion %s",
-    (shouldReduceMotion) => {
+    "reuses regular animal playback and preserves informational rows with reduced motion %s",
+    async (shouldReduceMotion) => {
       const props = options()
       render(
         <CustomValueInvitation
@@ -57,17 +63,53 @@ describe("custom-value matching presentation", () => {
       expect(
         within(section).getByText("“to accept myself as I am”"),
       ).toBeVisible()
-      const animals = section.querySelectorAll("[data-animal-id]")
+      for (const image of section.querySelectorAll("img")) fireEvent.load(image)
+      const activeAnimals = () =>
+        section.querySelectorAll(
+          '[data-hub-active-clip="true"] [data-animal-id]',
+        )
+      await waitFor(() => {
+        for (const animal of activeAnimals())
+          expect(animal).toHaveAttribute(
+            "data-playback-mode",
+            shouldReduceMotion ? "static" : "loop",
+          )
+      })
+      const animals = activeAnimals()
       expect(animals).toHaveLength(2)
       for (const animal of animals) {
         expect(animal).toHaveAttribute(
           "data-animal-id",
           "catset/cat04_light_gray",
         )
-        expect(animal).toHaveAttribute("data-playback-mode", "static")
+        expect(animal).toHaveAttribute(
+          "data-playback-mode",
+          shouldReduceMotion ? "static" : "loop",
+        )
         expect(animal).toHaveAttribute("aria-hidden", "true")
       }
-      expect(section.querySelector("a,button,[tabindex]")).toBeNull()
+      expect(section.querySelector("a,button,[tabindex='0']")).toBeNull()
+      expect(within(section).queryByText(/Level \d|XP/)).not.toBeInTheDocument()
+      const row = within(section).getAllByRole("listitem")[0]!
+      const activeImage = () =>
+        row.querySelector<HTMLImageElement>(
+          '[data-hub-active-clip="true"] img',
+        )!
+      const calm = activeImage()
+      fireEvent.pointerEnter(row, { pointerType: "mouse" })
+      for (const image of row.querySelectorAll("img")) fireEvent.load(image)
+      if (shouldReduceMotion) {
+        expect(activeImage()).toBe(calm)
+      } else {
+        await waitFor(() => expect(activeImage()).not.toBe(calm))
+        expect(activeImage().closest("[data-animal-id]")).toHaveAttribute(
+          "data-playback-mode",
+          "one-shot",
+        )
+        fireEvent.animationEnd(activeImage())
+        await waitFor(() => expect(activeImage()).toBe(calm))
+      }
+      fireEvent.pointerLeave(row)
       fireEvent.click(
         within(section).getByRole("heading", { name: "Acceptance" }),
       )
@@ -76,6 +118,42 @@ describe("custom-value matching presentation", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     },
   )
+
+  it("accepts intentional touch attention but not a scrolling or cancelled touch", async () => {
+    const props = options()
+    render(<CustomValueInvitation {...props} />)
+    fireEvent.change(screen.getByLabelText("Value name"), {
+      target: { value: "Accept" },
+    })
+    const section = screen.getByRole("region", { name: "Matching values" })
+    const row = within(section).getAllByRole("listitem")[0]!
+    for (const image of row.querySelectorAll("img")) fireEvent.load(image)
+    const activeImage = () =>
+      row.querySelector<HTMLImageElement>('[data-hub-active-clip="true"] img')!
+    const calm = activeImage()
+    const down = {
+      pointerType: "touch",
+      pointerId: 1,
+      button: 0,
+      clientX: 20,
+      clientY: 20,
+    }
+    fireEvent.pointerDown(row, down)
+    fireEvent.pointerMove(row, { ...down, clientY: 80 })
+    fireEvent.pointerUp(row, { ...down, clientY: 80 })
+    expect(activeImage()).toBe(calm)
+    fireEvent.pointerDown(row, down)
+    fireEvent.pointerCancel(row)
+    fireEvent.pointerUp(row, down)
+    expect(activeImage()).toBe(calm)
+    fireEvent.pointerDown(row, down)
+    fireEvent.pointerUp(row, down)
+    for (const image of row.querySelectorAll("img")) fireEvent.load(image)
+    await waitFor(() => expect(activeImage()).not.toBe(calm))
+    expect(screen.getByLabelText("Value name")).toHaveValue("Accept")
+    expect(props.onExit).not.toHaveBeenCalled()
+    expect(props.onApply).not.toHaveBeenCalled()
+  })
 
   it("keeps authoring usable when animal images fail", () => {
     const props = options()
