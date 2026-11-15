@@ -87,6 +87,20 @@ describe("custom-value matching presentation", () => {
           shouldReduceMotion ? "static" : "loop",
         )
         expect(animal).toHaveAttribute("aria-hidden", "true")
+        expect(animal).toHaveStyle({
+          "--animal-clearance-width": "32px",
+          "--animal-clearance-height": "32px",
+        })
+        const image = animal.querySelector("img")!
+        expect(image).toHaveAttribute("height", "32")
+        expect(image).toHaveAttribute("width", "128")
+        const portrait = animal.closest(
+          "[data-value-presentation]",
+        )!.firstElementChild!
+        expect(portrait).toHaveStyle({
+          "--portrait-width": "44px",
+          "--portrait-height": "44px",
+        })
       }
       expect(section.querySelector("a,button,[tabindex='0']")).toBeNull()
       expect(within(section).queryByText(/Level \d|XP/)).not.toBeInTheDocument()

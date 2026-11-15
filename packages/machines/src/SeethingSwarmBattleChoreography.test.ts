@@ -212,6 +212,25 @@ it("reserves unselected eligible motion while excluding terminal and environment
   expect(
     createSeethingSwarmSurfaceGeometry(expanded, "portrait"),
   ).toMatchObject({ integerScale: 3, width: 72, height: 75 })
+  const standardPortrait = createSeethingSwarmSurfaceGeometry(
+    expanded,
+    "portrait",
+  )
+  const miniaturePortrait = createSeethingSwarmSurfaceGeometry(
+    expanded,
+    "portrait",
+    "miniature",
+  )
+  expect(miniaturePortrait).toEqual({
+    ...standardPortrait,
+    integerScale: 1,
+    width: 24,
+    height: 25,
+    frameOffsetX: standardPortrait.frameOffsetX / 3,
+    frameOffsetY: standardPortrait.frameOffsetY / 3,
+    anchorX: standardPortrait.anchorX / 3,
+    anchorY: standardPortrait.anchorY / 3,
+  })
   expect(
     createSeethingSwarmSurfaceGeometry(
       { ...expanded, characterClips: expanded.characterClips.toReversed() },
