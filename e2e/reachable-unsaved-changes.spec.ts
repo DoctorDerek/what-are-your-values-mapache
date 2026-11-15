@@ -1,10 +1,91 @@
 import { expect, type Locator } from "@playwright/test"
+import { CANONICAL_VALUES } from "#game/data/src/CanonicalValues"
 import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
+import { getValueDisplayName } from "#game/data/src/Value"
 import { test } from "./fixtures"
 
 test.use({ serviceWorkers: "block" })
 
 for (const locale of ["en", "es-MX"] as const) {
+  test(`${locale} miniature matches preserve small, large and wide animals without scaling their interaction footprint`, async ({
+    page,
+  }, testInfo) => {
+    const catalog = getLocaleCatalog(locale)
+    await page.goto(catalog.metadata.webPath)
+    await page
+      .getByRole("button", {
+        name: catalog.introduction.startAction,
+        exact: true,
+      })
+      .click()
+    await page
+      .getByRole("button", { name: catalog.hub.add, exact: true })
+      .click()
+    const matches = page.getByRole("region", {
+      name: catalog.interfaceCopy.screen.matchingValues,
+      exact: true,
+    })
+    for (const id of [
+      "pvcs-2011:accuracy",
+      "pvcs-2011:protect",
+      "pvcs-2011:achievement",
+    ]) {
+      const value = CANONICAL_VALUES.find((candidate) => candidate.id === id)!
+      await page
+        .getByLabel(catalog.interfaceCopy.customValues.name, { exact: true })
+        .fill(value.englishName)
+      const row = matches.getByRole("listitem").filter({
+        has: page.getByRole("heading", {
+          name: getValueDisplayName(value, catalog.values),
+          exact: true,
+        }),
+      })
+      await row.scrollIntoViewIfNeeded()
+      await page.mouse.move(0, 0)
+      const animal = row.locator(
+        '[data-hub-active-clip="true"] [data-animal-id]',
+      )
+      await expect(animal).toHaveCount(1)
+      await expect(animal).toHaveAttribute("data-playback-ready", "true")
+      const image = animal.locator("img")
+      const geometry = await image.evaluate((node: HTMLImageElement) => {
+        const bounds = node.getBoundingClientRect()
+        const animal = node.closest("[data-animal-id]")!
+        const clearance = animal.getBoundingClientRect()
+        const portrait = animal
+          .closest("[data-value-presentation]")!
+          .firstElementChild!.getBoundingClientRect()
+        return {
+          widthScale: bounds.width / node.naturalWidth,
+          heightScale: bounds.height / node.naturalHeight,
+          clearanceWidth: clearance.width,
+          clearanceHeight: clearance.height,
+          portraitWidth: portrait.width,
+          portraitHeight: portrait.height,
+        }
+      })
+      expect(geometry.widthScale).toBeCloseTo(1, 5)
+      expect(geometry.heightScale).toBeCloseTo(1, 5)
+      expect(geometry.portraitWidth).toBe(Math.max(44, geometry.clearanceWidth))
+      expect(geometry.portraitHeight).toBe(
+        Math.max(44, geometry.clearanceHeight),
+      )
+      const initialFrame = await image.evaluate(
+        (node) => getComputedStyle(node).transform,
+      )
+      await expect
+        .poll(() => image.evaluate((node) => getComputedStyle(node).transform))
+        .not.toBe(initialFrame)
+      const before = await row.boundingBox()
+      await row.hover()
+      await expect(animal).toHaveAttribute("data-playback-mode", "one-shot")
+      await expect(animal).toHaveAttribute("data-playback-mode", "loop")
+      expect(await row.boundingBox()).toEqual(before)
+      await page.screenshot({
+        path: testInfo.outputPath(`${value.id.split(":")[1]}-miniature.png`),
+      })
+    }
+  })
   test(`${locale} matching animals respect Reduced Motion without hiding value information`, async ({
     page,
   }) => {
@@ -132,6 +213,14 @@ for (const locale of ["en", "es-MX"] as const) {
         await expect(animal).toHaveAttribute("data-playback-mode", "loop")
         await expect(animal).toHaveAttribute("data-playback-ready", "true")
         const image = animal.locator("img")
+        const sourceScale = await image.evaluate((node: HTMLImageElement) => ({
+          width: node.getBoundingClientRect().width / node.naturalWidth,
+          height: node.getBoundingClientRect().height / node.naturalHeight,
+          pixelRendering: getComputedStyle(node).imageRendering,
+        }))
+        expect(sourceScale.width).toBeCloseTo(1, 5)
+        expect(sourceScale.height).toBeCloseTo(1, 5)
+        expect(sourceScale.pixelRendering).toBe("pixelated")
         const calmSource = await image.getAttribute("src")
         const position = await image.evaluate(
           (node) => getComputedStyle(node).transform,
