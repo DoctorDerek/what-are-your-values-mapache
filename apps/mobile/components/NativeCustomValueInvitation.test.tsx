@@ -112,6 +112,9 @@ describe("native inline custom-value authoring", () => {
         "matching-animal-pvcs-2011:acceptance",
         { includeHiddenElements: true },
       )
+      expect(animal).toHaveStyle({ width: 44, height: 44 })
+      for (const image of images)
+        expect(image).toHaveStyle({ width: 128, height: 32 })
       const strips = within(animal).getAllByTestId(
         "seething-swarm-animal-catset-cat04_light_gray-strip",
         { includeHiddenElements: true },

@@ -307,6 +307,7 @@ describe("NativeHub", () => {
       `hub-animal-${rankedValues[0].definition.id}`,
       { includeHiddenElements: true },
     )
+    expect(row).toHaveStyle({ width: 72, height: 72 })
     await act(async () => {
       for (const [props] of nativeAnimalRendererMock.mock.calls)
         props.onReady?.()
@@ -335,6 +336,7 @@ describe("NativeHub", () => {
           props.clip.animalId === animalId && props.clip.animationId === "idle",
       )
       .at(-1)?.[0]
+    expect(calm?.geometry.integerScale).toBe(3)
     expect(calm?.playbackMode).toBe("loop")
     expect(calm?.frameDurationMs).toBe(160)
   })
