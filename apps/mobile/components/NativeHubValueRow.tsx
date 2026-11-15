@@ -49,14 +49,15 @@ export default function NativeHubValueRow({
       hasComparisons={showRank}
       presentation={presentation}
       parts={parts}
-      animal={
+      renderAnimal={(size) => (
         <NativeValueAnimal
+          size={size}
           testID={`${presentation === "hub" ? "hub" : "matching"}-animal-${rankedValue.definition.id}`}
           definition={rankedValue.definition}
           runtimeClipCatalog={runtimeClipCatalog}
           shouldReduceMotion={shouldReduceMotion}
         />
-      }
+      )}
     />
   )
 }

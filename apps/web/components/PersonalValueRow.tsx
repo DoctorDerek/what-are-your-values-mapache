@@ -63,9 +63,10 @@ export default function PersonalValueRow({
         hasComparisons={hasComparisons}
         presentation={presentation}
         parts={parts}
-        animal={
+        renderAnimal={(size) => (
           <span className="block" id={`${rowId}-presentation`}>
             <ValueAnimalPresentation
+              size={size}
               surface="card"
               catalog={catalog}
               isAttended={isAttended}
@@ -77,7 +78,7 @@ export default function PersonalValueRow({
               shouldReduceMotion={shouldReduceMotion}
             />
           </span>
-        }
+        )}
       />
     </li>
   )

@@ -1,6 +1,7 @@
 import {
   resolveValueAnimalPresentation,
-  SEETHING_SWARM_HUB_TILE_SIZE,
+  SEETHING_SWARM_ANIMAL_PRESENTATION_SIZES,
+  type SeethingSwarmAnimalPresentationSize,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import type { ActiveValueDefinition } from "@game/data/src/Value"
@@ -16,11 +17,13 @@ export default function NativeValueAnimal({
   runtimeClipCatalog,
   shouldReduceMotion,
   testID,
+  size = "standard",
 }: {
   definition: ActiveValueDefinition
   runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<number>
   shouldReduceMotion: boolean
   testID?: string
+  size?: SeethingSwarmAnimalPresentationSize
 }) {
   const presentation = resolveValueAnimalPresentation(
     definition,
@@ -33,8 +36,13 @@ export default function NativeValueAnimal({
   const { isAttended, attentionHandlers } = useAnimalAttentionInput()
   const geometry =
     presentation.kind === "animal"
-      ? createSeethingSwarmSurfaceGeometry(presentation.animal, "portrait")
+      ? createSeethingSwarmSurfaceGeometry(
+          presentation.animal,
+          "portrait",
+          size,
+        )
       : null
+  const { minimumSize } = SEETHING_SWARM_ANIMAL_PRESENTATION_SIZES[size]
 
   return (
     <Pressable
@@ -45,8 +53,8 @@ export default function NativeValueAnimal({
       importantForAccessibility="no-hide-descendants"
       className="items-center justify-center"
       style={{
-        width: Math.max(SEETHING_SWARM_HUB_TILE_SIZE, geometry?.width ?? 0),
-        height: Math.max(SEETHING_SWARM_HUB_TILE_SIZE, geometry?.height ?? 0),
+        width: Math.max(minimumSize, geometry?.width ?? 0),
+        height: Math.max(minimumSize, geometry?.height ?? 0),
       }}
     >
       {presentation.kind === "animal" &&

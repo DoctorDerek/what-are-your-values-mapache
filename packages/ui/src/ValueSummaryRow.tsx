@@ -1,3 +1,4 @@
+import type { SeethingSwarmAnimalPresentationSize } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import {
   getValueDisplayDefinition,
@@ -27,13 +28,13 @@ export default function ValueSummaryRow({
   value,
   hasComparisons,
   presentation = "hub",
-  animal,
+  renderAnimal,
   parts,
 }: {
   value: RankedValue
   hasComparisons: boolean
   presentation?: ValueSummaryPresentation
-  animal: ReactNode
+  renderAnimal: (size: SeethingSwarmAnimalPresentationSize) => ReactNode
   parts: ValueSummaryRowParts
 }) {
   const localization = useLocaleCatalog()
@@ -76,7 +77,9 @@ export default function ValueSummaryRow({
           )}
         </Group>
       )}
-      <Group className="shrink-0">{animal}</Group>
+      <Group className="shrink-0">
+        {renderAnimal(isMatching ? "miniature" : "standard")}
+      </Group>
       <Group
         className={
           isMatching

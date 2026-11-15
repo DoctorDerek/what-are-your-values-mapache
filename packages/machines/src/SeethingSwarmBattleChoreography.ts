@@ -1,6 +1,7 @@
 import {
   createSeethingSwarmAnimalPresentationGeometry,
   type SeethingSwarmAnimalPresentationGeometry,
+  type SeethingSwarmAnimalPresentationSize,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import {
   resolveSeethingSwarmBattleAnimationPolicy,
@@ -192,6 +193,7 @@ function classifyBattleEligibleClips<PlatformAsset>(
 export function createSeethingSwarmSurfaceGeometry<PlatformAsset>(
   animal: SeethingSwarmRuntimeAnimalClips<PlatformAsset>,
   surface: "battle" | "portrait",
+  presentationSize: SeethingSwarmAnimalPresentationSize = "standard",
 ): SeethingSwarmAnimalPresentationGeometry {
   const eligible = classifyBattleEligibleClips(animal)
   const rest = eligible.find(({ policy }) =>
@@ -216,6 +218,7 @@ export function createSeethingSwarmSurfaceGeometry<PlatformAsset>(
   return createSeethingSwarmAnimalPresentationGeometry(
     animal.referencePose,
     clips,
+    presentationSize,
   )
 }
 

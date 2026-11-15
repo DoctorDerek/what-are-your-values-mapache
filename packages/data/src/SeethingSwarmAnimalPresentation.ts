@@ -16,6 +16,15 @@ export const SEETHING_SWARM_HUB_ANIMATION_CANDIDATES = Object.freeze([
 ] as const)
 export const SEETHING_SWARM_HUB_TILE_SIZE = 72
 export const SEETHING_SWARM_STANDALONE_SCALE = 3
+export const SEETHING_SWARM_ANIMAL_PRESENTATION_SIZES = Object.freeze({
+  standard: Object.freeze({
+    integerScale: SEETHING_SWARM_STANDALONE_SCALE,
+    minimumSize: SEETHING_SWARM_HUB_TILE_SIZE,
+  }),
+  miniature: Object.freeze({ integerScale: 1, minimumSize: 44 }),
+})
+export type SeethingSwarmAnimalPresentationSize =
+  keyof typeof SEETHING_SWARM_ANIMAL_PRESENTATION_SIZES
 export const SEETHING_SWARM_CALM_FRAME_DURATION_MS = 160
 export const SEETHING_SWARM_ATTENTION_FRAME_DURATION_MS = 100
 export const SEETHING_SWARM_BATTLE_FRAME_DURATION_MS = 100
@@ -77,6 +86,7 @@ function assertPositiveSafeInteger(value: number, label: string) {
 export function createSeethingSwarmAnimalPresentationGeometry<PlatformAsset>(
   referencePose: SeethingSwarmReferencePose,
   clips: readonly SeethingSwarmRuntimeCharacterClip<PlatformAsset>[],
+  presentationSize: SeethingSwarmAnimalPresentationSize = "standard",
 ): SeethingSwarmAnimalPresentationGeometry {
   assertPositiveSafeInteger(clips.length, "SeethingSwarm clearance clip count")
   const bounds = clips.map((clip) =>
@@ -90,7 +100,8 @@ export function createSeethingSwarmAnimalPresentationGeometry<PlatformAsset>(
   const top = Math.min(...bounds.map((bound) => bound.top))
   const right = Math.max(...bounds.map((bound) => bound.left + bound.width))
   const bottom = Math.max(...bounds.map((bound) => bound.top + bound.height))
-  const integerScale = SEETHING_SWARM_STANDALONE_SCALE
+  const { integerScale } =
+    SEETHING_SWARM_ANIMAL_PRESENTATION_SIZES[presentationSize]
   return Object.freeze({
     visibleBounds: Object.freeze({
       left,
