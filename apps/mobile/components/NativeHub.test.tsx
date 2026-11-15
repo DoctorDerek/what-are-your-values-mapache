@@ -399,6 +399,12 @@ describe("NativeHub", () => {
       screen.getByLabelText("Your imported data is ready."),
     ).toBeOnTheScreen()
     expect(screen.getByText("#1")).toBeOnTheScreen()
+    expect(
+      screen.getByRole("header", {
+        name: getValueDisplayName(rankedValues[0].definition),
+      }),
+    ).toBeOnTheScreen()
+    expect(screen.getAllByText("Level 3").length).toBeGreaterThan(0)
     expect(screen.getByText("#6")).toBeOnTheScreen()
     expect(screen.getByText("All Other Values")).toBeOnTheScreen()
     expect(

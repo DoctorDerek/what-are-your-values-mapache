@@ -563,6 +563,16 @@ describe("Hub Component Integration", () => {
     expect(getHubPresentation(getValueDisplayName(winner))).toBeVisible()
     expect(screen.getByText("#1")).toBeVisible()
     expect(screen.getAllByText("Level 3").length).toBeGreaterThan(0)
+    const firstRow = screen.getAllByRole("listitem")[0]!
+    expect(
+      within(firstRow).getByRole("heading", {
+        name: getValueDisplayName(winner),
+      }),
+    ).toBeVisible()
+    expect(
+      within(firstRow).getByText(getValueDisplayDefinition(winner)),
+    ).toBeVisible()
+    expect(within(firstRow).getByText("Level 3")).toBeVisible()
     expect(
       container.querySelectorAll('[data-value-presentation="typography-only"]'),
     ).toHaveLength(0)
