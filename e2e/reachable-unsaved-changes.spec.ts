@@ -4,6 +4,51 @@ import { test } from "./fixtures"
 
 test.use({ serviceWorkers: "block" })
 
+for (const locale of ["en", "es-MX"] as const) {
+  test(`${locale} matching animals respect Reduced Motion without hiding value information`, async ({
+    page,
+  }) => {
+    const catalog = getLocaleCatalog(locale)
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await page.goto(catalog.metadata.webPath)
+    await page
+      .getByRole("button", {
+        name: catalog.introduction.startAction,
+        exact: true,
+      })
+      .click()
+    await page
+      .getByRole("button", { name: catalog.hub.add, exact: true })
+      .click()
+    await page
+      .getByLabel(catalog.interfaceCopy.customValues.name, { exact: true })
+      .fill("P")
+    const matches = page.getByRole("region", {
+      name: catalog.interfaceCopy.screen.matchingValues,
+      exact: true,
+    })
+    const row = matches.getByRole("listitem").first()
+    await row.scrollIntoViewIfNeeded()
+    await expect(row.getByRole("heading")).toBeVisible()
+    const animal = row.locator('[data-hub-active-clip="true"] [data-animal-id]')
+    if (await animal.count()) {
+      await expect(animal).toHaveAttribute("data-reduced-motion", "true")
+      await expect(animal).toHaveAttribute("data-playback-mode", "static")
+      await expect(animal).toHaveAttribute("data-playback-ready", "true")
+      expect(
+        await animal.evaluate((node) =>
+          node
+            .getAnimations({ subtree: true })
+            .some((animation) => animation.playState === "running"),
+        ),
+      ).toBe(false)
+      await row.hover()
+      await expect(animal).toHaveAttribute("data-playback-mode", "static")
+    }
+    await expect(matches.getByRole("link")).toHaveCount(0)
+  })
+}
+
 async function expectCompleteWords(action: Locator) {
   expect(
     await action.evaluate((node) => {
@@ -79,17 +124,24 @@ for (const locale of ["en", "es-MX"] as const) {
       })
       const footerBounds = await footer.boundingBox()
       await rows.first().scrollIntoViewIfNeeded()
-      const animal = rows.first().locator("[data-animal-id]")
+      await page.mouse.move(0, 0)
+      const animal = rows
+        .first()
+        .locator('[data-hub-active-clip="true"] [data-animal-id]')
       if (await animal.count()) {
-        await expect(animal).toHaveAttribute("data-playback-mode", "static")
+        await expect(animal).toHaveAttribute("data-playback-mode", "loop")
         await expect(animal).toHaveAttribute("data-playback-ready", "true")
-        expect(
-          await animal.evaluate((node) =>
-            node
-              .getAnimations({ subtree: true })
-              .some((animation) => animation.playState === "running"),
-          ),
-        ).toBe(false)
+        const image = animal.locator("img")
+        const calmSource = await image.getAttribute("src")
+        const position = await image.evaluate(
+          (node) => getComputedStyle(node).transform,
+        )
+        await expect
+          .poll(() =>
+            image.evaluate((node) => getComputedStyle(node).transform),
+          )
+          .not.toBe(position)
+        const rowBounds = await rows.first().boundingBox()
         if (viewport.scale === 1) {
           const animalBounds = await animal.boundingBox()
           const titleBounds = await rows
@@ -107,7 +159,27 @@ for (const locale of ["en", "es-MX"] as const) {
           expect(titleBounds!.y + titleBounds!.height).toBeGreaterThan(
             animalBounds!.y,
           )
+          const definitionBounds = await rows.first().locator("p").boundingBox()
+          expect(definitionBounds).not.toBeNull()
+          if (viewport.width >= 1280) {
+            expect(definitionBounds!.x).toBeGreaterThanOrEqual(
+              titleBounds!.x + titleBounds!.width,
+            )
+            expect(definitionBounds!.y).toBeLessThan(
+              animalBounds!.y + animalBounds!.height,
+            )
+          } else {
+            expect(definitionBounds!.y).toBeGreaterThanOrEqual(
+              animalBounds!.y + animalBounds!.height,
+            )
+          }
         }
+        await rows.first().hover()
+        await expect(animal).toHaveAttribute("data-playback-mode", "one-shot")
+        await expect(image).not.toHaveAttribute("src", calmSource!)
+        await expect(animal).toHaveAttribute("data-playback-mode", "loop")
+        await expect(image).toHaveAttribute("src", calmSource!)
+        expect(await rows.first().boundingBox()).toEqual(rowBounds)
       }
       await page.screenshot({
         path: testInfo.outputPath("matching-values-first.png"),
