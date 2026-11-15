@@ -16,7 +16,7 @@ import {
   TextInput,
   View,
 } from "react-native"
-import NativeSeethingSwarmAnimal from "@/components/NativeSeethingSwarmAnimal"
+import NativeHubValueRow from "@/components/NativeHubValueRow"
 import NativeUnsavedChangesDialog from "@/components/NativeUnsavedChangesDialog"
 import { Text } from "@/components/ui/text"
 
@@ -125,7 +125,15 @@ const parts: CustomValueInvitationParts<number> = {
       {children}
     </View>
   ),
-  MatchingAnimal: NativeSeethingSwarmAnimal,
+  MatchingRow: ({ value, runtimeClipCatalog, shouldReduceMotion }) => (
+    <NativeHubValueRow
+      rankedValue={value}
+      showRank={false}
+      runtimeClipCatalog={runtimeClipCatalog}
+      shouldReduceMotion={shouldReduceMotion}
+      presentation="matching"
+    />
+  ),
   Section: ({ children, className, label }) => (
     <View accessibilityLabel={label} className={className}>
       {children}

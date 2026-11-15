@@ -1,7 +1,7 @@
 import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import type { CustomValueDraftValidation } from "@game/data/src/CustomValueValidation"
-import type { SeethingSwarmAnimalPresentationGeometry } from "@game/data/src/SeethingSwarmAnimalPresentation"
-import type { SeethingSwarmRuntimeCharacterClip } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import type { RankedValue } from "@game/data/src/ValueRanking"
 import type { ComponentType, ReactElement, ReactNode, RefCallback } from "react"
 
 export type AuthoringInputHandle = Readonly<{
@@ -77,12 +77,10 @@ export type CustomValueInvitationParts<PlatformAsset> = {
   Panel: ComponentType<AuthoringChildren>
   Editor: ComponentType<CustomValueDraftEditorProps>
   MatchingValues: ComponentType<AuthoringChildren & { label: string }>
-  MatchingAnimal: ComponentType<{
-    clip: SeethingSwarmRuntimeCharacterClip<PlatformAsset>
-    geometry: SeethingSwarmAnimalPresentationGeometry
-    playbackMode: "static"
+  MatchingRow: ComponentType<{
+    value: RankedValue
+    runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<PlatformAsset>
     shouldReduceMotion: boolean
-    onLoadError: () => void
   }>
   Section: ComponentType<AuthoringChildren & { label: string }>
   Heading: ComponentType<AuthoringChildren>

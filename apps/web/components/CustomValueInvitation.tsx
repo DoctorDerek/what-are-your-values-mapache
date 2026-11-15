@@ -7,7 +7,7 @@ import CustomValueInvitationView, {
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import CustomValueDraftEditor from "@/components/CustomValueDraftEditor"
-import SeethingSwarmAnimal from "@/components/SeethingSwarmAnimal"
+import PersonalValueRow from "@/components/PersonalValueRow"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useWebControllerActions } from "@/components/WebControlsProvider"
 
@@ -57,7 +57,15 @@ const parts: CustomValueInvitationParts<StaticImageData> = {
       {children}
     </section>
   ),
-  MatchingAnimal: SeethingSwarmAnimal,
+  MatchingRow: ({ value, runtimeClipCatalog, shouldReduceMotion }) => (
+    <PersonalValueRow
+      value={value}
+      hasComparisons={false}
+      catalog={runtimeClipCatalog}
+      shouldReduceMotion={shouldReduceMotion}
+      presentation="matching"
+    />
+  ),
   Section: ({ children, className, label }) => (
     <section aria-label={label} className={className}>
       {children}
