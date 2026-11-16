@@ -4,6 +4,7 @@
   "private": true,
   "exports": {
     "./src/ButtonAppearance": "./src/ButtonAppearance.ts",
+    "./src/HubActions": "./src/HubActions.tsx",
     "./src/TextFieldAppearance": "./src/TextFieldAppearance.ts",
     "./src/CustomValueAuthoringAction": "./src/CustomValueAuthoringAction.tsx",
     "./src/CustomValueInvitationParts": "./src/CustomValueInvitationParts.ts",

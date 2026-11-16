@@ -13,6 +13,7 @@ import { ScrollView, View } from "react-native"
 import MapacheScreen from "@/components/MapacheScreen"
 import NativeCustomValueInvitation from "@/components/NativeCustomValueInvitation"
 import NativeHeroes99Hero from "@/components/NativeHeroes99Hero"
+import NativeHubActions from "@/components/NativeHubActions"
 import NativeHubValueRow from "@/components/NativeHubValueRow"
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
@@ -54,18 +55,14 @@ export default function NativeHub({
 }) {
   const localizedCopy = useLocaleCatalog()
   const introductionCopy = localizedCopy.introduction
-  const DRESSING_ROOM_COPY = localizedCopy.interfaceCopy.dressingRoom
   const PERSONAL_HUB_COPY = localizedCopy.hub
-  const presentationLoadingCopy = localizedCopy.interfaceCopy.loading
   const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
-  const VALUES_CARD_COPY = localizedCopy.card
-  const { isDraftActive, invitationProps, onMenu } = useHubCustomValueAuthoring(
-    {
+  const { isDraftActive, isNavigationBlocked, invitationProps, onMenu } =
+    useHubCustomValueAuthoring({
       invitation: customValueInvitation,
       rankedValues,
       onOpenMenu,
-    },
-  )
+    })
 
   const { hasComparisons, visibleValues, topFive, remainingValues } =
     projectHubValues(rankedValues)
@@ -215,104 +212,17 @@ export default function NativeHub({
               className="max-h-[60%] min-h-0 w-full shrink grow-0"
               contentContainerClassName="items-center pr-2 pb-3"
             >
-              <View className="w-full max-w-7xl min-w-0 gap-4">
-                <View className="min-w-0 flex-row flex-wrap gap-4">
-                  <Button
-                    className="basis-readable-action max-w-full min-w-0 shrink grow"
-                    variant="outline"
-                    size="compact"
-                    onPress={onAddCustomValue}
-                  >
-                    <Text className="text-center text-base font-black text-black">
-                      {PERSONAL_HUB_COPY.add}
-                    </Text>
-                  </Button>
-                  <Button
-                    className="basis-readable-action max-w-full min-w-0 shrink grow-[1.35]"
-                    onPress={onStartBattle}
-                    accessibilityState={{ busy: isBattlePending }}
-                    accessibilityLabel={
-                      isBattlePending
-                        ? presentationLoadingCopy.cancelBattlePreparation
-                        : PERSONAL_HUB_COPY.battle
-                    }
-                  >
-                    <View className={cx(isBattlePending && "opacity-0")}>
-                      <Text className="text-center text-2xl font-black text-white">
-                        {PERSONAL_HUB_COPY.battle}
-                      </Text>
-                    </View>
-                    {isBattlePending && (
-                      <View
-                        pointerEvents="none"
-                        className="absolute inset-0 items-center justify-center"
-                      >
-                        <Text className="text-center text-lg font-black text-white">
-                          {presentationLoadingCopy.preparing}
-                        </Text>
-                      </View>
-                    )}
-                  </Button>
-                </View>
-                <View className="min-w-0 gap-4 xl:flex-row">
-                  <View className="min-w-0 flex-row flex-wrap gap-4 xl:flex-[2]">
-                    <Button
-                      className="basis-readable-action max-w-full min-w-0 shrink grow"
-                      variant="secondary"
-                      size="compact"
-                      onPress={onCustomize}
-                    >
-                      <Text
-                        android_hyphenationFrequency="normal"
-                        className="text-center text-base font-black text-black"
-                      >
-                        {DRESSING_ROOM_COPY.customize}
-                      </Text>
-                    </Button>
-                    <Button
-                      className="basis-readable-action max-w-full min-w-0 shrink grow"
-                      variant="secondary"
-                      size="compact"
-                      onPress={onShare}
-                    >
-                      <Text
-                        android_hyphenationFrequency="normal"
-                        className="text-center text-base font-black text-black"
-                      >
-                        {VALUES_CARD_COPY.title}
-                      </Text>
-                    </Button>
-                  </View>
-                  <View className="min-w-0 flex-row flex-wrap gap-4 xl:flex-1">
-                    <Button
-                      className="min-w-0 flex-[1.4_1_5rem]"
-                      variant="outline"
-                      size="compact"
-                      onPress={onBrowseAllValues}
-                    >
-                      <Text
-                        android_hyphenationFrequency="normal"
-                        className="text-center text-base font-black text-black"
-                      >
-                        {PERSONAL_HUB_COPY.browse}
-                      </Text>
-                    </Button>
-                    <Button
-                      className="min-w-0 flex-auto"
-                      variant="outline"
-                      size="compact"
-                      onPress={onOpenAchievements}
-                    >
-                      <Text
-                        android_hyphenationFrequency="normal"
-                        className="text-center text-base font-black text-black"
-                      >
-                        {localizedCopy.interfaceCopy.screen.achievements}
-                      </Text>
-                    </Button>
-                  </View>
-                </View>
-              </View>
+              <NativeHubActions
+                isSaving={customValueInvitation?.isSaving === true}
+                isNavigationBlocked={isNavigationBlocked}
+                isBattlePending={isBattlePending}
+                onAddCustomValue={onAddCustomValue}
+                onBrowseAllValues={onBrowseAllValues}
+                onOpenAchievements={onOpenAchievements}
+                onStartBattle={onStartBattle}
+                onCustomize={onCustomize}
+                onShare={onShare}
+              />
             </ScrollView>
           </>
         )}
