@@ -36,7 +36,8 @@ export const MEXICAN_SPANISH_CUSTOMIZATION_COPY: Pick<
         "Usa un máximo de 60 caracteres para el nombre del valor.",
       prohibited_characters:
         "Quita los caracteres invisibles o de control del nombre del valor.",
-      duplicate_name: "Este valor ya existe. Ábrelo en lugar de crear otro.",
+      duplicate_name:
+        "Este valor ya existe. Elige otro nombre para tu valor personalizado.",
     },
     definition: {
       required: "Escribe una definición personal breve para este valor.",

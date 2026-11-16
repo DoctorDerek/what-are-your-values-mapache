@@ -246,7 +246,10 @@ test("controller hints stay supplementary and readable at 320px", async ({
     page.getByRole("button", { name: /^Choose / }).first(),
   ).toBeEnabled()
   await tapControllerButton(page, 15)
-  const prompt = page.getByTitle("L1 / L2", { exact: true })
+  const prompt = page
+    .getByTitle("L1 / L2", { exact: true })
+    .filter({ visible: true })
+  await expect(prompt).toHaveCount(1)
   await expect(prompt).toBeVisible()
   const atlas = await prompt.evaluate(async (element) => {
     const url = getComputedStyle(element).backgroundImage.slice(5, -2)

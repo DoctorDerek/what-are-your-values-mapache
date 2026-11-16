@@ -159,7 +159,6 @@ describe("Hub Component Integration", () => {
         onExport: vi.fn(async () => {}),
         onNavigationBlockedChange: vi.fn(),
         onClosed: vi.fn(),
-        onOpenMatchingValue: vi.fn(),
       }
       const props = {
         ...animalPresentationProps,
@@ -194,11 +193,14 @@ describe("Hub Component Integration", () => {
         screen.getByRole("region", { name: copy.screen.matchingValues }),
       )
       fireEvent.click(
-        matches.getByRole("button", {
-          name: copy.screen.openValue(
-            getValueDisplayName(pets.definition, catalog.values),
-          ),
+        matches.getByRole("heading", {
+          name: getValueDisplayName(pets.definition, catalog.values),
         }),
+      )
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+      expect(invitation.onClosed).not.toHaveBeenCalled()
+      fireEvent.click(
+        screen.getByRole("button", { name: copy.customValues.back }),
       )
       fireEvent.click(
         within(screen.getByRole("dialog")).getByRole("button", {
@@ -206,9 +208,6 @@ describe("Hub Component Integration", () => {
         }),
       )
       expect(invitation.onClosed).toHaveBeenCalledTimes(1)
-      expect(invitation.onOpenMatchingValue).toHaveBeenCalledExactlyOnceWith(
-        pets.definition.id,
-      )
       expect(props.onOpenMenu).not.toHaveBeenCalled()
       expect(invitation.onApply).not.toHaveBeenCalled()
       rerender(
@@ -222,7 +221,6 @@ describe("Hub Component Integration", () => {
       fireEvent.click(menu())
       await waitFor(() => expect(props.onOpenMenu).toHaveBeenCalledTimes(1))
       expect(invitation.onClosed).toHaveBeenCalledTimes(2)
-      expect(invitation.onOpenMatchingValue).toHaveBeenCalledTimes(1)
     },
   )
 
@@ -251,7 +249,6 @@ describe("Hub Component Integration", () => {
           onExport: vi.fn(async () => {}),
           onNavigationBlockedChange: vi.fn(),
           onClosed,
-          onOpenMatchingValue: vi.fn(),
         }}
       />,
     )
@@ -566,6 +563,16 @@ describe("Hub Component Integration", () => {
     expect(getHubPresentation(getValueDisplayName(winner))).toBeVisible()
     expect(screen.getByText("#1")).toBeVisible()
     expect(screen.getAllByText("Level 3").length).toBeGreaterThan(0)
+    const firstRow = screen.getAllByRole("listitem")[0]!
+    expect(
+      within(firstRow).getByRole("heading", {
+        name: getValueDisplayName(winner),
+      }),
+    ).toBeVisible()
+    expect(
+      within(firstRow).getByText(getValueDisplayDefinition(winner)),
+    ).toBeVisible()
+    expect(within(firstRow).getByText("Level 3")).toBeVisible()
     expect(
       container.querySelectorAll('[data-value-presentation="typography-only"]'),
     ).toHaveLength(0)

@@ -180,8 +180,15 @@ describe("NativeGameClient Menu navigation", () => {
     await user.press(await screen.findByRole("button", { name: "Close Menu" }))
     await user.press(screen.getByRole("button", { name: "Add value" }))
     await fireEvent.changeText(screen.getByLabelText("Value name"), "Health")
-    await user.press(screen.getByRole("button", { name: "Open Health" }))
+    expect(screen.getByRole("header", { name: "Health" })).toBeOnTheScreen()
+    expect(
+      screen.queryByRole("button", { name: "Open Health" }),
+    ).not.toBeOnTheScreen()
+    await user.press(screen.getByRole("button", { name: "Back" }))
     await user.press(screen.getByRole("button", { name: "Discard changes" }))
+    await user.press(
+      await screen.findByRole("button", { name: "Browse All Values" }),
+    )
     expect(await screen.findByText("All Values")).toBeOnTheScreen()
     await screen.findByRole("button", { name: "Back" })
     expect(await pressBack()).toBe(true)

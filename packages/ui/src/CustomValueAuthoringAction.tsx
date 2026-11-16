@@ -33,7 +33,7 @@ export default function CustomValueAuthoringAction({
       className={cx(
         buttonVariants({ variant, size: resolvedSize }),
         variant !== "link" && "border-black",
-        location === "matching" ? "justify-start" : "justify-center",
+        "justify-center",
         "max-w-full whitespace-normal",
         location === "footer" && "basis-readable-action min-w-0 grow",
         location === "discard" && "w-full",
@@ -42,7 +42,7 @@ export default function CustomValueAuthoringAction({
       textClassName={cx(
         buttonTextVariants({ variant }),
         variant === "link" ? "normal-case" : "uppercase",
-        location === "matching" ? "text-left" : "text-center",
+        "text-center",
         location === "decision"
           ? "text-base leading-tight xl:text-lg"
           : buttonTypographyVariants({ size: resolvedSize }),

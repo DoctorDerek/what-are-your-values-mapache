@@ -1,16 +1,27 @@
 import { createActiveDeck } from "@game/data/src/ActiveDeck"
 import { CUSTOM_VALUE_INVITATION_COPY } from "@game/data/src/CustomValueInvitationCopy"
+import { resolveSeethingSwarmFamilyPerformanceProfile } from "@game/data/src/SeethingSwarmFamilyPerformanceProfiles"
+import { createCompleteSeethingSwarmRuntimeClipTestFixture } from "@game/data/src/SeethingSwarmRuntimeClipCatalog.test-fixture"
 import type { CustomValueAuthoringOptions } from "@game/data/src/useCustomValueAuthoring"
 import { createInitialValueProgress } from "@game/data/src/ValueProgress"
 import { rankValues } from "@game/data/src/ValueRanking"
 import LocaleProvider from "@game/utils/src/LocaleContext"
-import { describe, expect, it, jest } from "@jest/globals"
-import { fireEvent, render, screen } from "@testing-library/react-native"
+import { afterEach, describe, expect, it, jest } from "@jest/globals"
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react-native"
 import { Text } from "react-native"
+import { getAnimatedStyle } from "react-native-reanimated"
 import NativeCustomValueInvitation from "@/components/NativeCustomValueInvitation"
 
 function options() {
   return {
+    runtimeClipCatalog: { mode: "typography-only" } as const,
+    shouldReduceMotion: false,
     editorRequestId: 1,
     deckRevision: 0,
     existingCustomValues: [],
@@ -33,6 +44,105 @@ async function fill(name: string, definition: string) {
 }
 
 describe("native inline custom-value authoring", () => {
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  it.each([false, true])(
+    "uses the regular native animal driver with reduced motion %s and preserves authoring after an image error",
+    async (shouldReduceMotion) => {
+      jest.useFakeTimers()
+      const props = options()
+      const { catalog } =
+        createCompleteSeethingSwarmRuntimeClipTestFixture("current")
+      const deck = createActiveDeck([])
+      const rankedValues = rankValues(deck, createInitialValueProgress(deck))
+      const runtimeClipCatalog = {
+        ...catalog,
+        animals: catalog.animals
+          .filter(({ animalId }) => animalId === "catset/cat04_light_gray")
+          .map((animal) => ({
+            ...animal,
+            characterClips: [
+              ...new Set([
+                ...resolveSeethingSwarmFamilyPerformanceProfile(animal.animalId)
+                  .calm,
+                ...resolveSeethingSwarmFamilyPerformanceProfile(animal.animalId)
+                  .attention,
+              ]),
+            ].map((animationId, index) => ({
+              ...animal.characterClips[0]!,
+              animationId,
+              relativePath: `${animal.animalId}/${animationId}.png`,
+              frameCount: 4,
+              asset: index + 1,
+            })),
+            auxiliaryEffectClips: animal.auxiliaryEffectClips.map((clip) => ({
+              ...clip,
+              asset: 1,
+            })),
+          })),
+      }
+      await render(
+        <NativeCustomValueInvitation
+          {...props}
+          rankedValues={rankedValues}
+          runtimeClipCatalog={runtimeClipCatalog}
+          shouldReduceMotion={shouldReduceMotion}
+          saveIssue={null}
+        />,
+      )
+      await fill("Accept", "to welcome my own experiences")
+      expect(
+        screen.getByRole("header", { name: "Acceptance" }),
+      ).toBeOnTheScreen()
+      const images = screen.getAllByTestId(
+        "seething-swarm-animal-catset-cat04_light_gray-image",
+        { includeHiddenElements: true },
+      )
+      const section = within(screen.getByLabelText("Matching values"))
+      expect(
+        section.getAllByRole("header", {
+          name: /^(Acceptance|Self-Acceptance)$/,
+        }),
+      ).toHaveLength(2)
+      expect(section.queryByText(/Level \d|XP/)).not.toBeOnTheScreen()
+      for (const image of images) await fireEvent(image, "load")
+      const animal = screen.getByTestId(
+        "matching-animal-pvcs-2011:acceptance",
+        { includeHiddenElements: true },
+      )
+      expect(animal).toHaveStyle({ width: 44, height: 44 })
+      for (const image of images)
+        expect(image).toHaveStyle({ width: 128, height: 32 })
+      const strips = within(animal).getAllByTestId(
+        "seething-swarm-animal-catset-cat04_light_gray-strip",
+        { includeHiddenElements: true },
+      )
+      const before = strips.map((strip) =>
+        JSON.stringify(getAnimatedStyle(strip)),
+      )
+      await act(async () => {
+        jest.advanceTimersByTime(200)
+      })
+      expect(
+        strips.some(
+          (strip, index) =>
+            JSON.stringify(getAnimatedStyle(strip)) !== before[index],
+        ),
+      ).toBe(!shouldReduceMotion)
+      await fireEvent.press(animal)
+      expect(props.onExit).not.toHaveBeenCalled()
+      expect(props.onApply).not.toHaveBeenCalled()
+      for (const image of images) await fireEvent(image, "error")
+      expect(screen.getByText("“to accept myself as I am”")).toBeOnTheScreen()
+      await press("Save")
+      expect(props.onApply).toHaveBeenCalledWith([
+        { name: "Accept", definition: "to welcome my own experiences" },
+      ])
+      expect(props.onExit).not.toHaveBeenCalled()
+    },
+  )
   it("keeps the three notices readable as separate items without saving", async () => {
     const props = options()
     await render(<NativeCustomValueInvitation {...props} saveIssue={null} />)
@@ -240,14 +350,10 @@ describe("native inline custom-value authoring", () => {
     expect(screen.getByRole("button", { name: "Save" })).toBeEnabled()
   })
 
-  it("finds localized names and preserves the draft when opening an existing match", async () => {
+  it("shows localized matching definitions without navigation and preserves the draft", async () => {
     const props = options()
     const deck = createActiveDeck([])
     const rankedValues = rankValues(deck, createInitialValueProgress(deck))
-    const health = rankedValues.find(
-      ({ definition }) =>
-        definition.kind === "canonical" && definition.englishName === "Health",
-    )!
     await render(
       <LocaleProvider locale="es-MX">
         <NativeCustomValueInvitation
@@ -261,9 +367,22 @@ describe("native inline custom-value authoring", () => {
       screen.getByLabelText("Nombre del valor"),
       "Salud",
     )
-    await press("Abrir Salud")
+    expect(
+      screen.getByRole("header", { name: "Valores coincidentes" }),
+    ).toBeOnTheScreen()
+    expect(screen.getByRole("header", { name: "Salud" })).toBeOnTheScreen()
+    expect(
+      screen.getByText("“tener bienestar físico y buena salud”"),
+    ).toBeOnTheScreen()
+    expect(
+      screen.queryByRole("button", { name: "Abrir Salud" }),
+    ).not.toBeOnTheScreen()
+    expect(screen.getByLabelText("Nombre del valor")).toHaveDisplayValue(
+      "Salud",
+    )
     expect(props.onExit).not.toHaveBeenCalled()
+    await press("Volver")
     await press("Descartar cambios")
-    expect(props.onExit).toHaveBeenCalledWith({ valueId: health.definition.id })
+    expect(props.onExit).toHaveBeenCalledWith("home")
   })
 })

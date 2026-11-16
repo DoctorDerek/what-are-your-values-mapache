@@ -1,7 +1,8 @@
 "use client"
 
 import {
-  SEETHING_SWARM_HUB_TILE_SIZE,
+  SEETHING_SWARM_ANIMAL_PRESENTATION_SIZES,
+  type SeethingSwarmAnimalPresentationSize,
   type ValueAnimalPresentation as ValueAnimalPresentationData,
 } from "@game/data/src/SeethingSwarmAnimalPresentation"
 import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
@@ -20,6 +21,7 @@ export default function ValueAnimalPresentation({
   valuePresentation,
   shouldReduceMotion,
   surface = "tile",
+  size = "standard",
 }: {
   catalog: SeethingSwarmRuntimeClipCatalog<StaticImageData>
   isAttended: boolean
@@ -27,6 +29,7 @@ export default function ValueAnimalPresentation({
   valuePresentation: ValueAnimalPresentationData<StaticImageData>
   shouldReduceMotion: boolean
   surface?: "tile" | "card" | "catalog"
+  size?: SeethingSwarmAnimalPresentationSize
 }) {
   const { ref: portraitRef, near: isNearViewport } = useAnimalViewport()
   const imagePath =
@@ -42,13 +45,15 @@ export default function ValueAnimalPresentation({
   const geometry = createSeethingSwarmSurfaceGeometry(
     valuePresentation.animal,
     "portrait",
+    size,
   )
+  const { minimumSize } = SEETHING_SWARM_ANIMAL_PRESENTATION_SIZES[size]
   const portraitStyle: CSSProperties & {
     "--portrait-width": string
     "--portrait-height": string
   } = {
-    "--portrait-width": `${Math.max(SEETHING_SWARM_HUB_TILE_SIZE, geometry.width)}px`,
-    "--portrait-height": `${Math.max(SEETHING_SWARM_HUB_TILE_SIZE, geometry.height)}px`,
+    "--portrait-width": `${Math.max(minimumSize, geometry.width)}px`,
+    "--portrait-height": `${Math.max(minimumSize, geometry.height)}px`,
   }
 
   return (

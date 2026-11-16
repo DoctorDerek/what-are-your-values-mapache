@@ -1,5 +1,7 @@
 import type { CustomValueDraft } from "@game/data/src/CustomValueDraft"
 import type { CustomValueDraftValidation } from "@game/data/src/CustomValueValidation"
+import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
+import type { RankedValue } from "@game/data/src/ValueRanking"
 import type { ComponentType, ReactElement, ReactNode, RefCallback } from "react"
 
 export type AuthoringInputHandle = Readonly<{
@@ -14,7 +16,7 @@ export type AuthoringActionProps = {
   disabled: boolean
   onActivate: () => void
   variant: "default" | "secondary" | "outline" | "link"
-  location: "matching" | "inline" | "footer" | "discard" | "decision"
+  location: "inline" | "footer" | "discard" | "decision"
 }
 export type AuthoringActionControlProps = Omit<
   AuthoringActionProps,
@@ -60,7 +62,7 @@ export type CustomValueDraftEditorProps = {
   onSubmit: () => void
   onNext: () => void
 }
-export type CustomValueInvitationParts = {
+export type CustomValueInvitationParts<PlatformAsset> = {
   Surface: ComponentType<{
     children: ReactNode
     footer: ReactNode
@@ -74,14 +76,17 @@ export type CustomValueInvitationParts = {
   }>
   Panel: ComponentType<AuthoringChildren>
   Editor: ComponentType<CustomValueDraftEditorProps>
-  MatchingValues: ComponentType<
-    AuthoringChildren & { label: string; contentClassName: string }
-  >
+  MatchingValues: ComponentType<AuthoringChildren & { label: string }>
+  MatchingRow: ComponentType<{
+    value: RankedValue
+    runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<PlatformAsset>
+    shouldReduceMotion: boolean
+  }>
   Section: ComponentType<AuthoringChildren & { label: string }>
   Heading: ComponentType<AuthoringChildren>
   DraftList: ComponentType<AuthoringChildren>
   Draft: ComponentType<AuthoringChildren>
-  DraftTitle: ComponentType<AuthoringChildren>
+  DraftTitle: ComponentType<AuthoringChildren & { accessibilityLabel?: string }>
   DraftDefinition: ComponentType<AuthoringChildren>
   ActionRow: ComponentType<AuthoringChildren>
   Action: ComponentType<AuthoringActionControlProps>

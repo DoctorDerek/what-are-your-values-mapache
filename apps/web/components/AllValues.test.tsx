@@ -443,7 +443,9 @@ describe("All Values Component Integration", () => {
     })
     fireEvent.blur(screen.getByLabelText("Value Name"))
     expect(
-      screen.getByText("This value already exists. Open it instead."),
+      screen.getByText(
+        "This value already exists. Choose a different name for your custom value.",
+      ),
     ).toHaveClass("text-black")
     expect(screen.getByLabelText("Value Name")).toHaveAttribute(
       "aria-invalid",

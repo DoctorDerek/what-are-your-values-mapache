@@ -1,32 +1,39 @@
 "use client"
 
+import type { SeethingSwarmRuntimeClipCatalog } from "@game/data/src/SeethingSwarmRuntimeClipCatalog"
 import useCustomValueAuthoring, {
   type CustomValueAuthoringOptions,
 } from "@game/data/src/useCustomValueAuthoring"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
-import { getValueDisplayName } from "@game/data/src/Value"
 import type { RankedValue } from "@game/data/src/ValueRanking"
-import { findRankedValueNameMatches } from "@game/data/src/ValueSearch"
 import Action from "@game/ui/src/CustomValueAuthoringAction"
 import type {
   AuthoringInputHandle,
   CustomValueInvitationParts,
 } from "@game/ui/src/CustomValueInvitationParts"
+import CustomValueMatches from "@game/ui/src/CustomValueMatches"
 import { useEffect, useRef, type ReactNode } from "react"
 
-export type CustomValueInvitationProps = CustomValueAuthoringOptions & {
-  saveIssue: string | null
-  rankedValues?: readonly RankedValue[]
-  header?: ReactNode
-}
+export type CustomValueInvitationProps<PlatformAsset> =
+  CustomValueAuthoringOptions & {
+    saveIssue: string | null
+    rankedValues?: readonly RankedValue[]
+    header?: ReactNode
+    runtimeClipCatalog: SeethingSwarmRuntimeClipCatalog<PlatformAsset>
+    shouldReduceMotion: boolean
+  }
 
-export default function CustomValueInvitationView({
+export default function CustomValueInvitationView<PlatformAsset>({
   parts,
   saveIssue,
   rankedValues = [],
   header,
+  runtimeClipCatalog,
+  shouldReduceMotion,
   ...options
-}: CustomValueInvitationProps & { parts: CustomValueInvitationParts }) {
+}: CustomValueInvitationProps<PlatformAsset> & {
+  parts: CustomValueInvitationParts<PlatformAsset>
+}) {
   const localization = useLocaleCatalog()
   const copy = localization.interfaceCopy.customValues
   const leaveCopy = localization.interfaceCopy.dressingRoom
@@ -46,17 +53,11 @@ export default function CustomValueInvitationView({
   const notices = authoring.hasChanges
     ? [...copy.consequences, copy.unsaved]
     : copy.consequences
-  const matchingValues = findRankedValueNameMatches(
-    rankedValues,
-    authoring.editorDraft.name,
-    localization.values,
-  )
   const issue = saveIssue || authoring.exportIssue
   const {
     Surface,
     Panel,
     Editor,
-    MatchingValues,
     Section,
     Heading,
     DraftList,
@@ -178,30 +179,13 @@ export default function CustomValueInvitationView({
           onChange={authoring.setEditorDraft}
           onSubmit={authoring.saveAdditions}
         />
-        {matchingValues.length > 0 && (
-          <MatchingValues
-            label={screenCopy.matchingValues}
-            className="mt-3 max-h-[min(12rem,35vh)]"
-            contentClassName="flex flex-col gap-2 p-1"
-          >
-            {matchingValues.map(({ definition }) => (
-              <Action
-                Control={parts.Action}
-                key={definition.id}
-                variant="link"
-                location="matching"
-                disabled={authoring.isBusy}
-                onActivate={() =>
-                  authoring.requestExit({ valueId: definition.id })
-                }
-              >
-                {screenCopy.openValue(
-                  getValueDisplayName(definition, localization.values),
-                )}
-              </Action>
-            ))}
-          </MatchingValues>
-        )}
+        <CustomValueMatches
+          rankedValues={rankedValues}
+          name={authoring.editorDraft.name}
+          runtimeClipCatalog={runtimeClipCatalog}
+          shouldReduceMotion={shouldReduceMotion}
+          parts={parts}
+        />
         {authoring.drafts.length > 0 && (
           <Section
             label={copy.drafts}

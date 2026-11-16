@@ -6,7 +6,8 @@ export const customValueValidationMessages = Object.freeze({
     too_many_graphemes: "Use 60 or fewer characters for the value name.",
     prohibited_characters:
       "Remove invisible or control characters from the value name.",
-    duplicate_name: "This value already exists. Open it instead.",
+    duplicate_name:
+      "This value already exists. Choose a different name for your custom value.",
   }),
   definition: Object.freeze({
     required: "Enter a short personal definition for this value.",

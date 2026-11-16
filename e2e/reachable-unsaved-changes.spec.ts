@@ -1,8 +1,134 @@
 import { expect, type Locator } from "@playwright/test"
+import { CANONICAL_VALUES } from "#game/data/src/CanonicalValues"
 import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
+import { getValueDisplayName } from "#game/data/src/Value"
 import { test } from "./fixtures"
 
 test.use({ serviceWorkers: "block" })
+
+for (const locale of ["en", "es-MX"] as const) {
+  test(`${locale} miniature matches preserve small, large and wide animals without scaling their interaction footprint`, async ({
+    page,
+  }, testInfo) => {
+    const catalog = getLocaleCatalog(locale)
+    await page.goto(catalog.metadata.webPath)
+    await page
+      .getByRole("button", {
+        name: catalog.introduction.startAction,
+        exact: true,
+      })
+      .click()
+    await page
+      .getByRole("button", { name: catalog.hub.add, exact: true })
+      .click()
+    const matches = page.getByRole("region", {
+      name: catalog.interfaceCopy.screen.matchingValues,
+      exact: true,
+    })
+    for (const id of [
+      "pvcs-2011:accuracy",
+      "pvcs-2011:protect",
+      "pvcs-2011:achievement",
+    ]) {
+      const value = CANONICAL_VALUES.find((candidate) => candidate.id === id)!
+      await page
+        .getByLabel(catalog.interfaceCopy.customValues.name, { exact: true })
+        .fill(value.englishName)
+      const row = matches.getByRole("listitem").filter({
+        has: page.getByRole("heading", {
+          name: getValueDisplayName(value, catalog.values),
+          exact: true,
+        }),
+      })
+      await row.scrollIntoViewIfNeeded()
+      await page.mouse.move(0, 0)
+      const animal = row.locator(
+        '[data-hub-active-clip="true"] [data-animal-id]',
+      )
+      await expect(animal).toHaveCount(1)
+      await expect(animal).toHaveAttribute("data-playback-ready", "true")
+      const image = animal.locator("img")
+      const geometry = await image.evaluate((node: HTMLImageElement) => {
+        const bounds = node.getBoundingClientRect()
+        const animal = node.closest("[data-animal-id]")!
+        const clearance = animal.getBoundingClientRect()
+        const portrait = animal
+          .closest("[data-value-presentation]")!
+          .firstElementChild!.getBoundingClientRect()
+        return {
+          widthScale: bounds.width / node.naturalWidth,
+          heightScale: bounds.height / node.naturalHeight,
+          clearanceWidth: clearance.width,
+          clearanceHeight: clearance.height,
+          portraitWidth: portrait.width,
+          portraitHeight: portrait.height,
+        }
+      })
+      expect(geometry.widthScale).toBeCloseTo(1, 5)
+      expect(geometry.heightScale).toBeCloseTo(1, 5)
+      expect(geometry.portraitWidth).toBe(Math.max(44, geometry.clearanceWidth))
+      expect(geometry.portraitHeight).toBe(
+        Math.max(44, geometry.clearanceHeight),
+      )
+      const initialFrame = await image.evaluate(
+        (node) => getComputedStyle(node).transform,
+      )
+      await expect
+        .poll(() => image.evaluate((node) => getComputedStyle(node).transform))
+        .not.toBe(initialFrame)
+      const before = await row.boundingBox()
+      await row.hover()
+      await expect(animal).toHaveAttribute("data-playback-mode", "one-shot")
+      await expect(animal).toHaveAttribute("data-playback-mode", "loop")
+      expect(await row.boundingBox()).toEqual(before)
+      await page.screenshot({
+        path: testInfo.outputPath(`${value.id.split(":")[1]}-miniature.png`),
+      })
+    }
+  })
+  test(`${locale} matching animals respect Reduced Motion without hiding value information`, async ({
+    page,
+  }) => {
+    const catalog = getLocaleCatalog(locale)
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await page.goto(catalog.metadata.webPath)
+    await page
+      .getByRole("button", {
+        name: catalog.introduction.startAction,
+        exact: true,
+      })
+      .click()
+    await page
+      .getByRole("button", { name: catalog.hub.add, exact: true })
+      .click()
+    await page
+      .getByLabel(catalog.interfaceCopy.customValues.name, { exact: true })
+      .fill("P")
+    const matches = page.getByRole("region", {
+      name: catalog.interfaceCopy.screen.matchingValues,
+      exact: true,
+    })
+    const row = matches.getByRole("listitem").first()
+    await row.scrollIntoViewIfNeeded()
+    await expect(row.getByRole("heading")).toBeVisible()
+    const animal = row.locator('[data-hub-active-clip="true"] [data-animal-id]')
+    if (await animal.count()) {
+      await expect(animal).toHaveAttribute("data-reduced-motion", "true")
+      await expect(animal).toHaveAttribute("data-playback-mode", "static")
+      await expect(animal).toHaveAttribute("data-playback-ready", "true")
+      expect(
+        await animal.evaluate((node) =>
+          node
+            .getAnimations({ subtree: true })
+            .some((animation) => animation.playState === "running"),
+        ),
+      ).toBe(false)
+      await row.hover()
+      await expect(animal).toHaveAttribute("data-playback-mode", "static")
+    }
+    await expect(matches.getByRole("link")).toHaveCount(0)
+  })
+}
 
 async function expectCompleteWords(action: Locator) {
   expect(
@@ -29,11 +155,19 @@ async function expectCompleteWords(action: Locator) {
 for (const locale of ["en", "es-MX"] as const) {
   const catalog = getLocaleCatalog(locale)
   const copy = catalog.interfaceCopy
-  for (const textScale of [1, 2]) {
-    test(`${locale} custom matching and notices remain separate, scrollable and clear at ${textScale}x text`, async ({
+  for (const viewport of [
+    { width: 320, height: 568, scale: 1 },
+    { width: 320, height: 568, scale: 2 },
+    { width: 1440, height: 900, scale: 1 },
+    { width: 1440, height: 900, scale: 2 },
+  ]) {
+    test(`${locale} custom matching and notices remain separate, scrollable and clear at ${viewport.width}px and ${viewport.scale}x text`, async ({
       page,
     }, testInfo) => {
-      await page.setViewportSize({ width: 320, height: 568 })
+      await page.setViewportSize({
+        width: viewport.width,
+        height: viewport.height,
+      })
       await page.goto(catalog.metadata.webPath)
       await page
         .getByRole("button", {
@@ -45,7 +179,7 @@ for (const locale of ["en", "es-MX"] as const) {
         .getByRole("button", { name: catalog.hub.add, exact: true })
         .click()
       await page.addStyleTag({
-        content: `html { font-size:${textScale * 100}%; }`,
+        content: `html { font-size:${viewport.scale * 100}%; }`,
       })
       const name = page.getByLabel(copy.customValues.name, { exact: true })
       await name.fill("P")
@@ -53,8 +187,16 @@ for (const locale of ["en", "es-MX"] as const) {
         name: copy.screen.matchingValues,
         exact: true,
       })
-      const buttons = matches.getByRole("button")
-      expect(await buttons.count()).toBeGreaterThan(10)
+      const rows = matches.getByRole("listitem")
+      expect(await rows.count()).toBeGreaterThan(10)
+      await expect(
+        matches.getByRole("heading", {
+          name: copy.screen.matchingValues,
+          exact: true,
+        }),
+      ).toBeVisible()
+      await expect(matches.getByRole("button")).toHaveCount(0)
+      await expect(matches.getByRole("link")).toHaveCount(0)
       const footer = page.locator("footer").filter({
         has: page.getByRole("button", {
           name: copy.customValues.apply,
@@ -62,19 +204,99 @@ for (const locale of ["en", "es-MX"] as const) {
         }),
       })
       const footerBounds = await footer.boundingBox()
-      await buttons.first().scrollIntoViewIfNeeded()
-      await expectCompleteWords(buttons.first())
-      const first = await buttons.nth(0).boundingBox()
-      const second = await buttons.nth(1).boundingBox()
+      await rows.first().scrollIntoViewIfNeeded()
+      await page.mouse.move(0, 0)
+      const animal = rows
+        .first()
+        .locator('[data-hub-active-clip="true"] [data-animal-id]')
+      if (await animal.count()) {
+        await expect(animal).toHaveAttribute("data-playback-mode", "loop")
+        await expect(animal).toHaveAttribute("data-playback-ready", "true")
+        const image = animal.locator("img")
+        const sourceScale = await image.evaluate((node: HTMLImageElement) => ({
+          width: node.getBoundingClientRect().width / node.naturalWidth,
+          height: node.getBoundingClientRect().height / node.naturalHeight,
+          pixelRendering: getComputedStyle(node).imageRendering,
+        }))
+        expect(sourceScale.width).toBeCloseTo(1, 5)
+        expect(sourceScale.height).toBeCloseTo(1, 5)
+        expect(sourceScale.pixelRendering).toBe("pixelated")
+        const calmSource = await image.getAttribute("src")
+        const position = await image.evaluate(
+          (node) => getComputedStyle(node).transform,
+        )
+        await expect
+          .poll(() =>
+            image.evaluate((node) => getComputedStyle(node).transform),
+          )
+          .not.toBe(position)
+        const rowBounds = await rows.first().boundingBox()
+        if (viewport.scale === 1) {
+          const animalBounds = await animal.boundingBox()
+          const titleBounds = await rows
+            .first()
+            .getByRole("heading")
+            .boundingBox()
+          expect(animalBounds).not.toBeNull()
+          expect(titleBounds).not.toBeNull()
+          expect(titleBounds!.x).toBeGreaterThanOrEqual(
+            animalBounds!.x + animalBounds!.width,
+          )
+          expect(titleBounds!.y).toBeLessThan(
+            animalBounds!.y + animalBounds!.height,
+          )
+          expect(titleBounds!.y + titleBounds!.height).toBeGreaterThan(
+            animalBounds!.y,
+          )
+          const definitionBounds = await rows.first().locator("p").boundingBox()
+          expect(definitionBounds).not.toBeNull()
+          if (viewport.width >= 1280) {
+            expect(definitionBounds!.x).toBeGreaterThanOrEqual(
+              titleBounds!.x + titleBounds!.width,
+            )
+            expect(definitionBounds!.y).toBeLessThan(
+              animalBounds!.y + animalBounds!.height,
+            )
+          } else {
+            expect(definitionBounds!.y).toBeGreaterThanOrEqual(
+              animalBounds!.y + animalBounds!.height,
+            )
+          }
+        }
+        await rows.first().hover()
+        await expect(animal).toHaveAttribute("data-playback-mode", "one-shot")
+        await expect(image).not.toHaveAttribute("src", calmSource!)
+        await expect(animal).toHaveAttribute("data-playback-mode", "loop")
+        await expect(image).toHaveAttribute("src", calmSource!)
+        expect(await rows.first().boundingBox()).toEqual(rowBounds)
+      }
+      await page.screenshot({
+        path: testInfo.outputPath("matching-values-first.png"),
+      })
+      const first = await rows.nth(0).boundingBox()
+      const second = await rows.nth(1).boundingBox()
       expect(first).not.toBeNull()
       expect(second).not.toBeNull()
       expect(second!.y).toBeGreaterThanOrEqual(first!.y + first!.height)
       expect(
-        await matches.evaluate((node) => node.scrollHeight > node.clientHeight),
+        await matches.evaluate(
+          (node) => node.scrollHeight <= node.clientHeight + 1,
+        ),
       ).toBe(true)
-      await buttons.last().scrollIntoViewIfNeeded()
-      await buttons.last().click({ trial: true })
-      await expectCompleteWords(buttons.last())
+      const reading = page
+        .locator("[data-controller-scroll]")
+        .filter({ has: matches })
+      await expect(reading).toHaveCount(1)
+      expect(
+        await reading.evaluate((node) => node.scrollHeight > node.clientHeight),
+      ).toBe(true)
+      await rows.last().scrollIntoViewIfNeeded()
+      await expect(rows.last()).toBeInViewport()
+      await rows.last().click()
+      await expect(page.getByRole("dialog")).toHaveCount(0)
+      const names = rows.getByRole("heading")
+      expect(await names.count()).toBe(await rows.count())
+      expect(await rows.last().locator("p").textContent()).toMatch(/^“.+”$/u)
       expect(await footer.boundingBox()).toEqual(footerBounds)
       await expect(name).toHaveValue("P")
       await page.screenshot({

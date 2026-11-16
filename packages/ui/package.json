@@ -8,12 +8,15 @@
     "./src/CustomValueAuthoringAction": "./src/CustomValueAuthoringAction.tsx",
     "./src/CustomValueInvitationParts": "./src/CustomValueInvitationParts.ts",
     "./src/CustomValueDraftEditorView": "./src/CustomValueDraftEditorView.tsx",
-    "./src/CustomValueInvitationView": "./src/CustomValueInvitationView.tsx"
+    "./src/CustomValueInvitationView": "./src/CustomValueInvitationView.tsx",
+    "./src/CustomValueMatches": "./src/CustomValueMatches.tsx",
+    "./src/ValueSummaryRow": "./src/ValueSummaryRow.tsx"
   },
   "dependencies": {
     "@game/data": "workspace:*",
     "class-variance-authority": "^0.7.1",
-    "classix": "^2"
+    "classix": "^2",
+    "@game/utils": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19"
