@@ -7,6 +7,7 @@ import {
   type ProductMenuDestination,
   type ProductMenuRouteDestination,
 } from "@game/data/src/ProductMenu"
+import useBattleEntryRequest from "@game/data/src/useBattleEntryRequest"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { CustomValueId, ValueId } from "@game/data/src/Value"
 import { rankValues } from "@game/data/src/ValueRanking"
@@ -202,7 +203,6 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
     [isHubImminent, rankedValues],
   )
   usePreparedSeethingSwarmClips(hubClips)
-  const [isBattleRequested, setIsBattleRequested] = useState(false)
   const [sharedCard, setSharedCard] =
     useState<ValuesCardModel<StaticImageData> | null>(null)
   const shareTriggerRef = useRef<HTMLElement | null>(null)
@@ -259,24 +259,16 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
       return backDisposition.kind !== "root"
     },
   })
-  const isHubReady = state.matches("Hub")
-  const canAwaitBattle =
-    isHubReady &&
-    sharedCard === null &&
-    !isCustomValueDraftActive &&
-    !isProductMenuOpen &&
-    activeInformationPanelId === null &&
-    !isControlsOpen
-  if (isBattleRequested && !canAwaitBattle) setIsBattleRequested(false)
-  useEffect(() => {
-    if (isBattleRequested && canAwaitBattle && isBattlePrepared) {
-      send({ type: "BATTLE.START_REQUESTED" })
-    }
-  }, [isBattleRequested, isBattlePrepared, canAwaitBattle, send])
-  const handleStartBattle = () => {
-    if (isBattlePrepared) send({ type: "BATTLE.START_REQUESTED" })
-    else setIsBattleRequested((previous) => !previous)
-  }
+  const { isBattleRequested, requestBattle } = useBattleEntryRequest({
+    isHubReady: state.matches("Hub"),
+    isShareOpen: sharedCard !== null,
+    isCustomValueDraftActive,
+    isProductMenuOpen,
+    isInformationPanelOpen: activeInformationPanelId !== null,
+    isControlsOpen,
+    isBattlePrepared,
+    send,
+  })
   const handleWinnerSelected = useCallback(
     (winnerId: ValueId, expectedScheduler: BattleSchedulerRestorePoint) => {
       send({
@@ -886,7 +878,7 @@ function WritableGameClient({ gameActor }: { readonly gameActor: RootActor }) {
           onAddCustomValue={() => handleAddCustomValue()}
           onOpenMenu={handleProductMenuOpen}
           isBattlePending={isBattleRequested}
-          onStartBattle={handleStartBattle}
+          onStartBattle={requestBattle}
         />
         {sharedCard && (
           <ValuesCardShare
