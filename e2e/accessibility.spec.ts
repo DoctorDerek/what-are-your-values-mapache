@@ -315,6 +315,7 @@ for (const viewport of [
     await expect(
       banner.getByRole("heading", { name: "First Battle" }),
     ).toBeVisible()
+    await banner.hover()
     await expect(
       banner.getByText("First pair compared.", { exact: true }),
     ).toBeVisible()
@@ -325,7 +326,8 @@ for (const viewport of [
     const beforeNextChoice = await stage.getAttribute(
       "data-choreography-identity",
     )
-    await choices.last().click()
+    await choices.last().focus()
+    await page.keyboard.press("Enter")
     await expect(stage).not.toHaveAttribute(
       "data-choreography-identity",
       beforeNextChoice!,
