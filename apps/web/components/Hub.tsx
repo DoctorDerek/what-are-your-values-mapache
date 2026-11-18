@@ -8,10 +8,12 @@ import useHubCustomValueAuthoring, {
 } from "@game/data/src/useHubCustomValueAuthoring"
 import useLocaleCatalog from "@game/data/src/useLocaleCatalog"
 import type { RankedValue } from "@game/data/src/ValueRanking"
+import { hubActionIds } from "@game/ui/src/HubActions"
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
 import { useEffect, useRef, type ReactNode, type Ref } from "react"
 import CustomValueInvitation from "@/components/CustomValueInvitation"
+import HubActions from "@/components/HubActions"
 import MapacheScreen from "@/components/MapacheScreen"
 import PersonalValuesCard from "@/components/PersonalValuesCard"
 import { Button } from "@/components/ui/button"
@@ -59,11 +61,8 @@ export default function Hub({
 }) {
   const localizedCopy = useLocaleCatalog()
   const introductionCopy = localizedCopy.introduction
-  const DRESSING_ROOM_COPY = localizedCopy.interfaceCopy.dressingRoom
   const PERSONAL_HUB_COPY = localizedCopy.hub
-  const presentationLoadingCopy = localizedCopy.interfaceCopy.loading
   const PRODUCT_MENU_COPY = localizedCopy.interfaceCopy.menu
-  const VALUES_CARD_COPY = localizedCopy.card
 
   const {
     isDraftActive: isDraftNavigationBlocked,
@@ -78,7 +77,7 @@ export default function Hub({
   const wasDraftActive = useRef(false)
   useEffect(() => {
     if (wasDraftActive.current && !isDraftNavigationBlocked) {
-      document.getElementById("hub-add-custom-value-button")?.focus()
+      document.getElementById(hubActionIds.addCustomValue)?.focus()
     }
     wasDraftActive.current = isDraftNavigationBlocked
   }, [isDraftNavigationBlocked])
@@ -119,7 +118,7 @@ export default function Hub({
           textCase="normal-case"
           onClick={onMenu}
           disabled={customValueInvitation?.isSaving}
-          className="ml-auto max-xl:px-[12px] max-xl:py-[8px]"
+          className="ml-auto"
         >
           {PRODUCT_MENU_COPY.openAction}
         </Button>
@@ -139,7 +138,7 @@ export default function Hub({
     <MapacheScreen
       spacing={isDraftNavigationBlocked ? "authoring" : "readable-xl"}
       viewport="fixed"
-      className="flex h-[100dvh] min-w-0 flex-col items-center gap-[16px] xl:gap-4"
+      className="flex h-[100dvh] min-w-0 flex-col items-center gap-4"
     >
       <div
         data-controller-scroll={isDraftNavigationBlocked ? undefined : true}
@@ -147,7 +146,7 @@ export default function Hub({
         className={
           isDraftNavigationBlocked
             ? "contents"
-            : "-mt-(--mapache-screen-spacing) -mr-(--mapache-screen-spacing) flex min-h-(--hub-composition-minimum) w-[calc(100%+var(--mapache-screen-spacing))] max-w-[calc(80rem+var(--mapache-screen-spacing))] flex-[1_0_var(--hub-composition-minimum)] flex-col items-center gap-[16px] overflow-x-hidden overflow-y-auto overscroll-contain pt-(--mapache-screen-spacing) pr-(--mapache-screen-spacing) [--hub-composition-minimum:min(calc(16rem+var(--mapache-screen-spacing)),calc(50%+var(--mapache-screen-spacing)))] focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white xl:gap-4"
+            : "-mt-(--mapache-screen-spacing) -mr-(--mapache-screen-spacing) flex min-h-(--hub-composition-minimum) w-[calc(100%+var(--mapache-screen-spacing))] max-w-[calc(80rem+var(--mapache-screen-spacing))] flex-[1_0_var(--hub-composition-minimum)] flex-col items-center gap-4 overflow-x-hidden overflow-y-auto overscroll-contain pt-(--mapache-screen-spacing) pr-(--mapache-screen-spacing) [--hub-composition-minimum:min(calc(16rem+var(--mapache-screen-spacing)),calc(50%+var(--mapache-screen-spacing)))] focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white"
         }
       >
         {!isDraftNavigationBlocked && header}
@@ -177,105 +176,20 @@ export default function Hub({
       {!isDraftNavigationBlocked && (
         <nav
           aria-label={PERSONAL_HUB_COPY.actions}
-          className="grid max-h-[60%] min-h-0 w-full max-w-7xl shrink auto-rows-min grid-cols-1 gap-[16px] overflow-y-auto overscroll-contain pr-2 pb-[12px] xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:gap-4 xl:pb-3 [&_button]:max-w-full [&_button]:min-w-0"
+          className="max-h-[60%] min-h-0 w-full max-w-7xl shrink overflow-y-auto overscroll-contain pr-2 pb-3"
         >
-          <div className="flex min-w-0 flex-wrap gap-[16px] xl:col-span-2 xl:gap-4">
-            <Button
-              disabled={customValueInvitation?.isSaving}
-              id="hub-add-custom-value-button"
-              variant="outline"
-              size="sm"
-              textCase="normal-case"
-              typographyClassName="text-base xl:text-lg"
-              className="flex-[1_1_6rem] max-xl:px-[12px] max-xl:py-[8px]"
-              wrap
-              onClick={(event) => onAddCustomValue(event.currentTarget.id)}
-            >
-              {PERSONAL_HUB_COPY.add}
-            </Button>
-            <Button
-              disabled={isNavigationBlocked}
-              onClick={onStartBattle}
-              aria-busy={isBattlePending}
-              aria-label={
-                isBattlePending
-                  ? presentationLoadingCopy.cancelBattlePreparation
-                  : undefined
-              }
-              variant="battle"
-              size="tall"
-              textCase="normal-case"
-              typographyClassName="text-2xl xl:text-3xl"
-              wrap
-              className="relative flex-[1.35_1_8rem] max-xl:px-[8px] max-xl:py-[12px]"
-            >
-              <span className={isBattlePending ? "invisible" : undefined}>
-                {PERSONAL_HUB_COPY.battle}
-              </span>
-              {isBattlePending && (
-                <span className="absolute inset-0 flex items-center justify-center text-lg">
-                  {presentationLoadingCopy.preparing}
-                </span>
-              )}
-            </Button>
-          </div>
-          <div className="flex min-w-0 flex-wrap gap-[16px] xl:gap-4">
-            <Button
-              id="hub-customize-button"
-              textCase="normal-case"
-              variant="secondary"
-              size="sm"
-              typographyClassName="text-base xl:text-lg"
-              className="flex-[1_1_7rem] max-xl:px-[6px] max-xl:py-[8px]"
-              wrap
-              disabled={isNavigationBlocked}
-              onClick={onCustomize}
-            >
-              {DRESSING_ROOM_COPY.customize}
-            </Button>
-            <Button
-              id="hub-share-button"
-              textCase="normal-case"
-              variant="secondary"
-              size="sm"
-              typographyClassName="text-base xl:text-lg"
-              className="flex-[1_1_7rem] max-xl:px-[8px] max-xl:py-[8px]"
-              wrap
-              disabled={isNavigationBlocked}
-              onClick={onShare}
-            >
-              {VALUES_CARD_COPY.title}
-            </Button>
-          </div>
-          <div className="flex min-w-0 flex-wrap gap-4">
-            <Button
-              disabled={isNavigationBlocked}
-              ref={browseAllValuesButtonRef}
-              id="hub-browse-all-values-button"
-              textCase="normal-case"
-              variant="outline"
-              size="sm"
-              typographyClassName="text-base xl:text-lg"
-              className="flex-[1.4_1_5rem] hyphens-auto max-xl:px-[min(0.75rem,2%)] max-xl:py-2"
-              wrap
-              onClick={(event) => onBrowseAllValues(event.currentTarget.id)}
-            >
-              {PERSONAL_HUB_COPY.browse}
-            </Button>
-            <Button
-              disabled={isNavigationBlocked}
-              id="hub-achievements-button"
-              textCase="normal-case"
-              variant="outline"
-              size="sm"
-              typographyClassName="text-base xl:text-lg"
-              className="flex-[1_1_auto] hyphens-auto max-xl:px-[min(0.75rem,2%)] max-xl:py-2"
-              wrap
-              onClick={(event) => onOpenAchievements(event.currentTarget.id)}
-            >
-              {localizedCopy.interfaceCopy.screen.achievements}
-            </Button>
-          </div>
+          <HubActions
+            browseAllValuesButtonRef={browseAllValuesButtonRef}
+            isSaving={customValueInvitation?.isSaving === true}
+            isNavigationBlocked={isNavigationBlocked}
+            isBattlePending={isBattlePending}
+            onAddCustomValue={onAddCustomValue}
+            onBrowseAllValues={onBrowseAllValues}
+            onOpenAchievements={onOpenAchievements}
+            onStartBattle={onStartBattle}
+            onCustomize={onCustomize}
+            onShare={onShare}
+          />
         </nav>
       )}
     </MapacheScreen>

@@ -262,10 +262,13 @@ describe("NativeGameClient Menu navigation", () => {
       )
       expect(screen.getByRole("button", { name: "Battle" })).not.toBeBusy()
       await fireEvent.press(screen.getByRole("button", { name: "Battle" }))
-      for (const prepared of screen.getAllByTestId(/^prepared-animal-/, {
+      const preparedAnimals = screen.getAllByTestId(/^prepared-animal-/, {
         includeHiddenElements: true,
-      }))
-        await fireEvent(prepared, "load")
+      })
+      await act(async () => {
+        for (const prepared of preparedAnimals)
+          await fireEvent(prepared, "load")
+      })
       expect(
         await screen.findAllByRole("button", { name: /^Choose / }),
       ).toHaveLength(2)
@@ -291,6 +294,7 @@ describe("NativeGameClient Menu navigation", () => {
   })
 
   it("routes every shipped destination and resumes the exact active pair", async () => {
+    jest.useFakeTimers()
     const user = userEvent.setup()
     await render(<NativeGameClient />)
 

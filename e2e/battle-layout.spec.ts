@@ -6,6 +6,7 @@ import {
   serializeWayvmExport,
 } from "#game/machines/src/WayvmExport"
 import { test } from "./fixtures"
+import { installPaintedAnimalBounds } from "./painted-animal-bounds"
 import { getRenderedTextLines } from "./visible-text-bounds"
 
 test.use({ serviceWorkers: "block", reducedMotion: "reduce", hasTouch: true })
@@ -29,6 +30,7 @@ for (const viewport of battleViewports) {
     page,
   }, testInfo) => {
     await page.setViewportSize(viewport)
+    await page.addInitScript(installPaintedAnimalBounds)
     await page.addInitScript(() => {
       Object.defineProperty(crypto, "randomUUID", {
         value: () => "00000000-0000-4000-8000-000000012944",
@@ -64,12 +66,29 @@ for (const viewport of battleViewports) {
     }
     const animals = battle.locator("[data-combatant-side]")
     await expect(animals).toHaveCount(2)
-    for (const animal of await animals.all()) {
-      await expect(animal).toBeInViewport({ ratio: 1 })
+    await expect
+      .poll(() =>
+        animals.evaluateAll((combatants) =>
+          combatants.map((combatant) => {
+            const painted = window.getPaintedAnimalBounds(combatant)
+            const arena = combatant
+              .closest("[data-choreography-identity]")!
+              .getBoundingClientRect()
+            return (
+              painted !== null &&
+              painted.left >= Math.max(0, arena.left) &&
+              painted.right <= Math.min(innerWidth, arena.right) &&
+              painted.top >= 0 &&
+              painted.bottom <= innerHeight
+            )
+          }),
+        ),
+      )
+      .toEqual([true, true])
+    for (const animal of await animals.all())
       await expect(
         animal.locator('[data-battle-active-clip="true"] img'),
       ).toBeVisible()
-    }
     const geometry = await battle.evaluate((element) => {
       const rect = (target: Element) => {
         const { top, bottom, left, right, width, height } =

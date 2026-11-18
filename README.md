@@ -4,7 +4,7 @@
 
 Play the live game: [whatareyourvaluesmapache.com](https://whatareyourvaluesmapache.com/)
 
-What Are Your Values, Mapache? is a private, offline values-clarification autobattler. Pick the value that matters more in each pair; repeated choices produce a Top Five and a complete ranking across 103 included values plus any Custom Values you add.
+What Are Your Values, Mapache? is a private, offline values-clarification autobattler. Pick the value that matters more in each pair. Repeated choices produce a Top Five and a complete ranking across 103 included values plus any Custom Values you add.
 
 ## Mobile Web Lighthouse Measurements
 

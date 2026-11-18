@@ -3,8 +3,25 @@ import { expect, type Locator } from "@playwright/test"
 export async function expectCompleteBattleTextReachable(text: Locator) {
   for (const edge of ["start", "end"] as const) {
     const evidence = await text.evaluate((element, edge) => {
-      const surface = element.closest('[role="region"]')!
-      const surfaceBounds = surface.getBoundingClientRect()
+      const surfaceBounds = element
+        .closest('[role="region"]')!
+        .getBoundingClientRect()
+      const verticalClippingSurfaces: {
+        element: Element
+        canScroll: boolean
+      }[] = []
+      for (
+        let ancestor: Element | null = element;
+        ancestor;
+        ancestor = ancestor.parentElement
+      ) {
+        const overflow = getComputedStyle(ancestor).overflowY
+        if (["auto", "scroll", "hidden", "clip"].includes(overflow))
+          verticalClippingSurfaces.push({
+            element: ancestor,
+            canScroll: overflow === "auto" || overflow === "scroll",
+          })
+      }
       const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
       const textNodes: Node[] = []
       while (walker.nextNode()) {
@@ -16,25 +33,30 @@ export async function expectCompleteBattleTextReachable(text: Locator) {
       const character = document.createRange()
       character.setStart(node, offset)
       character.setEnd(node, offset + 1)
-      element.scrollTop = edge === "start" ? 0 : element.scrollHeight
-      const beforeScroll = character.getBoundingClientRect()
-      surface.scrollBy({
-        top:
-          edge === "start"
-            ? beforeScroll.top - surfaceBounds.top - surface.clientTop
-            : beforeScroll.bottom -
-              surfaceBounds.top -
-              surface.clientTop -
-              surface.clientHeight,
-        behavior: "instant",
-      })
+      for (const { element: surface, canScroll } of verticalClippingSurfaces) {
+        if (!canScroll) continue
+        const bounds = surface.getBoundingClientRect()
+        const beforeScroll = character.getBoundingClientRect()
+        surface.scrollBy({
+          top:
+            edge === "start"
+              ? beforeScroll.top - bounds.top - surface.clientTop
+              : beforeScroll.bottom -
+                bounds.top -
+                surface.clientTop -
+                surface.clientHeight,
+          behavior: "instant",
+        })
+      }
       const characterBounds = character.getBoundingClientRect()
       const cardBounds = element
         .closest("label, aside")!
         .getBoundingClientRect()
-      const textBounds = element.getBoundingClientRect()
-      const textScrolls = ["auto", "scroll"].includes(
-        getComputedStyle(element).overflowY,
+      const clippingBounds = verticalClippingSurfaces.map(
+        ({ element: surface }) => {
+          const top = surface.getBoundingClientRect().top + surface.clientTop
+          return { top, bottom: top + surface.clientHeight }
+        },
       )
       const visibleTextRects = textNodes.flatMap((textNode) =>
         [...textNode.textContent!.matchAll(/\S+/gu)].flatMap((match) => {
@@ -47,19 +69,11 @@ export async function expectCompleteBattleTextReachable(text: Locator) {
       return {
         edgeIsVisible:
           characterBounds.top >=
-            Math.max(
-              0,
-              surfaceBounds.top + surface.clientTop,
-              textScrolls ? textBounds.top + element.clientTop : 0,
-            ) -
-              1 &&
+            Math.max(0, ...clippingBounds.map(({ top }) => top)) - 1 &&
           characterBounds.bottom <=
             Math.min(
               innerHeight,
-              surfaceBounds.top + surface.clientTop + surface.clientHeight,
-              textScrolls
-                ? textBounds.top + element.clientTop + element.clientHeight
-                : innerHeight,
+              ...clippingBounds.map(({ bottom }) => bottom),
             ) +
               1,
         allLinesFitWidth: visibleTextRects.every(

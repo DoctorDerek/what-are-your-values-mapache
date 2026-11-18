@@ -101,7 +101,7 @@ async function collectCustodySourceFiles(
   )
 }
 
-function validateCustodySourceFiles(
+export function validateCustodySourceFiles(
   sourceFiles: readonly CustodySourceFile[],
   contract: GhostAssetArchiveContract,
 ) {

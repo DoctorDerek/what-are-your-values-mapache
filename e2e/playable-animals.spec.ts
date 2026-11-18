@@ -42,6 +42,9 @@ test("Bear varies complete attacks and preserves the next usable comparison", as
   await page.getByRole("button", { name: "Start", exact: true }).tap()
   await page.getByRole("button", { name: "Battle", exact: true }).tap()
   const stage = page.locator("[data-choreography-identity]")
+  const announcement = page
+    .getByRole("main", { name: "Value battle" })
+    .getByRole("status")
   const identity = await stage.getAttribute("data-choreography-identity")
   const attacks = ["bite", "stand_attack01", "stand_attack02"]
   for (const attack of attacks) {
@@ -69,12 +72,18 @@ test("Bear varies complete attacks and preserves the next usable comparison", as
     await expect(
       page.getByRole("button", { name: "Undo", exact: true }),
     ).toBeEnabled()
+    await expect(
+      announcement.filter({ hasText: /^Independence chosen\./ }),
+    ).toContainText("Next:")
     if (attack !== attacks.at(-1)) {
       await page.getByRole("button", { name: "Undo", exact: true }).tap()
       await expect(stage).toHaveAttribute(
         "data-choreography-identity",
         identity!,
       )
+      await expect(
+        announcement.filter({ hasText: /^Undo complete\./ }),
+      ).toContainText("Restored:")
     }
   }
   await page.getByRole("button", { name: "Stop", exact: true }).tap()

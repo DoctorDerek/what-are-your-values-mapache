@@ -298,7 +298,7 @@ for (const locale of ["en", "es-MX"] as const) {
     }
   })
 
-  test(`${locale} lets the roster scroll and lets search keep a matching value after its initial reveal`, async ({
+  test(`${locale} keeps roster scrolling and search focus through value matching and preview`, async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 })
@@ -325,7 +325,15 @@ for (const locale of ["en", "es-MX"] as const) {
         exact: true,
       })
       .fill(valueName)
-    await button(copy.interfaceCopy.screen.openValue(valueName)).click()
+    const matches = page.getByRole("region", {
+      name: copy.interfaceCopy.screen.matchingValues,
+      exact: true,
+    })
+    await expect(
+      matches.getByRole("heading", { name: valueName }),
+    ).toBeVisible()
+    await expect(matches.getByRole("button")).toHaveCount(0)
+    await button(copy.interfaceCopy.dressingRoom.back).click()
     await page
       .getByRole("dialog")
       .getByRole("button", {
@@ -333,8 +341,8 @@ for (const locale of ["en", "es-MX"] as const) {
         exact: true,
       })
       .click()
+    await button(copy.hub.browse).click()
     const row = page.locator('[id="all-values-row-pvcs-2011:fitness"]')
-    await expect(row).toBeFocused()
     const search = page.getByRole("searchbox")
     const query = locale === "en" ? "fitness" : "física"
     await search.click()

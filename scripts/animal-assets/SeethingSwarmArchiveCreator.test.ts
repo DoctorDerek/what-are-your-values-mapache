@@ -13,7 +13,10 @@ import { dirname, resolve } from "node:path"
 import { Uint8ArrayReader, ZipReader } from "@zip.js/zip.js/index-native.js"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { runSeethingSwarmArchiveCreatorCli } from "./createSeethingSwarmArchive.cli"
-import { createGhostAssetArchive } from "./GhostAssetArchiveCreator"
+import {
+  createGhostAssetArchive,
+  validateCustodySourceFiles,
+} from "./GhostAssetArchiveCreator"
 import { extractGhostAssetArchive } from "./GhostAssetArchiveExtractor"
 import {
   getSeethingSwarmAssetCustodyPaths,
@@ -226,30 +229,31 @@ describe("SeethingSwarm archive creation", () => {
     ).rejects.toThrow("Licensed custody cannot contain symbolic links.")
   })
 
-  it.runIf(process.platform === "linux")(
-    "rejects case-ambiguous licensed custody names",
-    async () => {
-      const paths = getSeethingSwarmAssetCustodyPaths(repositoryRoot)
-      await createSyntheticCustody(paths.custodyDirectory)
-      await writeFile(
-        resolve(paths.custodyDirectory, "assets/ambiguous.png"),
-        "lowercase",
-      )
-      await writeFile(
-        resolve(paths.custodyDirectory, "assets/AMBIGUOUS.png"),
-        "uppercase",
-      )
-
-      await expect(
-        createGhostAssetArchive({
-          contract: SEETHING_SWARM_ARCHIVE_CONTRACT,
-          archivePath: paths.archivePath,
-          assetKey: TEST_ASSET_KEY,
-          custodyDirectory: paths.custodyDirectory,
-        }),
-      ).rejects.toThrow("Licensed custody contains ambiguous file names.")
-    },
-  )
+  it("rejects case-ambiguous licensed custody names", () => {
+    const custodyFile = (archiveEntryName: string) => ({
+      archiveEntryName,
+      absolutePath: resolve(repositoryRoot, archiveEntryName),
+      size: 1,
+    })
+    const validFiles = [
+      ...SEETHING_SWARM_REQUIRED_ARCHIVE_ENTRY_NAMES,
+      `${SEETHING_SWARM_ARCHIVE_ENTRY_ROOT}/assets/ambiguous.png`,
+    ].map(custodyFile)
+    expect(
+      validateCustodySourceFiles(validFiles, SEETHING_SWARM_ARCHIVE_CONTRACT),
+    ).toBe(validFiles.length)
+    expect(() =>
+      validateCustodySourceFiles(
+        [
+          ...validFiles,
+          custodyFile(
+            `${SEETHING_SWARM_ARCHIVE_ENTRY_ROOT}/assets/AMBIGUOUS.png`,
+          ),
+        ],
+        SEETHING_SWARM_ARCHIVE_CONTRACT,
+      ),
+    ).toThrow("Licensed custody contains ambiguous file names.")
+  })
 
   it("rejects licensed custody files above the per-entry limit", async () => {
     const paths = getSeethingSwarmAssetCustodyPaths(repositoryRoot)

@@ -19,6 +19,7 @@ test("defers distant roster art and prepares animals when scrolling reaches them
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
+  await prepareSeededMatchups(page, "00000000-0000-4000-8000-00000000046e")
   const requestedImages = new Set<string>()
   page.on("request", (request) => {
     if (request.resourceType() === "image") requestedImages.add(request.url())
@@ -33,25 +34,29 @@ test("defers distant roster art and prepares animals when scrolling reaches them
   await expect(
     rows.first().locator('[data-hub-active-clip="true"] [data-playback-ready]'),
   ).toHaveAttribute("data-playback-ready", "true")
-  const lastRow = rows.last()
-  await expect(lastRow.locator("[data-hub-active-clip]")).toHaveCount(0)
+  const distantRow = rows.filter({
+    has: page.getByRole("heading", { name: "Wealth", exact: true }),
+  })
+  await expect(distantRow.locator("[data-hub-active-clip]")).toHaveCount(0)
   const beforeScroll = new Set(requestedImages)
-  await lastRow.scrollIntoViewIfNeeded()
+  await distantRow.scrollIntoViewIfNeeded()
   await expect(
-    lastRow.locator('[data-hub-active-clip="true"] [data-playback-ready]'),
+    distantRow.locator('[data-hub-active-clip="true"] [data-playback-ready]'),
   ).toHaveAttribute("data-playback-ready", "true")
-  await lastRow.hover()
+  await distantRow.hover()
   await expect
     .poll(() =>
-      lastRow
+      distantRow
         .locator("img")
         .evaluateAll((images: HTMLImageElement[]) =>
           images.every((image) => image.complete && image.naturalWidth > 0),
         ),
     )
     .toBe(true)
-  await expect(lastRow.locator('[data-hub-active-clip="true"]')).toBeVisible()
-  const loaded = await lastRow
+  await expect(
+    distantRow.locator('[data-hub-active-clip="true"]'),
+  ).toBeVisible()
+  const loaded = await distantRow
     .locator("img")
     .evaluateAll((images: HTMLImageElement[]) =>
       images.map((image) => image.currentSrc),
