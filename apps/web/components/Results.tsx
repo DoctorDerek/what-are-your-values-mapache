@@ -75,7 +75,6 @@ function ResultsValueRow({
     "--results-lateral": `${frameValue.motion.lateralPercentage}%`,
     "--results-scale": frameValue.motion.scale,
     "--results-tick-duration": `${BATTLE_RESULTS_PRESENTATION_TICK_MS}ms`,
-    gridRow: value.exitRank,
   }
 
   return (
@@ -86,7 +85,7 @@ function ResultsValueRow({
       data-results-promoted={value.exitRank < value.entryRank || undefined}
       data-results-settled={areRowPositionsSettled || undefined}
       className={cx(
-        "results-card-motion relative z-(--results-row-stacking-order) min-h-28 min-w-0 content-center border-2 border-black bg-white p-1 shadow-[3px_3px_0_#000]",
+        "results-card-motion relative z-(--results-row-stacking-order) [grid-row:calc(var(--results-final-slot)+1)] min-h-28 min-w-0 content-center border-2 border-black bg-white p-1 shadow-[3px_3px_0_#000]",
         value.exitRank <= 5 &&
           "border-l-mapache-vivid-secondary-gold border-l-8",
       )}
@@ -304,11 +303,12 @@ export default function Results({
             <span
               role="status"
               aria-hidden={!isSaveConfirmationVisible}
-              className="pointer-events-none text-sm font-semibold text-white transition-opacity motion-reduce:transition-none"
-              style={{
-                opacity: isSaveConfirmationVisible ? 1 : 0,
-                transitionDuration: `${shouldReduceMotion ? 0 : RESULTS_SAVE_CONFIRMATION_FADE_MS}ms`,
-              }}
+              className="pointer-events-none text-sm font-semibold text-white transition-opacity duration-(--save-fade) aria-hidden:opacity-0 motion-reduce:transition-none"
+              style={
+                {
+                  "--save-fade": `${shouldReduceMotion ? 0 : RESULTS_SAVE_CONFIRMATION_FADE_MS}ms`,
+                } as CSSProperties
+              }
             >
               <span
                 aria-hidden="true"
@@ -376,7 +376,7 @@ export default function Results({
           {notifications}
         </div>
         <nav
-          className="noise-bg bg-mapache-vivid-dark sticky bottom-0 z-10 flex shrink-0 flex-wrap gap-2 pr-[8px] pb-[8px]"
+          className="bg-noise bg-mapache-vivid-dark sticky bottom-0 z-10 flex shrink-0 flex-wrap gap-2 pr-[8px] pb-[8px]"
           aria-label={localizedCopy.interfaceCopy.screen.resultsActions}
         >
           <Button
