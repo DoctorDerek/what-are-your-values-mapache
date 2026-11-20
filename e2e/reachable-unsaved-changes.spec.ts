@@ -131,25 +131,25 @@ for (const locale of ["en", "es-MX"] as const) {
 }
 
 async function expectCompleteWords(action: Locator) {
-  expect(
-    await action.evaluate((node) => {
-      const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT)
-      while (walker.nextNode()) {
-        const text = walker.currentNode
-        for (const word of text.textContent!.matchAll(/\S+/g)) {
-          const range = document.createRange()
-          range.setStart(text, word.index)
-          range.setEnd(text, word.index + word[0].length)
-          if (
-            [...range.getClientRects()].filter((rect) => rect.width > 0)
-              .length > 1
-          )
-            return false
-        }
+  const measurements = await action.evaluate((node) => {
+    const splitWords: string[] = []
+    const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT)
+    while (walker.nextNode()) {
+      const text = walker.currentNode
+      for (const word of text.textContent!.matchAll(/\S+/g)) {
+        const range = document.createRange()
+        range.setStart(text, word.index)
+        range.setEnd(text, word.index + word[0].length)
+        const fragments = [...range.getClientRects()].filter(
+          (rect) => rect.width > 0,
+        )
+        if (fragments.length > 1) splitWords.push(word[0])
       }
-      return node.scrollWidth <= node.clientWidth
-    }),
-  ).toBe(true)
+    }
+    return { splitWords, overflow: node.scrollWidth - node.clientWidth }
+  })
+  expect(measurements.splitWords).toEqual([])
+  expect(measurements.overflow).toBeLessThanOrEqual(0)
 }
 
 for (const locale of ["en", "es-MX"] as const) {

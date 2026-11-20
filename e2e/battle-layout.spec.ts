@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test"
 import { getLocaleCatalog } from "#game/data/src/LocalizationCatalog"
+import { ACHIEVEMENT_NOTIFICATION_DURATION_MILLISECONDS } from "#game/machines/src/AchievementNotificationMachine"
 import { createInitialPlayerData } from "#game/machines/src/PlayerData"
 import {
   createWayvmExport,
@@ -312,10 +313,19 @@ for (const locale of ["en", "es-MX"] as const) {
           if (width >= 1280)
             expect(Math.abs(heading.top - firstLine)).toBeLessThan(1)
         }
-        if (turn === 1)
+        if (turn === 1) {
+          // Keep the earned notification from starting a save between keyboard turns.
+          await page
+            .getByRole("complementary", {
+              name: copy.interfaceCopy.screen.achievementUnlocked,
+            })
+            .first()
+            .getByRole("button")
+            .focus()
           await page.screenshot({
             path: testInfo.outputPath("earned-levels.png"),
           })
+        }
         if (turn === 4) break
         const identity = await stage.getAttribute("data-choreography-identity")
         await page.keyboard.press("1")
@@ -344,6 +354,7 @@ for (const [width, height, textSize] of [
         value: () => "00000000-0000-4000-8000-0000000005dc",
       })
     })
+    await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") })
     await page.goto("/")
     await page.addStyleTag({ content: `html { font-size: ${textSize}%; }` })
     await page.getByRole("button", { name: "Start", exact: true }).click()
@@ -372,6 +383,7 @@ for (const [width, height, textSize] of [
           }
         }),
       )
+    await page.clock.pauseAt(new Date("2026-01-01T01:00:00Z"))
     const [initial] = await readHeadings()
     for (let turn = 0; turn < 13; turn++) {
       await expect(choices.first()).toBeEnabled()
@@ -389,6 +401,10 @@ for (const [width, height, textSize] of [
       await expect(stage).not.toHaveAttribute(
         "data-choreography-identity",
         identity!,
+      )
+      // Let the earned notice finish saving between arena taps.
+      await page.clock.fastForward(
+        ACHIEVEMENT_NOTIFICATION_DURATION_MILLISECONDS,
       )
     }
   })

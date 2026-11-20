@@ -138,7 +138,7 @@ export default function Hub({
     <MapacheScreen
       spacing={isDraftNavigationBlocked ? "authoring" : "readable-xl"}
       viewport="fixed"
-      className="flex h-[100dvh] min-w-0 flex-col items-center gap-4"
+      className="flex h-[100dvh] min-w-0 flex-col items-center gap-4 max-xl:gap-[clamp(0rem,calc(100vw_-_10rem),1rem)] max-xl:[--mapache-screen-spacing:var(--spacing-reflow-inset)]"
     >
       <div
         data-controller-scroll={isDraftNavigationBlocked ? undefined : true}
@@ -176,7 +176,7 @@ export default function Hub({
       {!isDraftNavigationBlocked && (
         <nav
           aria-label={PERSONAL_HUB_COPY.actions}
-          className="max-h-[60%] min-h-0 w-full max-w-7xl shrink overflow-y-auto overscroll-contain pr-2 pb-3"
+          className="max-h-[60%] min-h-0 w-full max-w-7xl shrink overflow-y-auto overscroll-contain pr-2 pb-3 [@media(hover:hover)]:pt-1"
         >
           <HubActions
             browseAllValuesButtonRef={browseAllValuesButtonRef}

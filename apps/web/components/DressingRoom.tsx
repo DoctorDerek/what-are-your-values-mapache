@@ -19,7 +19,7 @@ import type { avatarMachine } from "@game/machines/src/AvatarMachine"
 import useRecoverableActorSnapshot from "@game/utils/src/useRecoverableActorSnapshot"
 import { cx } from "classix"
 import type { StaticImageData } from "next/image"
-import { useMemo, useState } from "react"
+import { useMemo, useState, type CSSProperties } from "react"
 import type { ActorRefFrom } from "xstate"
 import Heroes99Hero from "@/components/Heroes99Hero"
 import MapacheScreen from "@/components/MapacheScreen"
@@ -145,7 +145,7 @@ export default function DressingRoom({
                         })
                       }
                       className={cx(
-                        "flex min-h-[112px] cursor-pointer flex-col items-center justify-center border-4 border-black p-1 text-black focus-visible:outline-4 focus-visible:outline-white",
+                        "flex min-h-28 cursor-pointer flex-col items-center justify-center border-4 border-black p-1 text-black focus-visible:outline-4 focus-visible:outline-white",
                         isHeroes99ChoiceSelected(draft, choice)
                           ? "bg-mapache-vivid-primary-cyan"
                           : "hover:bg-mapache-vivid-light bg-white",
@@ -154,11 +154,13 @@ export default function DressingRoom({
                       {assets.thumbnailAtlas && index !== undefined && (
                         <span
                           aria-hidden="true"
-                          className="block h-[80px] w-[64px] shrink-0 [image-rendering:pixelated]"
-                          style={{
-                            backgroundImage: `url(${assets.thumbnailAtlas.src})`,
-                            backgroundPosition: `-${(index % HEROES99_THUMBNAIL.columns) * HEROES99_THUMBNAIL.width}px -${Math.floor(index / HEROES99_THUMBNAIL.columns) * HEROES99_THUMBNAIL.height}px`,
-                          }}
+                          className="block h-[80px] w-[64px] shrink-0 bg-(image:--thumbnail-atlas) bg-position-(--thumbnail-position) [image-rendering:pixelated]"
+                          style={
+                            {
+                              "--thumbnail-atlas": `url(${assets.thumbnailAtlas.src})`,
+                              "--thumbnail-position": `-${(index % HEROES99_THUMBNAIL.columns) * HEROES99_THUMBNAIL.width}px -${Math.floor(index / HEROES99_THUMBNAIL.columns) * HEROES99_THUMBNAIL.height}px`,
+                            } as CSSProperties
+                          }
                         />
                       )}
                       <span className="text-sm font-bold">{choice.label}</span>
@@ -187,10 +189,13 @@ export default function DressingRoom({
                           change: choice.change,
                         })
                       }
-                      className="grid size-12 cursor-pointer place-items-center border-4 border-black focus-visible:outline-4 focus-visible:outline-white"
-                      style={{
-                        backgroundColor: assets.palettes[paletteId]?.[index],
-                      }}
+                      className="grid size-12 cursor-pointer place-items-center border-4 border-black bg-(--palette-color) focus-visible:outline-4 focus-visible:outline-white"
+                      style={
+                        {
+                          "--palette-color":
+                            assets.palettes[paletteId]?.[index],
+                        } as CSSProperties
+                      }
                     >
                       {isHeroes99ChoiceSelected(draft, choice) && (
                         <span
@@ -283,7 +288,7 @@ export default function DressingRoom({
           className="grid-rows-[minmax(0,1fr)_auto]"
         >
           <div
-            className="min-h-0 space-y-4 overflow-y-auto overscroll-contain p-[16px]"
+            className="max-xl:px-reflow-inset min-h-0 space-y-4 overflow-y-auto overscroll-contain p-[16px]"
             data-controller-scroll
             tabIndex={0}
           >

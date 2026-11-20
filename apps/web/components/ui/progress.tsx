@@ -2,7 +2,7 @@
 
 import { cx } from "classix"
 import { Progress as ProgressPrimitive } from "radix-ui"
-import type { ComponentProps } from "react"
+import type { ComponentProps, CSSProperties } from "react"
 
 function Progress({
   className,
@@ -29,10 +29,14 @@ function Progress({
       <ProgressPrimitive.Indicator
         data-slot="progress-indicator"
         className={cx(
-          "h-full w-full",
+          "h-full w-full translate-x-(--progress-offset)",
           indicatorClassName ?? "bg-primary transition-transform",
         )}
-        style={{ transform: `translateX(-${100 - progressPercentage}%)` }}
+        style={
+          {
+            "--progress-offset": `${progressPercentage - 100}%`,
+          } as CSSProperties
+        }
       />
     </ProgressPrimitive.Root>
   )

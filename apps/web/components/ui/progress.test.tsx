@@ -14,7 +14,7 @@ describe("Progress Primitive Integration", () => {
     expect(progress).toHaveAttribute("aria-valuemax", "4")
     expect(
       container.querySelector('[data-slot="progress-indicator"]'),
-    ).toHaveStyle({ transform: "translateX(-25%)" })
+    ).toHaveStyle({ "--progress-offset": "-25%" })
     expect(
       container.querySelector('[data-slot="progress-indicator"]'),
     ).toHaveClass("transition-transform")
@@ -39,6 +39,6 @@ describe("Progress Primitive Integration", () => {
     ).toHaveClass("bg-mapache-vivid-primary-raspberry")
     expect(
       container.querySelector('[data-slot="progress-indicator"]'),
-    ).toHaveStyle({ transform: "translateX(-100%)" })
+    ).toHaveStyle({ "--progress-offset": "-100%" })
   })
 })

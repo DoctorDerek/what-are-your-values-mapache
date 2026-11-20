@@ -190,7 +190,7 @@ test("prepares before Battle and retains real animals while the next pair loads"
 
 test("failed battle art falls back and preserves one choice after reopening", async ({
   page,
-}) => {
+}, testInfo) => {
   const copy = getLocaleCatalog("en").interfaceCopy
   await page.emulateMedia({ reducedMotion: "reduce" })
   await page.route(/_strip\d+\.[^/]+\.png(?:\?|$)/, (route) => route.abort())
@@ -220,8 +220,8 @@ test("failed battle art falls back and preserves one choice after reopening", as
   await page
     .getByRole("button", { name: copy.portability.exportAction, exact: true })
     .click()
-  const backup = await (await downloaded).path()
-  if (!backup) throw new Error("The exported backup is unavailable")
+  const backup = testInfo.outputPath("exported-backup.json")
+  await (await downloaded).saveAs(backup)
   await page
     .getByLabel(copy.screen.chooseBackup, { exact: true })
     .setInputFiles(backup)

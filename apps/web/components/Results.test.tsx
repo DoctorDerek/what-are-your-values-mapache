@@ -243,7 +243,7 @@ describe("Battle-exit Results presentation", () => {
       act(() => vi.advanceTimersByTime(5_000))
       expect(screen.queryByRole("status")).toBeNull()
       expect(status).toBeInTheDocument()
-      expect(status).toHaveStyle({ opacity: "0" })
+      expect(status).toHaveAttribute("aria-hidden", "true")
       view.unmount()
       render(<Results {...props} />)
       expect(screen.queryByRole("status")).toBeNull()
@@ -407,13 +407,13 @@ describe("Battle-exit Results presentation", () => {
         )
         expect(valueBar).toHaveAttribute(
           "style",
-          expect.stringContaining("translateX(-26.369"),
+          expect.stringContaining("--progress-offset: -26.369"),
         )
         act(() => vi.advanceTimersByTime(950))
         expect(profile).toHaveTextContent("Profile Level 2")
         expect(valueBar).toHaveAttribute(
           "style",
-          expect.stringContaining("translateX(-100%)"),
+          expect.stringContaining("--progress-offset: -100%"),
         )
         act(() => vi.advanceTimersByTime(1_850))
         expect(profile).toHaveTextContent("Profile Level 3")

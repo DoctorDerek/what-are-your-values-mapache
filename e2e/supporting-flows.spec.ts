@@ -225,8 +225,8 @@ for (const locale of ["en", "es-MX"] as const) {
       await page
         .getByRole("button", { name: portability.exportAction, exact: true })
         .click()
-      const backupPath = await (await downloadPromise).path()
-      if (!backupPath) throw new Error("The exported backup is unavailable")
+      const backupPath = testInfo.outputPath("exported-backup.json")
+      await (await downloadPromise).saveAs(backupPath)
       const backupInput = page.getByLabel(copy.screen.chooseBackup, {
         exact: true,
       })

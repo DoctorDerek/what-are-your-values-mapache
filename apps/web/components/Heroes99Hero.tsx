@@ -123,7 +123,7 @@ export default function Heroes99Hero({
             width={strip.width * frameCount}
             height={strip.height}
             className={cx(
-              "absolute top-0 left-0 h-full max-w-none [image-rendering:pixelated]",
+              "absolute top-0 left-0 h-full w-(--hero-strip-width) max-w-none [image-rendering:pixelated]",
               !shouldReduceMotion &&
                 isActive &&
                 (isFlourishing
@@ -132,7 +132,7 @@ export default function Heroes99Hero({
             )}
             style={
               {
-                width: `${frameCount * 100}%`,
+                "--hero-strip-width": `${frameCount * 100}%`,
                 "--hero-frame-count": clip.frameCount,
                 "--hero-duration": `${clip.frameDuration * clip.frameCount}ms`,
                 "--hero-start": `${(-100 * clip.offset) / frameCount}%`,
