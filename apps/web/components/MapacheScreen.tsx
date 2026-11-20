@@ -3,7 +3,7 @@ import { cx } from "classix"
 import type { ComponentProps } from "react"
 
 const mapacheScreenVariants = cva(
-  "noise-bg bg-mapache-vivid-dark w-full pt-[max(var(--mapache-screen-spacing),env(safe-area-inset-top,0px))] pr-[max(var(--mapache-screen-spacing),env(safe-area-inset-right,0px))] pb-[max(var(--mapache-screen-spacing),env(safe-area-inset-bottom,0px))] pl-[max(var(--mapache-screen-spacing),env(safe-area-inset-left,0px))]",
+  "bg-noise bg-mapache-vivid-dark w-full pt-[max(var(--mapache-screen-spacing),env(safe-area-inset-top,0px))] pr-[max(var(--mapache-screen-spacing),env(safe-area-inset-right,0px))] pb-[max(var(--mapache-screen-spacing),env(safe-area-inset-bottom,0px))] pl-[max(var(--mapache-screen-spacing),env(safe-area-inset-left,0px))]",
   {
     variants: {
       viewport: {

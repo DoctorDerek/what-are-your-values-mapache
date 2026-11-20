@@ -16,7 +16,7 @@ describe("MapacheScreen", () => {
     const valuesScreen = screen.getByRole("main", { name: "Values screen" })
     expect(valuesScreen).toHaveAttribute("data-slot", "mapache-screen")
     expect(valuesScreen).toHaveClass(
-      "noise-bg",
+      "bg-noise",
       "bg-mapache-vivid-dark",
       "w-full",
       "min-h-[100dvh]",
