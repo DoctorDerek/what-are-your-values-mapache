@@ -283,7 +283,7 @@ export default function DressingRoom({
           className="grid-rows-[minmax(0,1fr)_auto]"
         >
           <div
-            className="min-h-0 space-y-4 overflow-y-auto overscroll-contain p-[16px] max-xl:px-reflow-inset"
+            className="max-xl:px-reflow-inset min-h-0 space-y-4 overflow-y-auto overscroll-contain p-[16px]"
             data-controller-scroll
             tabIndex={0}
           >

@@ -164,7 +164,7 @@ const parts: CustomValueInvitationParts<StaticImageData> = {
       >
         <div
           className={cx(
-            "min-h-0 overflow-y-auto overscroll-contain max-xl:px-reflow-inset",
+            "max-xl:px-reflow-inset min-h-0 overflow-y-auto overscroll-contain",
             readingClassName,
           )}
         >
