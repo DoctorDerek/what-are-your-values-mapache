@@ -7,6 +7,12 @@ test.use({
   reducedMotion: "no-preference",
 })
 
+function setResultsPlayerId() {
+  Object.defineProperty(crypto, "randomUUID", {
+    value: () => "bfc518dd-4ee2-42c6-906a-e9baf8edfc40",
+  })
+}
+
 for (const scale of [100, 200]) {
   test(`Spanish Results actions keep complete words and reachable exits at 320px/${scale}%`, async ({
     page,
@@ -225,11 +231,7 @@ test("browser Back closes actual parents, preserves drafts and permits Hub depar
 test("battle results show committed progress without delaying either exit", async ({
   page,
 }) => {
-  await page.addInitScript(() => {
-    Object.defineProperty(crypto, "randomUUID", {
-      value: () => "bfc518dd-4ee2-42c6-906a-e9baf8edfc40",
-    })
-  })
+  await page.addInitScript(setResultsPlayerId)
   await page.goto("/")
   await expect(
     page.getByRole("button", { name: "Start", exact: true }),
@@ -528,6 +530,7 @@ for (const viewport of [
   test(`multiple promoted rewards remain painted during simultaneous fills at ${viewport.width}px`, async ({
     page,
   }, testInfo) => {
+    await page.addInitScript(setResultsPlayerId)
     await page.setViewportSize(viewport)
     await page.goto("/")
     await page.getByRole("button", { name: "Start" }).click()
@@ -548,7 +551,7 @@ for (const viewport of [
     await expect(page.getByRole("heading", { name: "Results" })).toBeVisible()
     const evidence = await roster.evaluate(async (element) => {
       const samples = []
-      for (let index = 0; index < 5; index += 1) {
+      for (let index = 0; index < 20; index += 1) {
         const bounds = element.parentElement!.getBoundingClientRect()
         const rows = [...element.querySelectorAll("li")].slice(0, 2)
         samples.push(
@@ -567,24 +570,25 @@ for (const viewport of [
                   ),
                 ),
               fill: reward.getAttribute("aria-valuenow"),
+              promoted: row.hasAttribute("data-results-promoted"),
               identity: row.querySelector(".sr-only")?.textContent,
             }
           }),
         )
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        await new Promise((resolve) => setTimeout(resolve, 125))
       }
       return samples
     })
-    for (let rowIndex = 0; rowIndex < 2; rowIndex += 1) {
-      expect(
-        evidence.filter((sample) => sample[rowIndex].painted).length,
-      ).toBeGreaterThanOrEqual(2)
+    expect(evidence[0].every((row) => row.promoted)).toBe(true)
+    const simultaneous = evidence.filter((sample) =>
+      sample.every((row) => row.painted),
+    )
+    for (const rowIndex of [0, 1]) {
+      const visibleFills = simultaneous.map((sample) => sample[rowIndex].fill)
+      expect(new Set(visibleFills).size).toBeGreaterThanOrEqual(2)
     }
     expect(evidence[0].map(({ identity }) => identity)).toEqual(
-      evidence[4].map(({ identity }) => identity),
-    )
-    expect(evidence[0].map(({ fill }) => fill)).not.toEqual(
-      evidence[4].map(({ fill }) => fill),
+      evidence.at(-1)!.map(({ identity }) => identity),
     )
     await page.screenshot({
       path: testInfo.outputPath(`results-visible-${viewport.width}.png`),
