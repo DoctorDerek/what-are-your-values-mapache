@@ -138,7 +138,7 @@ export default function Hub({
     <MapacheScreen
       spacing={isDraftNavigationBlocked ? "authoring" : "readable-xl"}
       viewport="fixed"
-      className="flex h-[100dvh] min-w-0 flex-col items-center gap-4"
+      className="flex h-[100dvh] min-w-0 flex-col items-center gap-4 max-xl:gap-[clamp(0rem,calc(100vw_-_10rem),1rem)] max-xl:[--mapache-screen-spacing:var(--spacing-reflow-inset)]"
     >
       <div
         data-controller-scroll={isDraftNavigationBlocked ? undefined : true}
