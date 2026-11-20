@@ -288,7 +288,7 @@ export default function Results({
     <MapacheScreen
       viewport="fixed"
       spacing="compact"
-      className="overflow-hidden max-xl:[--mapache-screen-spacing:clamp(4px,calc(100vw_-_10rem),16px)]"
+      className="overflow-hidden max-xl:[--mapache-screen-spacing:var(--spacing-reflow-inset)]"
     >
       <div
         className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-2 overflow-y-auto overscroll-contain"

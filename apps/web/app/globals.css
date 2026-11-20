@@ -3,6 +3,10 @@
 
 @source "../../../packages/ui/src";
 
+@theme {
+  --spacing-reflow-inset: clamp(4px, calc(100vw - 10rem), 16px);
+}
+
 @utility basis-readable-action {
   flex-basis: 7rem;
 }
