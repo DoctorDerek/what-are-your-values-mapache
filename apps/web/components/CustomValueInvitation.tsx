@@ -121,7 +121,7 @@ const parts: CustomValueInvitationParts<StaticImageData> = {
   Footer: ({ children, className, contentClassName }) => (
     <footer
       className={cx(
-        "scroll-py-[12px] overflow-y-auto [&_button]:scroll-my-[12px]",
+        "scroll-py-[12px] overflow-y-auto max-xl:max-h-3/5 [&_button]:scroll-my-[12px]",
         className,
         contentClassName,
       )}
