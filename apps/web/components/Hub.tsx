@@ -176,7 +176,7 @@ export default function Hub({
       {!isDraftNavigationBlocked && (
         <nav
           aria-label={PERSONAL_HUB_COPY.actions}
-          className="max-h-[60%] min-h-0 w-full max-w-7xl shrink overflow-y-auto overscroll-contain pr-2 pb-3"
+          className="max-h-[60%] min-h-0 w-full max-w-7xl shrink overflow-y-auto overscroll-contain pr-2 pb-3 [@media(hover:hover)]:pt-1"
         >
           <HubActions
             browseAllValuesButtonRef={browseAllValuesButtonRef}
