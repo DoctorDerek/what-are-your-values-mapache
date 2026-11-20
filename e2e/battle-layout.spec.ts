@@ -312,10 +312,19 @@ for (const locale of ["en", "es-MX"] as const) {
           if (width >= 1280)
             expect(Math.abs(heading.top - firstLine)).toBeLessThan(1)
         }
-        if (turn === 1)
+        if (turn === 1) {
+          // Keep the earned notification from starting a save between keyboard turns.
+          await page
+            .getByRole("complementary", {
+              name: copy.interfaceCopy.screen.achievementUnlocked,
+            })
+            .first()
+            .getByRole("button")
+            .focus()
           await page.screenshot({
             path: testInfo.outputPath("earned-levels.png"),
           })
+        }
         if (turn === 4) break
         const identity = await stage.getAttribute("data-choreography-identity")
         await page.keyboard.press("1")
