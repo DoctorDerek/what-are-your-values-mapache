@@ -23,10 +23,10 @@ export default function ControllerPrompt({
 }) {
   const localization = useLocaleCatalog()
   const prompt = getControllerPrompt(family, command)
-  const style: CSSProperties = {
-    backgroundImage: `url(${atlas.src})`,
-    backgroundSize: `${CONTROLLER_PROMPT_COLUMNS * 100}% ${CONTROLLER_PROMPT_ROWS * 100}%`,
-    backgroundPosition: `${(prompt.column / (CONTROLLER_PROMPT_COLUMNS - 1)) * 100}% ${(prompt.row / (CONTROLLER_PROMPT_ROWS - 1)) * 100}%`,
+  const atlasStyle = {
+    "--prompt-atlas": `url(${atlas.src})`,
+    "--prompt-atlas-size": `${CONTROLLER_PROMPT_COLUMNS * 100}% ${CONTROLLER_PROMPT_ROWS * 100}%`,
+    "--prompt-position": `${(prompt.column / (CONTROLLER_PROMPT_COLUMNS - 1)) * 100}% ${(prompt.row / (CONTROLLER_PROMPT_ROWS - 1)) * 100}%`,
   }
   return (
     <span
@@ -37,8 +37,8 @@ export default function ControllerPrompt({
         localization.interfaceCopy.controllerButtonLabels,
         localization.interfaceCopy.controller.navigate,
       )}
-      className="inline-block size-8 shrink-0 rounded-sm bg-black align-middle"
-      style={style}
+      className="inline-block size-8 shrink-0 rounded-sm bg-black bg-(image:--prompt-atlas) bg-size-(--prompt-atlas-size) bg-position-(--prompt-position) align-middle"
+      style={atlasStyle as CSSProperties}
     />
   )
 }

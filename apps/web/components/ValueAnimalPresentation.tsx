@@ -49,9 +49,13 @@ export default function ValueAnimalPresentation({
   )
   const { minimumSize } = SEETHING_SWARM_ANIMAL_PRESENTATION_SIZES[size]
   const portraitStyle: CSSProperties & {
+    "--animal-width": string
+    "--animal-height": string
     "--portrait-width": string
     "--portrait-height": string
   } = {
+    "--animal-width": `${geometry.width}px`,
+    "--animal-height": `${geometry.height}px`,
     "--portrait-width": `${Math.max(minimumSize, geometry.width)}px`,
     "--portrait-height": `${Math.max(minimumSize, geometry.height)}px`,
   }
@@ -76,7 +80,7 @@ export default function ValueAnimalPresentation({
         style={portraitStyle}
       >
         {(isNearViewport || isAttended) && !hasImageFailed ? (
-          <span style={{ width: geometry.width, height: geometry.height }}>
+          <span className="h-(--animal-height) w-(--animal-width)">
             <SeethingSwarmHubAnimal
               calmClip={valuePresentation.clip}
               geometry={geometry}
