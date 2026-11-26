@@ -12,18 +12,18 @@ You must mathematically optimize your code generation for the following three pr
 
 ## 2. THE 5-STEP FORGE PROTOCOL
 
-**Context Recovery:** Before planning and after compaction or a model change, reload this guide, the current Core/Coding Constitution, the portfolio orchestration helper, the approved WAYVM GDD and the latest private task record. Verify `constitution.txt` and `gdd.txt` against their native sources. If a source is unavailable, record the revision of the last verified copy used. Reconcile the task with current Git state. Before editing, record the goal, canonical owners, exact files, exclusions, and commit sequence in the scratchsheet. Resolve conflicts between inherited code and approved conventions before proceeding.
+**Context Recovery:** Before planning, and after context compaction or a model change, reload this file, the entire current Core/Coding Constitution (verify any `constitution.txt` mirror against its native source), the relevant `gdd.txt` sections, and the latest approved task/goal scratchsheet. Reconcile them with current Git state. Before editing, record the goal, canonical owners, exact files, exclusions, and commit sequence in the scratchsheet. Inherited code is not proof of an approved convention; resolve conflicts before proceeding.
 
 **Canonical Authority:** Apply Mapachito's current instruction and the approved WAYVM GDD to this product. Use the Constitution for its engineering intent and the GDD's TypeScript/Expo adaptations rather than copying Godot lifecycle examples literally. Sibling repositories and the orchestration prompt provide reusable engineering evidence, not replacement gameplay rules, package versions, coverage targets, or release gates. Stop at a material conflict instead of silently choosing a different product. Keep the GDD, Constitution, and disposable scratchsheets local-only.
 
 You must mentally and explicitly process every task through this sequence to prevent hallucination and over-engineering:
 
 - **Step 0: 0LIST (Audit & Impact).** Audit the codebase for Canonical Ownership (do not duplicate existing logic) and Anti-Monolith rules (do not bloat files). Identify the exact files you will touch.
-- **Step 1: 1PLAN (The Blueprint).** Plan the smallest change that meets MQA using the complete X7 coding-pillar inventory and the game-specific rules in section 5.
-- **Step 2: 2CHECK (Red Team).** Audit the proposed plan against every current X7 pillar by its canonical number and name. For each pillar, give a task-specific finding, its basis, and a status of pass, fail, open, or inapplicable. Explain each inapplicable finding.
+- **Step 1: 1PLAN (The Blueprint).** Formulate the architectural blueprint based strictly on MQA and all current coding pillars.
+- **Step 2: 2CHECK (Red Team).** Verify your 1PLAN against the codebase constraints. Ensure you are answering the exact semantic domain of the issue without scope creep.
 - **Step 3: 3CODE (Execution).** Emit the verbatim, unabridged implementation of the plan. No AI slop or unnecessary comments.
-- **Step 4: 4CHECK (Verification).** Repeat the full pillar audit against the implemented diff and its real callers. Record the checks performed, their results, and which runtime checks remain open for 5RUN. Verify strict TypeScript for code changes.
-- **Step 5: 5RUN (QA Checklist).** For a player-facing change, exercise the affected journey within the approved QA scope. Record the revision, target, action and observed result. Give Mapachito a concise checklist for the remaining manual or preview checks.
+- **Step 4: 4CHECK (Verification).** Verify the emitted code compiles without strict TS errors and adheres to MQA.
+- **Step 5: 5RUN (QA Checklist).** Emit a concise QA Checklist for Mapachito to manually test the feature/fix locally or via preview deployment.
 
 **Test-After Development:** Implement the approved coherent feature first, then group behavior-focused test work and broader verification in `4CHECK`. Do not require TDD, speculative tests, or a suite run after every small commit. Use necessary diagnostic and static checks during implementation; honor explicitly deferred QA milestones without weakening existing CI or mandatory lint/format checks. Physical-device sessions and EAS/Expo builds occur only when the approved roadmap task calls for them.
 
@@ -46,8 +46,8 @@ You must mentally and explicitly process every task through this sequence to pre
 
 ## 4. TOOLING & PACKAGE MASTERY
 
-- **Runtime Environment:** You must utilize Node LTS (via the `.node-version` file) and the latest `pnpm` (v11+). To initialize the environment on Windows, use this exact command: `Set-ExecutionPolicy Bypass -Scope Process -Force; fnm env --use-on-cd | Out-String | Invoke-Expression; fnm use; corepack enable pnpm; pnpm --version`
-- **The `^MAJOR` Package Law:** When modifying `package.json`, use bare `^MAJOR` versions for independent stable libraries (e.g., `"xstate": "^5"`, not `"^5.20.0"`), subject to the exceptions below. Let the `pnpm` lockfile handle exact minor/patch pinning. Be sure to run `pnpm install` afterwards to update the lockfile.
+- **Runtime Environment:** You must utilize Node LTS (via the `.node-version` file) and the latest `pnpm` meeting the portfolio orchestration helper’s minimum supported major, with the exact release pinned by the root manifest’s `packageManager` field. To initialize the environment on Windows, use this exact command: `Set-ExecutionPolicy Bypass -Scope Process -Force; fnm env --use-on-cd | Out-String | Invoke-Expression; fnm use; corepack enable pnpm; pnpm --version`
+- **The `^MAJOR` Package Law:** When modifying `package.json`, use bare `^MAJOR` versions for independent stable libraries, subject to the exceptions below. Let the `pnpm` lockfile handle exact minor/patch pinning. Be sure to run `pnpm install` afterwards to update the lockfile.
   - _Exception 1 (Zero-Major):_ Packages starting with `0` do not follow semver safely; they MUST use `^0.MINOR.PATCH`.
   - _Exception 2 (Expo Override):_ Inspect the installed SDK and its compatibility requirements before changing packages. Verify current official guidance at `https://docs.expo.dev/versions/latest/#each-expo-sdk-version-depends-on-a-react-native-version` and the documentation for the approved SDK. Preserve Expo-supported exact core pins and compatible `~` ranges for SDK-coupled modules; never broaden them to `^MAJOR` merely because independent libraries use that rule. Verify package-specific native compatibility, peer requirements, and the synchronized lockfile. A newer npm release or SDK is not authorization for an unrelated upgrade.
 - **Package Verification:** Never hallucinate package versions. Execute `pnpm info <package> version` in the terminal to verify factual data before updating lockfiles.
@@ -69,9 +69,9 @@ You must mentally and explicitly process every task through this sequence to pre
 - Changes to shared CI/CD, new scripts, or changes to existing reusable scripts require an explicit infrastructure plan and approval before implementation. Audit the need, pilot the smallest change in one repository, verify it, obtain approval for any necessary orchestration-document amendment, and then propagate only to repositories with the same demonstrated need. Do not bundle infrastructure changes into an ordinary feature PR or copy sibling commands, versions, secrets, or identifiers blindly.
 - Do not start Metro, EAS builds, Expo exports, or physical-device sessions unless the approved task calls for them. A user-facing development server needs an accessible terminal and a clear handoff, not an inaccessible background process. Deferred manual QA does not disable existing approved CI, remove tests, or authorize changing coverage gates. Release submissions, uploads, and credential changes retain their separate authorization boundaries.
 
-## 5. THE 50 PILLARS OF MQA (MINIMUM QREAM ARCHITECTURE)
+## Coding pillars
 
-These entries adapt all 50 X7 coding pillars in the Core/Coding Constitution v55.2 to What Are Your Values, Mapache? When the Constitution changes, reconcile the count, numbering, rules and exceptions with the current X7 and the approved WAYVM GDD. For an explicitly prose-only Forge, a brief note on which coding pillars apply is sufficient.
+You will strictly adhere to all current coding pillars when writing or reviewing any code. Use the assigned numbers and constitutional names in the Core/Coding Constitution. In 2CHECK, audit the plan against each pillar. In 4CHECK, audit the implemented change and its real callers. For each, record the specific finding, its evidence and whether it passes, fails, remains open or is inapplicable. Explain inapplicability and carry deferred verification into 5RUN. Revisit affected findings after material changes. An explicitly prose-only modified Forge may use a brief applicability note.
 
 1. **Quality Rules Everything Around Me (QREAM):** Flawless UI/UX, mobile responsiveness, and accessibility are absolute mandates.
 2. **Elegant Simplicity:** Execute the most direct, readable solution; over-engineering and speculative future-proofing are banned.
